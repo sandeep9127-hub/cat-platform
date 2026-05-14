@@ -145,7 +145,7 @@ export default async function EntryDetailPage({ params }: Props) {
             <span className="mono-label">Themes</span>
             <div className="mt-3 flex flex-wrap gap-2">
               {themes.map((t) => (
-                <ThemeChip key={t.slug} slug={t.slug} name={t.name} colourHex={t.colourHex} />
+                <ThemeChip key={t.slug} slug={t.slug} name={t.name} colourHex={t.colourHex} showIcon />
               ))}
             </div>
           </div>

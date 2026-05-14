@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CatLogo } from "./CatLogo";
 
 export function BrandBar() {
   return (
@@ -6,9 +7,7 @@ export function BrandBar() {
       <div className="absolute left-0 right-0 -bottom-px h-0.5 bg-gradient-to-r from-transparent via-amber to-transparent opacity-60" />
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3.5 sm:py-4 flex items-center gap-4 sm:gap-8 lg:gap-10">
         <Link href="/" className="flex items-center gap-3 no-underline text-ink min-w-0">
-          <span aria-hidden className="block relative w-[30px] h-[30px] sm:w-[34px] sm:h-[34px] rounded-full bg-[radial-gradient(circle_at_35%_30%,var(--amber)_0%,var(--amber-deep)_60%,#9c7530_100%)] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08),0_1px_0_var(--cream)] shrink-0">
-            <span className="absolute inset-[6px] sm:inset-[7px] rounded-full bg-[radial-gradient(circle_at_60%_60%,transparent_30%,rgba(44,69,68,0.55)_60%,var(--deep-teal)_100%)]" />
-          </span>
+          <CatLogo size={36} className="shrink-0" />
           <span className="flex flex-col min-w-0">
             <span className="font-serif text-[17px] sm:text-[19px] font-medium leading-none tracking-[-0.01em]">
               CAT <span className="text-teal italic font-normal">Platform</span>

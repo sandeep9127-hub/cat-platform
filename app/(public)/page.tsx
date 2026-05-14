@@ -7,6 +7,7 @@ import { AtlasSection } from "@/components/entries/AtlasSection";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeChip } from "@/components/ui/ThemeChip";
+import { ThemeIcon } from "@/components/ui/ThemeIcon";
 import Link from "next/link";
 
 export const revalidate = 60;
@@ -118,10 +119,12 @@ export default async function LandingPage() {
               style={{ ["--c" as string]: t.colourHex } as React.CSSProperties}
             >
               <span
-                className="w-[34px] h-[34px] rounded-[2px] relative"
+                className="w-[44px] h-[44px] rounded-[2px] relative flex items-center justify-center text-paper"
                 style={{ background: t.colourHex }}
                 aria-hidden
-              />
+              >
+                <ThemeIcon slug={t.slug} size={24} />
+              </span>
               <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.15]">
                 {t.name}
               </h3>

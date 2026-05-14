@@ -3,11 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --deep-teal: #2c4544;
+  /* Brand teals (official CAT palette) */
+  --deep-teal: #334b4a;
   --teal: #2e7573;
-  --teal-soft: #4a8b89;
+  --teal-soft: #95b1af;
+  --teal-pale: #b8ccca;
+  --teal-wash: #e1ede8;
+
+  /* Brand periwinkles (secondary) */
+  --periwinkle-deep: #5e6990;
+  --periwinkle: #929cc5;
+  --periwinkle-soft: #afbadc;
+  --periwinkle-pale: #c0cce9;
+  --periwinkle-wash: #d0daef;
+
+  /* Brand accents */
+  --rose: #c68f95;
+  --peach: #f8a07b;
   --amber: #f8ca7c;
   --amber-deep: #d9a655;
+
+  /* Surfaces and ink */
   --cream: #f8f4ed;
   --paper: #fbf8f2;
   --ink: #1a2625;

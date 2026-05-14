@@ -20,7 +20,7 @@ export function AtlasSection({ mapEntries, listEntries, totalStates }: Props) {
     : listEntries;
 
   return (
-    <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-12">
+    <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-10 lg:gap-12">
       <IndiaMap
         entries={mapEntries}
         totalStates={totalStates}
