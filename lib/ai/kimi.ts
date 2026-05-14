@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Kimi K2 (Moonshot AI) via NVIDIA NIM — OpenAI-compatible chat completions.
+ * Kimi K2 (Moonshot AI) via NVIDIA's hosted API — OpenAI-compatible chat completions.
  * Free tier; primary LLM for the CAT Platform agent preview and draft writer.
  *
  * Auth: NVIDIA_API_KEY (nvapi-...) from https://build.nvidia.com.
@@ -94,7 +94,7 @@ export function safeJsonParse<T>(raw: string): T | null {
 }
 
 /**
- * Free tier through NVIDIA NIM — cost is effectively zero. We still record
+ * Free tier through NVIDIA's hosted API — cost is effectively zero. We still record
  * token usage in agent_conversations / ingestion_runs for telemetry, but
  * billing cost is 0.
  */

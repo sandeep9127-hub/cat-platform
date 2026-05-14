@@ -46,10 +46,10 @@ export default function AgentPage() {
           <div className="max-w-[60ch] py-10">
             <span className="eyebrow text-red-alert">Not configured</span>
             <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mt-3 font-light">
-              The agent preview is built and wired, but requires an NVIDIA NIM API key to
-              respond. Set <code className="font-mono text-[14px] not-italic">NVIDIA_API_KEY</code> in
-              your environment (the Kimi K2 endpoint is free tier), restart the server, and
-              refresh this page.
+              The agent preview is built and wired, but requires an NVIDIA API key (the one
+              that gives Kimi access) to respond. Set{" "}
+              <code className="font-mono text-[14px] not-italic">NVIDIA_API_KEY</code> in your
+              environment (free tier), restart the server, and refresh this page.
             </p>
           </div>
         )}

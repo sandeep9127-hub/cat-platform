@@ -52,7 +52,8 @@ export async function GET() {
  * Retrieve a compact context block from the library based on the user's
  * latest message. We use the existing Postgres FTS, then format each hit
  * as a short bullet for the prompt. This is the "tool use" of the preview;
- * NIM doesn't expose Anthropic-style tools, so we do retrieval ourselves.
+ * NVIDIA's hosted Kimi endpoint doesn't expose Anthropic-style tools, so
+ * we do retrieval ourselves.
  */
 async function buildContextBlock(query: string): Promise<{
   block: string;
