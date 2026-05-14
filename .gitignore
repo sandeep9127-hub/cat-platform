@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+build
+.env
+.env.local
+.env.*.local
+.vercel
+.DS_Store
+*.log
+.turbo
+coverage
+.pnpm-store
+public/geo/india-states.json
+public/geo/india-states-topo.json

@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --deep-teal: #2c4544;
+  --teal: #2e7573;
+  --teal-soft: #4a8b89;
+  --amber: #f8ca7c;
+  --amber-deep: #d9a655;
+  --cream: #f8f4ed;
+  --paper: #fbf8f2;
+  --ink: #1a2625;
+  --ink-soft: #3d4e4d;
+  --muted: #6b7b7a;
+  --line: #dde0da;
+  --line-soft: #e8e5dd;
+  --red-alert: #b85042;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Paper grain overlay, fixed across the viewport. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+@layer components {
+  .mono-label {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .eyebrow {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 10.5px;
+    color: var(--teal);
+    font-weight: 600;
+  }
+
+  .serif-italic {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-style: italic;
+    color: var(--teal);
+    font-weight: 400;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-paper focus-visible:ring-2 focus-visible:ring-teal;
+  }
+}
+
+/* Map state styling — shared between landing atlas and /map deep view. */
+.map-state {
+  fill: rgba(46, 117, 115, 0.07);
+  stroke: rgba(46, 117, 115, 0.32);
+  stroke-width: 0.6;
+  transition: fill 0.18s ease;
+  cursor: pointer;
+}
+.map-state:hover {
+  fill: rgba(46, 117, 115, 0.18);
+}
+.map-state.active {
+  fill: rgba(248, 202, 124, 0.42);
+  stroke: var(--amber-deep);
+  stroke-width: 0.9;
+}
+
+.dot-core {
+  stroke: var(--paper);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
