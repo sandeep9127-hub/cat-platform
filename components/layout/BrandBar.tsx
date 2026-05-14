@@ -5,10 +5,10 @@ import { useState } from "react";
 import { CatLogo } from "./CatLogo";
 
 const NAV_LINKS = [
+  { href: "/landscapes", label: "Landscapes" },
   { href: "/map", label: "Atlas" },
   { href: "/resources", label: "Resources" },
   { href: "/news", label: "News" },
-  { href: "/editorial-process", label: "Editorial process" },
   { href: "/about", label: "About" },
 ];
 
