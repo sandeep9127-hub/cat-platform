@@ -115,11 +115,131 @@ body::before {
   cursor: pointer;
 }
 
+/* ─── Motion ────────────────────────────────────────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: var(--pulse-base, 0.15); }
+  50% { transform: scale(1.08); opacity: calc(var(--pulse-base, 0.15) * 1.4); }
+}
+
+@keyframes dot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scribble {
+  from { stroke-dashoffset: var(--len, 200); }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes shimmer-amber {
+  0% { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-in-down {
+  animation: fade-in-down 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.reveal-in {
+  animation: fade-in-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.reveal-stagger {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* On the map, dots fade-pop in on first paint, then halos breathe gently. */
+.dot-group .dot-halo {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: dot-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both, dot-pulse 4.2s ease-in-out infinite 0.8s;
+}
+.dot-group .dot-core {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: dot-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.05s;
+}
+.dot-group:hover .dot-halo {
+  animation-play-state: paused;
+}
+
+/* Hero word italic — subtle reveal */
+.hero-italic {
+  position: relative;
+  display: inline-block;
+}
+.hero-italic::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, transparent 0%, var(--amber) 50%, transparent 100%);
+  opacity: 0.25;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: hero-underline 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+}
+@keyframes hero-underline {
+  to { transform: scaleX(1); }
+}
+
+/* Section heading rule grows in on scroll-in */
+.section-rule {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+.section-rule.in {
+  transform: scaleX(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }

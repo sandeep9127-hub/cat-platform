@@ -224,5 +224,14 @@ function NarrativeBlock({ label, children }: { label: string; children: React.Re
 }
 
 function humaniseScale(s: string): string {
-  return s.replace(/_/g, "-");
+  switch (s) {
+    case "pilot": return "Pilot";
+    case "block": return "Block";
+    case "district": return "District";
+    case "multi_district": return "Multi-district";
+    case "state": return "State";
+    case "multi_state": return "Multi-state";
+    case "national": return "National";
+    default: return s.replace(/_/g, " ");
+  }
 }

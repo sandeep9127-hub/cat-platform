@@ -6,8 +6,8 @@ import {
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
-import { ThemeChip } from "@/components/ui/ThemeChip";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
+import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
 import Link from "next/link";
 
 export const revalidate = 60;
@@ -55,25 +55,28 @@ export default async function LandingPage() {
       {/* HERO */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-18 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div>
-          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6 flex-wrap">
+          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6 flex-wrap reveal-stagger" style={{ animationDelay: "0ms" }}>
             <span className="mono-label">Vol. 01 · Edition 2026</span>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-deep" />
             <span className="mono-label">
               Updated {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </span>
           </div>
-          <h1 className="font-serif font-normal text-hero-xl text-ink">
-            A dashboard for <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>sustainable</em>
+          <h1 className="font-serif font-normal text-hero-xl text-ink reveal-stagger" style={{ animationDelay: "120ms" }}>
+            A dashboard for{" "}
+            <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>
+              sustainable
+            </em>
             <br />
             food systems.
           </h1>
-          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[42ch] mt-6 sm:mt-7 font-light">
+          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[42ch] mt-6 sm:mt-7 font-light reveal-stagger" style={{ animationDelay: "300ms" }}>
             Find the work that is actually changing how India grows, eats, and sustains.
             Programmes are read, not pitched. Limitations sit beside achievements. Curated by
             CAT, open to anyone serious about food.
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "460ms" }}>
           <span className="eyebrow">Editor&apos;s note</span>
           <p className="text-[14px] text-ink-soft max-w-[40ch] mt-3.5">
             The Platform covers credible food systems work nationally, not only CAT&apos;s
@@ -99,6 +102,8 @@ export default async function LandingPage() {
         ]}
       />
 
+      <EndorsementLegend />
+
       {/* ATLAS */}
       <SectionHead title="The" italic="atlas" meta="Hover or tap a state to filter" />
       <AtlasSection
@@ -111,21 +116,24 @@ export default async function LandingPage() {
       <section className="bg-cream border-y border-line py-12 lg:py-16 mt-8">
         <SectionHead title="Read by" italic="theme" meta="Eight working areas" />
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-line-soft border border-line-soft">
-          {themes.map((t) => (
+          {themes.map((t, i) => (
             <Link
               key={t.slug}
               href={`/theme/${t.slug}`}
-              className="group bg-cream hover:bg-paper transition-colors p-6 flex flex-col gap-3.5 min-h-[170px] relative"
-              style={{ ["--c" as string]: t.colourHex } as React.CSSProperties}
+              className="group bg-cream hover:bg-paper transition-colors duration-300 p-6 flex flex-col gap-3.5 min-h-[170px] relative reveal-stagger overflow-hidden"
+              style={{
+                ["--c" as string]: t.colourHex,
+                animationDelay: `${i * 70}ms`,
+              } as React.CSSProperties}
             >
               <span
-                className="w-[44px] h-[44px] rounded-[2px] relative flex items-center justify-center text-paper"
+                className="w-[44px] h-[44px] rounded-[2px] relative flex items-center justify-center text-paper transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-2deg]"
                 style={{ background: t.colourHex }}
                 aria-hidden
               >
                 <ThemeIcon slug={t.slug} size={24} />
               </span>
-              <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.15]">
+              <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.15] transition-colors duration-300 group-hover:text-[color:var(--c)]">
                 {t.name}
               </h3>
               <span className="font-mono text-[10px] uppercase tracking-mono-mid text-muted mt-auto flex gap-2 items-center">
@@ -134,9 +142,17 @@ export default async function LandingPage() {
                 </strong>{" "}
                 programmes
               </span>
-              <span className="absolute top-5 right-5 font-serif text-[18px] text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]">
+              <span className="absolute top-5 right-5 font-serif text-[18px] text-muted transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]">
                 →
               </span>
+              {/* Subtle colour wash on hover */}
+              <span
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at 90% 110%, ${t.colourHex}14 0%, transparent 60%)`,
+                }}
+                aria-hidden
+              />
             </Link>
           ))}
         </div>

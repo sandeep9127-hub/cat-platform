@@ -22,7 +22,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
   return (
     <Link
       href={`/entry/${data.slug}`}
-      className="block group border-b border-line-soft transition-colors hover:bg-gradient-to-r hover:from-teal/[0.04] hover:to-transparent"
+      className="block group border-b border-line-soft transition-colors hover:bg-teal-wash/40 focus-visible:bg-teal-wash/40 focus-visible:outline-none"
     >
       <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
         <div className="font-mono text-[10.5px] sm:text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
@@ -68,5 +68,14 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
 }
 
 function humaniseScale(s: string): string {
-  return s.replace(/_/g, "-");
+  switch (s) {
+    case "pilot": return "Pilot";
+    case "block": return "Block";
+    case "district": return "District";
+    case "multi_district": return "Multi-district";
+    case "state": return "State";
+    case "multi_state": return "Multi-state";
+    case "national": return "National";
+    default: return s.replace(/_/g, " ");
+  }
 }

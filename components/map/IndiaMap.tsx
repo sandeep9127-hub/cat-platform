@@ -26,15 +26,22 @@ type Props = {
   totalStates?: number;
   /** Called when the user filters by a state code; null clears filter. */
   onFilterState?: (stateCode: string | null) => void;
+  /** External source of truth for the active state (overrides internal lock). */
+  activeState?: string | null;
   className?: string;
 };
 
 type StateFeature = GeoJSON.Feature<GeoJSON.Geometry, { st_code?: string; ST_NM?: string; STNAME?: string; NAME_1?: string }>;
 
-export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, className }: Props) {
+export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className }: Props) {
   const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [lockedState, setLockedState] = useState<string | null>(null);
+
+  // External clear (e.g., from the AtlasSection chip) wins over internal lock.
+  useEffect(() => {
+    if (externalActive === null && lockedState) setLockedState(null);
+  }, [externalActive, lockedState]);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; entry: MapEntry } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +72,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
     return { paths, projectPoint: (lon: number, lat: number) => projection([lon, lat]) };
   }, [geojson]);
 
-  const activeState = lockedState ?? hoveredState;
+  const activeState = externalActive ?? lockedState ?? hoveredState;
 
   const visibleEntries = activeState
     ? entries.filter((e) => e.stateCode === activeState)
