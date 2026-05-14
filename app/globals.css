@@ -92,6 +92,34 @@ body::before {
   }
 }
 
+/* Global focus-visible for keyboard users — every interactive surface gets
+ * a clear teal ring without affecting mouse-only interactions. */
+*:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip-to-content link for keyboard navigation */
+.skip-to-content {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  background: var(--deep-teal);
+  color: var(--paper);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-jetbrains);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-to-content:focus {
+  top: 1rem;
+}
+
 /* Map state styling — shared between landing atlas and /map deep view. */
 .map-state {
   fill: rgba(46, 117, 115, 0.07);
