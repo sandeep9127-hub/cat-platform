@@ -5,11 +5,11 @@ import { useState } from "react";
 import { CatLogo } from "./CatLogo";
 
 const NAV_LINKS = [
-  { href: "/programmes", label: "Programmes" },
-  { href: "/themes", label: "Themes" },
-  { href: "/organisations", label: "Organisations" },
+  { href: "/map", label: "Atlas" },
   { href: "/resources", label: "Resources" },
   { href: "/news", label: "News" },
+  { href: "/editorial-process", label: "Editorial process" },
+  { href: "/about", label: "About" },
 ];
 
 export function BrandBar() {
