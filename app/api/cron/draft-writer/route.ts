@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { authoriseCronRequest, politeFetch, startRun } from "@/lib/ingestion/run";
-import { estimateCostUsd, getClient } from "@/lib/ai/anthropic";
+import { kimiChat, kimiCostUsd, kimiEnabled, safeJsonParse } from "@/lib/ai/kimi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const DRAFTER_MODEL = "claude-sonnet-4-6";
-
 /**
  * Draft writer. Picks up promoted discovery candidates, fetches their
- * source URLs, and asks Claude to draft an entry with citation anchors.
+ * source URLs, and asks Kimi to draft an entry with citation anchors.
  * Output lands in draft_entries as `approved_for_publication_at = null`
  * for the CAT editor to review side-by-side with sources.
  *
@@ -20,44 +18,47 @@ const DRAFTER_MODEL = "claude-sonnet-4-6";
  */
 const SYSTEM_PROMPT = `You are CAT Platform's draft writer. You read public source content about a food-systems programme in India and produce a draft Entry for the CAT editor to review.
 
-Required output: a single JSON object with the keys:
-  title (max 120 chars)
-  tagline (max 200 chars, plain language, no marketing)
+You must respond with valid JSON only — no markdown, no preamble.
+
+Required JSON object with these keys:
+  title (string, max 120 chars)
+  tagline (string, max 200 chars, plain language, no marketing)
   primary_theme_slug (one of: soil-land, water, seeds-biodiversity, climate-resilience, women-collectives, markets-value-chains, policy-governance, knowledge-capacity)
   primary_geography_name (state name)
-  primary_state_code (2-letter ISO-style code)
+  primary_state_code (2-letter code: AP, OD, MH, etc.)
   scale_band (one of: pilot, block, district, multi_district, state, multi_state, national)
-  start_year (int)
-  end_year (int or null)
-  lead_organisation_name
-  context (100-500 words, plain prose)
+  start_year (integer)
+  end_year (integer or null)
+  lead_organisation_name (string)
+  context (100-500 words)
   what_was_attempted (100-300 words)
   what_was_achieved (150-500 words)
   what_worked (150-500 words)
   what_did_not_work (50-300 words; required; if sources don't say, write "Sources do not document limitations honestly; CAT editor to revise.")
   draft_confidence (0-1)
-  source_passages (array of {source_url, passage, position_anchor} you cited)
+  source_passages (array of {source_url, passage, position_anchor})
 
 Hard rules:
 - Plain language. No em dashes. No marketing words ("leverage", "stakeholder", "ecosystem", "transformative", "synergy").
 - The word "agroecology" never appears in user-facing fields.
 - Programme level, never individual farms or single events.
-- Honesty bar: every claim in achievements must be defensible from source_passages.
-- Refuse silently if sources don't support a programme-level entry (return {"refused": true, "reason": "..."}).`;
+- Every claim in achievements must be defensible from source_passages.
+- If sources don't support a programme-level entry, return {"refused": true, "reason": "..."}.`;
+
+type DraftBody = { candidateId?: string };
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === "production" && !authoriseCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const anthropic = getClient();
-  if (!anthropic) {
+  if (!kimiEnabled()) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not set" },
+      { error: "NVIDIA_API_KEY not set" },
       { status: 503 }
     );
   }
 
-  const body = (await req.json().catch(() => ({}))) as { candidateId?: string };
+  const body = ((await req.json().catch(() => ({}))) as DraftBody) ?? {};
   if (!body.candidateId) {
     return NextResponse.json({ error: "candidateId required" }, { status: 400 });
   }
@@ -71,7 +72,6 @@ export async function POST(req: NextRequest) {
 
   const run = await startRun("draft_writer", "manual");
   try {
-    // Fetch source URLs (each capped at ~50KB to keep prompt size sane)
     const sourceTexts: string[] = [];
     for (const url of cand.sourceUrls ?? []) {
       try {
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
           .replace(/<[^>]+>/g, " ")
           .replace(/\s+/g, " ")
           .trim()
-          .slice(0, 50_000);
+          .slice(0, 30_000);
         sourceTexts.push(`SOURCE: ${url}\n\n${stripped}`);
         run.incrementProcessed();
       } catch (e) {
@@ -109,28 +109,24 @@ SOURCE PASSAGES TO DRAW FROM (use these and only these for citations):
 
 ${sourceTexts.join("\n\n---\n\n")}
 
-Draft the Entry as a single JSON object per the schema.`;
+Draft the Entry as a single JSON object per the schema. Respond with JSON only.`;
 
-    const res = await anthropic.messages.create({
-      model: DRAFTER_MODEL,
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-    });
-    run.addCost(estimateCostUsd(res.usage.input_tokens, res.usage.output_tokens));
+    const { text, inputTokens, outputTokens } = await kimiChat(
+      [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      { temperature: 0.2, maxTokens: 4000, jsonMode: true }
+    );
+    run.addCost(kimiCostUsd(inputTokens, outputTokens));
 
-    const text = res.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("\n");
-
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
+    const obj = safeJsonParse<Record<string, unknown>>(text);
+    if (!obj) {
       run.addError("No JSON object in response");
       const r = await run.finish("partial");
-      return NextResponse.json(r, { status: 500 });
+      return NextResponse.json({ ...r, raw: text.slice(0, 400) }, { status: 500 });
     }
-    const obj = JSON.parse(match[0]) as Record<string, unknown>;
+
     if (obj.refused) {
       run.addError(`Refused: ${obj.reason}`);
       const r = await run.finish("partial");

@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
-import { eq, sql, and, gte } from "drizzle-orm";
-import { AGENT_TOOLS, runTool } from "@/lib/ai/agent-tools";
-import { AGENT_MODEL, estimateCostUsd, getClient } from "@/lib/ai/anthropic";
+import { gte, sql } from "drizzle-orm";
+import { searchEntries } from "@/lib/db/search";
+import { kimiChat, kimiEnabled, kimiCostUsd, type ChatMessage } from "@/lib/ai/kimi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_TURNS = 5;
-const MAX_TOOL_ITERATIONS = 6;
+const MAX_CONTEXT_HITS = 6;
 
 const SYSTEM_PROMPT = `You are the public preview of the CAT Platform agent.
 
-CAT (Consortium for Agroecological Transformations) curates a small editorial library of credible food-systems work in India. Your job is to answer reader questions strictly from this library by calling the provided tools.
+CAT (Consortium for Agroecological Transformations) curates a small editorial library of credible food-systems work in India. You answer reader questions ONLY from the library passages provided in the context block of each turn.
 
 Hard rules:
-- Stay scoped to the CAT library. Do not answer questions outside food-systems work in India.
-- Cite specific entries when answering. Refer to them by title, not slug.
-- Keep responses to 2-3 short paragraphs at most. Plain language. No em dashes.
-- If the library does not have enough material to answer with confidence, say so clearly: "Not enough in the library yet to answer that with confidence." Then suggest the closest matching entries.
+- Stay scoped to the CAT library. Refuse off-topic questions politely.
+- Cite entries by their title (not slug). When you cite, wrap the title in square brackets: e.g. [Andhra Pradesh Community Natural Farming].
+- Keep responses to 2 short paragraphs. Plain language. No em dashes.
+- If the context block is empty or weak, say: "Not enough in the library yet to answer that with confidence." Suggest 2-3 themes or related entries from the library if any matched.
 - Treat "what did not work" as equally important as "what worked" when summarising.
-- If the question is off-topic, return the refusal politely and offer three relevant suggestions from list_themes or recent entries.
 - This is a public preview labelled as such. The full agent ships later.`;
+
+type ClientMessage = { role: "user" | "assistant"; content: string };
+
+async function dailyTurnCeilingExceeded(): Promise<boolean> {
+  const dailyCap = Number(process.env.AGENT_DAILY_TURNS ?? 500);
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [row] = await db
+    .select({ total: sql<number>`coalesce(sum(turn_count), 0)`.mapWith(Number) })
+    .from(schema.agentConversations)
+    .where(gte(schema.agentConversations.startedAt, since));
+  return (row?.total ?? 0) >= dailyCap;
+}
 
 const STARTERS = [
   "What's actually working on water in semi-arid India?",
@@ -29,50 +40,59 @@ const STARTERS = [
   "Which entries are CAT-authored versus self-submitted?",
 ];
 
-type ClientMessage = { role: "user" | "assistant"; content: string };
-
-async function dailyCostCeilingExceeded(): Promise<boolean> {
-  const ceiling = Number(process.env.AGENT_DAILY_USD_CEILING ?? 5);
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const [row] = await db
-    .select({ total: sql<number>`coalesce(sum(cost_usd), 0)`.mapWith(Number) })
-    .from(schema.agentConversations)
-    .where(gte(schema.agentConversations.startedAt, since));
-  return (row?.total ?? 0) >= ceiling;
-}
-
 export async function GET() {
   return NextResponse.json({
-    enabled: !!process.env.ANTHROPIC_API_KEY,
+    enabled: kimiEnabled(),
     starters: STARTERS,
     maxTurns: MAX_TURNS,
   });
 }
 
+/**
+ * Retrieve a compact context block from the library based on the user's
+ * latest message. We use the existing Postgres FTS, then format each hit
+ * as a short bullet for the prompt. This is the "tool use" of the preview;
+ * NIM doesn't expose Anthropic-style tools, so we do retrieval ourselves.
+ */
+async function buildContextBlock(query: string): Promise<{
+  block: string;
+  citedSlugs: string[];
+}> {
+  if (!query.trim()) return { block: "", citedSlugs: [] };
+  const hits = await searchEntries({ q: query }, MAX_CONTEXT_HITS);
+  if (hits.length === 0) return { block: "(no matching entries found in the library)", citedSlugs: [] };
+
+  const lines = hits.map((h, i) => {
+    const yearRange = h.endYear ? `${h.startYear}-${h.endYear}` : `${h.startYear}-ongoing`;
+    return `[${i + 1}] ${h.title} — ${h.stateName} · ${h.scaleBand.replace("_", " ")} · ${yearRange} · theme: ${h.themeName} · endorsement: ${h.catEndorsement.replace("cat_", "")}
+    Tagline: ${h.tagline}
+    ${h.highlight ? `Excerpt: ${h.highlight.replace(/<\/?mark>/g, "").slice(0, 280)}` : ""}`.trim();
+  });
+  return {
+    block: `LIBRARY CONTEXT (the only material you may draw from):\n\n${lines.join("\n\n")}`,
+    citedSlugs: hits.map((h) => h.slug),
+  };
+}
+
 export async function POST(req: NextRequest) {
-  const anthropic = getClient();
-  if (!anthropic) {
+  if (!kimiEnabled()) {
     return NextResponse.json(
-      { error: "Agent is not configured. Set ANTHROPIC_API_KEY to enable the preview." },
+      { error: "Agent is not configured. Set NVIDIA_API_KEY to enable the Kimi-backed preview." },
       { status: 503 }
     );
   }
 
-  if (await dailyCostCeilingExceeded()) {
+  if (await dailyTurnCeilingExceeded()) {
     return NextResponse.json(
       {
         refusal:
-          "The agent has reached its daily cost ceiling for this preview. Browse by theme or use the search instead.",
+          "The agent has reached its daily turn ceiling for this preview. Browse by theme or use search instead.",
       },
       { status: 429 }
     );
   }
 
-  const body = (await req.json()) as {
-    sessionToken: string;
-    messages: ClientMessage[];
-  };
-
+  const body = (await req.json()) as { sessionToken?: string; messages: ClientMessage[] };
   const messages = (body.messages ?? []).slice(-MAX_TURNS * 2);
   if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
     return NextResponse.json({ error: "No user message" }, { status: 400 });
@@ -88,89 +108,65 @@ export async function POST(req: NextRequest) {
   }
 
   const sessionToken = (body.sessionToken ?? "").slice(0, 64) || "anon";
+  const latestUserMessage = messages[messages.length - 1].content;
+  const { block: contextBlock, citedSlugs } = await buildContextBlock(latestUserMessage);
 
-  // Convert client message format to Anthropic format
-  const anthropicMessages: Anthropic.MessageParam[] = messages.map((m) => ({
-    role: m.role,
-    content: m.content,
-  }));
+  // Construct Kimi messages: system + (history rewritten) + final user with context
+  const kimiMessages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+  ];
+  // include prior turns verbatim
+  for (const m of messages.slice(0, -1)) {
+    kimiMessages.push({ role: m.role, content: m.content });
+  }
+  // append the latest user message with the retrieved context inline
+  kimiMessages.push({
+    role: "user",
+    content: contextBlock
+      ? `${contextBlock}\n\n---\n\nReader question: ${latestUserMessage}`
+      : latestUserMessage,
+  });
 
-  let totalInput = 0;
-  let totalOutput = 0;
-  const citedSlugs = new Set<string>();
-  let refusalReason: string | null = null;
-
-  // Tool loop
-  let response;
-  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    response = await anthropic.messages.create({
-      model: AGENT_MODEL,
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      tools: AGENT_TOOLS,
-      messages: anthropicMessages,
-    });
-    totalInput += response.usage.input_tokens;
-    totalOutput += response.usage.output_tokens;
-
-    if (response.stop_reason !== "tool_use") break;
-
-    const toolUses = response.content.filter((b) => b.type === "tool_use");
-    if (toolUses.length === 0) break;
-
-    anthropicMessages.push({ role: "assistant", content: response.content });
-
-    const toolResults: Anthropic.ToolResultBlockParam[] = [];
-    for (const tu of toolUses) {
-      if (tu.type !== "tool_use") continue;
-      const result = await runTool(tu.name, tu.input as Record<string, unknown>);
-      if (Array.isArray(result)) {
-        for (const r of result as { slug?: string }[]) {
-          if (r.slug) citedSlugs.add(r.slug);
-        }
-      } else if (
-        result &&
-        typeof result === "object" &&
-        "slug" in result &&
-        typeof (result as { slug: unknown }).slug === "string"
-      ) {
-        citedSlugs.add((result as { slug: string }).slug);
-      }
-      toolResults.push({
-        type: "tool_result",
-        tool_use_id: tu.id,
-        content: JSON.stringify(result),
-      });
-    }
-
-    anthropicMessages.push({ role: "user", content: toolResults });
+  let assistantText = "";
+  let inputTokens = 0;
+  let outputTokens = 0;
+  try {
+    const res = await kimiChat(kimiMessages, { temperature: 0.3, maxTokens: 700 });
+    assistantText = res.text;
+    inputTokens = res.inputTokens;
+    outputTokens = res.outputTokens;
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error: "The agent service is unavailable right now.",
+        detail: (e as Error).message,
+      },
+      { status: 502 }
+    );
   }
 
-  const assistantText =
-    response?.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("\n") ?? "";
-
   const wasRefused = /not enough in the library/i.test(assistantText);
-  if (wasRefused) refusalReason = "library_insufficient";
 
-  // Log conversation
-  await db.insert(schema.agentConversations).values({
-    sessionToken,
-    turnCount: messages.filter((m) => m.role === "user").length,
-    totalInputTokens: totalInput,
-    totalOutputTokens: totalOutput,
-    costUsd: estimateCostUsd(totalInput, totalOutput),
-    wasRefused,
-    refusalReason,
-    citedEntryIds: [],
-  });
+  // Log
+  try {
+    await db.insert(schema.agentConversations).values({
+      sessionToken,
+      turnCount: messages.filter((m) => m.role === "user").length,
+      totalInputTokens: inputTokens,
+      totalOutputTokens: outputTokens,
+      costUsd: kimiCostUsd(inputTokens, outputTokens),
+      wasRefused,
+      refusalReason: wasRefused ? "library_insufficient" : null,
+      citedEntryIds: [],
+    });
+  } catch {
+    // Non-fatal
+  }
 
   return NextResponse.json({
     text: assistantText,
-    citedSlugs: Array.from(citedSlugs),
-    cost: estimateCostUsd(totalInput, totalOutput),
+    citedSlugs,
+    cost: 0,
     refused: wasRefused,
   });
 }

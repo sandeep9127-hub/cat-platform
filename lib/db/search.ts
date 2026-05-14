@@ -80,7 +80,7 @@ export async function searchEntries(filters: SearchFilters, limit = 30): Promise
     ? sql`ts_rank(e.fts, websearch_to_tsquery('english', ${q})) DESC NULLS LAST, e.published_date DESC NULLS LAST`
     : sql`e.published_date DESC NULLS LAST`;
 
-  const rows = await db.execute<{
+  const result = await db.execute<{
     id: string;
     slug: string;
     title: string;
@@ -119,8 +119,13 @@ export async function searchEntries(filters: SearchFilters, limit = 30): Promise
     LIMIT ${limit}
   `);
 
+  // node-postgres returns { rows: [...] }; postgres-js returns the array directly.
+  // Handle both for resilience.
+  const rows = (result as unknown as { rows?: Record<string, unknown>[] }).rows ??
+    (result as unknown as Record<string, unknown>[]);
+
   const out: SearchHit[] = [];
-  for (const r of rows as unknown as Array<Record<string, unknown>>) {
+  for (const r of rows) {
     out.push({
       id: r.id as string,
       slug: r.slug as string,

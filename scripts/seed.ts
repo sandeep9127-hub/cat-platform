@@ -1,8 +1,11 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import dns from "node:dns";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { eq } from "drizzle-orm";
 import * as schema from "../lib/db/schema";
+
+dns.setDefaultResultOrder("verbatim");
 import {
   themesSeed,
   stateGeographies,
@@ -14,8 +17,8 @@ import {
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
-  const client = postgres(url, { max: 1, prepare: false });
-  const db = drizzle(client, { schema });
+  const pool = new Pool({ connectionString: url, max: 1, ssl: { rejectUnauthorized: false } });
+  const db = drizzle(pool, { schema });
 
   console.log("Seeding themes...");
   for (const t of themesSeed) {
@@ -162,7 +165,7 @@ async function main() {
   }
 
   console.log("Seed complete.");
-  await client.end();
+  await pool.end();
 }
 
 main().catch((err) => {

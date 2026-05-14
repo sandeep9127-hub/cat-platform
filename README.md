@@ -44,7 +44,7 @@ Live on a Supabase Postgres in an isolated `cat` schema. Run on Vercel.
 
 ## Stack
 
-Next.js 15 App Router · React 19 · TypeScript strict · Tailwind v3 · Drizzle ORM · Postgres (Supabase, ap-south-1 Mumbai) · Anthropic Claude API (Haiku 4.5 for agent, Sonnet 4.6 for ingestion) · d3-geo · Resend (optional, for submission emails) · Vercel cron · GIN-indexed Postgres FTS.
+Next.js 15 App Router · React 19 · TypeScript strict · Tailwind v3 · Drizzle ORM · Postgres (Supabase, ap-south-1 Mumbai) · **Kimi K2 (Moonshot) via NVIDIA NIM** as primary LLM for the agent and draft writer (free tier, OpenAI-compatible) · Anthropic Claude only for the discovery agent (needs the web_search tool) · d3-geo · Resend (optional, for submission emails) · Vercel cron · GIN-indexed Postgres FTS.
 
 Not used: Redux/Zustand (RSC + URL state), Algolia/Elasticsearch (Postgres FTS), Leaflet/Mapbox (custom SVG), Mixpanel/Amplitude (lean observability).
 
@@ -55,7 +55,8 @@ npm install --legacy-peer-deps   # peer conflict with @react-pdf
 
 cp .env.example .env.local
 # Required:  DATABASE_URL
-# Optional:  ANTHROPIC_API_KEY  (agent + discovery + drafter)
+# Optional:  NVIDIA_API_KEY     (Kimi K2 — agent preview + draft writer; free tier)
+#            ANTHROPIC_API_KEY  (discovery agent only — needs web_search tool)
 #            RESEND_API_KEY     (submission acknowledgement email)
 #            CRON_SECRET        (Vercel cron auth in production)
 #            AUTH_SECRET        (Auth.js sessions, deferred)
