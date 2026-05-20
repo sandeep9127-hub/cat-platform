@@ -3,6 +3,7 @@ import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { BrandBar } from "@/components/layout/BrandBar";
 import { Footer } from "@/components/layout/Footer";
+import { FloatingAsk } from "@/components/global/FloatingAsk";
 import { Analytics } from "@vercel/analytics/react";
 
 const fraunces = Fraunces({
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <FloatingAsk />
         <Analytics />
       </body>
     </html>

@@ -9,6 +9,8 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
 import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
 import { Sparkles, ArrowUpRight, Quote } from "lucide-react";
+import { Supporters } from "@/components/home/Supporters";
+import { Sdgs } from "@/components/home/Sdgs";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -189,6 +191,12 @@ export default async function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* SUPPORTERS */}
+      <Supporters />
+
+      {/* SDGS */}
+      <Sdgs />
 
       {/* FEATURED ENTRY */}
       {entries[0] && <FeaturedEntry entry={entries[0]} />}
