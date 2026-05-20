@@ -31,13 +31,13 @@ export function BrandBar() {
       {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
       <div className="h-px w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3.5 sm:py-4 flex items-center gap-4 sm:gap-8 lg:gap-10">
-        <Link href="/" className="flex items-center gap-3 no-underline text-ink min-w-0 group">
+        <Link href="/" className="flex items-center gap-3 no-underline text-ink group shrink-0">
           <CatLogo size={36} className="shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg]" />
-          <span className="flex flex-col min-w-0">
-            <span className="font-serif text-[16px] sm:text-[18px] font-medium leading-[1.05] tracking-[-0.012em]">
+          <span className="flex flex-col">
+            <span className="font-serif text-[16px] sm:text-[18px] font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap">
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
-            <span className="hidden sm:block font-mono text-[9px] tracking-mono-wide uppercase text-muted mt-[3px] truncate">
+            <span className="hidden sm:block font-mono text-[8.5px] md:text-[9px] tracking-[0.08em] uppercase text-muted mt-[3px] whitespace-nowrap">
               By the Consortium for Agroecological Transformations
             </span>
           </span>
