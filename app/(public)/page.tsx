@@ -11,6 +11,7 @@ import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
 import { Sparkles, ArrowUpRight, Quote } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
+import { ParallaxBanner } from "@/components/home/ParallaxBanner";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -125,6 +126,14 @@ export default async function LandingPage() {
           </aside>
         </div>
       </section>
+
+      {/* PARALLAX BANNER — official Consortium cover, parallaxed on scroll */}
+      <ParallaxBanner
+        src="/images/hero-cover.jpg"
+        alt="Consortium for Agroecological Transformations cover image"
+        strength={0.28}
+        caption="Consortium for Agroecological Transformations"
+      />
 
       {/* STAT STRIP */}
       <StatStrip
