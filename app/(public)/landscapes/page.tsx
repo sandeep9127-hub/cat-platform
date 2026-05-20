@@ -2,11 +2,12 @@ import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { CatLandscapesMap } from "@/components/map/CatLandscapesMap";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Landscapes",
+  title: "CAT Landscapes",
   description:
     "CAT works at the scale of landscapes — block-level administrative units selected for ecological, social, and institutional reasons. Eleven landscapes across India.",
 };
@@ -18,6 +19,8 @@ export default async function LandscapesPage() {
       slug: schema.geographies.slug,
       name: schema.geographies.name,
       stateCode: schema.geographies.stateCode,
+      latitude: schema.geographies.latitude,
+      longitude: schema.geographies.longitude,
     })
     .from(schema.geographies)
     .where(eq(schema.geographies.type, "landscape"))
@@ -27,25 +30,66 @@ export default async function LandscapesPage() {
     (l) => l.lipStatus === "published"
   ).length;
 
+  // Pins for the dedicated CAT Landscapes map, drawn from the curated profile data
+  const pins = rows
+    .map((r) => {
+      const p = LANDSCAPES[r.slug];
+      if (!p) return null;
+      return {
+        slug: r.slug,
+        name: p.name,
+        district: p.district,
+        stateCode: r.stateCode ?? "",
+        latitude: 0,
+        longitude: 0,
+        lipStatus: p.lipStatus,
+      };
+    })
+    .filter(Boolean) as Array<{
+    slug: string;
+    name: string;
+    district: string;
+    stateCode: string;
+    latitude: number;
+    longitude: number;
+    lipStatus: "published" | "in_preparation";
+  }>;
+
+  // hydrate lat/lng from DB rows
+  for (const pin of pins) {
+    const r = rows.find((x) => x.slug === pin.slug);
+    if (r) {
+      pin.latitude = r.latitude ?? 0;
+      pin.longitude = r.longitude ?? 0;
+    }
+  }
+
   return (
     <>
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
-          <span className="eyebrow">CAT&apos;s focus landscapes</span>
+          <span className="eyebrow">Curated by CAT · the closed set</span>
           <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-            Eleven{" "}
+            CAT{" "}
             <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>
-              landscapes
+              Landscapes
             </em>
-            .<br />
-            One approach.
+            .
           </h1>
-          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[50ch] mt-6 font-light">
-            CAT defines a landscape as an administrative block (or sub-section of a block
-            comprising multiple Gram Panchayats), selected for ecological, social, and
-            institutional reasons. Coordinated services, institutions, and finance over a
-            sustained period of at least seven years. The minimum viable unit for planning
-            and action.
+          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
+            Eleven focus landscapes across India where the Consortium for Agroecological
+            Transformations is developing place-based investment plans. A landscape is an
+            administrative block (or sub-section of one), selected for ecological, social,
+            and institutional reasons. The minimum viable unit for planning and action over
+            a sustained seven-year horizon.
+          </p>
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
+            This is the closed CAT set. For programmes, interventions, and contributed work
+            from across India, see the{" "}
+            <Link href="/map" className="text-teal hover:text-teal-soft underline-offset-2 hover:underline">
+              Solutions Atlas
+            </Link>
+            .
           </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
@@ -53,7 +97,7 @@ export default async function LandscapesPage() {
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
             Each landscape has a Landscape Investment Plan — a place-based costing and
             implementation roadmap. <strong className="text-deep-teal">{publishedCount}</strong>{" "}
-            published; <strong className="text-deep-teal">{11 - publishedCount}</strong>{" "}
+            published, <strong className="text-deep-teal">{11 - publishedCount}</strong>{" "}
             in preparation.
           </p>
           <div className="mt-4 flex gap-2.5 items-center">
@@ -63,6 +107,10 @@ export default async function LandscapesPage() {
             </span>
           </div>
         </aside>
+      </section>
+
+      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-12">
+        <CatLandscapesMap pins={pins} />
       </section>
 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-2">

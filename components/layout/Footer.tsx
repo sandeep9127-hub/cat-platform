@@ -18,11 +18,11 @@ export function Footer() {
         <FooterCol
           title="Read"
           links={[
-            { href: "/programmes", label: "Programmes" },
-            { href: "/themes", label: "Themes" },
+            { href: "/landscapes", label: "CAT Landscapes" },
+            { href: "/map", label: "Solutions Atlas" },
             { href: "/news", label: "News" },
             { href: "/resources", label: "Resources" },
-            { href: "/map", label: "Atlas" },
+            { href: "/themes", label: "Themes" },
           ]}
         />
         <FooterCol

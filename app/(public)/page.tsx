@@ -107,7 +107,7 @@ export default async function LandingPage() {
       <EndorsementLegend />
 
       {/* ATLAS */}
-      <SectionHead title="The" italic="atlas" meta="Hover or tap a state to filter" />
+      <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
       <AtlasSection
         mapEntries={mapEntries}
         listEntries={listEntries}

@@ -51,7 +51,7 @@ export default function AboutPage() {
             period of at least seven years. CAT is currently developing investment and
             implementation plans across{" "}
             <Link href="/landscapes" className="text-teal underline-offset-2 hover:underline">
-              eleven landscapes
+              eleven CAT Landscapes
             </Link>
             .
           </Block>
@@ -146,7 +146,7 @@ export default function AboutPage() {
               href="/landscapes"
               className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
             >
-              The eleven landscapes →
+              The CAT Landscapes →
             </Link>
             <Link
               href="/editorial-process"

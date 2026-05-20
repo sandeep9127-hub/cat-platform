@@ -3,6 +3,8 @@ import Link from "next/link";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
+import { landscapeHasLip } from "@/lib/db/landscape-kb";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,8 @@ export default async function LandscapeDetailPage({ params }: Props) {
     ? await db.select().from(schema.geographies).where(eq(schema.geographies.id, g.parentId)).limit(1)
     : [null];
 
+  const hasLip = await landscapeHasLip(slug);
+
   // Programmes in the same state
   const stateEntries = state
     ? await db
@@ -49,8 +53,8 @@ export default async function LandscapeDetailPage({ params }: Props) {
     : [];
 
   return (
-    <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-20 pb-24">
-      <header className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
+    <article className="pt-10 sm:pt-14 lg:pt-20 pb-24">
+      <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
         <div className="reveal-stagger">
           <div className="flex items-center gap-3 mb-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <Link href="/landscapes" className="hover:text-teal-soft">
@@ -83,8 +87,22 @@ export default async function LandscapeDetailPage({ params }: Props) {
           </FactRow>
           <FactRow label="State">{state?.name ?? g.stateCode}</FactRow>
           <FactRow label="Region">{p.region}</FactRow>
+          {hasLip && (
+            <Link
+              href={`/landscape/${slug}/ask`}
+              className="mt-4 inline-block px-4 py-2.5 bg-deep-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-[2px] hover:bg-teal transition-colors text-center"
+            >
+              Ask {p.name} →
+            </Link>
+          )}
         </aside>
       </header>
+
+      <div className="mt-8 lg:mt-12">
+        <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} />
+      </div>
+
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
 
       {/* Quick facts strip */}
       <section className="mt-12 lg:mt-16 grid grid-cols-2 md:grid-cols-4 border-y border-line">
@@ -182,6 +200,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
           </a>
         </span>
       </footer>
+      </div>
     </article>
   );
 }

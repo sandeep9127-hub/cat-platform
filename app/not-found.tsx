@@ -25,7 +25,7 @@ export default function NotFound() {
             href="/map"
             className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
           >
-            Browse the atlas
+            Browse the Solutions Atlas
           </Link>
           <Link
             href="/resources"
