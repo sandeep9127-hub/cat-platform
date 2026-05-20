@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "CAT Platform — A dashboard for sustainable food systems";
+export const alt = "Transformation Hub, by the Consortium for Agroecological Transformations. A dashboard for sustainable food systems.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -33,7 +33,7 @@ export default function OpengraphImage() {
           </svg>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ color: "#1A2625", fontSize: 26, lineHeight: 1, letterSpacing: "-0.01em" }}>
-              CAT <span style={{ color: "#2E7573", fontStyle: "italic" }}>Platform</span>
+              Transformation <span style={{ color: "#2E7573", fontStyle: "italic" }}>Hub</span>
             </span>
             <span
               style={{
