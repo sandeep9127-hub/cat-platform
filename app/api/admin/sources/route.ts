@@ -6,8 +6,11 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const url = String(form.get("url") ?? "").trim();
-  const sourceType = String(form.get("source_type") ?? "other") as schema.SourceRegistry extends never ? never : "gov_site";
-  const trustTier = String(form.get("trust_tier") ?? "tier_2_trusted") as "tier_1_authoritative";
+  const sourceType = String(form.get("source_type") ?? "other") as
+    | "gov_site" | "ngo_site" | "research_inst" | "foundation"
+    | "news_outlet" | "partner_report" | "other";
+  const trustTier = String(form.get("trust_tier") ?? "tier_2_trusted") as
+    | "tier_1_authoritative" | "tier_2_trusted" | "tier_3_emerging";
 
   if (!url) {
     return NextResponse.redirect(new URL("/admin/sources?error=missing-url", req.url));
@@ -23,8 +26,8 @@ export async function POST(req: NextRequest) {
     .insert(schema.sourceRegistry)
     .values({
       url,
-      sourceType: sourceType as never,
-      trustTier: trustTier as never,
+      sourceType,
+      trustTier,
       crawlFrequencyDays: 7,
     })
     .onConflictDoNothing({ target: schema.sourceRegistry.url });

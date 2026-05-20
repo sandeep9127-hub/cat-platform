@@ -1,6 +1,8 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 60;
 export const metadata = {
   title: "News",

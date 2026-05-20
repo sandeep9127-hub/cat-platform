@@ -4,6 +4,8 @@ import { db, schema } from "@/lib/db";
 import { searchEntries, type SearchHit } from "@/lib/db/search";
 import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 30;
 export const metadata = {
   title: "Search",

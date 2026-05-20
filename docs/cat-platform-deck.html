@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CAT Platform — Team Review Deck · v1, May 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --deep-teal:#334B4A;--teal:#2E7573;--teal-soft:#95B1AF;--teal-pale:#B8CCCA;--teal-wash:#E1EDE8;
+  --periwinkle-deep:#5E6990;--periwinkle:#929CC5;--periwinkle-soft:#AFBADC;--periwinkle-pale:#C0CCE9;--periwinkle-wash:#D0DAEF;
+  --rose:#C68F95;--peach:#F8A07B;--amber:#F8CA7C;--amber-deep:#D9A655;
+  --cream:#F8F4ED;--paper:#FBF8F2;--ink:#1A2625;--ink-soft:#3D4E4D;--muted:#6B7B7A;
+  --line:#DDE0DA;--line-soft:#E8E5DD;--red-alert:#B85042;
+  --serif:'Fraunces',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#2a2422;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;padding:24px 0}
+.deck{display:flex;flex-direction:column;gap:24px;align-items:center}
+
+/* SLIDE: 1920×1080 (16:9), printed full bleed */
+.slide{
+  width:1920px;height:1080px;
+  background:var(--paper);position:relative;overflow:hidden;
+  font-family:var(--sans);page-break-after:always;break-after:page;
+  display:grid;
+  padding:80px 96px;
+}
+.slide::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity:.35;mix-blend-mode:multiply;
+}
+.slide > *{position:relative;z-index:1}
+
+/* Common slide chrome */
+.slide-no{
+  position:absolute;top:48px;right:80px;font-family:var(--mono);font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+}
+.brand-strip{
+  position:absolute;top:48px;left:80px;display:flex;gap:12px;align-items:center;
+}
+.brand-glyph{
+  width:32px;height:32px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--amber) 0%,var(--amber-deep) 60%,#9c7530 100%);
+  position:relative;
+}
+.brand-glyph::after{
+  content:"";position:absolute;inset:6px;border-radius:50%;
+  background:radial-gradient(circle at 60% 60%,transparent 30%,rgba(44,69,68,0.55) 60%,var(--deep-teal) 100%);
+}
+.brand-mark{
+  font-family:var(--serif);font-size:18px;font-weight:500;letter-spacing:-.01em;
+}
+.brand-mark em{color:var(--teal);font-style:italic;font-weight:400}
+.bottom-rail{
+  position:absolute;bottom:48px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);
+}
+.bottom-rail::before,.bottom-rail::after{content:"";}
+.bottom-rail .amber-tick{display:inline-block;width:32px;height:2px;background:var(--amber);margin-right:14px;vertical-align:middle}
+
+/* Typography ramp */
+.eyebrow{font-family:var(--mono);font-size:18px;text-transform:uppercase;letter-spacing:.18em;color:var(--teal);font-weight:600}
+.h-hero{font-family:var(--serif);font-weight:400;font-size:140px;line-height:1.02;letter-spacing:-.025em;color:var(--ink)}
+.h-hero em{font-style:italic;color:var(--teal);font-weight:400}
+.h-hero .amber{font-style:italic;color:var(--amber-deep)}
+.h-section{font-family:var(--serif);font-weight:400;font-size:88px;line-height:1.05;letter-spacing:-.022em;color:var(--ink)}
+.h-section em{font-style:italic;color:var(--teal);font-weight:400}
+.h-title{font-family:var(--serif);font-weight:500;font-size:64px;line-height:1.1;letter-spacing:-.015em;color:var(--ink)}
+.h-title em{font-style:italic;color:var(--teal);font-weight:400}
+.tagline{font-family:var(--serif);font-style:italic;font-size:32px;color:var(--ink-soft);line-height:1.45;font-weight:300;max-width:32ch}
+.body-lg{font-family:var(--serif);font-size:24px;line-height:1.6;color:var(--ink-soft);max-width:56ch}
+.body{font-family:var(--serif);font-size:20px;line-height:1.6;color:var(--ink-soft);max-width:62ch}
+.meta{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.meta-amber{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.14em;color:var(--amber-deep);font-weight:600}
+
+/* Layouts */
+.cover{align-content:center;justify-items:start;gap:36px}
+.cover .h-hero{font-size:170px}
+.cover .eyebrow{font-size:20px}
+.cover .tagline{font-size:36px;max-width:28ch}
+
+.split-2{grid-template-columns:1.2fr 0.8fr;column-gap:80px;align-content:center}
+.split-2 .left{display:flex;flex-direction:column;gap:36px;align-self:center}
+.split-2 .right{display:flex;flex-direction:column;gap:24px;align-self:center;border-left:1px solid var(--line);padding-left:48px}
+
+.list-rules{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:18px}
+.list-rules li{font-family:var(--serif);font-size:24px;line-height:1.4;color:var(--ink);padding-left:24px;position:relative}
+.list-rules li::before{content:"";position:absolute;left:0;top:.55em;width:12px;height:1px;background:var(--amber-deep)}
+
+.list-num{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:24px}
+.list-num li{display:grid;grid-template-columns:64px 1fr;gap:24px;align-items:baseline}
+.list-num li .n{font-family:var(--mono);font-size:18px;color:var(--amber-deep);letter-spacing:.16em;font-weight:600;border-top:2px solid var(--amber-deep);padding-top:8px}
+.list-num li .body-item{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink)}
+.list-num li .body-item strong{color:var(--ink);font-weight:600}
+.list-num li .body-item .light{color:var(--ink-soft);font-weight:400}
+
+/* Screenshot slide: full-bleed image with caption */
+.slide.shot{padding:0;background:var(--cream)}
+.slide.shot .img-wrap{
+  position:absolute;inset:96px 80px 156px 80px;border:1px solid var(--line);border-radius:2px;overflow:hidden;
+  background:var(--paper);
+}
+.slide.shot .img-wrap img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.slide.shot .caption{position:absolute;bottom:48px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:baseline}
+.slide.shot .caption .label{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+.slide.shot .caption .title{font-family:var(--serif);font-size:28px;color:var(--ink);font-weight:500}
+.slide.shot .caption .title em{color:var(--teal);font-style:italic;font-weight:400}
+
+/* Mobile collage */
+.slide.collage{padding:96px 80px 156px}
+.slide.collage .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;height:calc(100% - 80px);align-items:end}
+.slide.collage .phone{
+  background:var(--paper);border:1px solid var(--line);border-radius:24px;overflow:hidden;
+  aspect-ratio:9/19.5;box-shadow:0 12px 32px -16px rgba(44,69,68,.3);
+}
+.slide.collage .phone img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.slide.collage .caption-row{margin-top:48px;display:flex;justify-content:space-between;align-items:baseline}
+
+/* Section divider */
+.slide.divider{background:var(--deep-teal);color:var(--cream);align-content:center;justify-items:start}
+.slide.divider::before{opacity:.15}
+.slide.divider .eyebrow{color:var(--amber)}
+.slide.divider .h-section{color:var(--cream);font-size:160px}
+.slide.divider .h-section em{color:var(--amber)}
+.slide.divider .bottom-rail{color:rgba(248,244,237,.6)}
+.slide.divider .brand-mark{color:var(--cream)}
+
+/* Three columns (levers, audiences, etc.) */
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;margin-top:64px}
+.col-card{display:flex;flex-direction:column;gap:18px;padding-top:24px;border-top:2px solid var(--amber-deep)}
+.col-card .col-num{font-family:var(--mono);font-size:14px;letter-spacing:.18em;color:var(--amber-deep);font-weight:600}
+.col-card .col-title{font-family:var(--serif);font-size:48px;font-weight:500;color:var(--deep-teal);letter-spacing:-.01em;line-height:1.05}
+.col-card .col-body{font-family:var(--serif);font-size:18px;line-height:1.55;color:var(--ink-soft)}
+
+/* Four cols (audiences) */
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:64px}
+.four-col .col-card .col-title{font-size:32px;line-height:1.15}
+
+/* Landscapes grid 4×3 */
+.landscape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:48px}
+.landscape-grid .cell{background:var(--cream);padding:24px 22px;min-height:150px;display:flex;flex-direction:column;gap:10px}
+.landscape-grid .cell .num{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--muted);display:flex;justify-content:space-between}
+.landscape-grid .cell .num .state{color:var(--amber-deep);font-weight:600}
+.landscape-grid .cell h3{font-family:var(--serif);font-size:24px;font-weight:500;color:var(--ink);line-height:1.1;letter-spacing:-.01em}
+.landscape-grid .cell .gloss{font-family:var(--serif);font-size:14px;color:var(--ink-soft);line-height:1.45}
+
+/* Editorial loop diagram */
+.loop{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr;align-items:stretch;gap:0;margin-top:64px}
+.loop .node{
+  background:var(--cream);border:1px solid var(--line);padding:32px 28px;border-radius:2px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.loop .node .n-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--amber-deep);font-weight:600}
+.loop .node .n-title{font-family:var(--serif);font-size:32px;font-weight:500;color:var(--deep-teal);line-height:1.1}
+.loop .node .n-body{font-family:var(--serif);font-size:16px;line-height:1.45;color:var(--ink-soft)}
+.loop .arrow{
+  align-self:center;width:24px;height:1px;background:var(--amber-deep);position:relative;
+}
+.loop .arrow::after{content:"";position:absolute;right:-4px;top:-3px;width:0;height:0;border-left:6px solid var(--amber-deep);border-top:3.5px solid transparent;border-bottom:3.5px solid transparent}
+.loop-foot{margin-top:32px;display:flex;gap:24px;justify-content:center;align-items:center;color:var(--muted);font-family:var(--mono);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
+
+/* Stack table */
+.stack-table{margin-top:48px;display:grid;grid-template-columns:280px 1fr 1fr;gap:0;border-top:1px solid var(--line)}
+.stack-table > div{padding:18px 0;border-bottom:1px solid var(--line-soft);font-family:var(--serif);font-size:18px;line-height:1.45}
+.stack-table > div:nth-child(3n+1){font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;font-size:13px;color:var(--muted);padding-right:32px;align-self:center}
+.stack-table > div:nth-child(3n+2){color:var(--ink);font-weight:500;padding-right:32px}
+.stack-table > div:nth-child(3n+3){color:var(--ink-soft);font-size:16px}
+
+/* MVP / Production checklists */
+.check-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:48px;margin-top:48px}
+.check-cols .col{display:flex;flex-direction:column;gap:18px}
+.check-cols .col h4{font-family:var(--mono);font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-deep);font-weight:600;border-top:2px solid var(--amber-deep);padding-top:10px;margin-bottom:4px}
+.check-cols .col ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.check-cols .col li{font-family:var(--serif);font-size:18px;line-height:1.4;color:var(--ink-soft);padding-left:20px;position:relative}
+.check-cols .col li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;border:1.5px solid var(--teal);border-radius:1px}
+
+/* Architectural-questions slide */
+.arch-q{display:flex;flex-direction:column;gap:48px;margin-top:48px}
+.arch-q .q{display:grid;grid-template-columns:80px 1fr;gap:32px;align-items:start}
+.arch-q .q .num{font-family:var(--serif);font-style:italic;font-size:80px;color:var(--amber-deep);line-height:1;font-weight:300}
+.arch-q .q .body-q .q-title{font-family:var(--serif);font-size:38px;font-weight:500;color:var(--ink);line-height:1.15;letter-spacing:-.015em}
+.arch-q .q .body-q .q-now{font-family:var(--serif);font-size:18px;color:var(--ink-soft);margin-top:8px;font-style:italic}
+.arch-q .q .body-q .q-alt{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-top:12px;font-weight:600}
+
+/* Q&A end slide */
+.slide.end{background:var(--deep-teal);color:var(--cream);align-content:center;justify-items:center;text-align:center}
+.slide.end .h-hero{color:var(--cream);font-size:160px}
+.slide.end .h-hero em{color:var(--amber)}
+.slide.end .meta{color:rgba(248,244,237,.6)}
+.slide.end .brand-mark,.slide.end .bottom-rail{color:var(--cream)}
+
+@media print{
+  body{background:white;padding:0}
+  .deck{gap:0}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 01 COVER -->
+<section class="slide cover">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">01 · cover</div>
+  <span class="eyebrow">Team review · Vol. 01 · Edition 2026</span>
+  <h1 class="h-hero">CAT <em>Platform</em>.<br/>A dashboard for <em>sustainable</em><br/>food systems.</h1>
+  <p class="tagline">An editorial record of credible food-systems work in India. Curated by CAT. Open to anyone serious about food.</p>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Status: live local build · ready for soft-launch decisions</span><span>14 May 2026</span></div>
+</section>
+
+<!-- 02 WHAT IT IS -->
+<section class="slide split-2">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">02 · what it is</div>
+  <div class="left">
+    <span class="eyebrow">What this is</span>
+    <h2 class="h-section">A publication, not a <em>directory</em>.</h2>
+    <p class="body-lg">The Platform documents programmes that are actually changing how India grows, eats, and sustains. Programmes are read, not pitched. Limitations sit beside achievements. Curated by CAT, open to the broader food-systems fraternity.</p>
+  </div>
+  <div class="right">
+    <span class="eyebrow">In one line</span>
+    <p class="body">A collaborative platform working to enable agroecological transformation at scale across India — surfaced for funders, NGOs, researchers, and policy actors as a single, defensible reading surface.</p>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Curated, not crowdsourced</span><span>Programme level, not activity level</span></div>
+</section>
+
+<!-- 03 WHAT IT IS NOT -->
+<section class="slide split-2">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">03 · what it is not</div>
+  <div class="left">
+    <span class="eyebrow">What this is NOT</span>
+    <h2 class="h-section">Not a tool. Not a <em>marketing site</em>.</h2>
+    <ul class="list-rules" style="margin-top:32px">
+      <li>Not an internal project-management tool. CAT does not run its operations from here.</li>
+      <li>Not a GIS platform. The map is an editorial illustration that happens to be data-accurate, never a survey-grade GIS.</li>
+      <li>Not a CAT marketing site. CAT is the editor, not the subject.</li>
+      <li>Not a national authority. It is CAT's contribution to the food-systems fraternity.</li>
+      <li>Not a volume-driven directory. Curation is the win condition, not scale.</li>
+    </ul>
+  </div>
+  <div class="right">
+    <span class="eyebrow">The reflex-reject</span>
+    <p class="body">It must not look like a SaaS dashboard, an observability tool, a Notion page, a Medium article, a generic Tailwind starter, an AI-chat product, or a fintech landing page. It is an editorial publication: <em>The Atlantic</em> meets <em>Our World in Data</em> meets <em>Stripe Press</em>.</p>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Anti-aesthetic discipline</span><span>03 / 22</span></div>
+</section>
+
+<!-- 04 WHO IT IS FOR -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">04 · audience</div>
+  <span class="eyebrow">Who it's for, in priority order</span>
+  <h2 class="h-section" style="margin-top:24px">When choices conflict, we design for <em>funders first</em>.</h2>
+  <div class="four-col">
+    <div class="col-card">
+      <span class="col-num">01 · primary</span>
+      <h3 class="col-title">Funders and their advisors</h3>
+      <p class="col-body">Quick-glance, link-driven, never register. Treat them like senior readers who arrived from a meeting.</p>
+    </div>
+    <div class="col-card">
+      <span class="col-num">02</span>
+      <h3 class="col-title">NGOs and programme designers</h3>
+      <p class="col-body">Use it for cross-learning. Will read deeply. Will care about "what did not work" more than headlines.</p>
+    </div>
+    <div class="col-card">
+      <span class="col-num">03</span>
+      <h3 class="col-title">Researchers, journalists</h3>
+      <p class="col-body">Follow citations and resources. Need shareable, citable URLs and downloadable references.</p>
+    </div>
+    <div class="col-card">
+      <span class="col-num">04</span>
+      <h3 class="col-title">Government and policy</h3>
+      <p class="col-body">Light usage. Occasional deep dive when a state mission overlaps with their brief.</p>
+    </div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Funders never register</span><span>04 / 22</span></div>
+</section>
+
+<!-- 05 STANDING RULES -->
+<section class="slide split-2">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">05 · standing rules</div>
+  <div class="left">
+    <span class="eyebrow">Standing rules · non-negotiable</span>
+    <h2 class="h-section">The bar is <em>honesty</em>, not affiliation.</h2>
+    <ul class="list-rules" style="margin-top:40px">
+      <li>Curated, not crowdsourced.</li>
+      <li>Programme level, never activity level.</li>
+      <li>&ldquo;What did not work&rdquo; is required design infrastructure.</li>
+      <li>AI scales production; editors decide what publishes.</li>
+      <li>Funders never register.</li>
+      <li>Honest provenance, public last-reviewed dates.</li>
+      <li>The map is not GIS.</li>
+      <li>Plain language. No marketing words. No em dashes.</li>
+    </ul>
+  </div>
+  <div class="right">
+    <span class="eyebrow">Voice examples</span>
+    <p class="body" style="margin-top:24px">✓ &ldquo;Find the work that is actually changing how India grows, eats, and sustains.&rdquo;</p>
+    <p class="body" style="color:var(--red-alert);font-style:italic">✗ &ldquo;Discover transformative initiatives reshaping Indian food systems.&rdquo;</p>
+    <p class="body" style="margin-top:32px">✓ &ldquo;Yield comparisons in the first two years over-promised. The team now thinks four years is too short for a defensible carbon claim.&rdquo;</p>
+    <p class="body" style="color:var(--red-alert);font-style:italic">✗ &ldquo;We encountered some challenges around our soil regeneration KPIs.&rdquo;</p>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Voice over jargon</span><span>05 / 22</span></div>
+</section>
+
+<!-- 06 DIVIDER: WHAT WE BUILT -->
+<section class="slide divider">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no" style="color:rgba(248,244,237,.6)">06 · section</div>
+  <span class="eyebrow">Section II</span>
+  <h2 class="h-section">What we <em>built</em>.</h2>
+  <p class="body-lg" style="color:rgba(248,244,237,.85);margin-top:24px">A live local build with the full v1 surface area: editorial landing, atlas, entry detail with four narrative blocks, themes, organisations, eleven landscapes, news, resources, search, agent preview, admin desk, and contribution flow. Real CAT brand palette + official logo + ten thematic SVG icons.</p>
+  <div class="bottom-rail" style="color:rgba(248,244,237,.6)"><span><span class="amber-tick"></span>Real screenshots follow</span><span>06 / 22</span></div>
+</section>
+
+<!-- 07 SHOT: LANDING HERO -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">07 · landing</div>
+  <div class="img-wrap"><img src="./deck-assets/01-landing-hero.png" alt="Landing page hero" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · 1440 wide · Fraunces + Inter</div>
+      <div class="title">The landing — <em>hero</em> + editor&apos;s note</div>
+    </div>
+    <div class="label">07 / 22</div>
+  </div>
+</section>
+
+<!-- 08 SHOT: STATS + ENDORSEMENT LEGEND -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">08 · stats</div>
+  <div class="img-wrap"><img src="./deck-assets/02-landing-stats.png" alt="Stat strip + endorsement legend" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · live DB counts</div>
+      <div class="title">Stat strip + <em>endorsement legend</em></div>
+    </div>
+    <div class="label">08 / 22</div>
+  </div>
+</section>
+
+<!-- 09 SHOT: ATLAS -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">09 · atlas</div>
+  <div class="img-wrap"><img src="./deck-assets/03-landing-atlas.png" alt="Atlas with India map and entry list" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · d3-geo projection · halos = scale band</div>
+      <div class="title">The atlas — <em>map + entry list</em>, filterable</div>
+    </div>
+    <div class="label">09 / 22</div>
+  </div>
+</section>
+
+<!-- 10 SHOT: THEMES GRID -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">10 · themes</div>
+  <div class="img-wrap"><img src="./deck-assets/04-landing-themes.png" alt="Eight themes grid with icons" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · eight themes · hand-drawn SVG icons</div>
+      <div class="title">Read by <em>theme</em></div>
+    </div>
+    <div class="label">10 / 22</div>
+  </div>
+</section>
+
+<!-- 11 SHOT: FEATURED ENTRY -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">11 · featured</div>
+  <div class="img-wrap"><img src="./deck-assets/05-landing-featured-entry.png" alt="Featured programme block" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · all four narrative blocks visible</div>
+      <div class="title">Featured programme — APCNF, with <em>what did not work</em></div>
+    </div>
+    <div class="label">11 / 22</div>
+  </div>
+</section>
+
+<!-- 12 SHOT: FOOTER -->
+<section class="slide shot">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">12 · footer</div>
+  <div class="img-wrap"><img src="./deck-assets/06-landing-footer.png" alt="Editorial footer" /></div>
+  <div class="caption">
+    <div>
+      <div class="label">Real screenshot · deep teal + amber rule</div>
+      <div class="title">Footer — &ldquo;A quiet, <em>honest</em> record&rdquo;</div>
+    </div>
+    <div class="label">12 / 22</div>
+  </div>
+</section>
+
+<!-- 13 MOBILE COLLAGE -->
+<section class="slide collage">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">13 · mobile</div>
+  <span class="eyebrow">Mobile — first-class, not an afterthought</span>
+  <h2 class="h-title" style="margin-top:16px">The whole publication, <em>in the hand</em>.</h2>
+  <div class="grid" style="margin-top:48px">
+    <div class="phone"><img src="./deck-assets/60-mobile-hero.png" alt="Mobile landing hero" /></div>
+    <div class="phone"><img src="./deck-assets/61-mobile-atlas.png" alt="Mobile atlas" /></div>
+    <div class="phone"><img src="./deck-assets/62-mobile-entries.png" alt="Mobile entry list" /></div>
+    <div class="phone"><img src="./deck-assets/63-mobile-themes.png" alt="Mobile themes" /></div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>375px responsive, no compromises</span><span>13 / 22</span></div>
+</section>
+
+<!-- 14 ELEVEN LANDSCAPES -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">14 · landscapes</div>
+  <span class="eyebrow">CAT's focus landscapes</span>
+  <h2 class="h-section" style="margin-top:16px">Eleven <em>landscapes</em>. One approach.</h2>
+  <div class="landscape-grid">
+    <div class="cell"><div class="num"><span>No. 01 / 11</span><span class="state">GJ</span></div><h3>Ahwa</h3><div class="gloss">Dang tribal belt in Gujarat. Forest-fringe agriculture and minor millets.</div></div>
+    <div class="cell"><div class="num"><span>No. 02 / 11</span><span class="state">OD</span></div><h3>Chitrakonda</h3><div class="gloss">Malkangiri tribal block. Millet revival in cut-off areas.</div></div>
+    <div class="cell"><div class="num"><span>No. 03 / 11</span><span class="state">CG</span></div><h3>Dantewada</h3><div class="gloss">Bastar tribal heartland. Forest-foods and natural farming.</div></div>
+    <div class="cell"><div class="num"><span>No. 04 / 11</span><span class="state">MH</span></div><h3>Dharashiv</h3><div class="gloss">Drought-prone Marathwada. Soil moisture and farmer collectives.</div></div>
+    <div class="cell"><div class="num"><span>No. 05 / 11</span><span class="state">ML</span></div><h3>Khatarshnong Laitkroh</h3><div class="gloss">East Khasi Hills. Shifting cultivation and forest livelihoods.</div></div>
+    <div class="cell"><div class="num"><span>No. 06 / 11</span><span class="state">UP</span></div><h3>Mau</h3><div class="gloss">Eastern UP. Smallholder rice-wheat with diversification entry points.</div></div>
+    <div class="cell"><div class="num"><span>No. 07 / 11</span><span class="state">HP</span></div><h3>Pangi</h3><div class="gloss">High-altitude tribal valley. Cold-desert farming, apple economies.</div></div>
+    <div class="cell"><div class="num"><span>No. 08 / 11</span><span class="state">WB</span></div><h3>Patharpratima</h3><div class="gloss">Sundarbans delta. Salt-tolerant systems and aquaculture rotations.</div></div>
+    <div class="cell"><div class="num"><span>No. 09 / 11</span><span class="state">JH</span></div><h3>Patratu</h3><div class="gloss">Damodar valley. Mine-fringe rehabilitation and tribal landscapes.</div></div>
+    <div class="cell"><div class="num"><span>No. 10 / 11</span><span class="state">MP</span></div><h3>Rajnagar</h3><div class="gloss">Bundelkhand. Water-stressed dryland with millet potential.</div></div>
+    <div class="cell"><div class="num"><span>No. 11 / 11</span><span class="state">AP</span></div><h3>Vempalli</h3><div class="gloss">Rayalaseema. Semi-arid horticulture and natural-farming clusters.</div></div>
+    <div class="cell" style="background:var(--deep-teal);color:var(--amber)"><div class="num" style="color:rgba(248,202,124,.7)"><span>Live</span><span>Block-level</span></div><h3 style="color:var(--amber)">Place-based, <em style="color:var(--paper);font-style:italic">not prescriptive</em></h3><div class="gloss" style="color:rgba(248,244,237,.75)">Each landscape: 7-year horizon. Coordinated services, institutions, and finance.</div></div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Block-level admin units · selected for ecological + social + institutional reasons</span><span>14 / 22</span></div>
+</section>
+
+<!-- 15 THREE LEVERS -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">15 · levers</div>
+  <span class="eyebrow">CAT's strategic frame · surfaced on /about + every landscape</span>
+  <h2 class="h-section" style="margin-top:16px">Three <em>levers</em> for change.</h2>
+  <p class="body-lg" style="margin-top:24px">CAT enables agroecological transformation by aligning three levers — policy, markets, and finance — to support community-led adoption and long-term transitions.</p>
+  <div class="three-col">
+    <div class="col-card">
+      <span class="col-num">01</span>
+      <h3 class="col-title">Policy</h3>
+      <p class="col-body">Schemes that work for smallholders. Regulation that opens space for agroecology. Institutions that hold the system together over many years.</p>
+    </div>
+    <div class="col-card" style="border-color:var(--teal)">
+      <span class="col-num" style="color:var(--teal)">02</span>
+      <h3 class="col-title" style="color:var(--teal)">Markets</h3>
+      <p class="col-body">Procurement at fair prices. Processing and aggregation that earn the producer a margin. Traceability that survives the broker chain.</p>
+    </div>
+    <div class="col-card" style="border-color:var(--amber-deep)">
+      <span class="col-num">03</span>
+      <h3 class="col-title" style="color:var(--amber-deep)">Finance</h3>
+      <p class="col-body">Patient capital. Blended financing for landscape-scale work. Working-capital instruments built around farmer-collective realities, not commercial banking norms.</p>
+    </div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>7-year horizon per landscape</span><span>15 / 22</span></div>
+</section>
+
+<!-- 16 EDITORIAL AI LOOP -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">16 · loop</div>
+  <span class="eyebrow">How an entry gets from a public source to a published page</span>
+  <h2 class="h-section" style="margin-top:16px">The <em>human-AI</em> editorial loop.</h2>
+  <div class="loop">
+    <div class="node"><span class="n-eyebrow">01 · weekly</span><h3 class="n-title">Source registry</h3><p class="n-body">80-150 curated trusted URLs (state agri depts, NABARD/IFAD, partner reports). Crawled, hashed, diffed.</p></div>
+    <div class="arrow"></div>
+    <div class="node"><span class="n-eyebrow">02 · weekly</span><h3 class="n-title">Discovery agent</h3><p class="n-body">Claude with web search, allowlisted to .gov.in / .org / news. Surfaces new candidate programmes.</p></div>
+    <div class="arrow"></div>
+    <div class="node"><span class="n-eyebrow">03 · on demand</span><h3 class="n-title">Draft writer</h3><p class="n-body">Kimi reads sources, drafts the five narrative blocks with citation anchors. Editor sees source ↔ draft side-by-side.</p></div>
+    <div class="arrow"></div>
+    <div class="node" style="background:var(--deep-teal);color:var(--amber)"><span class="n-eyebrow" style="color:var(--amber)">04 · CAT editor</span><h3 class="n-title" style="color:var(--amber)">Approval</h3><p class="n-body" style="color:rgba(248,244,237,.85)">Nothing publishes without a human approval. Every change recorded in entry_revisions.</p></div>
+  </div>
+  <div class="loop-foot"><span class="amber-tick"></span>Daily freshness sweep: detects source change, flags entry needs_update, never edits public prose silently<span class="amber-tick"></span></div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>AI scales production · editors decide what publishes</span><span>16 / 22</span></div>
+</section>
+
+<!-- 17 TECH STACK -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">17 · stack</div>
+  <span class="eyebrow">Locked decisions</span>
+  <h2 class="h-section" style="margin-top:16px">The <em>stack</em> in one page.</h2>
+  <div class="stack-table">
+    <div>Framework</div><div>Next.js 15 App Router · TypeScript strict · Tailwind v3</div><div>SSR for SEO on entries, single repo for frontend + API</div>
+    <div>Database</div><div>Supabase Postgres · isolated <code>cat</code> schema</div><div>ap-south-1 Mumbai region. Dedicated cat_user role, scoped.</div>
+    <div>ORM</div><div>Drizzle ORM + <code>pg</code> driver</div><div>Type-safe schema-as-code. <code>pg</code> chosen for IPv6 support.</div>
+    <div>Primary LLM</div><div>Kimi K2.6 via NVIDIA's hosted API</div><div>Free tier. Powers /agent preview + draft writer.</div>
+    <div>Secondary LLM</div><div>Anthropic Claude Sonnet 4.6</div><div>Only for the discovery agent — needs web_search tool.</div>
+    <div>Auth</div><div>Auth.js magic-link via Resend</div><div>No passwords. Role flag on user (reader / contributor / editor / admin).</div>
+    <div>Search</div><div>Postgres FTS + GIN index · pgvector ready</div><div>No Elasticsearch, no Algolia. Semantic synthesis is v2.</div>
+    <div>Map</div><div>Custom SVG · real Datameet/jbrobst admin-1 GeoJSON · d3-geo</div><div>No Leaflet, no Mapbox. Illustrative, not GIS.</div>
+    <div>Hosting</div><div>Vercel + cron schedules</div><div>Single platform. Cron fires registry / discovery / freshness jobs.</div>
+    <div>Cost</div><div>Free tiers across the board for v1</div><div>Supabase free · Vercel free · Kimi free · only Anthropic paid for discovery.</div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Schema discipline · 18 entities · ingestion + agent + revisions covered</span><span>17 / 22</span></div>
+</section>
+
+<!-- 18 MANUAL MVP -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">18 · MVP</div>
+  <span class="eyebrow">Where we are · pending for the manual MVP (2-3 weeks)</span>
+  <h2 class="h-section" style="margin-top:16px">What still <em>blocks launch</em>?</h2>
+  <p class="body" style="margin-top:24px">Putting a real URL in front of funders this month, with editors doing curation by hand. Mostly content + deployment, not engineering.</p>
+  <div class="check-cols" style="grid-template-columns:repeat(3,1fr);gap:32px">
+    <div class="col">
+      <h4>Hosting + Auth</h4>
+      <ul>
+        <li>Domain decision + Vercel + env vars</li>
+        <li>Auth.js magic-link wired (replace dev bypass)</li>
+        <li>Resend DNS for emails</li>
+        <li>HTTPS + sitemap + robots</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Content + Brand</h4>
+      <ul>
+        <li>20-30 launch entries (currently 5)</li>
+        <li>Real cover photos + org logos</li>
+        <li>3 landscape detail pages with LIP links</li>
+        <li>Favicon, OG image, Twitter card</li>
+        <li>Privacy, terms, contact pages</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>QA + Decisions</h4>
+      <ul>
+        <li>Browser matrix (Chrome/Safari/Firefox/Mobile)</li>
+        <li>Lighthouse ≥ 90/95/95/95</li>
+        <li>Plausible + Sentry wired</li>
+        <li>Resolve 3 architectural questions</li>
+        <li>Soft-launch to 10-15 partners</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Engineering is mostly done · content + deploy is the bottleneck</span><span>18 / 22</span></div>
+</section>
+
+<!-- 19 FULL PRODUCTION -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">19 · production</div>
+  <span class="eyebrow">Where we are · pending for full production (8-12 weeks)</span>
+  <h2 class="h-section" style="margin-top:16px">What makes the loop <em>run itself</em>?</h2>
+  <div class="check-cols" style="grid-template-columns:repeat(3,1fr);gap:32px">
+    <div class="col">
+      <h4>Automation live</h4>
+      <ul>
+        <li>Weekly registry crawl firing on Vercel cron</li>
+        <li>Weekly discovery agent yielding candidates</li>
+        <li>Daily freshness sweep flagging stale entries</li>
+        <li>Cost alerts + auto-deactivate dead sources</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>AI maturity</h4>
+      <ul>
+        <li>pgvector embedding pipeline live</li>
+        <li>Semantic synthesis paragraph on /search</li>
+        <li>Full v2 conversational agent (multi-turn, exportable)</li>
+        <li>Funder portfolio gap analysis flow</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Scale + polish</h4>
+      <ul>
+        <li>Real landscape polygons + river-basin overlays</li>
+        <li>Funder PDF brief builder</li>
+        <li>Hindi UI (next-intl)</li>
+        <li>Public read-only API + RSS feed</li>
+        <li>External a11y + security audit</li>
+        <li>Federation with Bharat Agroecology Tracker</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Mostly automation + content scale · architecture is locked</span><span>19 / 22</span></div>
+</section>
+
+<!-- 20 ARCHITECTURAL QUESTIONS PARKED -->
+<section class="slide">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">20 · open questions</div>
+  <span class="eyebrow">Parked from the impeccable audit · need a decision before public launch</span>
+  <h2 class="h-section" style="margin-top:16px">Three <em>architectural</em> questions.</h2>
+  <div class="arch-q">
+    <div class="q">
+      <div class="num">i.</div>
+      <div class="body-q">
+        <div class="q-title">Lead with one entry of the edition, or with the list?</div>
+        <div class="q-now">Now: list + atlas. Alternative: single hero entry, atlas demoted.</div>
+        <div class="q-alt">Affects landing IA</div>
+      </div>
+    </div>
+    <div class="q">
+      <div class="num">ii.</div>
+      <div class="body-q">
+        <div class="q-title">Is the atlas centre-of-gravity, or supporting view?</div>
+        <div class="q-now">Now: co-equal with entry list on landing. Alternative: demote to /map, recover landing column for editorial copy.</div>
+        <div class="q-alt">Affects what the landing IS</div>
+      </div>
+    </div>
+    <div class="q">
+      <div class="num">iii.</div>
+      <div class="body-q">
+        <div class="q-title">Should &ldquo;what did not work&rdquo; be first, not fifth?</div>
+        <div class="q-now">Now: fifth narrative block. Alternative: lead each entry with the honest limitation as a brand signal.</div>
+        <div class="q-alt">Affects what every entry IS</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Decide together · revise before launch · A/B-able after</span><span>20 / 22</span></div>
+</section>
+
+<!-- 21 PRD POINTER -->
+<section class="slide split-2">
+  <div class="brand-strip"><span class="brand-glyph"></span><span class="brand-mark">CAT <em>Platform</em></span></div>
+  <div class="slide-no">21 · PRD-as-questions</div>
+  <div class="left">
+    <span class="eyebrow">For the deeper walkthrough</span>
+    <h2 class="h-section">Every decision, <em>reverse-engineered</em> as a question.</h2>
+    <p class="body-lg" style="margin-top:32px">A companion PRD-questions doc enumerates every locked decision (positioning, content sourcing, AI authoring depth, freshness, endorsement tiers, map fidelity, palette, motion, three levers, eleven landscapes, etc.) and phrases each one back as a question for the team to confirm or revise.</p>
+    <p class="meta-amber" style="margin-top:32px">docs/PRD-questions.md · 14 sections · ~40 decisions</p>
+  </div>
+  <div class="right">
+    <span class="eyebrow">Sample questions inside</span>
+    <ul class="list-rules" style="margin-top:24px;font-size:18px">
+      <li>Should the v1 release be the full surface or a slimmer read-only set?</li>
+      <li>How deep does the AI write each entry? Where exactly does it stop?</li>
+      <li>Are the three endorsement tiers right, and is the language right?</li>
+      <li>Should we surface the seven-year horizon in public copy?</li>
+      <li>Is this Platform the &ldquo;Bharat Agroecology Tracker&rdquo; CAT advertised, or a sibling?</li>
+      <li>What domain do we publish at?</li>
+    </ul>
+    <p class="body" style="margin-top:24px;font-style:italic;color:var(--muted)">The point of the doc: the team should disagree with at least 3-5 items, because that disagreement is where the strongest signal lives.</p>
+  </div>
+  <div class="bottom-rail"><span><span class="amber-tick"></span>Walk-through in the next meeting, mark each Confirm / Revise / Discuss</span><span>21 / 22</span></div>
+</section>
+
+<!-- 22 Q&A -->
+<section class="slide end">
+  <div class="brand-strip" style="color:var(--cream)"><span class="brand-glyph"></span><span class="brand-mark" style="color:var(--cream)">CAT <em style="color:var(--amber)">Platform</em></span></div>
+  <div class="slide-no" style="color:rgba(248,244,237,.6)">22 · end</div>
+  <span class="eyebrow" style="color:var(--amber)">Thank you</span>
+  <h2 class="h-hero">A quiet, <em>honest</em>,<br/>defensible record.</h2>
+  <p class="tagline" style="color:rgba(248,244,237,.7);margin-top:24px;font-size:30px">Questions, disagreements, revisions — bring them.<br/>The whole point of v1 is that the team should push back.</p>
+  <div class="bottom-rail" style="color:rgba(248,244,237,.6)"><span><span class="amber-tick"></span>github.com/sandeep9127-hub/cat-platform</span><span>14 May 2026</span></div>
+</section>
+
+</div>
+</body>
+</html>

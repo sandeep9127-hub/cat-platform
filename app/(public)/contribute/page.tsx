@@ -2,6 +2,8 @@ import { ContributeForm } from "@/components/contribute/ContributeForm";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Contribute",
   description:

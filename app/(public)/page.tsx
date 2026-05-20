@@ -10,6 +10,8 @@ import { ThemeIcon } from "@/components/ui/ThemeIcon";
 import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 60;
 
 export default async function LandingPage() {

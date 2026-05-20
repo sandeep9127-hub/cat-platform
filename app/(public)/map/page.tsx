@@ -1,6 +1,8 @@
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { getPublishedEntries, getOverviewCounts } from "@/lib/db/queries";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 60;
 export const metadata = {
   title: "Atlas",

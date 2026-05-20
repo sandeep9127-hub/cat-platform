@@ -4,6 +4,8 @@ import { eq, sql, inArray } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { EntryListItem } from "@/components/entries/EntryListItem";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };

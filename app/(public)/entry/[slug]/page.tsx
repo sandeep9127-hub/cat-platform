@@ -4,6 +4,8 @@ import { getEntryBySlug } from "@/lib/db/queries";
 import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
 import { ThemeChip } from "@/components/ui/ThemeChip";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
