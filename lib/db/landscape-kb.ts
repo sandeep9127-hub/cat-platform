@@ -1,11 +1,22 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index";
 
+/**
+ * Drizzle's node-postgres adapter returns a pg.QueryResult ({ rows, rowCount, ... }).
+ * Some other drivers in the wild return the rows array directly. Normalise both.
+ */
+function rowsOf<T>(r: unknown): T[] {
+  if (!r) return [];
+  if (Array.isArray(r)) return r as T[];
+  const obj = r as { rows?: T[] };
+  return Array.isArray(obj.rows) ? obj.rows : [];
+}
+
 export async function landscapeHasLip(slug: string): Promise<boolean> {
   const r = await db.execute<{ n: number }>(
     sql`SELECT count(*)::int AS n FROM "cat".landscape_documents WHERE landscape_slug = ${slug} AND is_published = true`
   );
-  const rows = (r as unknown as Array<{ n: number }>);
+  const rows = rowsOf<{ n: number }>(r);
   return (rows[0]?.n ?? 0) > 0;
 }
 
@@ -27,7 +38,7 @@ export async function listLandscapeDocuments(slug: string): Promise<LandscapeDoc
         WHERE landscape_slug = ${slug} AND is_published = true
         ORDER BY uploaded_at DESC`
   );
-  return r as unknown as LandscapeDocument[];
+  return rowsOf<LandscapeDocument>(r);
 }
 
 export type BudgetLine = {
@@ -78,7 +89,7 @@ export async function listBudgetLines(slug: string): Promise<BudgetLine[]> {
         WHERE landscape_slug = ${slug}
         ORDER BY category_no, row_index`
   );
-  return r as unknown as BudgetLine[];
+  return rowsOf<BudgetLine>(r);
 }
 
 export type BudgetSummary = {
@@ -107,7 +118,7 @@ export async function budgetSummary(slug: string): Promise<BudgetSummary> {
           coalesce(SUM(debt_inr), 0) AS debt
         FROM "cat".landscape_budget_lines WHERE landscape_slug = ${slug}`
   );
-  const t = (totalsR as unknown as Array<Record<string, string>>)[0];
+  const t = rowsOf<Record<string, string>>(totalsR)[0] ?? {};
   const byCatR = await db.execute(
     sql`SELECT coalesce(category, '(uncategorised)') AS category,
               SUM(total_intervention_cost_inr) AS total,
@@ -123,20 +134,20 @@ export async function budgetSummary(slug: string): Promise<BudgetSummary> {
         GROUP BY package ORDER BY SUM(total_intervention_cost_inr) DESC NULLS LAST`
   );
   return {
-    totalCostInr: Number(t?.total ?? 0),
-    govtInr: Number(t?.govt ?? 0),
-    communityInr: Number(t?.community ?? 0),
-    investmentRequiredInr: Number(t?.investment ?? 0),
-    grantsInr: Number(t?.grants ?? 0),
-    returnableGrantInr: Number(t?.returnable ?? 0),
-    outcomeFinanceInr: Number(t?.outcome ?? 0),
-    debtInr: Number(t?.debt ?? 0),
-    byCategory: (byCatR as unknown as Array<{ category: string; total: string; investment: string }>).map((r) => ({
+    totalCostInr: Number(t.total ?? 0),
+    govtInr: Number(t.govt ?? 0),
+    communityInr: Number(t.community ?? 0),
+    investmentRequiredInr: Number(t.investment ?? 0),
+    grantsInr: Number(t.grants ?? 0),
+    returnableGrantInr: Number(t.returnable ?? 0),
+    outcomeFinanceInr: Number(t.outcome ?? 0),
+    debtInr: Number(t.debt ?? 0),
+    byCategory: rowsOf<{ category: string; total: string; investment: string }>(byCatR).map((r) => ({
       category: r.category,
       total: Number(r.total ?? 0),
       investment: Number(r.investment ?? 0),
     })),
-    byPackage: (byPkgR as unknown as Array<{ package: string; total: string; investment: string }>).map((r) => ({
+    byPackage: rowsOf<{ package: string; total: string; investment: string }>(byPkgR).map((r) => ({
       package: r.package,
       total: Number(r.total ?? 0),
       investment: Number(r.investment ?? 0),
@@ -159,12 +170,12 @@ export async function searchLandscapeChunks(
         ORDER BY embedding <=> ${`[${queryEmbedding.join(",")}]`}::vector
         LIMIT ${limit}`
   );
-  return r as unknown as Array<{
+  return rowsOf<{
     id: string;
     documentId: string;
     chunkText: string;
     chunkKind: string;
     sectionPath: string | null;
     score: number;
-  }>;
+  }>(r);
 }

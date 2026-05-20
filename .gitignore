@@ -13,3 +13,4 @@ coverage
 .pnpm-store
 public/geo/india-states.json
 public/geo/india-states-topo.json
+tsconfig.tsbuildinfo

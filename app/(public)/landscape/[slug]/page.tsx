@@ -4,7 +4,8 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { landscapeHasLip } from "@/lib/db/landscape-kb";
+import { landscapeHasLip, budgetSummary, listLandscapeDocuments } from "@/lib/db/landscape-kb";
+import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,11 @@ export default async function LandscapeDetailPage({ params }: Props) {
     : [null];
 
   const hasLip = await landscapeHasLip(slug);
+
+  // KPI dashboard data — pulled in parallel
+  const [money, docs] = hasLip
+    ? await Promise.all([budgetSummary(slug), listLandscapeDocuments(slug)])
+    : [null, []];
 
   // Programmes in the same state
   const stateEntries = state
@@ -102,15 +108,42 @@ export default async function LandscapeDetailPage({ params }: Props) {
         <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} />
       </div>
 
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
+      {/* Interactive KPI dashboard with Land · People · Money slicer */}
+      <LandscapeKpiDashboard
+        landscapeName={p.name}
+        district={p.district}
+        region={p.region}
+        state={state?.name ?? g.stateCode ?? p.region}
+        agroclimaticZone={p.agroclimaticZone}
+        area={p.area}
+        population={p.population}
+        households={p.households}
+        villages={p.villages}
+        keyChallengesCount={p.keyChallenges.length}
+        lipStatus={p.lipStatus}
+        money={
+          money
+            ? {
+                totalCostInr: money.totalCostInr,
+                investmentRequiredInr: money.investmentRequiredInr,
+                govtInr: money.govtInr,
+                communityInr: money.communityInr,
+                horizonYears: 7,
+                interventionLines: money.byCategory.reduce(
+                  (acc, c) => acc + (c.total > 0 ? 1 : 0),
+                  0
+                ) || money.byCategory.length,
+                topCategories: money.byCategory
+                  .filter((c) => c.total > 0)
+                  .slice(0, 4)
+                  .map((c) => ({ category: c.category, total: c.total })),
+                indexedDocuments: docs.length,
+              }
+            : undefined
+        }
+      />
 
-      {/* Quick facts strip */}
-      <section className="mt-12 lg:mt-16 grid grid-cols-2 md:grid-cols-4 border-y border-line">
-        <Stat label="Geographical area" value={p.area} />
-        <Stat label="Population" value={p.population} />
-        <Stat label="Households" value={p.households} />
-        <Stat label="Inhabited villages" value={p.villages} />
-      </section>
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
 
       <section className="mt-16 lg:mt-20 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12">
         <div className="max-w-reading">
@@ -210,17 +243,6 @@ function FactRow({ label, children }: { label: string; children: React.ReactNode
     <div className="flex flex-col gap-1.5">
       <span className="mono-label">{label}</span>
       <span className="font-serif text-[16px] text-ink">{children}</span>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="py-6 px-5 sm:px-6 border-r border-line-soft last:border-r-0 md:[&:nth-child(2)]:border-r md:[&:nth-child(4)]:border-r-0 first:pl-0">
-      <span className="mono-label block">{label}</span>
-      <div className="font-serif text-[26px] sm:text-[30px] font-medium text-deep-teal leading-none tracking-[-0.02em] mt-2.5">
-        {value}
-      </div>
     </div>
   );
 }
