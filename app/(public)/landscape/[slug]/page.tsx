@@ -174,6 +174,28 @@ export default async function LandscapeDetailPage({ params }: Props) {
         </div>
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
+          <div className="border border-line p-5">
+            <span className="eyebrow block mb-3">Download this profile</span>
+            <div className="flex flex-col gap-2.5">
+              <a
+                href={`/api/landscape/${slug}/download?format=pdf`}
+                className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors inline-block self-start"
+                download={`${slug}-landscape-profile.pdf`}
+              >
+                Landscape profile · PDF ↓
+              </a>
+              <a
+                href={`/api/landscape/${slug}/download?format=docx`}
+                className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors inline-block self-start"
+                download={`${slug}-landscape-profile.docx`}
+              >
+                Landscape profile · DOCX ↓
+              </a>
+            </div>
+            <p className="font-serif italic text-[12.5px] text-muted mt-3 leading-snug">
+              One-page editorial brief, generated live from the Feb 2026 CAT profile.
+            </p>
+          </div>
           <div className="border-l-2 border-amber-deep pl-4">
             <span className="eyebrow block mb-2">Three levers</span>
             <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[14px] text-ink-soft leading-[1.55]">
