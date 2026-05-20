@@ -127,11 +127,9 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* PARALLAX BANNER — official Consortium cover, parallaxed on scroll */}
+      {/* PARALLAX BANNER — branded gradient + glyph composition, parallaxed on scroll */}
       <ParallaxBanner
-        src="/images/hero-cover.jpg"
-        alt="Consortium for Agroecological Transformations cover image"
-        strength={0.28}
+        strength={0.32}
         caption="Consortium for Agroecological Transformations"
       />
 

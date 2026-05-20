@@ -3,11 +3,12 @@
 import { useEffect, useRef } from "react";
 
 type ParallaxBannerProps = {
-  src: string;
-  alt: string;
-  /** How strongly the image shifts relative to scroll. 0 = static, 0.5 = strong. Default 0.25. */
+  /** Optional image source. When omitted, an abstract brand composition renders. */
+  src?: string;
+  alt?: string;
+  /** How strongly the back layer shifts relative to scroll. 0 = static, 0.5 = strong. Default 0.25. */
   strength?: number;
-  /** Optional caption shown bottom-left over the image. */
+  /** Optional caption shown bottom-left. */
   caption?: string;
 };
 
@@ -62,42 +63,86 @@ export function ParallaxBanner({
     };
   }, [strength]);
 
+  const hasImage = Boolean(src);
+
   return (
     <section
-      aria-label="Cover image"
+      aria-label={src ? "Cover image" : "Brand banner"}
       ref={frameRef}
-      className="relative w-full overflow-hidden border-y border-line bg-deep-teal"
-      style={{ aspectRatio: "5.9 / 1", minHeight: 140 }}
+      className="relative w-full overflow-hidden border-y border-line"
+      style={{
+        aspectRatio: "5.9 / 1",
+        minHeight: 160,
+        background: hasImage
+          ? undefined
+          : // Editorial gradient base: deep-teal pool with warm amber bloom
+            "radial-gradient(ellipse 60% 120% at 12% 50%, rgba(248,202,124,0.32), transparent 60%), radial-gradient(ellipse 70% 140% at 92% 60%, rgba(146,156,197,0.30), transparent 65%), linear-gradient(110deg, #1f3534 0%, #2c4544 40%, #334B4A 70%, #3a5856 100%)",
+      }}
     >
-      {/* Parallax image layer — extends 30% above and below for headroom */}
+      {/* Back parallax layer */}
       <div
         ref={imgRef}
         aria-hidden
         className="absolute will-change-transform"
-        style={{
-          inset: "-15% 0",
-          backgroundImage: `url(${src})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
-      {/* Sceenreader-only alt */}
-      <span className="sr-only">{alt}</span>
-      {/* Editorial gradient veil for legibility + tonal continuity */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(26,38,37,0.35) 0%, rgba(26,38,37,0.08) 38%, rgba(26,38,37,0.08) 62%, rgba(26,38,37,0.35) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 65%, rgba(26,38,37,0.25) 100%)",
-        }}
-      />
-      {/* Thin amber underline as brand signature */}
+        style={
+          hasImage
+            ? {
+                inset: "-15% 0",
+                backgroundImage: `url(${src})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }
+            : { inset: "-20% 0" }
+        }
+      >
+        {!hasImage && (
+          // Soft horizon line + repeating diagonal hatch motif. Pure CSS, no asset cost.
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "repeating-linear-gradient(115deg, rgba(248,202,124,0.04) 0px, rgba(248,202,124,0.04) 1px, transparent 1px, transparent 14px), radial-gradient(ellipse 80% 50% at 50% 100%, rgba(46,117,115,0.45), transparent 70%)",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Mid layer — slower parallax, large brand glyph */}
+      {!hasImage && (
+        <div
+          aria-hidden
+          className="absolute will-change-transform pointer-events-none"
+          style={{
+            inset: 0,
+            transform: "translate3d(0,0,0)",
+          }}
+        >
+          <BrandGlyphRow />
+        </div>
+      )}
+
+      {/* Optional alt text for image variant */}
+      {hasImage && alt && <span className="sr-only">{alt}</span>}
+
+      {/* Legibility veil (image variant only) */}
+      {hasImage && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(26,38,37,0.35) 0%, rgba(26,38,37,0.08) 38%, rgba(26,38,37,0.08) 62%, rgba(26,38,37,0.35) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 65%, rgba(26,38,37,0.25) 100%)",
+          }}
+        />
+      )}
+
+      {/* Thin amber underline */}
       <div
         aria-hidden
         className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber to-transparent"
       />
+
       {caption && (
         <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
           <span className="inline-block w-4 h-px bg-amber align-middle mr-2" />
@@ -105,5 +150,49 @@ export function ParallaxBanner({
         </span>
       )}
     </section>
+  );
+}
+
+/**
+ * Repeating arch + leaf glyph (echo of the CAT mark) used as a typographic
+ * texture across the parallax band. Low opacity so it reads as ambient.
+ */
+function BrandGlyphRow() {
+  // Distribute six glyphs across the banner at varied vertical positions.
+  const items = Array.from({ length: 8 });
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 1200 200"
+      preserveAspectRatio="xMidYMid slice"
+      className="absolute inset-0 opacity-90"
+    >
+      <defs>
+        <g id="cat-glyph" fill="none" strokeLinecap="round">
+          <path d="M-26 6 A 26 26 0 0 1 26 6" stroke="#FBF8F2" strokeOpacity="0.18" strokeWidth="1.4" />
+          <path d="M-18 6 A 18 18 0 0 1 18 6" stroke="#FBF8F2" strokeOpacity="0.13" strokeWidth="1.4" />
+          <path d="M-9 6 A 9 9 0 0 1 9 6" stroke="#F8CA7C" strokeOpacity="0.55" strokeWidth="1.4" />
+          <path
+            d="M0 9 C -10 14, -12 26, -5 34 C 0 30, 1 24, 0 9 Z"
+            stroke="#929CC5"
+            strokeOpacity="0.35"
+            strokeWidth="1.2"
+          />
+          <path
+            d="M0 9 C 10 14, 12 26, 5 34 C 0 30, -1 24, 0 9 Z"
+            stroke="#929CC5"
+            strokeOpacity="0.35"
+            strokeWidth="1.2"
+          />
+        </g>
+      </defs>
+      {items.map((_, i) => {
+        const x = 80 + i * 140;
+        const y = 60 + ((i % 3) - 1) * 38;
+        const scale = 0.85 + ((i * 13) % 7) * 0.07;
+        return <use key={i} href="#cat-glyph" transform={`translate(${x} ${y}) scale(${scale})`} />;
+      })}
+    </svg>
   );
 }
