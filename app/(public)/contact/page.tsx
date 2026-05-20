@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Contact",
   description:
-    "How to reach the CAT Platform editors, contribute work, or partner with CAT.",
+    "How to reach the Transformation Hub editors, contribute work, or partner with CAT.",
 };
 
 export default function ContactPage() {

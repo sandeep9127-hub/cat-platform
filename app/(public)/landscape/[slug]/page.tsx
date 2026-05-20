@@ -6,6 +6,7 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, budgetSummary, listLandscapeDocuments } from "@/lib/db/landscape-kb";
 import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashboard";
+import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -174,49 +175,74 @@ export default async function LandscapeDetailPage({ params }: Props) {
         </div>
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border border-line p-5">
-            <span className="eyebrow block mb-3">Download this profile</span>
-            <div className="flex flex-col gap-2.5">
+          <div
+            className="relative border border-line p-5 overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.6) 100%)",
+            }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden
+              style={{
+                background:
+                  "radial-gradient(ellipse 90% 50% at 100% 0%, rgba(248,202,124,0.20), transparent 60%)",
+              }}
+            />
+            <span className="relative eyebrow block mb-3">Download this profile</span>
+            <div className="relative flex flex-col gap-2.5">
               <a
                 href={`/api/landscape/${slug}/download?format=pdf`}
-                className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors inline-block self-start"
+                className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
                 download={`${slug}-landscape-profile.pdf`}
               >
-                Landscape profile · PDF ↓
+                <FileText size={13} strokeWidth={1.6} aria-hidden />
+                Landscape profile · PDF
               </a>
               <a
                 href={`/api/landscape/${slug}/download?format=docx`}
-                className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors inline-block self-start"
+                className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors self-start"
                 download={`${slug}-landscape-profile.docx`}
               >
-                Landscape profile · DOCX ↓
+                <FileType2 size={13} strokeWidth={1.6} aria-hidden />
+                Landscape profile · DOCX
               </a>
             </div>
-            <p className="font-serif italic text-[12.5px] text-muted mt-3 leading-snug">
+            <p className="relative font-serif italic text-[12.5px] text-muted mt-3 leading-snug">
               One-page editorial brief, generated live from the Feb 2026 CAT profile.
             </p>
           </div>
-          <div className="border-l-2 border-amber-deep pl-4">
-            <span className="eyebrow block mb-2">Three levers</span>
-            <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[14px] text-ink-soft leading-[1.55]">
-              <li>
-                <strong className="text-deep-teal font-semibold">Policy</strong> — schemes,
-                regulation, institutions
+          <div>
+            <span className="eyebrow block mb-3">Three levers</span>
+            <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[14px] text-ink-soft leading-[1.5]">
+              <li className="flex gap-2.5 items-baseline">
+                <Scale size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
+                <span>
+                  <strong className="text-deep-teal font-semibold">Policy</strong> &middot; schemes,
+                  regulation, institutions
+                </span>
               </li>
-              <li>
-                <strong className="text-deep-teal font-semibold">Markets</strong> — procurement,
-                processing, fair pricing
+              <li className="flex gap-2.5 items-baseline">
+                <ShoppingCart size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
+                <span>
+                  <strong className="text-deep-teal font-semibold">Markets</strong> &middot; procurement,
+                  processing, fair pricing
+                </span>
               </li>
-              <li>
-                <strong className="text-deep-teal font-semibold">Finance</strong> — patient
-                capital, blended financing
+              <li className="flex gap-2.5 items-baseline">
+                <Wallet size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
+                <span>
+                  <strong className="text-deep-teal font-semibold">Finance</strong> &middot; patient
+                  capital, blended financing
+                </span>
               </li>
             </ul>
           </div>
-          <div className="border-l-2 border-teal pl-4">
+          <div>
             <span className="eyebrow block mb-2">Time horizon</span>
             <p className="text-[13.5px] text-ink-soft leading-[1.55]">
-              Agroecological transitions are seven-year projects at minimum. The Platform
+              Agroecological transitions are seven-year projects at minimum. The Hub
               reflects that pace.
             </p>
           </div>

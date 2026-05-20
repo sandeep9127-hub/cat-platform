@@ -1,6 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+  Mountain,
+  Users,
+  Coins,
+  type LucideIcon,
+} from "lucide-react";
 
 type Lens = "land" | "people" | "money";
 
@@ -142,12 +148,13 @@ function LensSlicer({
   setLens: (l: Lens) => void;
   hasMoney: boolean;
 }) {
-  const items: { id: Lens; label: string; disabled?: boolean; hint?: string }[] = [
-    { id: "land", label: "Land" },
-    { id: "people", label: "People" },
+  const items: { id: Lens; label: string; Icon: LucideIcon; disabled?: boolean; hint?: string }[] = [
+    { id: "land", label: "Land", Icon: Mountain },
+    { id: "people", label: "People", Icon: Users },
     {
       id: "money",
       label: "Money",
+      Icon: Coins,
       disabled: !hasMoney,
       hint: hasMoney ? undefined : "Available once the LIP is ingested",
     },
@@ -156,28 +163,29 @@ function LensSlicer({
     <div
       role="tablist"
       aria-label="Switch dashboard lens"
-      className="inline-flex border border-line rounded-[3px] overflow-hidden self-start sm:self-end bg-paper"
+      className="inline-flex border border-line rounded-[3px] overflow-hidden self-start sm:self-end bg-paper shadow-[0_1px_0_rgba(0,0,0,0.02)]"
     >
-      {items.map((it) => {
-        const active = lens === it.id;
+      {items.map(({ id, label, Icon, disabled, hint }) => {
+        const active = lens === id;
         const base =
-          "px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] border-r border-line last:border-r-0 transition-colors";
-        const state = it.disabled
+          "px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] border-r border-line last:border-r-0 transition-colors inline-flex items-center gap-1.5";
+        const state = disabled
           ? "text-line cursor-not-allowed"
           : active
-            ? "bg-deep-teal text-paper font-semibold"
+            ? "bg-gradient-to-br from-deep-teal to-teal text-paper font-semibold"
             : "text-deep-teal hover:bg-line-soft";
         return (
           <button
-            key={it.id}
+            key={id}
             role="tab"
             aria-selected={active}
-            disabled={it.disabled}
-            title={it.hint}
-            onClick={() => !it.disabled && setLens(it.id)}
+            disabled={disabled}
+            title={hint}
+            onClick={() => !disabled && setLens(id)}
             className={`${base} ${state}`}
           >
-            {it.label}
+            <Icon size={12} strokeWidth={1.8} aria-hidden />
+            {label}
           </button>
         );
       })}
@@ -198,17 +206,31 @@ function KpiTile({
 }) {
   const accentColor =
     accent === "money" ? "text-deep-teal" : accent === "people" ? "text-teal" : "text-deep-teal";
+  // Subtle directional gradient: cream → paper, with a faint coloured spotlight by lens
+  const lensSpotlight =
+    accent === "money"
+      ? "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(248,202,124,0.10), transparent 65%)"
+      : accent === "people"
+        ? "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(46,117,115,0.08), transparent 65%)"
+        : "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(146,156,197,0.10), transparent 65%)";
   return (
-    <div className="border-r border-b border-line py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[112px]">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted leading-tight">
+    <div
+      className="relative border-r border-b border-line py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.55) 100%)",
+      }}
+    >
+      <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: lensSpotlight }} />
+      <span className="relative font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted leading-tight">
         {label}
       </span>
       <div
-        className={`font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] ${accentColor} font-medium`}
+        className={`relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] ${accentColor} font-medium`}
       >
         {value}
       </div>
-      <span className="font-serif text-[12.5px] italic text-muted leading-snug">{sub}</span>
+      <span className="relative font-serif text-[12.5px] italic text-muted leading-snug">{sub}</span>
     </div>
   );
 }

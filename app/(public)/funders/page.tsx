@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Funders",
   description:
-    "Who funds the CAT Platform, how editorial independence is held, and what funders cannot influence.",
+    "Who funds the Transformation Hub, how editorial independence is held, and what funders cannot influence.",
 };
 
 export default function FundersPage() {

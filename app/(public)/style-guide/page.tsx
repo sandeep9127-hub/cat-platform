@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Style guide",
   description:
-    "How the CAT Platform writes, edits, and labels its entries. The editorial standards behind every page.",
+    "How the Transformation Hub writes, edits, and labels its entries. The editorial standards behind every page.",
 };
 
 export default function StyleGuidePage() {

@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Editorial process",
   description:
-    "How entries get drafted, reviewed, and published on the CAT Platform. Plus how AI is used and where it stops.",
+    "How entries get drafted, reviewed, and published on the Transformation Hub. Plus how AI is used and where it stops.",
 };
 
 export default function EditorialProcessPage() {

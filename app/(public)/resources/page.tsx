@@ -8,7 +8,7 @@ export const revalidate = 60;
 export const metadata = {
   title: "Resources",
   description:
-    "Reports, papers, briefs, datasets, and presentations from the food-systems work the CAT Platform tracks.",
+    "Reports, papers, briefs, datasets, and presentations from the food-systems work the Transformation Hub tracks.",
 };
 
 const TYPE_LABELS: Record<string, string> = {

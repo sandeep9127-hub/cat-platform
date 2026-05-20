@@ -4,7 +4,7 @@ import { ThreeLevers } from "@/components/ui/ThreeLevers";
 export const metadata = {
   title: "About",
   description:
-    "What the CAT Platform is, how CAT works through landscapes and levers, and the editorial bar this Platform holds itself to.",
+    "What the Transformation Hub is, how CAT works through landscapes and levers, and the editorial bar this Platform holds itself to.",
 };
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
             of work that matters.
           </h1>
           <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[48ch] mt-6 font-light">
-            The CAT Platform is the public face of the Consortium for Agroecological
+            The Transformation Hub is the public face of the Consortium for Agroecological
             Transformations. It documents credible food-systems work across India, anchored in
             CAT&apos;s eleven focus landscapes and extending to the broader fraternity.
           </p>

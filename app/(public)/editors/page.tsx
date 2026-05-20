@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Editors",
   description:
-    "The CAT Platform's editorial team. The people who read, edit, and stand behind every entry.",
+    "The Transformation Hub's editorial team. The people who read, edit, and stand behind every entry.",
 };
 
 const EDITORS = [

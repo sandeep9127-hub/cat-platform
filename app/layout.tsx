@@ -32,21 +32,21 @@ const PROD_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(PROD_URL),
   title: {
-    default: "CAT Platform — A dashboard for sustainable food systems",
-    template: "%s · CAT Platform",
+    default: "Transformation Hub — A dashboard for sustainable food systems",
+    template: "%s · Transformation Hub",
   },
   description:
-    "A curated, editorial record of credible food systems work in India. Programmes are read, not pitched. Limitations sit beside achievements.",
+    "A curated, editorial record of credible food systems work in India, by the Consortium for Agroecological Transformations. Programmes are read, not pitched. Limitations sit beside achievements.",
   openGraph: {
-    title: "CAT Platform — A dashboard for sustainable food systems",
+    title: "Transformation Hub — A dashboard for sustainable food systems",
     description:
-      "Curated by the Consortium for Agroecological Transformations. Eleven focus landscapes, plus a Solutions Atlas of programmes from across India.",
+      "By the Consortium for Agroecological Transformations. Eleven focus landscapes, plus a Solutions Atlas of programmes from across India.",
     type: "website",
-    siteName: "CAT Platform",
+    siteName: "Transformation Hub",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CAT Platform",
+    title: "Transformation Hub",
     description: "A dashboard for sustainable food systems.",
   },
 };

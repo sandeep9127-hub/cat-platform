@@ -3,7 +3,7 @@ import { AgentChat } from "@/components/agent/AgentChat";
 export const metadata = {
   title: "Agent preview",
   description:
-    "A scoped preview of the CAT Platform agent. Ask questions of the library; the agent answers from published entries with citations.",
+    "A scoped preview of the Transformation Hub agent. Ask questions of the library; the agent answers from published entries with citations.",
 };
 
 export default function AgentPage() {

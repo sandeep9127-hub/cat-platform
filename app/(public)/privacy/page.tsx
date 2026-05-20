@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Privacy",
   description:
-    "What the CAT Platform stores, what we don't, who to email to remove data.",
+    "What the Transformation Hub stores, what we don't, who to email to remove data.",
 };
 
 export default function PrivacyPage() {

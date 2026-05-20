@@ -2,49 +2,64 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  Layers,
+  Map as MapIcon,
+  BookOpen,
+  Newspaper,
+  Search,
+  MessageCircle,
+  Info,
+} from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
 const NAV_LINKS = [
-  { href: "/landscapes", label: "CAT Landscapes" },
-  { href: "/map", label: "Solutions Atlas" },
-  { href: "/resources", label: "Resources" },
-  { href: "/news", label: "News" },
-  { href: "/search", label: "Search" },
-  { href: "/agent", label: "Ask" },
-  { href: "/about", label: "About" },
+  { href: "/landscapes", label: "Landscapes", Icon: Layers },
+  { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
+  { href: "/resources", label: "Resources", Icon: BookOpen },
+  { href: "/news", label: "News", Icon: Newspaper },
+  { href: "/search", label: "Search", Icon: Search },
+  { href: "/agent", label: "Ask", Icon: MessageCircle },
+  { href: "/about", label: "About", Icon: Info },
 ];
 
 export function BrandBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-paper border-b border-line-soft backdrop-saturate-150">
+    <header className="sticky top-0 z-50 bg-paper/95 border-b border-line-soft backdrop-blur supports-[backdrop-filter]:bg-paper/80">
+      {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
+      <div className="h-px w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3.5 sm:py-4 flex items-center gap-4 sm:gap-8 lg:gap-10">
-        <Link href="/" className="flex items-center gap-3 no-underline text-ink min-w-0">
-          <CatLogo size={36} className="shrink-0" />
+        <Link href="/" className="flex items-center gap-3 no-underline text-ink min-w-0 group">
+          <CatLogo size={36} className="shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg]" />
           <span className="flex flex-col min-w-0">
-            <span className="font-serif text-[17px] sm:text-[19px] font-medium leading-none tracking-[-0.01em]">
-              CAT <span className="text-teal italic font-normal">Platform</span>
+            <span className="font-serif text-[16px] sm:text-[18px] font-medium leading-[1.05] tracking-[-0.012em]">
+              Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
-            <span className="hidden sm:block font-mono text-[9.5px] tracking-mono-wide uppercase text-muted mt-1 truncate">
-              Consortium for Agroecological Transformations
+            <span className="hidden sm:block font-mono text-[9px] tracking-mono-wide uppercase text-muted mt-[3px] truncate">
+              By the Consortium for Agroecological Transformations
             </span>
           </span>
         </Link>
-        <nav className="ml-auto flex items-center gap-5 lg:gap-8">
-          {NAV_LINKS.map((l) => (
+        <nav className="ml-auto flex items-center gap-4 lg:gap-6">
+          {NAV_LINKS.map(({ href, label, Icon }) => (
             <Link
-              key={l.href}
-              href={l.href}
-              className="hidden lg:block text-[13.5px] text-ink-soft hover:text-teal transition-colors"
+              key={href}
+              href={href}
+              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] text-ink-soft hover:text-teal transition-colors group"
             >
-              {l.label}
+              <Icon size={14} strokeWidth={1.6} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
+              <span>{label}</span>
             </Link>
           ))}
           <Link
             href="/contribute"
-            className="hidden sm:inline-flex font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-3 sm:px-3.5 py-2 rounded-full border border-deep-teal text-deep-teal hover:bg-deep-teal hover:text-paper transition-colors whitespace-nowrap shrink-0"
+            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-3.5 py-2 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_1px_0_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.10)] hover:from-teal hover:to-deep-teal transition-all duration-300 whitespace-nowrap shrink-0"
           >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 5v14M5 12h14" />
+            </svg>
             Contribute
           </Link>
           {/* Mobile + tablet hamburger */}
@@ -77,15 +92,16 @@ export function BrandBar() {
       {open && (
         <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
-            {NAV_LINKS.map((l, i) => (
+            {NAV_LINKS.map(({ href, label, Icon }, i) => (
               <Link
-                key={l.href}
-                href={l.href}
+                key={href}
+                href={href}
                 onClick={() => setOpen(false)}
-                className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft last:border-b-0 reveal-stagger"
+                className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft last:border-b-0 reveal-stagger inline-flex items-center gap-3"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                {l.label}
+                <Icon size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
+                <span>{label}</span>
               </Link>
             ))}
             <Link

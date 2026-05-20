@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Terms",
   description:
-    "The editorial agreement between the CAT Platform, its contributors, and the public reader.",
+    "The editorial agreement between the Transformation Hub, its contributors, and the public reader.",
 };
 
 export default function TermsPage() {
@@ -28,7 +28,7 @@ export default function TermsPage() {
 
           <Block label="Citation">
             <p>
-              When citing an entry, link to its URL and credit &ldquo;CAT Platform&rdquo; with the entry
+              When citing an entry, link to its URL and credit &ldquo;Transformation Hub&rdquo; with the entry
               title and last-reviewed date. For CAT-authored entries you may credit the
               Consortium for Agroecological Transformations as the source.
             </p>
