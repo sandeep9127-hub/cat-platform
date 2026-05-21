@@ -8,8 +8,10 @@ import {
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const dynamic = "force-static";
-export const revalidate = 1800;
+// Reads ?window and ?theme search params for filters; must render per
+// request so the chip clicks actually filter (force-static would cache
+// the unfiltered build output and ignore the URL params).
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "News",

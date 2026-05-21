@@ -9,8 +9,11 @@ import {
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const dynamic = "force-static";
-export const revalidate = 1800;
+// The resource list reads searchParams (?type=..., ?theme=...) so the
+// page MUST re-render per request. With force-static the build pre-renders
+// the unfiltered list and search-param changes were no-ops — clicking a
+// filter chip changed the URL but Vercel served the cached HTML.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Resources",

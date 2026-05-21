@@ -7,7 +7,6 @@ import {
   Map as MapIcon,
   BookOpen,
   Newspaper,
-  Search,
   MessageCircle,
   Info,
 } from "lucide-react";
@@ -18,7 +17,6 @@ const NAV_LINKS = [
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
   { href: "/resources", label: "Resources", Icon: BookOpen },
   { href: "/news", label: "News", Icon: Newspaper },
-  { href: "/search", label: "Search", Icon: Search },
   { href: "/agent", label: "Ask", Icon: MessageCircle },
   { href: "/about", label: "About", Icon: Info },
 ];
@@ -78,10 +76,26 @@ export function BrandBar() {
             <Link
               key={href}
               href={href}
-              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] text-ink-soft hover:text-teal transition-colors group"
+              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] text-ink-soft hover:text-teal transition-colors group relative py-1"
             >
-              <Icon size={14} strokeWidth={1.6} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
-              <span>{label}</span>
+              <Icon
+                size={14}
+                strokeWidth={1.6}
+                className="text-muted group-hover:text-teal transition-colors"
+                aria-hidden
+              />
+              <span className="relative">
+                {label}
+                {/* Animated underline — grows from left on hover */}
+                <span
+                  aria-hidden
+                  className="absolute left-0 -bottom-1 h-[1.5px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #2E7573 0%, #C68C2E 100%)",
+                  }}
+                />
+              </span>
             </Link>
           ))}
           <Link

@@ -26,11 +26,17 @@ export default async function AgentPage({
   return (
     <article className="pt-8 sm:pt-12 lg:pt-16 pb-24">
       {/* Slim trust strip above the assistant */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6">
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6 flex items-center justify-between gap-3 flex-wrap">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-paper font-mono text-[10px] uppercase tracking-[0.16em] text-teal">
           <ShieldCheck size={11} strokeWidth={1.8} aria-hidden />
           Reads only from the library. Not the web.
         </div>
+        <a
+          href="/search"
+          className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted hover:text-teal transition-colors"
+        >
+          Or browse with filters →
+        </a>
       </div>
 
       <section className="pt-2">
