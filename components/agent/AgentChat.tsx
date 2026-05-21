@@ -2,13 +2,52 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Droplets, AlertOctagon, ShieldCheck } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string; citedSlugs?: string[]; refused?: boolean };
 
-const STARTERS = [
-  "What's actually working on water in semi-arid India?",
-  "Show me programmes that publish what didn't work",
-  "Which entries are CAT-authored versus self-submitted?",
+const STARTERS: Array<{
+  prompt: string;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  tone: { bar: string; soft: string; glow: string; chipBg: string; chipFg: string };
+}> = [
+  {
+    prompt: "What's actually working on water in semi-arid India?",
+    label: "Water",
+    Icon: Droplets,
+    tone: {
+      bar: "#2E7573",
+      soft: "rgba(46,117,115,0.09)",
+      glow: "rgba(46,117,115,0.20)",
+      chipBg: "rgba(46,117,115,0.12)",
+      chipFg: "#2E7573",
+    },
+  },
+  {
+    prompt: "Show me programmes that publish what didn't work",
+    label: "Honesty",
+    Icon: AlertOctagon,
+    tone: {
+      bar: "#C68C2E",
+      soft: "rgba(248,202,124,0.16)",
+      glow: "rgba(248,202,124,0.30)",
+      chipBg: "rgba(248,202,124,0.22)",
+      chipFg: "#C68C2E",
+    },
+  },
+  {
+    prompt: "Which entries are CAT-authored versus self-submitted?",
+    label: "Provenance",
+    Icon: ShieldCheck,
+    tone: {
+      bar: "#929CC5",
+      soft: "rgba(146,156,197,0.12)",
+      glow: "rgba(146,156,197,0.22)",
+      chipBg: "rgba(146,156,197,0.16)",
+      chipFg: "#5C6796",
+    },
+  },
 ];
 
 function getSessionToken(): string {
@@ -95,21 +134,56 @@ export function AgentChat() {
       <div className="flex flex-col gap-6 min-h-[40vh]">
         {messages.length === 0 ? (
           <div>
-            <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mb-5 font-light">
+            <p className="font-sans italic text-[17px] text-ink-soft leading-[1.6] mb-6 font-light max-w-[44ch]">
               Start with one of these or write your own.
             </p>
-            <ul className="list-none p-0 flex flex-col gap-2.5">
-              {STARTERS.map((s) => (
-                <li key={s}>
-                  <button
-                    type="button"
-                    onClick={() => send(s)}
-                    className="text-left w-full font-serif text-[16.5px] text-deep-teal hover:text-teal underline decoration-amber decoration-2 underline-offset-4 transition-colors"
-                  >
-                    &ldquo;{s}&rdquo;
-                  </button>
-                </li>
-              ))}
+            <ul className="list-none p-0 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {STARTERS.map((s) => {
+                const Icon = s.Icon;
+                return (
+                  <li key={s.prompt}>
+                    <button
+                      type="button"
+                      onClick={() => send(s.prompt)}
+                      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 text-left w-full h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
+                      style={{
+                        boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${s.tone.glow}`,
+                        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${s.tone.soft} 100%)`,
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute top-0 left-0 right-0 h-[2px]"
+                        style={{
+                          background: `linear-gradient(90deg, ${s.tone.bar} 0%, ${s.tone.bar}cc 60%, transparent 100%)`,
+                        }}
+                      />
+                      <span
+                        className="inline-flex items-center gap-2 mb-3 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold"
+                        style={{ color: s.tone.chipFg }}
+                      >
+                        <span
+                          className="w-7 h-7 rounded-[5px] inline-flex items-center justify-center"
+                          style={{ background: s.tone.chipBg, color: s.tone.chipFg }}
+                          aria-hidden
+                        >
+                          <Icon size={14} strokeWidth={1.7} />
+                        </span>
+                        {s.label}
+                      </span>
+                      <span className="block font-sans italic text-[15.5px] leading-[1.5] text-[color:var(--navy-teal)] max-w-[34ch]">
+                        &ldquo;{s.prompt}&rdquo;
+                      </span>
+                      <span
+                        className="absolute bottom-4 right-5 font-mono text-[11px] text-muted transition-all duration-300 group-hover:translate-x-0.5"
+                        style={{ color: s.tone.chipFg }}
+                      >
+                        →
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ) : (

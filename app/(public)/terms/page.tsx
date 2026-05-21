@@ -86,13 +86,13 @@ export default function TermsPage() {
           </Block>
         </div>
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-l-2 border-amber-deep pl-4">
+          <div className="callout callout-amber">
             <span className="eyebrow block mb-2">Governing law</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               India. Jurisdiction: Bangalore.
             </p>
           </div>
-          <div className="border-l-2 border-teal pl-4">
+          <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Disputes</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               First step: write to editors@cat.org.in. Most things can be resolved before

@@ -96,7 +96,7 @@ export default function ContactPage() {
             <li>· Generic press release submissions</li>
           </ul>
         </div>
-        <aside className="border-l-2 border-amber-deep pl-4">
+        <aside className="callout callout-amber">
           <span className="eyebrow block mb-2">Response time</span>
           <p className="text-[14px] text-ink-soft leading-[1.55]">
             Editorial inbox is read within two working days. Submissions move through review

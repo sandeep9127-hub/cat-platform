@@ -116,13 +116,13 @@ export default function StyleGuidePage() {
           </Block>
         </div>
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-l-2 border-amber-deep pl-4">
+          <div className="callout callout-amber">
             <span className="eyebrow block mb-2">Principle</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               Curated, not crowdsourced. AI scales production, never editorial judgement.
             </p>
           </div>
-          <div className="border-l-2 border-teal pl-4">
+          <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Questions</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               Write to{" "}

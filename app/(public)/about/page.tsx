@@ -82,7 +82,7 @@ export default function AboutPage() {
         </div>
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-l-2 border-amber-deep pl-4">
+          <div className="callout callout-amber">
             <span className="eyebrow block mb-2">Standing rules</span>
             <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[14px] text-ink-soft leading-[1.55]">
               <li>Curated, not crowdsourced</li>
@@ -94,7 +94,7 @@ export default function AboutPage() {
               <li>The map is not GIS</li>
             </ul>
           </div>
-          <div className="border-l-2 border-teal pl-4">
+          <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Time horizon</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               Agroecological transitions are seven-year projects at minimum. The Platform

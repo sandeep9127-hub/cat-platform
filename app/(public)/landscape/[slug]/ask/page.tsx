@@ -75,8 +75,51 @@ export default async function AskPage({ params }: { params: Promise<{ slug: stri
 
       <LandscapeTabs slug={slug} active="ask" hasLip={hasLip} />
 
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-10 pb-24 border-t border-line">
+      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-10 pb-24 border-t border-line grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 lg:gap-10">
         <LandscapeAsk slug={slug} landscapeName={p.name} starters={starters} />
+        <aside
+          className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 self-start"
+          style={{
+            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -16px rgba(159,184,166,0.45)",
+            backgroundImage:
+              "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.55) 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(159,184,166,0.95) 0%, rgba(159,184,166,0.55) 60%, transparent 100%)",
+            }}
+          />
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--sage)] font-semibold inline-flex items-center gap-2">
+            <span className="w-3 h-px bg-[color:var(--sage)]" />
+            Guidance
+          </span>
+          <h3 className="font-sans text-[16px] font-medium text-[color:var(--navy-teal)] mt-3 leading-[1.3]">
+            How to ask
+          </h3>
+          <ul className="list-none p-0 mt-3 flex flex-col gap-2.5 font-sans text-[13.5px] text-ink-soft leading-[1.55]">
+            <li className="flex gap-2 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">01</span>
+              <span>Ask about specific interventions, budgets, packages, or phases.</span>
+            </li>
+            <li className="flex gap-2 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">02</span>
+              <span>Quote a passage and ask for the source — the assistant will cite.</span>
+            </li>
+            <li className="flex gap-2 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">03</span>
+              <span>Out-of-scope questions are politely refused, with a reason.</span>
+            </li>
+          </ul>
+          <div className="mt-5 pt-4 border-t border-line-soft">
+            <span className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+              Eight-turn cap per session
+            </span>
+          </div>
+        </aside>
       </section>
     </>
   );

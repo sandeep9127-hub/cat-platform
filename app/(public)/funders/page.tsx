@@ -81,13 +81,13 @@ export default function FundersPage() {
           </Block>
         </div>
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-l-2 border-amber-deep pl-4">
+          <div className="callout callout-amber">
             <span className="eyebrow block mb-2">No registration</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               Funders never need an account to read this Platform. There is no gated tier.
             </p>
           </div>
-          <div className="border-l-2 border-teal pl-4">
+          <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Briefings</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               For a portfolio briefing or citation format, write to{" "}
