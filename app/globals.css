@@ -49,6 +49,79 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* CAT mark — sequential arch pulse on parent .group hover */
+.cat-arch {
+  transform-origin: 32px 30px;
+  transform-box: fill-box;
+  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1), stroke-opacity 360ms ease-out;
+}
+.cat-leaf {
+  transform-origin: 32px 36px;
+  transform-box: fill-box;
+  transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.group:hover .cat-arch-1 {
+  transform: scale(1.10);
+  transition-delay: 0ms;
+}
+.group:hover .cat-arch-2 {
+  transform: scale(1.07);
+  transition-delay: 90ms;
+}
+.group:hover .cat-arch-3 {
+  transform: scale(1.04);
+  transition-delay: 180ms;
+}
+.group:hover .cat-leaf-left {
+  transform: rotate(-3deg) translateY(-1px);
+  transition-delay: 240ms;
+}
+.group:hover .cat-leaf-right {
+  transform: rotate(3deg) translateY(-1px);
+  transition-delay: 240ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-arch,
+  .cat-leaf {
+    transition: none;
+  }
+}
+
+/* Footer link — left-to-right amber underline reveal */
+.footer-link {
+  background-image: linear-gradient(to right, currentColor 0%, currentColor 100%);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: background-size 320ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease-out;
+}
+.footer-link:hover,
+.footer-link:focus-visible {
+  background-size: 100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-link {
+    transition: color 220ms ease-out;
+  }
+}
+
+/* Ask-bot intro pulse — fires once, ~8s after first paint, to invite discovery */
+@keyframes ask-bot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px -8px rgba(46, 117, 115, 0.45), 0 2px 4px rgba(26, 38, 37, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 12px 36px -8px rgba(248, 202, 124, 0.65), 0 4px 10px rgba(198, 140, 46, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+}
+.ask-bot-attract {
+  animation: ask-bot-pulse 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) 2;
+}
+
 /* Brand-tinted text selection across the site. */
 ::selection {
   background: rgba(248, 202, 124, 0.55); /* amber, ~55% */

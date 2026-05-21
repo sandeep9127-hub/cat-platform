@@ -174,27 +174,41 @@ export default async function LandingPage() {
       </Reveal>
 
       {/* THEMES */}
-      <Reveal as="section" className="bg-cream border-y border-line py-12 lg:py-16 mt-8">
+      <Reveal as="section" className="bg-cream border-y border-line py-14 lg:py-20 mt-8">
         <SectionHead title="Read by" italic="theme" meta="Eight working areas" />
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-line-soft border border-line-soft">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {themes.map((t, i) => (
             <Link
               key={t.slug}
               href={`/theme/${t.slug}`}
-              className="group bg-cream hover:bg-paper transition-colors duration-300 p-6 flex flex-col gap-3.5 min-h-[170px] relative reveal-stagger overflow-hidden"
+              className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-6 flex flex-col gap-4 min-h-[200px] reveal-stagger transition-all duration-300 ease-out hover:-translate-y-1"
               style={{
                 ["--c" as string]: t.colourHex,
                 animationDelay: `${i * 70}ms`,
+                boxShadow: `0 1px 2px rgba(26,38,37,0.05), 0 8px 24px -14px ${t.colourHex}55, inset 0 1px 0 rgba(255,255,255,0.6)`,
+                backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${t.colourHex}0d 100%), repeating-linear-gradient(-22deg, ${t.colourHex}0a 0px, ${t.colourHex}0a 1px, transparent 1px, transparent 14px)`,
               } as React.CSSProperties}
             >
+              {/* Theme-coloured top accent bar */}
               <span
-                className="w-[44px] h-[44px] rounded-[2px] relative flex items-center justify-center text-paper transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-2deg]"
-                style={{ background: t.colourHex }}
+                aria-hidden
+                className="absolute top-0 left-0 right-0 h-[3px]"
+                style={{
+                  background: `linear-gradient(90deg, ${t.colourHex} 0%, ${t.colourHex}cc 55%, transparent 100%)`,
+                }}
+              />
+              {/* Icon chip with inset highlight + theme glow */}
+              <span
+                className="w-[48px] h-[48px] rounded-[8px] relative flex items-center justify-center text-paper transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-2deg]"
+                style={{
+                  background: `linear-gradient(155deg, ${t.colourHex}, ${t.colourHex}d0)`,
+                  boxShadow: `0 6px 16px -8px ${t.colourHex}99, inset 0 1px 0 rgba(255,255,255,0.30)`,
+                }}
                 aria-hidden
               >
                 <ThemeIcon slug={t.slug} size={24} />
               </span>
-              <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.15] transition-colors duration-300 group-hover:text-[color:var(--c)]">
+              <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.18] transition-colors duration-300 group-hover:text-[color:var(--c)] max-w-[20ch]">
                 {t.name}
               </h3>
               <span className="font-mono text-[10px] uppercase tracking-mono-mid text-muted mt-auto flex gap-2 items-center">
@@ -203,14 +217,17 @@ export default async function LandingPage() {
                 </strong>{" "}
                 programmes
               </span>
-              <span className="absolute top-5 right-5 font-serif text-[18px] text-muted transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]">
+              <span
+                className="absolute top-5 right-5 font-serif text-[20px] text-muted transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
+                aria-hidden
+              >
                 →
               </span>
-              {/* Subtle colour wash on hover */}
+              {/* Hover wash, bottom-right */}
               <span
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle at 90% 110%, ${t.colourHex}14 0%, transparent 60%)`,
+                  background: `radial-gradient(circle at 92% 105%, ${t.colourHex}26 0%, transparent 62%)`,
                 }}
                 aria-hidden
               />

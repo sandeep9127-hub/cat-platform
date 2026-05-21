@@ -53,9 +53,13 @@ export function Footer() {
           ]}
         />
       </div>
-      <div className="relative max-w-page mx-auto mt-12 px-5 sm:px-7 lg:px-10 pt-6 border-t border-cream/10 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-cream/50">
-        <span>Transformation Hub · Vol. 01 · 2026</span>
-        <span>Made in India · For food systems</span>
+      <div className="relative max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
+        {/* Amber hairline divider above credit row */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber/50 to-transparent" aria-hidden />
+        <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-cream/50">
+          <span>Transformation Hub · Vol. 01 · 2026</span>
+          <span>Made in India · For food systems</span>
+        </div>
       </div>
     </footer>
   );
@@ -70,15 +74,16 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber mb-3.5 font-semibold">
+      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber mb-3.5 font-semibold inline-flex items-center gap-2">
+        <span className="w-3 h-px bg-amber" />
         {title}
       </h4>
-      <ul className="space-y-2 list-none p-0">
+      <ul className="space-y-2.5 list-none p-0">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="text-[13.5px] text-cream/85 hover:text-amber transition-colors"
+              className="footer-link relative inline-block text-[13.5px] text-cream/85 hover:text-amber transition-colors"
             >
               {l.label}
             </Link>

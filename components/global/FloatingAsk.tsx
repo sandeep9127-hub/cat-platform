@@ -50,6 +50,7 @@ export function FloatingAsk() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attract, setAttract] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,6 +58,32 @@ export function FloatingAsk() {
   const hidden = pathname.startsWith("/admin");
 
   const mode = detectMode(pathname);
+
+  // One-time attract pulse ~8s after first paint, if the user hasn't opened
+  // the bot yet (per session). Skipped if they prefer reduced motion.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (sessionStorage.getItem("ask-bot-seen") === "1") return;
+    const t = window.setTimeout(() => setAttract(true), 8000);
+    const stop = window.setTimeout(() => setAttract(false), 8000 + 2800);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(stop);
+    };
+  }, []);
+
+  // The first open dismisses any future attract animations for this session.
+  useEffect(() => {
+    if (open) {
+      setAttract(false);
+      try {
+        sessionStorage.setItem("ask-bot-seen", "1");
+      } catch {
+        // sessionStorage may be unavailable; safe to ignore.
+      }
+    }
+  }, [open]);
 
   // Reset history when scope changes (general ↔ specific landscape).
   const scopeKey = mode.scope === "landscape" ? mode.endpoint : "general";
@@ -138,7 +165,7 @@ export function FloatingAsk() {
           open
             ? "bg-deep-teal scale-95"
             : "bg-gradient-to-br from-deep-teal via-teal to-deep-teal hover:scale-105"
-        }`}
+        } ${attract && !open ? "ask-bot-attract" : ""}`}
       >
         {open ? (
           <X size={16} strokeWidth={2} aria-hidden />
