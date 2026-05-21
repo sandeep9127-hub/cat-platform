@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 type ParallaxBannerProps = {
   /** Optional image source. */
@@ -14,10 +14,16 @@ type ParallaxBannerProps = {
   strength?: number;
   /** Optional caption shown bottom-left. */
   caption?: string;
-  /** Override the aspect ratio. Default 5.9 / 1 (LinkedIn cover) — pass a string like "21 / 9". */
+  /** Override the aspect ratio. Default 5.9 / 1 (LinkedIn cover) — ignored when `children` provided. */
   aspect?: string;
-  /** Override the min height in px. Default 160. */
+  /** Override the min height in px. Default 160 banner / 540 hero. */
   minHeight?: number;
+  /**
+   * When provided, the banner renders as a full immersive hero with the
+   * children laid over the media. Aspect ratio is dropped in favour of
+   * a content-driven height; the media fills the container with object-cover.
+   */
+  children?: ReactNode;
 };
 
 /**
@@ -34,11 +40,14 @@ export function ParallaxBanner({
   strength = 0.25,
   caption,
   aspect = "5.9 / 1",
-  minHeight = 160,
+  minHeight,
+  children,
 }: ParallaxBannerProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLDivElement | null>(null);
   const ticking = useRef(false);
+  const isHero = Boolean(children);
+  const resolvedMinHeight = minHeight ?? (isHero ? 540 : 160);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -81,35 +90,43 @@ export function ParallaxBanner({
 
   return (
     <section
-      aria-label={hasVideo ? "Looping hero animation" : hasImage ? "Cover image" : "Brand banner"}
+      aria-label={
+        hasVideo
+          ? isHero
+            ? "Hero with looping animation"
+            : "Looping hero animation"
+          : hasImage
+            ? "Cover image"
+            : "Brand banner"
+      }
       ref={frameRef}
-      className="relative w-full overflow-hidden border-y border-line"
+      className="relative w-full overflow-hidden bg-deep-teal"
       style={{
-        aspectRatio: aspect,
-        minHeight,
+        aspectRatio: isHero ? undefined : aspect,
+        minHeight: resolvedMinHeight,
         background: hasMedia
           ? undefined
-          : // Editorial gradient base: deep-teal pool with warm amber bloom
-            "radial-gradient(ellipse 60% 120% at 12% 50%, rgba(248,202,124,0.32), transparent 60%), radial-gradient(ellipse 70% 140% at 92% 60%, rgba(146,156,197,0.30), transparent 65%), linear-gradient(110deg, #1f3534 0%, #2c4544 40%, #334B4A 70%, #3a5856 100%)",
+          : "radial-gradient(ellipse 60% 120% at 12% 50%, rgba(248,202,124,0.32), transparent 60%), radial-gradient(ellipse 70% 140% at 92% 60%, rgba(146,156,197,0.30), transparent 65%), linear-gradient(110deg, #1f3534 0%, #2c4544 40%, #334B4A 70%, #3a5856 100%)",
       }}
     >
       {/* Back parallax layer */}
       <div
         ref={imgRef}
         aria-hidden
-        className="absolute will-change-transform"
+        className="absolute inset-0 will-change-transform"
         style={
           hasImage
             ? {
-                inset: "-15% 0",
+                top: "-15%",
+                bottom: "-15%",
                 backgroundImage: `url(${src})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }
             : hasVideo
-              ? { inset: "-15% 0" }
-              : { inset: "-20% 0" }
+              ? { top: "-15%", bottom: "-15%" }
+              : { top: "-20%", bottom: "-20%" }
         }
       >
         {hasVideo && (
@@ -126,7 +143,6 @@ export function ParallaxBanner({
           />
         )}
         {!hasMedia && (
-          // Soft horizon line + repeating diagonal hatch motif. Pure CSS, no asset cost.
           <div
             className="absolute inset-0"
             style={{
@@ -137,42 +153,74 @@ export function ParallaxBanner({
         )}
       </div>
 
-      {/* Mid layer — large brand glyph row (only on the no-media variant) */}
+      {/* Mid layer — large brand glyph row (no-media variant only) */}
       {!hasMedia && (
         <div
           aria-hidden
           className="absolute will-change-transform pointer-events-none"
-          style={{
-            inset: 0,
-            transform: "translate3d(0,0,0)",
-          }}
+          style={{ inset: 0, transform: "translate3d(0,0,0)" }}
         >
           <BrandGlyphRow />
         </div>
       )}
 
-      {/* Optional alt text */}
       {hasMedia && alt && <span className="sr-only">{alt}</span>}
 
-      {/* Legibility veil (media variant only) */}
-      {hasMedia && (
+      {/* Atmospheric flare and legibility veil */}
+      {hasMedia &&
+        (isHero ? (
+          <>
+            {/* Warm flare bloom upper-left — looks like sun catching the scene */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none mix-blend-screen"
+              style={{
+                background:
+                  "radial-gradient(ellipse 60% 70% at 12% 18%, rgba(255,214,140,0.42), transparent 60%), radial-gradient(ellipse 50% 60% at 88% 24%, rgba(146,156,197,0.18), transparent 65%)",
+              }}
+            />
+            {/* Side and bottom darkening for text legibility, plus page blend */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(26,38,37,0.0) 0%, rgba(26,38,37,0.20) 55%, rgba(26,38,37,0.78) 100%), linear-gradient(90deg, rgba(26,38,37,0.55) 0%, rgba(26,38,37,0.05) 45%, rgba(26,38,37,0.05) 70%, rgba(26,38,37,0.35) 100%)",
+              }}
+            />
+            {/* Page blend at the very bottom: fades video into paper, so the section doesn't read as pasted-in */}
+            <div
+              aria-hidden
+              className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(251,248,242,0) 0%, rgba(251,248,242,0.55) 60%, rgba(251,248,242,1) 100%)",
+              }}
+            />
+          </>
+        ) : (
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(26,38,37,0.30) 0%, rgba(26,38,37,0.04) 38%, rgba(26,38,37,0.04) 62%, rgba(26,38,37,0.30) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 60%, rgba(26,38,37,0.30) 100%)",
+            }}
+          />
+        ))}
+
+      {/* Hero content overlay */}
+      {isHero && <div className="relative z-10">{children}</div>}
+
+      {/* Thin amber underline (banner variant; hero blends into page instead) */}
+      {!isHero && (
         <div
           aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(26,38,37,0.30) 0%, rgba(26,38,37,0.04) 38%, rgba(26,38,37,0.04) 62%, rgba(26,38,37,0.30) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 60%, rgba(26,38,37,0.30) 100%)",
-          }}
+          className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber to-transparent"
         />
       )}
 
-      {/* Thin amber underline */}
-      <div
-        aria-hidden
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber to-transparent"
-      />
-
-      {caption && (
+      {caption && !isHero && (
         <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
           <span className="inline-block w-4 h-px bg-amber align-middle mr-2" />
           {caption}

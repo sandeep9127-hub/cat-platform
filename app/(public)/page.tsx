@@ -58,84 +58,96 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        {/* Editorial gradient wash: warm amber bloom upper-left, soft teal pool lower-right */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden
-          style={{
-            background:
-              "radial-gradient(ellipse 55% 60% at -5% -10%, rgba(248,202,124,0.28), transparent 60%), radial-gradient(ellipse 60% 80% at 105% 110%, rgba(46,117,115,0.18), transparent 65%)",
-          }}
-        />
-        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
+      {/* IMMERSIVE HERO — looping video backdrop, parallaxed on scroll, text laid over with atmospheric flare */}
+      <ParallaxBanner
+        videoSrc="/videos/hero-parallax.mp4"
+        alt="Seamless looping parallax animation, evoking the landscapes the Hub documents"
+        strength={0.28}
+      >
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-28 sm:pb-32 lg:pb-40 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end min-h-[540px] sm:min-h-[620px] lg:min-h-[680px]">
           <div>
-            <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6 flex-wrap reveal-stagger" style={{ animationDelay: "0ms" }}>
-              <span className="inline-flex items-center gap-1.5 mono-label">
-                <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" aria-hidden />
+            <div
+              className="flex items-center gap-3 sm:gap-4 mb-6 flex-wrap reveal-stagger"
+              style={{ animationDelay: "0ms" }}
+            >
+              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+                <Sparkles size={11} strokeWidth={1.8} className="text-amber" aria-hidden />
                 Vol. 01 · Edition 2026
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-deep" />
-              <span className="mono-label">
-                Updated {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              <span className="w-1.5 h-1.5 rounded-full bg-amber" />
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-paper/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+                Updated{" "}
+                {lastUpdate.toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
               </span>
             </div>
-            <h1 className="font-serif font-normal text-hero-xl text-ink reveal-stagger" style={{ animationDelay: "120ms" }}>
+            <h1
+              className="font-serif font-normal text-hero-xl text-paper drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)] reveal-stagger"
+              style={{ animationDelay: "120ms" }}
+            >
               A dashboard for{" "}
-              <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>
+              <em
+                className="hero-italic italic text-amber not-italic"
+                style={{ fontStyle: "italic" }}
+              >
                 sustainable
               </em>
               <br />
               food systems.
             </h1>
-            <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[42ch] mt-6 sm:mt-7 font-light reveal-stagger" style={{ animationDelay: "300ms" }}>
+            <p
+              className="font-serif italic text-[17px] sm:text-[19px] text-paper/85 leading-[1.5] max-w-[44ch] mt-6 sm:mt-7 font-light drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] reveal-stagger"
+              style={{ animationDelay: "300ms" }}
+            >
               Find the work that is actually changing how India grows, eats, and sustains.
               Programmes are read, not pitched. Limitations sit beside achievements. The
               Transformation Hub is curated by the Consortium for Agroecological Transformations.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3 reveal-stagger" style={{ animationDelay: "440ms" }}>
+            <div
+              className="mt-8 flex flex-wrap gap-3 reveal-stagger"
+              style={{ animationDelay: "440ms" }}
+            >
               <Link
                 href="/landscapes"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono-wide px-4 py-2.5 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_1px_0_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.10)] hover:from-teal hover:to-deep-teal transition-all"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-4 py-2.5 rounded-full bg-amber text-deep-teal font-semibold shadow-[0_8px_24px_-8px_rgba(248,202,124,0.55),inset_0_1px_0_rgba(255,255,255,0.30)] hover:bg-amber-deep hover:text-paper transition-all"
               >
                 Browse the 11 landscapes
                 <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
               </Link>
               <Link
                 href="/agent"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono-wide px-4 py-2.5 rounded-full border border-deep-teal/30 text-deep-teal hover:border-deep-teal hover:bg-paper transition-colors"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-4 py-2.5 rounded-full border border-paper/40 text-paper backdrop-blur-sm bg-deep-teal/20 hover:border-amber hover:text-amber hover:bg-deep-teal/30 transition-colors"
               >
                 Ask the assistant
               </Link>
             </div>
           </div>
-          <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "560ms" }}>
-            <span className="eyebrow">Editor&apos;s note</span>
-            <p className="text-[14px] text-ink-soft max-w-[40ch] mt-3.5">
-              The Hub covers credible food systems work nationally, not only CAT&apos;s
-              portfolio. Government missions, NGO programmes, federations, market infrastructure.
-              The bar is honesty, not affiliation.
-            </p>
-            <div className="mt-4 flex gap-2.5 items-center">
-              <span className="w-6 h-px bg-amber-deep" />
-              <span className="font-mono text-[10.5px] uppercase tracking-mono-mid text-ink-soft">
-                Curated, not crowdsourced
+          <aside
+            className="lg:self-end lg:pb-1 reveal-stagger"
+            style={{ animationDelay: "560ms" }}
+          >
+            <div className="bg-deep-teal/45 backdrop-blur-md border border-paper/15 rounded-[3px] p-5 lg:p-6 max-w-[40ch]">
+              <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber font-semibold">
+                Editor&apos;s note
               </span>
+              <p className="text-[13.5px] text-paper/85 mt-3 leading-[1.55]">
+                The Hub covers credible food systems work nationally, not only CAT&apos;s
+                portfolio. Government missions, NGO programmes, federations, market infrastructure.
+                The bar is honesty, not affiliation.
+              </p>
+              <div className="mt-4 flex gap-2.5 items-center">
+                <span className="w-6 h-px bg-amber" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-paper/75">
+                  Curated, not crowdsourced
+                </span>
+              </div>
             </div>
           </aside>
         </div>
-      </section>
-
-      {/* PARALLAX BANNER — looping hero animation, parallaxed on scroll */}
-      <ParallaxBanner
-        videoSrc="/videos/hero-parallax.mp4"
-        alt="Seamless looping parallax animation, evoking landscapes the Hub documents"
-        strength={0.30}
-        aspect="21 / 9"
-        minHeight={260}
-        caption="Consortium for Agroecological Transformations"
-      />
+      </ParallaxBanner>
 
       {/* STAT STRIP */}
       <StatStrip
