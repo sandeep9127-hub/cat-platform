@@ -40,32 +40,93 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
   );
 }
 
-/** Inline editorial footnote explaining all three tiers. */
+type LegendItem = {
+  label: string;
+  copy: string;
+  bar: string;
+  soft: string;
+  glow: string;
+  iconBg: string;
+  iconFg: string;
+};
+
+const LEGEND_ITEMS: LegendItem[] = [
+  {
+    label: "CAT Authored",
+    copy: "Researched and written by CAT editors. Highest editorial weight.",
+    bar: "#C68C2E",
+    soft: "rgba(248,202,124,0.14)",
+    glow: "rgba(248,202,124,0.26)",
+    iconBg: "rgba(248,202,124,0.22)",
+    iconFg: "#C68C2E",
+  },
+  {
+    label: "CAT Endorsed",
+    copy: "Self-submitted by the lead organisation, reviewed and endorsed.",
+    bar: "#2E7573",
+    soft: "rgba(46,117,115,0.10)",
+    glow: "rgba(46,117,115,0.18)",
+    iconBg: "rgba(46,117,115,0.12)",
+    iconFg: "#2E7573",
+  },
+  {
+    label: "CAT Listed",
+    copy: "The programme is documented. CAT has not done deep editorial work.",
+    bar: "#929CC5",
+    soft: "rgba(146,156,197,0.10)",
+    glow: "rgba(146,156,197,0.20)",
+    iconBg: "rgba(146,156,197,0.14)",
+    iconFg: "#5C6796",
+  },
+];
+
+/** Inline editorial footnote explaining all three tiers, as floating tiles. */
 export function EndorsementLegend({ className }: { className?: string }) {
   return (
     <aside
-      className={`max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-5 ${className ?? ""}`}
+      className={`max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-8 ${className ?? ""}`}
       aria-label="Endorsement tier legend"
     >
-      <div className="border-l-2 border-amber-deep pl-4 py-1 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-        <span>
-          <strong className="text-amber-deep font-semibold mr-1.5">CAT Authored</strong>
-          <span className="normal-case tracking-normal font-sans text-[12px] text-ink-soft">
-            researched + written by CAT
-          </span>
-        </span>
-        <span>
-          <strong className="text-teal font-semibold mr-1.5">CAT Endorsed</strong>
-          <span className="normal-case tracking-normal font-sans text-[12px] text-ink-soft">
-            self-submitted, reviewed by CAT
-          </span>
-        </span>
-        <span>
-          <strong className="text-muted font-semibold mr-1.5">CAT Listed</strong>
-          <span className="normal-case tracking-normal font-sans text-[12px] text-ink-soft">
-            present, but not vouched for
-          </span>
-        </span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+        Endorsement tiers
+      </span>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        {LEGEND_ITEMS.map((it) => (
+          <div
+            key={it.label}
+            className="group relative overflow-hidden rounded-[6px] border border-line bg-paper p-4 transition-all duration-300 ease-out hover:-translate-y-0.5"
+            style={{
+              boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -10px ${it.glow}`,
+              backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${it.soft} 100%)`,
+            }}
+          >
+            <span
+              aria-hidden
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              style={{
+                background: `linear-gradient(90deg, ${it.bar} 0%, ${it.bar}cc 60%, transparent 100%)`,
+              }}
+            />
+            <div className="relative flex items-center gap-2 mb-2">
+              <span
+                aria-hidden
+                className="w-5 h-5 rounded-[3px] inline-flex items-center justify-center font-mono text-[10px] font-bold"
+                style={{ background: it.iconBg, color: it.iconFg }}
+              >
+                {it.label.split(" ")[1]?.[0] ?? "·"}
+              </span>
+              <span
+                className="font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold"
+                style={{ color: it.iconFg }}
+              >
+                {it.label}
+              </span>
+            </div>
+            <p className="relative font-sans text-[12.5px] text-ink-soft leading-[1.5] max-w-[36ch]">
+              {it.copy}
+            </p>
+          </div>
+        ))}
       </div>
     </aside>
   );

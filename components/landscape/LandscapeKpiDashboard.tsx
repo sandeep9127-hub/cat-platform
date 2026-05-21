@@ -105,8 +105,8 @@ export function LandscapeKpiDashboard(props: KpiDashboardProps) {
           <LensSlicer lens={lens} setLens={setLens} hasMoney={hasMoney} />
         </div>
 
-        {/* KPI grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border-t border-l border-line">
+        {/* KPI grid — floating tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {tiles.map((t, i) => (
             <KpiTile key={`${lens}-${i}`} label={t.label} value={t.value} sub={t.sub} accent={lens} />
           ))}
@@ -204,30 +204,52 @@ function KpiTile({
   sub: string;
   accent: Lens;
 }) {
-  const accentColor =
-    accent === "money" ? "text-deep-teal" : accent === "people" ? "text-teal" : "text-deep-teal";
-  // Subtle directional gradient: cream → paper, with a faint coloured spotlight by lens
-  const lensSpotlight =
+  // Lens-aware brand accent for the top bar, spotlight, and shadow tint.
+  const tone =
     accent === "money"
-      ? "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(248,202,124,0.10), transparent 65%)"
+      ? {
+          bar: "#C68C2E",
+          soft: "rgba(248,202,124,0.14)",
+          glow: "rgba(248,202,124,0.28)",
+        }
       : accent === "people"
-        ? "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(46,117,115,0.08), transparent 65%)"
-        : "radial-gradient(ellipse 90% 60% at 100% 100%, rgba(146,156,197,0.10), transparent 65%)";
+        ? {
+            bar: "#2E7573",
+            soft: "rgba(46,117,115,0.09)",
+            glow: "rgba(46,117,115,0.18)",
+          }
+        : {
+            bar: "#929CC5",
+            soft: "rgba(146,156,197,0.12)",
+            glow: "rgba(146,156,197,0.22)",
+          };
+
   return (
     <div
-      className="relative border-r border-b border-line py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] overflow-hidden"
+      className="group relative overflow-hidden rounded-[6px] border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-all duration-300 ease-out hover:-translate-y-0.5"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.55) 100%)",
+        boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -12px ${tone.glow}`,
+        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,
       }}
     >
-      <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: lensSpotlight }} />
+      <span
+        aria-hidden
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: `linear-gradient(90deg, ${tone.bar} 0%, ${tone.bar}cc 60%, transparent 100%)`,
+        }}
+      />
+      <span
+        aria-hidden
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 90% 70% at 100% 100%, ${tone.glow}, transparent 65%)`,
+        }}
+      />
       <span className="relative font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted leading-tight">
         {label}
       </span>
-      <div
-        className={`relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] ${accentColor} font-medium`}
-      >
+      <div className="relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] text-deep-teal font-medium">
         {value}
       </div>
       <span className="relative font-serif text-[12.5px] italic text-muted leading-snug">{sub}</span>
