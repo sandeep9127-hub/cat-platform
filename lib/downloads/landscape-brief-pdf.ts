@@ -131,40 +131,54 @@ function hairline(ctx: Ctx, opts: { gap?: number; color?: ReturnType<typeof rgb>
 }
 
 // ─── CAT lockup ──────────────────────────────────────────────────────────
-// Compact vector form of the CAT symbol (three concentric arches + two
-// leaves), drawn at any height. Used in every page header.
+// Vector reconstruction of the official CAT mark. The brand symbol is a
+// stack of three teal *crescent* bands (not outlined arcs) plus two
+// periwinkle leaf shapes rising from the base. Earlier versions drew the
+// arches as thin strokes which read weak; this version uses filled
+// crescents to match the official asset.
+//
+// A crescent is the area between two concentric half-circles, drawn as a
+// single closed SVG path so pdf-lib can fill it solid in one call.
 function drawCatSymbol(page: PDFPage, x: number, y: number, height: number) {
   const cx = x + height / 2;
-  const baseY = y + height * 0.42;
-  // Arches — outer to inner
-  const arcs = [
-    { r: height * 0.42, stroke: 1.1 },
-    { r: height * 0.30, stroke: 1.0 },
-    { r: height * 0.18, stroke: 0.9 },
+  const baseY = y + height * 0.40;
+  // Outer radius / inner radius pairs for each crescent band. Tuned to
+  // visually match the official lockup proportions.
+  const bands = [
+    { outer: 0.46, inner: 0.40 },
+    { outer: 0.34, inner: 0.29 },
+    { outer: 0.22, inner: 0.18 },
   ];
-  for (const a of arcs) {
-    page.drawSvgPath(`M ${-a.r} 0 A ${a.r} ${a.r} 0 0 1 ${a.r} 0`, {
+  for (const b of bands) {
+    const oR = height * b.outer;
+    const iR = height * b.inner;
+    // Filled crescent: half-circle outer rim sweeping CW, then back along
+    // the inner rim CCW, closed at the baseline.
+    const path =
+      `M ${-oR} 0 ` +
+      `A ${oR} ${oR} 0 0 1 ${oR} 0 ` +
+      `L ${iR} 0 ` +
+      `A ${iR} ${iR} 0 0 0 ${-iR} 0 Z`;
+    page.drawSvgPath(path, {
       x: cx,
       y: baseY,
-      borderColor: C.teal,
-      borderWidth: a.stroke,
+      color: C.teal,
       scale: 1,
     });
   }
-  // Two leaves rising from the base
-  const leafScale = height * 0.018;
-  page.drawSvgPath("M 0 1 C -5 4, -6 11, -2 16 C 0 13, 1 8, 0 1 Z", {
+  // Two periwinkle leaf shapes rising from the centre baseline. The
+  // official mark renders these as solid filled paths, not outlines.
+  const leafScale = height * 0.024;
+  page.drawSvgPath("M 0 0.5 C -4.5 3.5, -5.5 10, -1.5 15 C 0.5 12, 1 7, 0 0.5 Z", {
     x: cx,
     y: baseY,
-    borderColor: C.periwinkle,
-    borderWidth: 0.9,
+    color: C.periwinkle,
     scale: leafScale,
   });
-  page.drawSvgPath("M 0 1 C 5 4, 6 11, 2 16 C 0 13, -1 8, 0 1 Z", {
+  page.drawSvgPath("M 0 0.5 C 4.5 3.5, 5.5 10, 1.5 15 C -0.5 12, -1 7, 0 0.5 Z", {
     x: cx,
     y: baseY,
-    borderColor: C.periwinkle,
-    borderWidth: 0.9,
+    color: C.periwinkle,
     scale: leafScale,
   });
 }
@@ -173,24 +187,55 @@ function drawCatLockup(
   ctx: Ctx,
   x: number,
   y: number,
-  opts: { symbolHeight?: number; wordmark?: boolean } = {}
+  opts: { symbolHeight?: number; wordmark?: boolean; compact?: boolean } = {}
 ) {
-  const sh = opts.symbolHeight ?? 22;
+  const sh = opts.symbolHeight ?? 28;
   drawCatSymbol(ctx.page, x, y, sh);
-  if (opts.wordmark !== false) {
-    const tx = x + sh + 8;
-    const labelSize = 7.5;
-    const lineH = labelSize * 1.22;
-    const lines = ["Consortium for", "Agroecological", "Transformations"];
-    for (let i = 0; i < lines.length; i++) {
-      ctx.page.drawText(lines[i], {
-        x: tx,
-        y: y + sh - labelSize - 2 - i * lineH,
-        size: labelSize,
-        font: ctx.sansBold,
-        color: C.navy,
-      });
-    }
+  if (opts.wordmark === false) return;
+
+  const tx = x + sh + 10;
+  if (opts.compact) {
+    // Two-line compact lockup for cover + colophon. Larger, more legible
+    // than the previous three-line stack.
+    const big = 10.5;
+    const small = 8;
+    ctx.page.drawText("Consortium for Agroecological", {
+      x: tx,
+      y: y + sh - big - 1,
+      size: big,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    ctx.page.drawText("Transformations", {
+      x: tx,
+      y: y + sh - big - 1 - (big * 1.2),
+      size: big,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    // Acronym tag
+    ctx.page.drawText("CAT  ·  India", {
+      x: tx,
+      y: y + 2,
+      size: small,
+      font: ctx.mono,
+      color: C.amber,
+    });
+    return;
+  }
+
+  // Default: three-line lockup, but at a readable size
+  const labelSize = 9;
+  const lineH = labelSize * 1.20;
+  const lines = ["Consortium for", "Agroecological", "Transformations"];
+  for (let i = 0; i < lines.length; i++) {
+    ctx.page.drawText(lines[i], {
+      x: tx,
+      y: y + sh - labelSize - 2 - i * lineH,
+      size: labelSize,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
   }
 }
 
@@ -206,15 +251,24 @@ function newPage(ctx: Ctx, title: string) {
 }
 
 function drawPageHeader(ctx: Ctx, title: string) {
-  // CAT symbol top-left
-  drawCatSymbol(ctx.page, M.left, PAGE.h - M.top + 4, 14);
-  // Tiny brand mark, navy
-  ctx.page.drawText("CAT  ·  Transformation Hub", {
-    x: M.left + 20,
-    y: PAGE.h - M.top + 7,
-    size: 7,
+  // Symbol-only header mark — at 16pt the brand symbol now reads as a
+  // recognizable badge thanks to the filled crescents. Wordmark is
+  // omitted because it's unreadable at this size; the acronym carries
+  // brand identity instead.
+  drawCatSymbol(ctx.page, M.left, PAGE.h - M.top + 2, 16);
+  ctx.page.drawText("CAT", {
+    x: M.left + 22,
+    y: PAGE.h - M.top + 10,
+    size: 9,
     font: ctx.sansBold,
     color: C.navy,
+  });
+  ctx.page.drawText("TRANSFORMATION HUB", {
+    x: M.left + 22,
+    y: PAGE.h - M.top + 2,
+    size: 6.5,
+    font: ctx.sansBold,
+    color: C.muted,
   });
   // Page title, right-aligned
   const titleUpper = title.toUpperCase();
@@ -330,8 +384,11 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
   // No page chrome on cover — clean, centred composition.
   ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: PAGE.h, color: C.paper });
 
-  // CAT lockup, top-left
-  drawCatLockup(ctx, M.left, PAGE.h - M.top - 26, { symbolHeight: 26 });
+  // CAT lockup, top-left — full compact two-line wordmark
+  drawCatLockup(ctx, M.left, PAGE.h - M.top - 36, {
+    symbolHeight: 36,
+    compact: true,
+  });
 
   // Edition meta, top-right
   const editionLine = "VOL. 01  ·  EDITION 2026";
@@ -1235,18 +1292,11 @@ function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
 
   hairline(ctx);
 
-  // Imprint block
-  drawCatLockup(ctx, M.left, ctx.y - 30, { symbolHeight: 24 });
-  ctx.page.drawText("CONSORTIUM FOR AGROECOLOGICAL TRANSFORMATIONS", {
-    x: M.left + 110,
-    y: ctx.y - 16,
-    size: 8,
-    font: ctx.sansBold,
-    color: C.navy,
-  });
+  // Imprint block — full compact lockup with site URL as caption
+  drawCatLockup(ctx, M.left, ctx.y - 36, { symbolHeight: 36, compact: true });
   ctx.page.drawText("Transformation Hub  ·  cat-platform-fawn.vercel.app", {
-    x: M.left + 110,
-    y: ctx.y - 28,
+    x: M.left,
+    y: ctx.y - 50,
     size: 8,
     font: ctx.sans,
     color: C.muted,
