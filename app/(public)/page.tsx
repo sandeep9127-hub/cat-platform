@@ -8,7 +8,7 @@ import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
 import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
-import { Sparkles, ArrowUpRight, Quote } from "lucide-react";
+import { Sparkles, ArrowUpRight, Feather, BookMarked } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { ParallaxBanner } from "@/components/home/ParallaxBanner";
@@ -130,18 +130,44 @@ export default async function LandingPage() {
       </ParallaxBanner>
 
       {/* EDITOR'S NOTE — sits on paper, below the hero, never over the video */}
-      <section className="relative border-b border-line bg-cream/60">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-x-8 gap-y-3 items-baseline">
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold whitespace-nowrap">
+      <section
+        className="relative border-b border-line"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg, rgba(232,240,234,0.65) 0%, rgba(251,248,242,0.85) 45%, rgba(248,202,124,0.10) 100%)",
+        }}
+      >
+        <span
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(46,117,115,0.45) 30%, rgba(248,202,124,0.55) 75%, transparent 100%)",
+          }}
+        />
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-x-8 gap-y-3 items-center">
+          <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold whitespace-nowrap">
+            <span
+              className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper"
+              aria-hidden
+              style={{
+                background:
+                  "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
+                boxShadow:
+                  "0 4px 12px -6px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+              }}
+            >
+              <Feather size={13} strokeWidth={1.8} />
+            </span>
             Editor&apos;s note
           </span>
           <p className="font-serif text-[14.5px] text-ink-soft leading-[1.55] max-w-[80ch]">
-            The Hub covers credible food systems work nationally, not only CAT&apos;s
+            The Hub covers credible food systems work nationally, not only the Consortium&apos;s
             portfolio. Government missions, NGO programmes, federations, market infrastructure.
             The bar is honesty, not affiliation.
           </p>
           <span className="hidden lg:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep whitespace-nowrap">
-            <span className="w-5 h-px bg-amber-deep" />
+            <span className="w-5 h-px bg-gradient-to-r from-transparent via-amber-deep to-amber-deep" />
             Curated, not crowdsourced
           </span>
         </div>
@@ -288,18 +314,21 @@ function FeaturedEntry({ entry }: { entry: Awaited<ReturnType<typeof getPublishe
               "radial-gradient(ellipse 50% 60% at 110% 110%, rgba(159,184,166,0.30), transparent 60%)",
           }}
         />
-        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 lg:gap-12 p-7 sm:p-10 lg:p-12">
-          <div className="hidden lg:block">
-            <Quote
-              size={64}
-              strokeWidth={1.2}
-              className="text-teal/35"
-              aria-hidden
-            />
-          </div>
-          <div className="max-w-[60ch]">
-            <div className="flex gap-3.5 items-center mb-5 font-mono text-[10.5px] uppercase tracking-mono-wide">
-              <span className="text-teal font-semibold">Featured programme</span>
+        <div className="relative p-7 sm:p-10 lg:p-12">
+          <div className="max-w-[64ch]">
+            <div className="flex gap-2.5 items-center mb-5 font-mono text-[10.5px] uppercase tracking-mono-wide flex-wrap">
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-paper font-semibold"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
+                  boxShadow:
+                    "0 4px 12px -6px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.20)",
+                }}
+              >
+                <BookMarked size={11} strokeWidth={1.9} aria-hidden />
+                Featured programme
+              </span>
               <span className="text-line">·</span>
               <span className="text-amber-deep">{endorsement}</span>
               <span className="text-line">·</span>
@@ -313,7 +342,13 @@ function FeaturedEntry({ entry }: { entry: Awaited<ReturnType<typeof getPublishe
             </p>
             <Link
               href={`/entry/${entry.slug}`}
-              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono-wide text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono-wide px-4 py-2.5 rounded-full text-deep-teal font-semibold transition-all hover:-translate-y-0.5"
+              style={{
+                background:
+                  "linear-gradient(135deg, #F8CA7C 0%, #E0A65A 100%)",
+                boxShadow:
+                  "0 8px 20px -10px rgba(198,140,46,0.55), inset 0 1px 0 rgba(255,255,255,0.30)",
+              }}
             >
               Read the entry
               <ArrowUpRight size={13} strokeWidth={2} aria-hidden />

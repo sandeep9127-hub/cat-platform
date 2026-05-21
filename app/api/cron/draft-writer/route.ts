@@ -16,7 +16,7 @@ export const maxDuration = 300;
  *
  * Triggered by admin promotion, not on a schedule.
  */
-const SYSTEM_PROMPT = `You are CAT Platform's draft writer. You read public source content about a food-systems programme in India and produce a draft Entry for the CAT editor to review.
+const SYSTEM_PROMPT = `You are the Transformation Hub's draft writer. You read public source content about a food-systems programme in India and produce a draft Entry for the CAT editor to review.
 
 You must respond with valid JSON only — no markdown, no preamble.
 

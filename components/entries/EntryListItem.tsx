@@ -27,21 +27,10 @@ export type EntryListItemData = {
 
 export function EntryListItem({ data }: { data: EntryListItemData }) {
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
-  const isExternal = Boolean(data.externalUrl);
-  const Wrapper = isExternal ? "a" : Link;
-  const wrapperProps = isExternal
-    ? {
-        href: data.externalUrl,
-        target: "_blank" as const,
-        rel: "noreferrer",
-      }
-    : { href: `/entry/${data.slug}` };
-  return (
-    <Wrapper
-      {...(wrapperProps as never)}
-      className="block group border-b border-line-soft transition-colors hover:bg-teal-wash/40 focus-visible:bg-teal-wash/40 focus-visible:outline-none"
-    >
-      <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
+  const wrapperClass =
+    "block group border-b border-line-soft transition-colors hover:bg-teal-wash/40 focus-visible:bg-teal-wash/40 focus-visible:outline-none";
+  const body = (
+    <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
         <div className="font-mono text-[10.5px] sm:text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
           <span className="hidden sm:inline">No.</span>
           <span className="text-amber-deep font-semibold">
@@ -80,7 +69,25 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <EndorsementBadge tier={data.catEndorsement} />
         </div>
       </article>
-    </Wrapper>
+  );
+
+  if (data.externalUrl) {
+    return (
+      <a
+        href={data.externalUrl}
+        target="_blank"
+        rel="noreferrer"
+        className={wrapperClass}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={`/entry/${data.slug}`} className={wrapperClass}>
+      {body}
+    </Link>
   );
 }
 

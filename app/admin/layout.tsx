@@ -11,7 +11,7 @@ function isAdminAccessAllowed(): boolean {
   return process.env.ADMIN_BYPASS === "1";
 }
 
-export const metadata = { title: "Admin · CAT Platform" };
+export const metadata = { title: "Admin · Transformation Hub" };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   if (!isAdminAccessAllowed()) notFound();

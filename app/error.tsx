@@ -12,7 +12,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Hook for Sentry / observability later
-    console.error("[CAT Platform] runtime error:", error);
+    console.error("[Transformation Hub] runtime error:", error);
   }, [error]);
 
   return (

@@ -16,7 +16,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 /**
- * Everything CAT Platform lives in a dedicated Postgres schema so it can
+ * Everything in the Transformation Hub lives in a dedicated Postgres schema so it can
  * cohabit with unrelated apps in the same database without collisions.
  */
 export const catSchema = pgSchema("cat");

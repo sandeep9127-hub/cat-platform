@@ -148,10 +148,10 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL,
         to: body.email,
-        subject: "Your CAT Platform submission",
+        subject: "Your Transformation Hub submission",
         text: `Thank you. Your submission for "${body.title}" is in the editorial queue. We will write when we decide. Typical turnaround is two weeks.
 
-— The editors, CAT Platform`,
+— The editors, Transformation Hub (by the Consortium for Agroecological Transformation)`,
       });
     } catch {
       // Non-fatal; the submission is recorded regardless.

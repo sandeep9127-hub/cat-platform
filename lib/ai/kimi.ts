@@ -2,7 +2,7 @@ import "server-only";
 
 /**
  * Kimi K2 (Moonshot AI) via NVIDIA's hosted API — OpenAI-compatible chat completions.
- * Free tier; primary LLM for the CAT Platform agent preview and draft writer.
+ * Free tier; primary LLM for the Transformation Hub agent preview and draft writer.
  *
  * Auth: NVIDIA_API_KEY (nvapi-...) from https://build.nvidia.com.
  */

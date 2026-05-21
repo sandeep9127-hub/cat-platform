@@ -15,7 +15,7 @@ const DISCOVERY_MODEL = "claude-sonnet-4-6";
  * food-systems programmes that aren't yet in the library. Output lands in
  * discovery_candidates as `pending_triage` rows for the CAT editor to triage.
  */
-const SYSTEM_PROMPT = `You are CAT Platform's discovery agent. Your job is to find NEW credible food-systems programmes in India that the platform has not yet documented.
+const SYSTEM_PROMPT = `You are the Transformation Hub's discovery agent. Your job is to find NEW credible food-systems programmes in India that the platform has not yet documented.
 
 You may use the web_search tool, restricted to .gov.in, .org, and major news domains.
 

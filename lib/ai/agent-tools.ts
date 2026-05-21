@@ -10,7 +10,7 @@ export const AGENT_TOOLS = [
   {
     name: "search_entries",
     description:
-      "Search the CAT Platform library of published programme entries by free-text query and optional filters. Returns a ranked list of matching entries with their slug, title, tagline, state, scale, themes, and endorsement tier. Use this for any reader question about specific programmes, geographies, themes, or types of work.",
+      "Search the Transformation Hub library of published programme entries by free-text query and optional filters. Returns a ranked list of matching entries with their slug, title, tagline, state, scale, themes, and endorsement tier. Use this for any reader question about specific programmes, geographies, themes, or types of work.",
     input_schema: {
       type: "object" as const,
       properties: {
