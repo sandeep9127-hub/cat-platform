@@ -77,11 +77,11 @@ export default async function LandscapesPage() {
             .
           </h1>
           <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
-            Eleven focus landscapes across India where the Consortium for Agroecological
-            Transformations is developing place-based investment plans. A landscape is an
-            administrative block (or sub-section of one), selected for ecological, social,
-            and institutional reasons. The minimum viable unit for planning and action over
-            a sustained seven-year horizon.
+            Eleven landscapes across India where the Consortium is working with partners on
+            seven-year investment plans. A landscape is an economically viable, contiguous
+            unit of land, adapted to local need — usually an administrative block or a
+            cluster of villages within one, chosen because the geography, communities and
+            institutions there make focused work possible.
           </p>
           <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
             This is the closed CAT set. For programmes, interventions, and contributed work
@@ -103,7 +103,7 @@ export default async function LandscapesPage() {
           <div className="mt-4 flex gap-2.5 items-center">
             <span className="w-6 h-px bg-amber-deep" />
             <span className="font-mono text-[10.5px] uppercase tracking-mono-mid text-ink-soft">
-              Place-based, not prescriptive
+              Seven-year horizon
             </span>
           </div>
         </aside>

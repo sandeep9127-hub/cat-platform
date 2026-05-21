@@ -119,7 +119,7 @@ export default function StyleGuidePage() {
           <div className="callout callout-amber">
             <span className="eyebrow block mb-2">Principle</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
-              Curated, not crowdsourced. AI scales production, never editorial judgement.
+              Every entry is edited by hand. AI is allowed to draft and surface candidates; the call to publish is always a human one.
             </p>
           </div>
           <div className="callout callout-teal">

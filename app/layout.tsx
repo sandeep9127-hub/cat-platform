@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     template: "%s · Transformation Hub",
   },
   description:
-    "A curated, editorial record of credible food systems work in India, by the Consortium for Agroecological Transformations. Programmes are read, not pitched. Limitations sit beside achievements.",
+    "An edited record of food systems work in India — government missions, NGO programmes, farmer federations and research interventions. Run by the Consortium for Agroecological Transformations. Every entry is read by an editor; what didn't work shows up next to what did.",
   openGraph: {
     title: "Transformation Hub — A dashboard for sustainable food systems",
     description:

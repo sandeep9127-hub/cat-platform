@@ -102,7 +102,7 @@ export default function OpengraphImage() {
         >
           <span>
             <span style={{ color: "#D9A655", marginRight: 12 }}>─</span>
-            Curated, not crowdsourced
+            Edited by hand
           </span>
           <span>cat-platform.org</span>
         </div>

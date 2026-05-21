@@ -143,11 +143,12 @@ async function retrieve(
   };
 
   const entryHits: Hit[] = entries.map((e) => ({
-    // Source URL is the actual primary document (publisher PDF, gazette,
-    // partner programme page). The internal Hub entry page is the fallback
-    // when an entry has no public source URL yet.
+    // Entry citations point to the internal Hub entry page. The DB
+    // `entries` table doesn't carry a publisher source_url field today
+    // (that lives on news_items + the discovered-records seed). If we
+    // add it later, this is where it would resolve.
     label: `Entry · ${e.title}`,
-    url: e.sourceUrl && /^https?:/i.test(e.sourceUrl) ? e.sourceUrl : `/entry/${e.slug}`,
+    url: `/entry/${e.slug}`,
     preview:
       e.tagline +
       (e.highlight ? "  " + e.highlight.replace(/<\/?mark>/g, "").slice(0, 200) : ""),

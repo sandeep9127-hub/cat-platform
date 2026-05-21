@@ -654,12 +654,12 @@ export async function buildLandscapeBriefDocx(
   children.push(h1("About this brief"));
   children.push(
     bodyP(
-      "This brief is generated live from the Transformation Hub, the public, curated dashboard of credible food systems work in India by the Consortium for Agroecological Transformations. Every entry is read by a CAT editor before it goes live. Limitations sit beside achievements."
+      "This brief is generated from the Transformation Hub, the publicly readable dashboard of food-systems work in India run by the Consortium for Agroecological Transformations. Every entry is checked against its sources by a CAT editor before it goes up. The Hub publishes what didn't work alongside what did."
     )
   );
   children.push(
     bodyP(
-      "Programmes are read, not pitched. The Hub treats photographs as primary sources, not decoration. The bar is honesty, not affiliation.",
+      "Whether a programme appears here depends on whether it stands up to a serious read, regardless of who runs it. Where investment-plan finance is shown, the underlying line-level data is queryable in the budget explorer at the URL on this page.",
       true
     )
   );

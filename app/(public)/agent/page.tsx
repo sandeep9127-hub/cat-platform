@@ -29,7 +29,7 @@ export default async function AgentPage({
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-paper font-mono text-[10px] uppercase tracking-[0.16em] text-teal">
           <ShieldCheck size={11} strokeWidth={1.8} aria-hidden />
-          No answer travels outside the library. Period.
+          Reads only from the library. Not the web.
         </div>
       </div>
 

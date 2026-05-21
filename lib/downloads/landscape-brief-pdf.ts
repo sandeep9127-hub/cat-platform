@@ -1269,13 +1269,13 @@ function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
 
   drawBody(
     ctx,
-    "This brief is generated from the Transformation Hub, the public, curated dashboard of credible food-systems work in India by the Consortium for Agroecological Transformations. Every entry is read by a CAT editor before it goes live. Limitations sit beside achievements.",
+    "This brief is generated from the Transformation Hub, the publicly readable dashboard of food-systems work in India run by the Consortium for Agroecological Transformations. Every entry is checked against its sources by a CAT editor before it goes up. The Hub publishes what didn't work alongside what did.",
     { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
   );
   ctx.y -= 6;
   drawBody(
     ctx,
-    "Programmes are read, not pitched. The bar is honesty, not affiliation. Where investment-plan finance is shown, the underlying line-level data is queryable in the budget explorer at the URL on this page.",
+    "Whether a programme is on the Hub depends on whether it stands up to a serious read, regardless of who runs it. Where investment-plan finance is shown, the underlying line-level data is queryable in the budget explorer at the URL on this page.",
     { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
   );
   ctx.y -= 14;

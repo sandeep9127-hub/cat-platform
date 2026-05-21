@@ -167,9 +167,10 @@ export default async function LandingPage() {
               className="font-serif italic text-[17px] sm:text-[19px] text-paper/85 leading-[1.5] max-w-[44ch] mt-6 sm:mt-7 font-light drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] reveal-stagger"
               style={{ animationDelay: "300ms" }}
             >
-              Find the work that is actually changing how India grows, eats, and sustains.
-              Programmes are read, not pitched. Limitations sit beside achievements. The
-              Transformation Hub is curated by the Consortium for Agroecological Transformations.
+              Credible food systems work from across India, edited by people who actually
+              read it. Every entry has been checked against its sources before it goes up,
+              and what didn&apos;t work shows up next to what did. Run by the Consortium for
+              Agroecological Transformations.
             </p>
             <div
               className="mt-8 flex flex-wrap gap-3 reveal-stagger"
@@ -226,13 +227,14 @@ export default async function LandingPage() {
             Editor&apos;s note
           </span>
           <p className="font-serif text-[14.5px] text-ink-soft leading-[1.55] max-w-[80ch]">
-            The Hub covers credible food systems work nationally, not only the Consortium&apos;s
-            portfolio. Government missions, NGO programmes, federations, market infrastructure.
-            The bar is honesty, not affiliation.
+            The Hub covers food systems work from across India, not just the Consortium&apos;s
+            own portfolio. Government missions, NGO programmes, farmer federations, market
+            infrastructure. Whatever&apos;s here is here because an editor read it and thought
+            it was worth other people reading too.
           </p>
           <span className="hidden lg:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep whitespace-nowrap">
             <span className="w-5 h-px bg-gradient-to-r from-transparent via-amber-deep to-amber-deep" />
-            Curated, not crowdsourced
+            Edited by hand
           </span>
         </div>
       </section>

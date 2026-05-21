@@ -57,10 +57,11 @@ export default function AboutPage() {
           </Block>
 
           <Block label="What this Platform is">
-            This Platform is the publicly readable face of that work. It covers credible
-            food-systems programmes nationally, not only CAT&apos;s own portfolio. Government
-            missions, NGO programmes, federations, market infrastructure, research-led
-            interventions. The bar is honesty, not affiliation.
+            This is the publicly readable face of that work. It covers credible food-systems
+            programmes from across India, not just CAT&apos;s own portfolio: government missions,
+            NGO programmes, farmer federations, market infrastructure, research-led
+            interventions. Whether it&apos;s in here depends on whether it stands up to a serious
+            read — not on who runs it.
           </Block>
 
           <Block label="The editorial bar">
@@ -85,12 +86,12 @@ export default function AboutPage() {
           <div className="callout callout-amber">
             <span className="eyebrow block mb-2">Standing rules</span>
             <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[14px] text-ink-soft leading-[1.55]">
-              <li>Curated, not crowdsourced</li>
+              <li>Every entry is edited by hand</li>
               <li>Programme level, not activity level</li>
               <li>&quot;What did not work&quot; is required</li>
               <li>AI assists, editors decide</li>
               <li>Funders never register</li>
-              <li>Honest provenance, public</li>
+              <li>Provenance is shown openly</li>
               <li>The map is not GIS</li>
             </ul>
           </div>
