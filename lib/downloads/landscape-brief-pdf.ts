@@ -813,8 +813,34 @@ function drawFooters(ctx: Ctx) {
 
 // ─── Main builder ────────────────────────────────────────────────────────
 
+export type BriefSection =
+  | "cover"
+  | "at_a_glance"
+  | "context"
+  | "challenges"
+  | "finance"
+  | "field_record"
+  | "colophon";
+
+export const ALL_BRIEF_SECTIONS: BriefSection[] = [
+  "cover",
+  "at_a_glance",
+  "context",
+  "challenges",
+  "finance",
+  "field_record",
+  "colophon",
+];
+
 export type BriefOpts = {
   budget?: BudgetSummary;
+  /**
+   * Section allow-list. If undefined, render all applicable sections.
+   * If provided, only render the listed sections (in canonical order).
+   * Conditional sections (finance, field_record) still require their
+   * upstream data — if not present, they hide silently.
+   */
+  sections?: BriefSection[];
 };
 
 export async function buildLandscapeBriefPdf(
@@ -822,6 +848,8 @@ export async function buildLandscapeBriefPdf(
   stateName: string,
   opts: BriefOpts = {}
 ): Promise<Uint8Array> {
+  const want = (s: BriefSection): boolean =>
+    !opts.sections || opts.sections.includes(s);
   const doc = await PDFDocument.create();
   doc.setTitle(`${p.name} · Landscape Investment Brief`);
   doc.setAuthor("Consortium for Agroecological Transformations");
@@ -852,29 +880,29 @@ export async function buildLandscapeBriefPdf(
   ctx.y = PAGE.h - M.top;
 
   // Page 1 · Cover
-  await drawCover(ctx, p, stateName);
+  if (want("cover")) await drawCover(ctx, p, stateName);
 
   // Page 2 · At a glance
-  drawAtAGlance(ctx, p, stateName);
+  if (want("at_a_glance")) drawAtAGlance(ctx, p, stateName);
 
   // Page 3 · Context + agroclimatic zone
-  drawContext(ctx, p);
+  if (want("context")) drawContext(ctx, p);
 
   // Page 4 · Key challenges
-  drawChallenges(ctx, p);
+  if (want("challenges")) drawChallenges(ctx, p);
 
   // Page 5 · Investment plan finance (conditional)
-  if (opts.budget && opts.budget.totalCostInr > 0) {
+  if (want("finance") && opts.budget && opts.budget.totalCostInr > 0) {
     drawFinance(ctx, p, opts.budget);
   }
 
   // Page 6 · Field record (conditional)
-  if (p.photos && p.photos.length > 1) {
+  if (want("field_record") && p.photos && p.photos.length > 1) {
     await drawFieldRecord(ctx, p);
   }
 
   // Last page · Colophon
-  drawColophon(ctx, p);
+  if (want("colophon")) drawColophon(ctx, p);
 
   // Page footers
   drawFooters(ctx);
