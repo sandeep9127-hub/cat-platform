@@ -10,6 +10,15 @@
   --teal-pale: #b8ccca;
   --teal-wash: #e1ede8;
 
+  /* Navy-teal — used for editorial headlines (matches CAT wordmark) */
+  --navy-teal: #1f3534;
+  --wordmark-navy: #373f5a;
+
+  /* Sage — quieter green for botanical accents, section openers */
+  --sage: #9fb8a6;
+  --sage-soft: #c7d6cb;
+  --sage-wash: #e8f0ea;
+
   /* Brand periwinkles (secondary) */
   --periwinkle-deep: #5e6990;
   --periwinkle: #929cc5;

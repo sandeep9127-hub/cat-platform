@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 export function Footer() {
@@ -15,7 +16,20 @@ export function Footer() {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber to-transparent" />
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 lg:gap-12">
         <div>
-          <h3 className="font-serif text-[32px] font-normal leading-tight tracking-[-0.02em] max-w-[18ch]">
+          {/* Official CAT lockup, used verbatim */}
+          <div
+            className="inline-block bg-paper/95 rounded-[8px] px-5 py-4 mb-5"
+            style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px -14px rgba(0,0,0,0.30)" }}
+          >
+            <img
+              src="/images/cat-logo-full.svg"
+              alt="Consortium for Agroecological Transformations"
+              width={236}
+              height={69}
+              className="block h-auto"
+            />
+          </div>
+          <h3 className="font-sans text-[28px] sm:text-[32px] font-normal leading-tight tracking-[-0.02em] max-w-[20ch]">
             A quiet, <em className="text-amber not-italic font-medium italic">honest</em> record
             of food systems work in India.
           </h3>

@@ -1,39 +1,35 @@
 import { SDGS } from "@/lib/data/sdgs";
 import { Sprig } from "@/components/ui/Sprig";
-import { Target } from "lucide-react";
+import { SectionOpener } from "@/components/ui/SectionOpener";
 
 export function Sdgs() {
   return (
     <section className="relative overflow-hidden py-16 lg:py-24">
-      {/* Soft mint wash + corner sprigs */}
       <div
         className="absolute inset-0 pointer-events-none"
         aria-hidden
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,242,235,0.6), transparent 70%)",
+            "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,240,234,0.55), transparent 70%)",
         }}
       />
       <Sprig
         variant="fern"
-        className="absolute top-2 -left-4 opacity-60 select-none pointer-events-none hidden md:block"
+        className="absolute top-4 -left-4 opacity-55 select-none pointer-events-none hidden md:block"
       />
       <Sprig
         variant="grass"
         flip
-        className="absolute bottom-0 -right-4 opacity-60 select-none pointer-events-none hidden md:block"
+        className="absolute -top-2 -right-6 opacity-50 select-none pointer-events-none hidden md:block"
       />
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-center">
-        <div className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold">
-          <Target size={12} strokeWidth={1.8} aria-hidden />
-          Our commitment to SDGs
-        </div>
-        <h2 className="font-serif text-[clamp(28px,3.4vw,42px)] font-normal text-deep-teal mt-5 tracking-[-0.018em] leading-[1.15] max-w-[36ch] mx-auto">
+        <SectionOpener number="02" label="Our commitment to SDGs" align="centre" />
+        <h2 className="font-sans text-[clamp(26px,3.0vw,38px)] font-light text-[color:var(--navy-teal)] mt-5 tracking-[-0.022em] leading-[1.18] max-w-[36ch] mx-auto">
           Work on this Hub maps to twelve UN Sustainable Development Goals,
           across food security, climate, biodiversity, and livelihoods.
         </h2>
-        <p className="font-serif italic text-[15px] text-ink-soft mt-4 max-w-[52ch] mx-auto leading-[1.55] font-light">
+        <p className="font-sans italic text-[15px] text-ink-soft mt-4 max-w-[52ch] mx-auto leading-[1.6] font-light">
           Each landscape investment plan declares its contribution. We do not
           claim the goals themselves, only credible contribution to them.
         </p>
