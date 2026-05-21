@@ -80,11 +80,15 @@ export default async function MapPage() {
       longitude: e.primaryGeography.longitude,
     }));
 
+  // ─── Phase 12 · Pull atlas-destination records and merge as pins + list rows
+  const atlasRecords = DISCOVERED_RECORDS.filter((r) => r.destination === "atlas");
+  const combinedTotal = entries.length + atlasRecords.length;
+
   const dbListEntries = entries.map((e, i) => ({
     id: e.id,
     slug: e.slug,
     index: i + 1,
-    total: entries.length,
+    total: combinedTotal,
     title: e.title,
     tagline: e.tagline,
     stateName: e.primaryGeography.name,
@@ -94,9 +98,6 @@ export default async function MapPage() {
     catEndorsement: e.catEndorsement,
     themes: e.themes,
   }));
-
-  // ─── Phase 12 · Pull atlas-destination records and merge as pins + list rows
-  const atlasRecords = DISCOVERED_RECORDS.filter((r) => r.destination === "atlas");
 
   const atlasMapEntries = atlasRecords
     .filter((r) => r.latitude != null && r.longitude != null)
@@ -125,7 +126,7 @@ export default async function MapPage() {
       id: r.id,
       slug: r.id,
       index: dbListEntries.length + i + 1,
-      total: dbListEntries.length + atlasRecords.length,
+      total: combinedTotal,
       title: r.title,
       tagline: r.summary,
       stateName: STATE_NAMES[r.stateCode ?? ""] ?? r.district ?? r.stateCode ?? "—",

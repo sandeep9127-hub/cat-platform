@@ -11,6 +11,10 @@ build
 .turbo
 coverage
 .pnpm-store
-public/geo/india-states.json
-public/geo/india-states-topo.json
+# India basemap is committed (1MB public-domain Datameet GeoJSON) so
+# Vercel never depends on a network fetch at build time. The /map page
+# hard-depends on it — sourcing new atlas records must not be coupled
+# to upstream maintainers staying online.
+# public/geo/india-states.json
+# public/geo/india-states-topo.json
 tsconfig.tsbuildinfo

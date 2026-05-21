@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "node scripts/ensure-geojson.mjs",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
