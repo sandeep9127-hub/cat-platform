@@ -62,6 +62,12 @@ export default async function LandingPage() {
 
   const mapEntries = [...dbMapEntries, ...atlasMapEntries];
   const combinedTotal = entries.length + atlasRecords.length;
+  // Unique state count across the merged set — what the atlas top bar
+  // actually shows. The stat strip + AtlasSection both read from this so
+  // the numbers tally with /map.
+  const combinedStateCount = new Set(
+    mapEntries.map((e) => e.stateCode).filter(Boolean)
+  ).size;
 
   const THEME_COLOURS_HOME: Record<string, string> = {
     "soil-and-land": "#8C7A5C",
@@ -239,12 +245,12 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* STAT STRIP */}
+      {/* STAT STRIP — uses the same merged counts the atlas top bar shows */}
       <Reveal>
         <StatStrip
           stats={[
-            { label: "Programmes listed", value: String(counts.programmes || entries.length), sup: counts.programmes ? "↗" : undefined, delta: counts.programmes ? "live count" : "seed data" },
-            { label: "States covered", value: String(counts.states), delta: "of 28 + 8 UTs" },
+            { label: "Programmes listed", value: String(combinedTotal), sup: "↗", delta: "across the atlas" },
+            { label: "States covered", value: String(combinedStateCount), delta: "of 28 + 8 UTs" },
             { label: "Organisations", value: String(counts.organisations), delta: "across the system" },
             { label: "Resources", value: String(counts.resources), delta: "reports, briefs, datasets" },
           ]}
@@ -265,8 +271,8 @@ export default async function LandingPage() {
         <AtlasSection
           mapEntries={mapEntries}
           listEntries={listEntries}
-          totalStates={counts.states}
-          cap={5}
+          totalStates={combinedStateCount}
+          cap={4}
           readMoreHref="/map"
         />
       </Reveal>
