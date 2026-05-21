@@ -41,20 +41,56 @@ export default function EditorsPage() {
         </p>
       </header>
 
-      <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12">
-        {EDITORS.map((editor) => (
-          <article key={editor.name} className="border-t border-line pt-6">
-            <h2 className="font-serif text-[24px] tracking-[-0.015em] text-ink leading-[1.15]">
-              {editor.name}
-            </h2>
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal block mt-2">
-              {editor.role}
-            </span>
-            <p className="font-serif text-[16px] leading-[1.6] text-ink-soft mt-4 max-w-[52ch]">
-              {editor.bio}
-            </p>
-          </article>
-        ))}
+      <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-5">
+        {EDITORS.map((editor, i) => {
+          const initials = editor.name
+            .split(" ")
+            .map((p) => p[0])
+            .slice(0, 2)
+            .join("");
+          // Rotate accent through the brand palette for variety
+          const tones = [
+            { bg: "rgba(46,117,115,0.12)", fg: "#2E7573", glow: "rgba(46,117,115,0.18)" },
+            { bg: "rgba(248,202,124,0.22)", fg: "#C68C2E", glow: "rgba(248,202,124,0.26)" },
+            { bg: "rgba(146,156,197,0.16)", fg: "#5C6796", glow: "rgba(146,156,197,0.22)" },
+            { bg: "rgba(51,75,74,0.10)", fg: "#334B4A", glow: "rgba(51,75,74,0.18)" },
+          ];
+          const tone = tones[i % tones.length];
+          return (
+            <article
+              key={editor.name}
+              className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-6 sm:p-7 flex gap-5"
+              style={{
+                boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 28px -16px ${tone.glow}`,
+                backgroundImage:
+                  "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.30) 100%)",
+              }}
+            >
+              <span
+                aria-hidden
+                className="shrink-0 w-16 h-16 rounded-full inline-flex items-center justify-center font-mono text-[18px] tracking-[-0.02em] font-semibold"
+                style={{
+                  background: tone.bg,
+                  color: tone.fg,
+                  boxShadow: `0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 12px -6px ${tone.glow}`,
+                }}
+              >
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-sans text-[20px] sm:text-[22px] tracking-[-0.015em] text-[color:var(--navy-teal)] leading-[1.2] font-medium">
+                  {editor.name}
+                </h2>
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal block mt-1.5">
+                  {editor.role}
+                </span>
+                <p className="font-sans text-[14.5px] leading-[1.6] text-ink-soft mt-3 max-w-[44ch]">
+                  {editor.bio}
+                </p>
+              </div>
+            </article>
+          );
+        })}
       </section>
 
       <section className="mt-20 border-t border-line pt-12 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
@@ -81,9 +117,20 @@ export default function EditorsPage() {
             including who edited it and when.
           </p>
         </div>
-        <aside className="border-l-2 border-amber-deep pl-4">
-          <span className="eyebrow block mb-2">Editorial reach</span>
-          <p className="text-[14px] text-ink-soft leading-[1.55]">
+        <aside
+          className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 self-start"
+          style={{
+            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -14px rgba(248,202,124,0.30)",
+            backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,202,124,0.10) 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{ background: "linear-gradient(90deg, #C68C2E 0%, rgba(198,140,46,0.6) 60%, transparent 100%)" }}
+          />
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">Editorial reach</span>
+          <p className="text-[14px] text-ink-soft leading-[1.6] mt-3">
             Write to{" "}
             <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
               editors@cat.org.in

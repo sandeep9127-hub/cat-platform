@@ -62,6 +62,10 @@ export default async function LandscapeDetailPage({ params }: Props) {
 
   return (
     <article className="pt-10 sm:pt-14 lg:pt-20 pb-24">
+      {/* Wide signature banner above the headline — gives each landscape a visual identity moment */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center reveal-stagger">
+        <LandscapeSignature slug={slug} width={480} />
+      </div>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
         <div className="reveal-stagger">
           <div className="flex items-center gap-3 mb-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
@@ -75,23 +79,15 @@ export default async function LandscapeDetailPage({ params }: Props) {
             <span className="text-line">·</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.district}</span>
           </div>
-          <h1 className="font-serif font-normal text-[clamp(42px,5.4vw,80px)] leading-[1.02] tracking-[-0.025em] text-ink">
+          <h1 className="font-sans font-light text-[clamp(42px,5.4vw,80px)] leading-[1.02] tracking-[-0.028em] text-[color:var(--navy-teal)]">
             {p.name}
           </h1>
-          <p className="font-serif italic text-[18px] sm:text-[20px] text-ink-soft leading-[1.5] mt-6 max-w-[58ch] font-light">
+          <p className="font-sans italic text-[18px] sm:text-[20px] text-ink-soft leading-[1.55] mt-6 max-w-[58ch] font-light">
             {p.context}
           </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 border-t border-line pt-5 lg:border-t-0 lg:pt-0 flex flex-col gap-4 lg:self-end lg:pb-2">
-          {/* Procedural signature mark — unique to this landscape's slug */}
-          <div className="hidden lg:block -mb-2 opacity-90">
-            <LandscapeSignature slug={slug} width={260} />
-            <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted block mt-1">
-              <span className="inline-block w-3 h-px bg-amber-deep align-middle mr-1.5" />
-              Signature mark · procedurally generated
-            </span>
-          </div>
-          <FactRow label="Landscape Investment Plan">
+          <FactRow label="Investment plan">
             {p.lipStatus === "published" ? (
               <span className="text-deep-teal">
                 <strong className="text-amber-deep">Published</strong>

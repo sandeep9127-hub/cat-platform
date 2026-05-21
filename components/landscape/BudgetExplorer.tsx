@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { SectionOpener } from "@/components/ui/SectionOpener";
 import {
   Wallet,
   Landmark,
@@ -124,8 +125,11 @@ export function BudgetExplorer({
 
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24">
-      {/* Top-line totals as floating tiles */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+      {/* Programme scale */}
+      <div className="mt-10 mb-4">
+        <SectionOpener number="01" label="Programme scale" />
+      </div>
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total cost · 7 years"
           value={inr(t.total)}
@@ -157,11 +161,17 @@ export function BudgetExplorer({
         />
       </section>
 
-      {/* Funding mix — single stacked horizontal bar */}
+      {/* Funding mix */}
+      <div className="mt-10 mb-4">
+        <SectionOpener number="02" label="Funding mix" />
+      </div>
       <FundingMix totals={t} />
 
-      {/* Impact tiles */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+      {/* On-the-ground impact */}
+      <div className="mt-10 mb-4">
+        <SectionOpener number="03" label="On-the-ground impact" />
+      </div>
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Households reached"
           value={Math.round(t.households).toLocaleString("en-IN") || "—"}

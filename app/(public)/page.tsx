@@ -166,6 +166,10 @@ export default async function LandingPage() {
       {/* ATLAS */}
       <Reveal>
         <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
+        <p className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 font-sans italic text-[16.5px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[58ch] font-light -mt-2 mb-4">
+          A national reading of credible food systems programmes. Each entry has been
+          read against its sources before it lands here.
+        </p>
         <AtlasSection
           mapEntries={mapEntries}
           listEntries={listEntries}
@@ -268,19 +272,20 @@ function FeaturedEntry({ entry }: { entry: Awaited<ReturnType<typeof getPublishe
     <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-24">
       <SectionHead title="Featured" italic="reading" meta={endorsement} />
       <article
-        className="relative overflow-hidden border border-line rounded-[2px] mt-2"
+        className="relative overflow-hidden border border-line rounded-[8px] mt-2"
         style={{
           background:
-            "linear-gradient(135deg, rgba(251,248,242,1) 0%, rgba(248,243,232,1) 60%, rgba(244,237,221,1) 100%)",
+            "linear-gradient(135deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.85) 60%, rgba(220,235,224,0.75) 100%)",
+          boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -20px rgba(46,117,115,0.20)",
         }}
       >
-        {/* Soft teal pool, lower-right corner */}
+        {/* Soft mint pool, lower-right corner */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden
           style={{
             background:
-              "radial-gradient(ellipse 50% 60% at 110% 110%, rgba(46,117,115,0.18), transparent 60%)",
+              "radial-gradient(ellipse 50% 60% at 110% 110%, rgba(159,184,166,0.30), transparent 60%)",
           }}
         />
         <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 lg:gap-12 p-7 sm:p-10 lg:p-12">
