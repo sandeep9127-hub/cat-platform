@@ -8,6 +8,8 @@ import { landscapeHasLip, budgetSummary, listLandscapeDocuments } from "@/lib/db
 import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashboard";
 import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
+import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
+import { LandscapeFieldRecord } from "@/components/landscape/LandscapeFieldRecord";
 
 export const dynamic = "force-dynamic";
 
@@ -62,10 +64,16 @@ export default async function LandscapeDetailPage({ params }: Props) {
 
   return (
     <article className="pt-10 sm:pt-14 lg:pt-20 pb-24">
-      {/* Wide signature banner above the headline — gives each landscape a visual identity moment */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center reveal-stagger">
-        <LandscapeSignature slug={slug} width={480} />
-      </div>
+      {/* Hero visual anchor: photograph when available, procedural signature otherwise */}
+      {p.photos && p.photos.length > 0 ? (
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-6 reveal-stagger">
+          <LandscapeAnchor photo={p.photos[0]} />
+        </div>
+      ) : (
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center reveal-stagger">
+          <LandscapeSignature slug={slug} width={480} />
+        </div>
+      )}
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
         <div className="reveal-stagger">
           <div className="flex items-center gap-3 mb-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
@@ -148,6 +156,11 @@ export default async function LandscapeDetailPage({ params }: Props) {
             : undefined
         }
       />
+
+      {/* Documentary photographs from the landscape — captioned, credited, dated */}
+      {p.photos && p.photos.length > 0 && (
+        <LandscapeFieldRecord photos={p.photos} landscapeName={p.name} />
+      )}
 
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
 

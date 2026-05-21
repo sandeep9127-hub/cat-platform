@@ -6,6 +6,22 @@
  * remove any earlier placeholder language. Investment plan status is from CAT's own page.
  */
 
+export type LandscapePhoto = {
+  /** Path relative to /public, e.g. /images/landscapes/patratu/02.jpg */
+  src: string;
+  /** Short editorial caption. Plain language, no marketing. */
+  caption: string;
+  /** Photographer or team credit. */
+  credit: string;
+  /** ISO yyyy-mm-dd. */
+  date: string;
+  /** Source image pixel dimensions, for next/image and aspect math. */
+  width: number;
+  height: number;
+  /** Optional alt text override. Defaults to caption. */
+  alt?: string;
+};
+
 export type LandscapeProfile = {
   slug: string;
   name: string;
@@ -26,6 +42,11 @@ export type LandscapeProfile = {
   keyChallenges: string[];
   /** "published" → investment plan is published; "in_preparation" → in progress per CAT site. */
   lipStatus: "published" | "in_preparation";
+  /**
+   * Documentary photographs from the landscape, used in the hero anchor strip
+   * and the "Field record" gallery. Editorial only, never stock.
+   */
+  photos?: LandscapePhoto[];
 };
 
 export const LANDSCAPES: Record<string, LandscapeProfile> = {
@@ -270,6 +291,32 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Limited diversification and inadequate post-harvest infrastructure constrain income realisation.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/patratu/02.jpg",
+        caption: "Patratu landscape · Monsoon morning · Ramgarh district",
+        credit: "CAT field team",
+        date: "2024-08-09",
+        width: 4624,
+        height: 3468,
+      },
+      {
+        src: "/images/landscapes/patratu/03.jpg",
+        caption: "Patratu landscape · Late monsoon · Field documentation",
+        credit: "CAT field team",
+        date: "2024-09-21",
+        width: 4624,
+        height: 3468,
+      },
+      {
+        src: "/images/landscapes/patratu/01.jpg",
+        caption: "Patratu landscape · Winter season · Field documentation",
+        credit: "CAT field team",
+        date: "2023-02-17",
+        width: 3468,
+        height: 4624,
+      },
+    ],
   },
 
   rajnagar: {
