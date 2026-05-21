@@ -49,6 +49,39 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Brand-tinted text selection across the site. */
+::selection {
+  background: rgba(248, 202, 124, 0.55); /* amber, ~55% */
+  color: var(--deep-teal);
+}
+::-moz-selection {
+  background: rgba(248, 202, 124, 0.55);
+  color: var(--deep-teal);
+}
+
+/* Refined scrollbar (WebKit) — slim, brand-tinted, hover-emphasised. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(221, 224, 218, 0.25);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(51, 75, 74, 0.35), rgba(46, 117, 115, 0.45));
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+  transition: background 200ms ease-out;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(51, 75, 74, 0.65), rgba(198, 140, 46, 0.55));
+}
+/* Firefox */
+html {
+  scrollbar-color: rgba(51, 75, 74, 0.45) rgba(221, 224, 218, 0.25);
+  scrollbar-width: thin;
+}
+
 /* Paper grain overlay, fixed across the viewport. */
 body::before {
   content: "";

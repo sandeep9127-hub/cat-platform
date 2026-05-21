@@ -12,6 +12,7 @@ import { Sparkles, ArrowUpRight, Quote } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { ParallaxBanner } from "@/components/home/ParallaxBanner";
+import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -147,27 +148,33 @@ export default async function LandingPage() {
       </section>
 
       {/* STAT STRIP */}
-      <StatStrip
-        stats={[
-          { label: "Programmes listed", value: String(counts.programmes || entries.length), sup: counts.programmes ? "↗" : undefined, delta: counts.programmes ? "live count" : "seed data" },
-          { label: "States covered", value: String(counts.states), delta: "of 28 + 8 UTs" },
-          { label: "Organisations", value: String(counts.organisations), delta: "across the system" },
-          { label: "Resources", value: String(counts.resources), delta: "reports, briefs, datasets" },
-        ]}
-      />
+      <Reveal>
+        <StatStrip
+          stats={[
+            { label: "Programmes listed", value: String(counts.programmes || entries.length), sup: counts.programmes ? "↗" : undefined, delta: counts.programmes ? "live count" : "seed data" },
+            { label: "States covered", value: String(counts.states), delta: "of 28 + 8 UTs" },
+            { label: "Organisations", value: String(counts.organisations), delta: "across the system" },
+            { label: "Resources", value: String(counts.resources), delta: "reports, briefs, datasets" },
+          ]}
+        />
+      </Reveal>
 
-      <EndorsementLegend />
+      <Reveal delay={80}>
+        <EndorsementLegend />
+      </Reveal>
 
       {/* ATLAS */}
-      <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
-      <AtlasSection
-        mapEntries={mapEntries}
-        listEntries={listEntries}
-        totalStates={counts.states}
-      />
+      <Reveal>
+        <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
+        <AtlasSection
+          mapEntries={mapEntries}
+          listEntries={listEntries}
+          totalStates={counts.states}
+        />
+      </Reveal>
 
       {/* THEMES */}
-      <section className="bg-cream border-y border-line py-12 lg:py-16 mt-8">
+      <Reveal as="section" className="bg-cream border-y border-line py-12 lg:py-16 mt-8">
         <SectionHead title="Read by" italic="theme" meta="Eight working areas" />
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-line-soft border border-line-soft">
           {themes.map((t, i) => (
@@ -210,16 +217,24 @@ export default async function LandingPage() {
             </Link>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       {/* SUPPORTERS */}
-      <Supporters />
+      <Reveal>
+        <Supporters />
+      </Reveal>
 
       {/* SDGS */}
-      <Sdgs />
+      <Reveal>
+        <Sdgs />
+      </Reveal>
 
       {/* FEATURED ENTRY */}
-      {entries[0] && <FeaturedEntry entry={entries[0]} />}
+      {entries[0] && (
+        <Reveal>
+          <FeaturedEntry entry={entries[0]} />
+        </Reveal>
+      )}
     </>
   );
 }

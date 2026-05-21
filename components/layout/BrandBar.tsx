@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Layers,
   Map as MapIcon,
@@ -25,19 +25,50 @@ const NAV_LINKS = [
 
 export function BrandBar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 64);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-paper/95 border-b border-line-soft backdrop-blur supports-[backdrop-filter]:bg-paper/80">
+    <header
+      className={`sticky top-0 z-50 border-b backdrop-blur transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
+        scrolled
+          ? "bg-paper/92 supports-[backdrop-filter]:bg-paper/78 border-line shadow-[0_8px_24px_-16px_rgba(26,38,37,0.18)]"
+          : "bg-paper/95 supports-[backdrop-filter]:bg-paper/80 border-line-soft"
+      }`}
+    >
       {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
       <div className="h-px w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3.5 sm:py-4 flex items-center gap-4 sm:gap-8 lg:gap-10">
+      <div
+        className={`max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex items-center gap-4 sm:gap-8 lg:gap-10 transition-[padding] duration-300 ease-out ${
+          scrolled ? "py-2 sm:py-2.5" : "py-3.5 sm:py-4"
+        }`}
+      >
         <Link href="/" className="flex items-center gap-3 no-underline text-ink group shrink-0">
-          <CatLogo size={36} className="shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg]" />
+          <CatLogo
+            size={scrolled ? 28 : 36}
+            className="shrink-0 transition-all duration-300 ease-out group-hover:rotate-[-4deg]"
+          />
           <span className="flex flex-col">
-            <span className="font-serif text-[16px] sm:text-[18px] font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap">
+            <span
+              className={`font-serif font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap transition-[font-size] duration-300 ease-out ${
+                scrolled ? "text-[14px] sm:text-[15px]" : "text-[16px] sm:text-[18px]"
+              }`}
+            >
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
-            <span className="hidden sm:block font-mono text-[8.5px] md:text-[9px] tracking-[0.08em] uppercase text-muted mt-[3px] whitespace-nowrap">
+            <span
+              className={`hidden sm:block font-mono tracking-[0.08em] uppercase text-muted mt-[3px] whitespace-nowrap overflow-hidden transition-all duration-300 ease-out ${
+                scrolled ? "max-h-0 opacity-0 mt-0 text-[0px]" : "max-h-4 opacity-100 text-[8.5px] md:text-[9px]"
+              }`}
+            >
               By the Consortium for Agroecological Transformations
             </span>
           </span>

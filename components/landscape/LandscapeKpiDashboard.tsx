@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Mountain,
   Users,
   Coins,
   type LucideIcon,
 } from "lucide-react";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 type Lens = "land" | "people" | "money";
 
@@ -224,12 +225,32 @@ function KpiTile({
             glow: "rgba(146,156,197,0.22)",
           };
 
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === "touch") return;
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    el.style.setProperty("--my", `${e.clientY - rect.top}px`);
+    el.style.setProperty("--spot-opacity", "1");
+  }
+  function onPointerLeave() {
+    const el = ref.current;
+    if (el) el.style.setProperty("--spot-opacity", "0");
+  }
+
   return (
     <div
+      ref={ref}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
       className="group relative overflow-hidden rounded-[6px] border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-all duration-300 ease-out hover:-translate-y-0.5"
       style={{
         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -12px ${tone.glow}`,
         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,
+        ["--spot-opacity" as string]: 0,
       }}
     >
       <span
@@ -239,18 +260,21 @@ function KpiTile({
           background: `linear-gradient(90deg, ${tone.bar} 0%, ${tone.bar}cc 60%, transparent 100%)`,
         }}
       />
+      {/* Cursor-following spotlight bloom */}
       <span
         aria-hidden
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse 90% 70% at 100% 100%, ${tone.glow}, transparent 65%)`,
+          background: `radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), ${tone.glow}, transparent 60%)`,
+          opacity: "var(--spot-opacity, 0)" as unknown as number,
+          transition: "opacity 220ms ease-out",
         }}
       />
       <span className="relative font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted leading-tight">
         {label}
       </span>
-      <div className="relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] text-deep-teal font-medium">
-        {value}
+      <div className="relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] text-deep-teal font-medium tabular-nums">
+        <AnimatedNumber value={value} />
       </div>
       <span className="relative font-serif text-[12.5px] italic text-muted leading-snug">{sub}</span>
     </div>
