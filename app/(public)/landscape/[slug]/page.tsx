@@ -87,7 +87,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
             <span className="text-line">·</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.district}</span>
           </div>
-          <h1 className="font-sans font-light text-[clamp(42px,5.4vw,80px)] leading-[1.02] tracking-[-0.028em] text-[color:var(--navy-teal)]">
+          <h1 className="font-sans font-medium text-[clamp(42px,5.4vw,80px)] leading-[1.02] tracking-[-0.028em] text-[color:var(--navy-teal)]">
             {p.name}
           </h1>
           <p className="font-sans italic text-[18px] sm:text-[20px] text-ink-soft leading-[1.55] mt-6 max-w-[58ch] font-light">
@@ -110,9 +110,20 @@ export default async function LandscapeDetailPage({ params }: Props) {
           {hasLip && (
             <Link
               href={`/landscape/${slug}/ask`}
-              className="mt-4 inline-block px-4 py-2.5 bg-deep-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-[2px] hover:bg-teal transition-colors text-center"
+              className="group mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-all hover:-translate-y-0.5"
+              style={{
+                background: "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
+                boxShadow:
+                  "0 10px 22px -10px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.20)",
+              }}
             >
-              Ask {p.name} →
+              <span>Ask {p.name}</span>
+              <ArrowUpRight
+                size={12}
+                strokeWidth={2}
+                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                aria-hidden
+              />
             </Link>
           )}
         </aside>
