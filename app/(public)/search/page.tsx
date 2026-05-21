@@ -103,15 +103,34 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             name="q"
             defaultValue={q}
             placeholder="Try: millet procurement, soil organic carbon, FPO federation, what didn't work…"
-            className="w-full px-5 py-4 bg-cream border border-line rounded-[2px] font-serif italic text-[17px] text-ink placeholder:text-muted placeholder:not-italic placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors"
+            className="w-full px-5 py-4 bg-paper border border-line rounded-full font-serif italic text-[17px] text-ink placeholder:text-muted placeholder:not-italic placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors shadow-[0_1px_2px_rgba(26,38,37,0.04),inset_0_1px_0_rgba(255,255,255,0.5)]"
             aria-label="Search entries"
             autoFocus
           />
           <button
             type="submit"
-            className="px-6 py-4 bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-[2px] hover:bg-teal transition-colors"
+            className="group inline-flex items-center justify-center gap-2 px-6 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-all hover:-translate-y-0.5"
+            style={{
+              background: "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
+              boxShadow:
+                "0 10px 24px -10px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.20)",
+            }}
           >
-            Search →
+            <span>Search</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden
+            >
+              <path d="M7 17L17 7M17 7H7M17 7v10" />
+            </svg>
           </button>
 
           <div className="lg:col-span-2 mt-2 flex flex-wrap gap-x-6 gap-y-3 items-start">
