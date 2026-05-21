@@ -351,8 +351,9 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
     color: C.amber,
   });
 
-  // Centre composition — title set vertically just above middle.
-  const titleY = PAGE.h * 0.58;
+  // Title sits in the upper-third — keeps the cover from feeling top-heavy
+  // but gives the gloss + bottom band room to breathe below.
+  const titleY = PAGE.h * 0.70;
   // Eyebrow "Landscape" — small amber line
   ctx.page.drawText("LANDSCAPE", {
     x: M.left,
@@ -389,9 +390,9 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
 
   // Body gloss — single paragraph editorial context
   const glossY = titleY - 80;
-  const lines = wrap(p.context, ctx.sans, 11, CONTENT_W * 0.78);
-  for (let i = 0; i < Math.min(lines.length, 4); i++) {
-    ctx.page.drawText(lines[i], {
+  const glossLines = wrap(p.context, ctx.sans, 11, CONTENT_W * 0.78);
+  for (let i = 0; i < Math.min(glossLines.length, 4); i++) {
+    ctx.page.drawText(glossLines[i], {
       x: M.left,
       y: glossY - i * 16,
       size: 11,
@@ -399,6 +400,56 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
       color: C.ink,
     });
   }
+
+  // Headline metrics strip — four numbers, equal columns, with mono labels.
+  // Sits in the middle band between the gloss and the bottom imprint, so
+  // the cover hands the reader real signal before they turn the page.
+  const metricsY = PAGE.h * 0.40;
+  ctx.page.drawRectangle({
+    x: M.left,
+    y: metricsY + 50,
+    width: CONTENT_W,
+    height: 0.4,
+    color: C.hairline,
+  });
+  ctx.page.drawText("THIS BRIEF AT A GLANCE", {
+    x: M.left,
+    y: metricsY + 36,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  const coverMetrics = [
+    { label: "POPULATION", value: p.population },
+    { label: "HOUSEHOLDS", value: p.households },
+    { label: "VILLAGES", value: p.villages },
+    { label: "AREA", value: p.area },
+  ];
+  const colW = CONTENT_W / 4;
+  for (let i = 0; i < coverMetrics.length; i++) {
+    const cx = M.left + i * colW;
+    ctx.page.drawText(coverMetrics[i].label, {
+      x: cx,
+      y: metricsY + 16,
+      size: 7,
+      font: ctx.sansBold,
+      color: C.muted,
+    });
+    ctx.page.drawText(coverMetrics[i].value, {
+      x: cx,
+      y: metricsY - 8,
+      size: 20,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+  }
+  ctx.page.drawRectangle({
+    x: M.left,
+    y: metricsY - 24,
+    width: CONTENT_W,
+    height: 0.4,
+    color: C.hairline,
+  });
 
   // Bottom band — citation, date, URL
   const bandY = M.bottom + 40;
@@ -561,6 +612,56 @@ function drawAtAGlance(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit
     { label: "District", value: p.district },
   ];
   drawTwoColTable(ctx, metaRows);
+
+  ctx.y -= 6;
+  hairline(ctx);
+
+  // Top challenges preview — first 3 from the full list, so the reader
+  // gets the gist before Exhibit 03 covers them in full.
+  ctx.page.drawText("TOP CHALLENGES IDENTIFIED", {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  ctx.y -= 20;
+  const preview = p.keyChallenges.slice(0, 3);
+  preview.forEach((c, i) => {
+    const text = shorten(c, 130);
+    const lines = wrap(text, ctx.sans, 10, CONTENT_W - 32);
+    ensure(ctx, lines.length * 14 + 8);
+    ctx.page.drawText(String(i + 1).padStart(2, "0"), {
+      x: M.left,
+      y: ctx.y - 11,
+      size: 10,
+      font: ctx.sansBold,
+      color: C.teal,
+    });
+    for (let k = 0; k < lines.length; k++) {
+      ctx.page.drawText(lines[k], {
+        x: M.left + 24,
+        y: ctx.y - 11 - k * 13,
+        size: 10,
+        font: ctx.sans,
+        color: C.inkSoft,
+      });
+    }
+    ctx.y -= lines.length * 13 + 6;
+  });
+  if (p.keyChallenges.length > 3) {
+    ctx.y -= 2;
+    ctx.page.drawText(
+      `+${p.keyChallenges.length - 3} more · see Exhibit on Key challenges`,
+      {
+        x: M.left + 24,
+        y: ctx.y - 9,
+        size: 8.5,
+        font: ctx.sans,
+        color: C.muted,
+      }
+    );
+  }
 }
 
 function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
@@ -619,6 +720,63 @@ function drawContext(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
   });
   ctx.y -= 18;
   drawBody(ctx, p.agroclimaticZone, { size: 10.5, lineHeight: 15.5, color: C.inkSoft });
+
+  ctx.y -= 14;
+  hairline(ctx);
+
+  // "What this implies" — two-column commentary block so the bottom of the
+  // context page isn't empty. Pulls together what the landscape's geography
+  // means for the design of the investment plan.
+  ctx.page.drawText("WHAT THIS IMPLIES FOR THE PLAN", {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  ctx.y -= 18;
+  const implies = [
+    {
+      heading: "Rainfed-first design",
+      body:
+        "Irrigation expansion is constrained by geology and rainfall variability. The plan is built around rainwater retention, soil cover and crop choices matched to single-season cropping windows.",
+    },
+    {
+      heading: "Multi-lever portfolio",
+      body:
+        "No single intervention closes the gap. Climate resilience, ecological adaptation and emissions mitigation run in parallel — each contributing to landscape outcomes rather than each fighting for share of voice.",
+    },
+  ];
+  const implColW = (CONTENT_W - 20) / 2;
+  const implTop = ctx.y;
+  for (let i = 0; i < implies.length; i++) {
+    const cx = M.left + i * (implColW + 20);
+    ctx.page.drawRectangle({
+      x: cx,
+      y: implTop,
+      width: 28,
+      height: 1.4,
+      color: C.teal,
+    });
+    ctx.page.drawText(implies[i].heading, {
+      x: cx,
+      y: implTop - 16,
+      size: 11,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    const lines = wrap(implies[i].body, ctx.sans, 10, implColW - 4);
+    for (let k = 0; k < lines.length; k++) {
+      ctx.page.drawText(lines[k], {
+        x: cx,
+        y: implTop - 32 - k * 14,
+        size: 10,
+        font: ctx.sans,
+        color: C.inkSoft,
+      });
+    }
+  }
+  ctx.y = implTop - 120;
 }
 
 // ─── KEY CHALLENGES ──────────────────────────────────────────────────────
@@ -834,6 +992,11 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
   const topCats = budget.byCategory.filter((c) => c.total > 0).slice(0, 5);
   const maxCatTotal = topCats[0]?.total ?? 1;
 
+  // Category column ends before the bar column to avoid overlap.
+  // labelColW = 140; numText column is 22; so category text gets the
+  // remaining (labelColW - 22 - 8) = 110pt and is truncated with ellipsis
+  // if longer.
+  const catTextW = labelColW - 30;
   topCats.forEach((c, i) => {
     ensure(ctx, 22);
     const numText = String(i + 1).padStart(2, "0");
@@ -844,9 +1007,9 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
       font: ctx.mono,
       color: C.amber,
     });
-    // Category name
-    const catLines = wrap(c.category, ctx.sans, 10, 180);
-    ctx.page.drawText(catLines[0] ?? "", {
+    // Category name (truncated to label column width)
+    const truncated = truncateToWidth(c.category, ctx.sans, 10, catTextW);
+    ctx.page.drawText(truncated, {
       x: M.left + 22,
       y: ctx.y - 11,
       size: 10,
@@ -961,6 +1124,80 @@ function drawImplementationSnapshot(ctx: Ctx, p: LandscapeProfile, exhibit: stri
     }
   }
   ctx.y = colTop - 140;
+
+  hairline(ctx);
+
+  // Entry-points list — concrete activities that operationalise the levers.
+  // Lifts the bottom half of the page from empty to useful.
+  ctx.page.drawText("ENTRY POINTS", {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  ctx.y -= 20;
+  const entryPoints = [
+    {
+      label: "NRM",
+      title: "Natural resource management",
+      body: "Soil and water conservation structures, common-land restoration, watershed treatment.",
+    },
+    {
+      label: "AGRI",
+      title: "Agriculture & horticulture",
+      body: "Crop diversification, climate-resilient varieties, low-external-input cultivation.",
+    },
+    {
+      label: "LIVESTOCK",
+      title: "Livestock & fisheries",
+      body: "Breed improvement, fodder development, disease management, allied livelihoods.",
+    },
+    {
+      label: "MARKETS",
+      title: "Markets & value chains",
+      body: "Farmer producer organisations, aggregation infrastructure, post-harvest processing.",
+    },
+    {
+      label: "FINANCE",
+      title: "Finance & convergence",
+      body: "Government scheme convergence, returnable-grant deployment, outcome-based finance pilots.",
+    },
+  ];
+  entryPoints.forEach((ep) => {
+    ensure(ctx, 24);
+    ctx.page.drawText(ep.label, {
+      x: M.left,
+      y: ctx.y - 11,
+      size: 7.5,
+      font: ctx.sansBold,
+      color: C.amber,
+    });
+    ctx.page.drawText(ep.title, {
+      x: M.left + 78,
+      y: ctx.y - 11,
+      size: 10.5,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    const bodyText = shorten(ep.body, 110);
+    ctx.page.drawText(bodyText, {
+      x: M.left + 78,
+      y: ctx.y - 11 - 14,
+      size: 9.5,
+      font: ctx.sans,
+      color: C.inkSoft,
+    });
+    // trailing hairline
+    ctx.page.drawRectangle({
+      x: M.left + 78,
+      y: ctx.y - 34,
+      width: CONTENT_W - 78,
+      height: 0.3,
+      color: C.hairline,
+    });
+    ctx.y -= 38;
+  });
 }
 
 // ─── COLOPHON (last page) ────────────────────────────────────────────────
@@ -1014,11 +1251,89 @@ function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
     font: ctx.sans,
     color: C.muted,
   });
+  ctx.y -= 60;
+
+  hairline(ctx);
+
+  // Methodology + revision panel — three small columns at the bottom so the
+  // page closes with useful provenance rather than empty space.
+  ctx.page.drawText("METHODOLOGY", {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  ctx.y -= 18;
+  const methodCols = [
+    {
+      label: "DATA SOURCE",
+      body:
+        "Landscape profile content drawn from the published CAT landscape profile dossier; investment plan figures from the underlying ingested investment plan.",
+    },
+    {
+      label: "EDITORIAL CHECK",
+      body:
+        "Every Hub entry is read by a CAT editor before it goes live. Drafts surfaced by discovery agents are reviewed against public sources before promotion.",
+    },
+    {
+      label: "REVISION",
+      body:
+        "Generated live at the time of download. The canonical record is the Hub page itself; the brief is its print-friendly snapshot.",
+    },
+  ];
+  const methodColW = (CONTENT_W - 24) / 3;
+  const methodTop = ctx.y;
+  for (let i = 0; i < methodCols.length; i++) {
+    const cx = M.left + i * (methodColW + 12);
+    ctx.page.drawRectangle({
+      x: cx,
+      y: methodTop,
+      width: 24,
+      height: 0.8,
+      color: C.teal,
+    });
+    ctx.page.drawText(methodCols[i].label, {
+      x: cx,
+      y: methodTop - 14,
+      size: 7.5,
+      font: ctx.sansBold,
+      color: C.muted,
+    });
+    const lines = wrap(methodCols[i].body, ctx.sans, 9, methodColW - 4);
+    for (let k = 0; k < Math.min(lines.length, 6); k++) {
+      ctx.page.drawText(lines[k], {
+        x: cx,
+        y: methodTop - 28 - k * 12,
+        size: 9,
+        font: ctx.sans,
+        color: C.inkSoft,
+      });
+    }
+  }
 }
 
 function shorten(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n - 1).replace(/\s+\S*$/, "") + "...";
+}
+
+function truncateToWidth(s: string, font: PDFFont, size: number, maxW: number): string {
+  const text = asciify(s);
+  if (font.widthOfTextAtSize(text, size) <= maxW) return text;
+  const ellipsis = "...";
+  const ellipsisW = font.widthOfTextAtSize(ellipsis, size);
+  let lo = 0;
+  let hi = text.length;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi + 1) / 2);
+    if (font.widthOfTextAtSize(text.slice(0, mid), size) + ellipsisW <= maxW) {
+      lo = mid;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return text.slice(0, lo).trimEnd() + ellipsis;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────
