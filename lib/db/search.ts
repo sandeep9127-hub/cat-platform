@@ -16,6 +16,12 @@ export type SearchHit = {
   themeSlug: string;
   rank: number;
   highlight: string;
+  /**
+   * URL of the actual primary source document (publisher PDF, paper, gazette,
+   * partner programme page). Used by the agent so citations link out to the
+   * real material, not back to the internal Hub entry page.
+   */
+  sourceUrl: string | null;
 };
 
 export type SearchFilters = {
@@ -95,6 +101,7 @@ export async function searchEntries(filters: SearchFilters, limit = 30): Promise
     theme_slug: string;
     rank: number;
     highlight: string;
+    source_url: string | null;
   }>(sql`
     SELECT
       e.id,
@@ -109,6 +116,7 @@ export async function searchEntries(filters: SearchFilters, limit = 30): Promise
       t.name AS theme_name,
       t.colour_hex AS theme_colour,
       t.slug AS theme_slug,
+      e.source_url AS source_url,
       ${rankExpr} AS rank,
       ${highlightExpr} AS highlight
     FROM "cat"."entries" e
@@ -141,6 +149,7 @@ export async function searchEntries(filters: SearchFilters, limit = 30): Promise
       themeSlug: r.theme_slug as string,
       rank: Number(r.rank ?? 0),
       highlight: (r.highlight as string) ?? "",
+      sourceUrl: (r.source_url as string | null) ?? null,
     });
   }
   return out;

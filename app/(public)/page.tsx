@@ -4,6 +4,7 @@ import {
   getThemesWithCounts,
 } from "@/lib/db/queries";
 import { AtlasSection } from "@/components/entries/AtlasSection";
+import { DISCOVERED_RECORDS } from "@/lib/data/discovered-records";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
@@ -26,7 +27,13 @@ export default async function LandingPage() {
     getOverviewCounts(),
   ]);
 
-  const mapEntries = entries
+  // ─── Merge DB entries with atlas-routed discovery records so the landing
+  // page reflects the same library shape as /map. The right-rail list is
+  // capped at 5 by AtlasSection (cap prop below) with a "Read more" CTA
+  // linking to /map; the map itself shows all pins.
+  const atlasRecords = DISCOVERED_RECORDS.filter((r) => r.destination === "atlas");
+
+  const dbMapEntries = entries
     .filter((e) => e.primaryGeography.latitude && e.primaryGeography.longitude)
     .map((e) => ({
       id: e.id,
@@ -39,11 +46,28 @@ export default async function LandingPage() {
       longitude: e.primaryGeography.longitude,
     }));
 
-  const listEntries = entries.map((e, i) => ({
+  const atlasMapEntries = atlasRecords
+    .filter((r) => r.latitude != null && r.longitude != null)
+    .map((r) => ({
+      id: r.id,
+      slug: r.id,
+      title: r.title,
+      scaleBand: r.scaleBand ?? "multi_district",
+      provenance: "sourced" as const,
+      stateCode: r.stateCode ?? "",
+      latitude: r.latitude!,
+      longitude: r.longitude!,
+      externalUrl: r.sourceUrl,
+    }));
+
+  const mapEntries = [...dbMapEntries, ...atlasMapEntries];
+  const combinedTotal = entries.length + atlasRecords.length;
+
+  const dbListEntries = entries.map((e, i) => ({
     id: e.id,
     slug: e.slug,
     index: i + 1,
-    total: entries.length,
+    total: combinedTotal,
     title: e.title,
     tagline: e.tagline,
     stateName: e.primaryGeography.name,
@@ -53,6 +77,8 @@ export default async function LandingPage() {
     catEndorsement: e.catEndorsement,
     themes: e.themes,
   }));
+
+  const listEntries = dbListEntries;
 
   const lastUpdate =
     entries[0]?.lastReviewedAt ?? entries[0]?.publishedDate ?? new Date();
@@ -200,6 +226,8 @@ export default async function LandingPage() {
           mapEntries={mapEntries}
           listEntries={listEntries}
           totalStates={counts.states}
+          cap={5}
+          readMoreHref="/map"
         />
       </Reveal>
 

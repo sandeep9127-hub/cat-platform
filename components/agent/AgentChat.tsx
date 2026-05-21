@@ -528,46 +528,62 @@ function MessageBubble({ msg }: { msg: Msg }) {
                 ? { bg: "rgba(146,156,197,0.10)", fg: "#5C6796", bar: "#929CC5" }
                 : { bg: "rgba(248,202,124,0.16)", fg: "#C68C2E", bar: "#C68C2E" };
               const Icon = isLandscape ? Trees : FileText;
-              return (
-                <li key={c.index}>
-                  <Link
-                    href={c.url}
-                    className="group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-all duration-300 ease-out hover:-translate-y-0.5"
-                    style={{
-                      boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -12px ${tint.bar}55`,
-                    }}
-                  >
+              // Citations resolve to either a real publisher URL (PDF, gazette,
+              // partner programme page) or, when unavailable, the internal Hub
+              // entry page. External URLs open in a new tab.
+              const isExternal = /^https?:\/\//i.test(c.url);
+              const linkProps = isExternal
+                ? { href: c.url, target: "_blank" as const, rel: "noreferrer" }
+                : null;
+              const sharedClass = "group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-all duration-300 ease-out hover:-translate-y-0.5";
+              const sharedStyle = {
+                boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -12px ${tint.bar}55`,
+              } as const;
+              const inner = (
+                <>
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-0 bottom-0 w-[2px]"
+                    style={{ background: tint.bar }}
+                  />
+                  <div className="flex items-start gap-2.5 pl-1">
                     <span
+                      className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-[3px] mt-0.5"
+                      style={{ background: tint.bg, color: tint.fg }}
                       aria-hidden
-                      className="absolute top-0 left-0 bottom-0 w-[2px]"
-                      style={{ background: tint.bar }}
-                    />
-                    <div className="flex items-start gap-2.5 pl-1">
-                      <span
-                        className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-[3px] mt-0.5"
-                        style={{ background: tint.bg, color: tint.fg }}
-                        aria-hidden
-                      >
-                        <Icon size={11} strokeWidth={1.8} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-mono text-[9px] uppercase tracking-[0.14em] font-semibold" style={{ color: tint.fg }}>
-                            [{c.index}] {c.label}
-                          </span>
-                          <span className="font-mono text-[8.5px] tabular-nums text-muted">
-                            {c.score.toFixed(2)}
-                          </span>
-                        </div>
-                        <p className="font-sans text-[12px] text-ink-soft leading-snug mt-1 max-w-[40ch]">
-                          {c.preview.length > 140 ? c.preview.slice(0, 138) + "…" : c.preview}
-                        </p>
-                        <span className="inline-flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.14em] text-teal mt-1.5">
-                          Open <ExternalLink size={9} strokeWidth={1.8} />
+                    >
+                      <Icon size={11} strokeWidth={1.8} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[9px] uppercase tracking-[0.14em] font-semibold" style={{ color: tint.fg }}>
+                          [{c.index}] {c.label}
+                        </span>
+                        <span className="font-mono text-[8.5px] tabular-nums text-muted">
+                          {c.score.toFixed(2)}
                         </span>
                       </div>
+                      <p className="font-sans text-[12px] text-ink-soft leading-snug mt-1 max-w-[40ch]">
+                        {c.preview.length > 140 ? c.preview.slice(0, 138) + "…" : c.preview}
+                      </p>
+                      <span className="inline-flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.14em] text-teal mt-1.5">
+                        {isExternal ? "Open source" : "Open entry"} <ExternalLink size={9} strokeWidth={1.8} />
+                      </span>
                     </div>
-                  </Link>
+                  </div>
+                </>
+              );
+              return (
+                <li key={c.index}>
+                  {isExternal && linkProps ? (
+                    <a {...linkProps} className={sharedClass} style={sharedStyle}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <Link href={c.url} className={sharedClass} style={sharedStyle}>
+                      {inner}
+                    </Link>
+                  )}
                 </li>
               );
             })}
