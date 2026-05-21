@@ -70,7 +70,10 @@ export function ParallaxBanner({
       const rect = frame!.getBoundingClientRect();
       const viewportH = window.innerHeight || document.documentElement.clientHeight;
       // Progress: -1 (well below) → 0 (centered) → 1 (well above). Roughly.
-      const progress = (rect.top + rect.height / 2 - viewportH / 2) / viewportH;
+      const rawProgress = (rect.top + rect.height / 2 - viewportH / 2) / viewportH;
+      // Clamp to ±1 so fast scrolling can never push the parallax layer past
+      // the overshoot buffer and reveal the page background behind it.
+      const progress = Math.max(-1, Math.min(1, rawProgress));
 
       // Background drifts opposite to scroll direction — classic parallax.
       const bgShift = -progress * rect.height * strength;
@@ -122,7 +125,12 @@ export function ParallaxBanner({
             : "Brand banner"
       }
       ref={frameRef}
-      className="relative w-full overflow-hidden bg-deep-teal"
+      // No bg-deep-teal fallback — when the parallax shifted the video down
+      // past the 15% overshoot, the dark teal section background showed at
+      // the top of the hero as a black bar. Now the section is transparent
+      // (paper page bg shows through) when media is present, and only paints
+      // the dark brand gradient as a fallback when there's no media at all.
+      className="relative w-full overflow-hidden"
       style={{
         aspectRatio: isHero ? undefined : aspect,
         minHeight: resolvedMinHeight,
@@ -136,18 +144,22 @@ export function ParallaxBanner({
         ref={imgRef}
         aria-hidden
         className="absolute inset-0 will-change-transform"
+        // Vertical overshoot keeps the media wider than the visible frame
+        // so parallax translation can't reveal the page background behind
+        // it. 30% buffer comfortably covers the strongest parallax shift
+        // we apply (strength: 0.28).
         style={
           hasImage
             ? {
-                top: "-15%",
-                bottom: "-15%",
+                top: "-30%",
+                bottom: "-30%",
                 backgroundImage: `url(${src})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }
             : hasVideo
-              ? { top: "-15%", bottom: "-15%" }
+              ? { top: "-30%", bottom: "-30%" }
               : { top: "-20%", bottom: "-20%" }
         }
       >
