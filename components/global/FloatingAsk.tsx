@@ -7,9 +7,11 @@ import { MessageCircle, X, ArrowUp, Sparkles, Loader2 } from "lucide-react";
 type Message = { role: "user" | "assistant"; content: string };
 
 type AskMode = {
-  endpoint: string;
+  /** Scope sent to /api/agent. "all" or a landscape slug. */
+  scope: string;
+  /** Pill label. */
   label: string;
-  scope: "general" | "landscape";
+  /** Pretty name for the scoped landscape, if any. */
   landscapeName?: string;
   starters: string[];
 };
@@ -20,9 +22,8 @@ function detectMode(pathname: string): AskMode {
     const slug = m[1];
     const pretty = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     return {
-      endpoint: `/api/landscape/${slug}/ask`,
+      scope: slug,
       label: `Ask ${pretty}`,
-      scope: "landscape",
       landscapeName: pretty,
       starters: [
         `What is the total plan size for ${pretty}?`,
@@ -32,9 +33,8 @@ function detectMode(pathname: string): AskMode {
     };
   }
   return {
-    endpoint: "/api/agent",
+    scope: "all",
     label: "Ask the Hub",
-    scope: "general",
     starters: [
       "What's actually working on water in semi-arid India?",
       "Show me programmes that publish what didn't work",
@@ -86,7 +86,7 @@ export function FloatingAsk() {
   }, [open]);
 
   // Reset history when scope changes (general ↔ specific landscape).
-  const scopeKey = mode.scope === "landscape" ? mode.endpoint : "general";
+  const scopeKey = mode.scope;
   useEffect(() => {
     setMessages([]);
     setError(null);
@@ -128,10 +128,13 @@ export function FloatingAsk() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(mode.endpoint, {
+      const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({
+          messages: next,
+          scope: mode.scope,
+        }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -141,7 +144,7 @@ export function FloatingAsk() {
       const answer =
         data.text ??
         (data.refused
-          ? "I cannot answer that within the Hub's scope yet."
+          ? "Not in the library yet."
           : "No response.");
       setMessages([...next, { role: "assistant", content: answer }]);
     } catch (e) {
@@ -214,7 +217,7 @@ export function FloatingAsk() {
                   {mode.label}
                 </h2>
                 <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-paper/70 mt-1 truncate">
-                  {mode.scope === "landscape"
+                  {mode.scope !== "all"
                     ? `Scoped to ${mode.landscapeName} library`
                     : "Reads the published library only"}
                 </p>
@@ -235,7 +238,7 @@ export function FloatingAsk() {
             {messages.length === 0 && (
               <div>
                 <p className="font-serif italic text-[15px] text-ink-soft leading-[1.55] max-w-[34ch]">
-                  {mode.scope === "landscape"
+                  {mode.scope !== "all"
                     ? `Ask anything about ${mode.landscapeName}, its plan, budget, or context.`
                     : "Ask the Hub. Answers come from the published library, with the entries cited."}
                 </p>
@@ -315,7 +318,7 @@ export function FloatingAsk() {
                   }
                 }}
                 placeholder={
-                  mode.scope === "landscape"
+                  mode.scope !== "all"
                     ? `Ask about ${mode.landscapeName}…`
                     : "Ask about a programme, theme, or state…"
                 }
