@@ -129,11 +129,15 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* IMMERSIVE HERO — looping video backdrop, parallaxed on scroll, text laid over with atmospheric flare */}
+      {/* HERO — looping video backdrop sits static-composed inside the
+          frame so the full illustration reads. A tiny 0.06 strength
+          gives just enough drift on scroll to feel alive without
+          cropping the image. */}
       <ParallaxBanner
         videoSrc="/videos/hero-parallax.mp4"
-        alt="Seamless looping parallax animation, evoking the landscapes the Hub documents"
-        strength={0.28}
+        alt="Looping illustration of Indian food systems and landscapes"
+        strength={0.06}
+        textStrength={0.05}
       >
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-28 sm:pb-32 lg:pb-40 min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] flex">
           <div className="max-w-[60ch] lg:max-w-[62ch]">

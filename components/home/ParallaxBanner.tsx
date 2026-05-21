@@ -144,22 +144,25 @@ export function ParallaxBanner({
         ref={imgRef}
         aria-hidden
         className="absolute inset-0 will-change-transform"
-        // Vertical overshoot keeps the media wider than the visible frame
-        // so parallax translation can't reveal the page background behind
-        // it. 30% buffer comfortably covers the strongest parallax shift
-        // we apply (strength: 0.28).
+        // Inner layer fits the section exactly (no overshoot). The earlier
+        // 30% buffer kept parallax gaps invisible but forced object-cover
+        // to scale the media into a 160%-tall box and crop the original
+        // frame top-and-bottom. The image now shows complete — parallax
+        // shift is small (see the lower `strength`) and the section
+        // background is transparent so any micro-gap reveals the page
+        // paper, not a dark stripe.
         style={
           hasImage
             ? {
-                top: "-30%",
-                bottom: "-30%",
+                top: 0,
+                bottom: 0,
                 backgroundImage: `url(${src})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }
             : hasVideo
-              ? { top: "-30%", bottom: "-30%" }
+              ? { top: 0, bottom: 0 }
               : { top: "-20%", bottom: "-20%" }
         }
       >
