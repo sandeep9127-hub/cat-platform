@@ -170,10 +170,12 @@ export function FloatingAsk() {
         <aside
           role="dialog"
           aria-label={`${mode.label} chat`}
-          className="fixed z-[56] right-0 left-0 bottom-0 sm:left-auto sm:right-5 sm:bottom-[5.5rem] sm:w-[400px] max-h-[78dvh] sm:max-h-[70dvh] flex flex-col sm:rounded-[6px] overflow-hidden border-t sm:border border-line bg-paper shadow-[0_24px_64px_-16px_rgba(26,38,37,0.30),0_4px_12px_rgba(26,38,37,0.08)] animate-fade-in-down"
+          className="fixed z-[56] right-0 left-0 bottom-0 sm:left-auto sm:right-5 sm:bottom-[5.5rem] sm:w-[400px] max-h-[78dvh] sm:max-h-[70dvh] flex flex-col sm:rounded-[8px] overflow-hidden border-t sm:border border-line/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-paper/92 bg-paper shadow-[0_32px_80px_-20px_rgba(26,38,37,0.55),0_8px_24px_-8px_rgba(26,38,37,0.25),0_0_0_1px_rgba(26,38,37,0.04)] animate-fade-in-down"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.6) 100%)",
+            // Tiny upward tone shift so the conversation feels lifted off the page,
+            // but the fill stays effectively opaque (>92%) so text behind never bleeds through.
+            backgroundImage:
+              "linear-gradient(180deg, rgba(251,248,242,0.96) 0%, rgba(248,243,232,0.94) 100%)",
           }}
         >
           {/* Header */}
@@ -236,10 +238,10 @@ export function FloatingAsk() {
                     className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[88%] px-4 py-2.5 text-[14px] leading-[1.5] ${
+                      className={`max-w-[88%] px-4 py-2.5 text-[14px] leading-[1.55] shadow-[0_1px_2px_rgba(26,38,37,0.06)] ${
                         m.role === "user"
                           ? "bg-gradient-to-br from-deep-teal to-teal text-paper rounded-[12px] rounded-br-[4px] font-mono text-[13px]"
-                          : "bg-paper border border-line text-ink-soft font-serif rounded-[12px] rounded-bl-[4px]"
+                          : "bg-paper border border-line/80 text-ink font-sans rounded-[12px] rounded-bl-[4px]"
                       }`}
                     >
                       {m.content}
@@ -272,7 +274,7 @@ export function FloatingAsk() {
               e.preventDefault();
               send(input);
             }}
-            className="border-t border-line bg-paper p-3"
+            className="border-t border-line/80 bg-paper p-3 shadow-[0_-2px_8px_rgba(26,38,37,0.04)]"
           >
             <div className="flex items-end gap-2 border border-line rounded-[6px] bg-paper focus-within:border-teal transition-colors">
               <textarea
