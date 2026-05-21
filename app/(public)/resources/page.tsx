@@ -4,6 +4,7 @@ import {
   DISCOVERED_RECORDS,
   type DiscoveredRecord,
   type ResourceType,
+  getDeepSourceUrl,
 } from "@/lib/data/discovered-records";
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { Reveal } from "@/components/ui/Reveal";
@@ -168,7 +169,7 @@ export default async function ResourcesPage({
                   style={{ animationDelay: `${(i % 9) * 50}ms` }}
                 >
                   <a
-                    href={item.sourceUrl}
+                    href={getDeepSourceUrl(item)}
                     target="_blank"
                     rel="noreferrer"
                     className="group relative overflow-hidden block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"

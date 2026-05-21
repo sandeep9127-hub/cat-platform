@@ -1832,3 +1832,89 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     language: "en",
   },
 ];
+
+// ─── Deep-link resolver ──────────────────────────────────────────────────
+//
+// Most seed-record sourceUrls point at the publisher's homepage or a top-level
+// section, not the specific article/PDF. That's not useful: a reader who
+// clicks "Read" should land on the actual reading material, not a publisher's
+// front page where they have to hunt.
+//
+// This helper detects bare / shallow URLs and rewrites the click to a
+// publisher-restricted Google search keyed on the record title. The reader
+// gets one extra hop (Google results) but the top hit is almost always the
+// actual article. Where the URL is already a deep article/PDF link, it's
+// returned unchanged.
+//
+// As the seed catalogue is replaced by real discovery hits over time, deep
+// URLs become more common and this resolver simply passes them through.
+
+const SHALLOW_PATH_SEGMENTS = new Set([
+  "",
+  "/",
+  "news",
+  "articles",
+  "agriculture",
+  "water",
+  "food",
+  "policy",
+  "section",
+  "topic",
+  "search",
+  "report",
+  "reports",
+  "publications",
+  "research",
+  "blog",
+]);
+
+function isShallowUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/^\/|\/$/g, "");
+    if (!path) return true;
+    const segments = path.split("/").filter(Boolean);
+    // 1 segment that's a known section keyword → still shallow
+    if (segments.length === 1 && SHALLOW_PATH_SEGMENTS.has(segments[0].toLowerCase())) {
+      return true;
+    }
+    // 2 segments where both are section keywords (e.g. /news/national) → shallow
+    if (
+      segments.length === 2 &&
+      segments.every((s) => SHALLOW_PATH_SEGMENTS.has(s.toLowerCase()))
+    ) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns the URL the reader should actually be sent to when they click
+ * "Read article", "Open source", etc. Falls back to a publisher-restricted
+ * Google search when the record's sourceUrl is a bare homepage / section.
+ */
+export function getDeepSourceUrl(record: Pick<DiscoveredRecord, "sourceUrl" | "title">): string {
+  if (!record.sourceUrl) return record.sourceUrl;
+  if (!isShallowUrl(record.sourceUrl)) return record.sourceUrl;
+  try {
+    const u = new URL(record.sourceUrl);
+    const host = u.host.replace(/^www\./, "");
+    const q = encodeURIComponent(`${record.title} site:${host}`);
+    return `https://www.google.com/search?q=${q}`;
+  } catch {
+    return record.sourceUrl;
+  }
+}
+
+/**
+ * UI hint so the CTA label can adapt — "Read article" for a deep link,
+ * "Find article on {publisher}" for a search-fallback.
+ */
+export function getSourceLinkKind(
+  record: Pick<DiscoveredRecord, "sourceUrl">
+): "article" | "search" {
+  return isShallowUrl(record.sourceUrl) ? "search" : "article";
+}

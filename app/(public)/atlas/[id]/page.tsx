@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight, ExternalLink, MapPin, Calendar, Building2 } from "lucide-react";
-import { DISCOVERED_RECORDS } from "@/lib/data/discovered-records";
+import {
+  DISCOVERED_RECORDS,
+  getDeepSourceUrl,
+  getSourceLinkKind,
+} from "@/lib/data/discovered-records";
 import { ThemeChip } from "@/components/ui/ThemeChip";
 
 export const dynamic = "force-static";
@@ -84,6 +88,11 @@ export default async function AtlasRecordPage({ params }: Props) {
   );
   if (!record) notFound();
 
+  const deepSourceUrl = getDeepSourceUrl(record);
+  const sourceLinkKind = getSourceLinkKind(record);
+  const sourceCtaLabel =
+    sourceLinkKind === "article" ? "View original source" : "Find on publisher";
+
   const stateName = STATE_NAMES[record.stateCode ?? ""] ?? record.stateCode ?? "—";
   const startYear = record.publishedAt
     ? Number(record.publishedAt.slice(0, 4))
@@ -155,7 +164,7 @@ export default async function AtlasRecordPage({ params }: Props) {
           {/* Primary CTA — view the original source */}
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <a
-              href={record.sourceUrl}
+              href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
               className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-full font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-all hover:-translate-y-0.5"
@@ -166,7 +175,7 @@ export default async function AtlasRecordPage({ params }: Props) {
                   "0 10px 26px -12px rgba(198,140,46,0.55), inset 0 1px 0 rgba(255,255,255,0.30)",
               }}
             >
-              <span>View original source</span>
+              <span>{sourceCtaLabel}</span>
               <span className="font-normal normal-case tracking-normal text-amber-deep/80">
                 {record.sourceName}
               </span>
@@ -205,7 +214,7 @@ export default async function AtlasRecordPage({ params }: Props) {
               {record.sourceName}
             </div>
             <a
-              href={record.sourceUrl}
+              href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-amber-deep hover:text-deep-teal transition-colors break-all max-w-full"
@@ -213,6 +222,11 @@ export default async function AtlasRecordPage({ params }: Props) {
               <span className="truncate max-w-[28ch]">{prettyHost(record.sourceUrl)}</span>
               <ArrowUpRight size={11} strokeWidth={2} aria-hidden />
             </a>
+            {sourceLinkKind === "search" && (
+              <p className="mt-2 font-sans text-[11.5px] text-ink-soft leading-[1.4] italic max-w-[28ch]">
+                Opens a publisher-restricted search so you land on the actual article, not the homepage.
+              </p>
+            )}
           </div>
 
           {record.organisation && (
