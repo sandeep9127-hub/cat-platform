@@ -198,7 +198,12 @@ export default async function MapPage() {
         </aside>
       </section>
 
-      <AtlasSection mapEntries={mapEntries} listEntries={listEntries} totalStates={stateCount} />
+      <AtlasSection
+        mapEntries={mapEntries}
+        listEntries={listEntries}
+        totalStates={stateCount}
+        pageSize={10}
+      />
     </>
   );
 }
