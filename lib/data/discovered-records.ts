@@ -51,6 +51,15 @@ export type DiscoveredRecord = {
   longitude?: number;
   organisation?: string;
   provenance?: AtlasProvenance;
+  /** Atlas-only: programme scale for the right-rail list rendering. */
+  scaleBand?:
+    | "pilot"
+    | "block"
+    | "district"
+    | "multi_district"
+    | "state"
+    | "multi_state"
+    | "national";
 };
 
 /**
