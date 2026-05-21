@@ -3,13 +3,21 @@
 import { useEffect, useRef } from "react";
 
 type ParallaxBannerProps = {
-  /** Optional image source. When omitted, an abstract brand composition renders. */
+  /** Optional image source. */
   src?: string;
+  /** Optional video source — takes precedence over `src`. Autoplays muted in a loop. */
+  videoSrc?: string;
+  /** Optional poster image while the video buffers. */
+  poster?: string;
   alt?: string;
   /** How strongly the back layer shifts relative to scroll. 0 = static, 0.5 = strong. Default 0.25. */
   strength?: number;
   /** Optional caption shown bottom-left. */
   caption?: string;
+  /** Override the aspect ratio. Default 5.9 / 1 (LinkedIn cover) — pass a string like "21 / 9". */
+  aspect?: string;
+  /** Override the min height in px. Default 160. */
+  minHeight?: number;
 };
 
 /**
@@ -20,9 +28,13 @@ type ParallaxBannerProps = {
  */
 export function ParallaxBanner({
   src,
+  videoSrc,
+  poster,
   alt,
   strength = 0.25,
   caption,
+  aspect = "5.9 / 1",
+  minHeight = 160,
 }: ParallaxBannerProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLDivElement | null>(null);
@@ -63,17 +75,19 @@ export function ParallaxBanner({
     };
   }, [strength]);
 
-  const hasImage = Boolean(src);
+  const hasVideo = Boolean(videoSrc);
+  const hasImage = !hasVideo && Boolean(src);
+  const hasMedia = hasVideo || hasImage;
 
   return (
     <section
-      aria-label={src ? "Cover image" : "Brand banner"}
+      aria-label={hasVideo ? "Looping hero animation" : hasImage ? "Cover image" : "Brand banner"}
       ref={frameRef}
       className="relative w-full overflow-hidden border-y border-line"
       style={{
-        aspectRatio: "5.9 / 1",
-        minHeight: 160,
-        background: hasImage
+        aspectRatio: aspect,
+        minHeight,
+        background: hasMedia
           ? undefined
           : // Editorial gradient base: deep-teal pool with warm amber bloom
             "radial-gradient(ellipse 60% 120% at 12% 50%, rgba(248,202,124,0.32), transparent 60%), radial-gradient(ellipse 70% 140% at 92% 60%, rgba(146,156,197,0.30), transparent 65%), linear-gradient(110deg, #1f3534 0%, #2c4544 40%, #334B4A 70%, #3a5856 100%)",
@@ -93,10 +107,25 @@ export function ParallaxBanner({
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }
-            : { inset: "-20% 0" }
+            : hasVideo
+              ? { inset: "-15% 0" }
+              : { inset: "-20% 0" }
         }
       >
-        {!hasImage && (
+        {hasVideo && (
+          <video
+            src={videoSrc}
+            poster={poster}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          />
+        )}
+        {!hasMedia && (
           // Soft horizon line + repeating diagonal hatch motif. Pure CSS, no asset cost.
           <div
             className="absolute inset-0"
@@ -108,8 +137,8 @@ export function ParallaxBanner({
         )}
       </div>
 
-      {/* Mid layer — slower parallax, large brand glyph */}
-      {!hasImage && (
+      {/* Mid layer — large brand glyph row (only on the no-media variant) */}
+      {!hasMedia && (
         <div
           aria-hidden
           className="absolute will-change-transform pointer-events-none"
@@ -122,17 +151,17 @@ export function ParallaxBanner({
         </div>
       )}
 
-      {/* Optional alt text for image variant */}
-      {hasImage && alt && <span className="sr-only">{alt}</span>}
+      {/* Optional alt text */}
+      {hasMedia && alt && <span className="sr-only">{alt}</span>}
 
-      {/* Legibility veil (image variant only) */}
-      {hasImage && (
+      {/* Legibility veil (media variant only) */}
+      {hasMedia && (
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "linear-gradient(90deg, rgba(26,38,37,0.35) 0%, rgba(26,38,37,0.08) 38%, rgba(26,38,37,0.08) 62%, rgba(26,38,37,0.35) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 65%, rgba(26,38,37,0.25) 100%)",
+              "linear-gradient(90deg, rgba(26,38,37,0.30) 0%, rgba(26,38,37,0.04) 38%, rgba(26,38,37,0.04) 62%, rgba(26,38,37,0.30) 100%), linear-gradient(180deg, rgba(26,38,37,0.20) 0%, rgba(26,38,37,0.0) 35%, rgba(26,38,37,0.0) 60%, rgba(26,38,37,0.30) 100%)",
           }}
         />
       )}

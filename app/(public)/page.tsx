@@ -127,9 +127,13 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* PARALLAX BANNER — branded gradient + glyph composition, parallaxed on scroll */}
+      {/* PARALLAX BANNER — looping hero animation, parallaxed on scroll */}
       <ParallaxBanner
-        strength={0.32}
+        videoSrc="/videos/hero-parallax.mp4"
+        alt="Seamless looping parallax animation, evoking landscapes the Hub documents"
+        strength={0.30}
+        aspect="21 / 9"
+        minHeight={260}
         caption="Consortium for Agroecological Transformations"
       />
 
