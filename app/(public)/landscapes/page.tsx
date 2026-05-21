@@ -113,46 +113,93 @@ export default async function LandscapesPage() {
         <CatLandscapesMap pins={pins} />
       </section>
 
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-2">
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-line-soft border border-line-soft list-none p-0 m-0 mt-6">
+      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-8">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0">
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
+            const published = p?.lipStatus === "published";
+            // Published landscapes get the warm amber accent — they're ready to deep-dive.
+            // In-preparation landscapes get periwinkle — visible signal they're coming.
+            const tone = published
+              ? {
+                  bar: "#C68C2E",
+                  soft: "rgba(248,202,124,0.14)",
+                  glow: "rgba(248,202,124,0.28)",
+                  chipBg: "rgba(248,202,124,0.22)",
+                  chipFg: "#C68C2E",
+                  statusFg: "#C68C2E",
+                }
+              : {
+                  bar: "#929CC5",
+                  soft: "rgba(146,156,197,0.10)",
+                  glow: "rgba(146,156,197,0.20)",
+                  chipBg: "rgba(146,156,197,0.14)",
+                  chipFg: "#5C6796",
+                  statusFg: "#767E7E",
+                };
             return (
               <li
                 key={g.id}
-                className="reveal-stagger bg-paper"
+                className="reveal-stagger"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <Link
                   href={`/landscape/${g.slug}`}
-                  className="group block p-6 hover:bg-cream transition-colors h-full"
+                  className="group relative overflow-hidden block rounded-[8px] border border-line bg-paper p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
+                  style={{
+                    boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 28px -14px ${tone.glow}`,
+                    backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,
+                  }}
                 >
-                  <div className="flex items-baseline justify-between gap-3 mb-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-0 right-0 h-[3px]"
+                    style={{
+                      background: `linear-gradient(90deg, ${tone.bar} 0%, ${tone.bar}cc 60%, transparent 100%)`,
+                    }}
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{
+                      background: `radial-gradient(ellipse 90% 70% at 100% 100%, ${tone.glow}, transparent 65%)`,
+                    }}
+                  />
+
+                  <div className="relative flex items-center justify-between gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
                     <span>No. {String(i + 1).padStart(2, "0")} / 11</span>
-                    <span className="text-amber-deep font-semibold">{g.stateCode}</span>
+                    <span
+                      className="inline-flex items-center justify-center min-w-[28px] h-[22px] px-2 rounded-[3px] font-semibold tracking-[0.10em]"
+                      style={{ background: tone.chipBg, color: tone.chipFg }}
+                    >
+                      {g.stateCode}
+                    </span>
                   </div>
-                  <h2 className="font-serif text-[24px] sm:text-[26px] font-medium leading-[1.15] tracking-[-0.015em] text-ink group-hover:text-teal transition-colors">
+
+                  <h2 className="relative font-serif text-[24px] sm:text-[26px] font-medium leading-[1.15] tracking-[-0.015em] text-ink group-hover:text-teal transition-colors">
                     {p?.name ?? g.name}
                   </h2>
                   {p && (
-                    <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-teal mt-1.5">
+                    <div className="relative font-mono text-[10px] uppercase tracking-[0.12em] text-teal mt-1.5">
                       {p.district}
                     </div>
                   )}
-                  <p className="font-serif text-[15px] text-ink-soft leading-[1.55] mt-3">
+                  <p className="relative font-sans text-[14.5px] text-ink-soft leading-[1.55] mt-4 max-w-[42ch]">
                     {p?.gloss ?? "A CAT focus landscape."}
                   </p>
-                  <div className="mt-5 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.16em]">
+
+                  <div className="relative mt-6 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.16em]">
                     <span
-                      className={
-                        p?.lipStatus === "published"
-                          ? "text-amber-deep font-semibold"
-                          : "text-muted"
-                      }
+                      className="inline-flex items-center gap-1.5"
+                      style={{ color: tone.statusFg }}
                     >
-                      {p?.lipStatus === "published" ? "LIP published" : "LIP in preparation"}
+                      <span
+                        className="inline-block w-1.5 h-1.5 rounded-full"
+                        style={{ background: tone.bar }}
+                      />
+                      {published ? "LIP published" : "LIP in preparation"}
                     </span>
-                    <span className="text-teal group-hover:text-amber-deep transition-colors">
+                    <span className="text-teal group-hover:text-amber-deep group-hover:translate-x-0.5 transition-all">
                       Read →
                     </span>
                   </div>
