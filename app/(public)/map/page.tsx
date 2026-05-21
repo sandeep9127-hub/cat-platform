@@ -111,7 +111,7 @@ export default async function MapPage() {
       stateCode: r.stateCode ?? "",
       latitude: r.latitude!,
       longitude: r.longitude!,
-      externalUrl: r.sourceUrl,
+      internalHref: `/atlas/${r.id}`,
     }));
 
   const atlasListEntries = atlasRecords.map((r, i) => {
@@ -139,7 +139,7 @@ export default async function MapPage() {
         name: prettyTheme(t),
         colourHex: THEME_COLOURS[t] ?? "#334B4A",
       })),
-      externalUrl: r.sourceUrl,
+      internalHref: `/atlas/${r.id}`,
       sourceName: r.sourceName,
     };
   });

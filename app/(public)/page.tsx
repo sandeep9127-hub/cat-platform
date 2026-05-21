@@ -57,7 +57,7 @@ export default async function LandingPage() {
       stateCode: r.stateCode ?? "",
       latitude: r.latitude!,
       longitude: r.longitude!,
-      externalUrl: r.sourceUrl,
+      internalHref: `/atlas/${r.id}`,
     }));
 
   const mapEntries = [...dbMapEntries, ...atlasMapEntries];
@@ -112,7 +112,7 @@ export default async function LandingPage() {
       name: prettyThemeHome(t),
       colourHex: THEME_COLOURS_HOME[t] ?? "#334B4A",
     })),
-    externalUrl: r.sourceUrl,
+    internalHref: `/atlas/${r.id}`,
     sourceName: r.sourceName,
   }));
 

@@ -16,9 +16,15 @@ export type EntryListItemData = {
   catEndorsement: "cat_authored" | "cat_endorsed" | "cat_listed";
   themes: { slug: string; name: string; colourHex: string }[];
   /**
-   * When set, the row links to this external URL (opens in a new tab) instead
-   * of `/entry/{slug}`. Used by atlas-routed discovery records that point at
-   * their original publisher.
+   * Optional internal route to use instead of the default `/entry/{slug}`.
+   * Used by atlas-routed discovery records that have their own description
+   * page at `/atlas/{id}` rather than a full Hub entry.
+   */
+  internalHref?: string;
+  /**
+   * Legacy: when set and no `internalHref` is provided, the row links to
+   * this external URL in a new tab. Kept for backwards compatibility with
+   * any caller that hasn't migrated yet; atlas records now use internalHref.
    */
   externalUrl?: string;
   /** Optional short source label, e.g. "RySS" or "Sikkim Dept of Agriculture". */
@@ -70,6 +76,16 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
         </div>
       </article>
   );
+
+  // Priority: explicit internalHref (atlas description page) > externalUrl
+  // (legacy, opens in new tab) > default /entry/{slug}.
+  if (data.internalHref) {
+    return (
+      <Link href={data.internalHref} className={wrapperClass}>
+        {body}
+      </Link>
+    );
+  }
 
   if (data.externalUrl) {
     return (

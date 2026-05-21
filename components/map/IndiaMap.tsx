@@ -19,9 +19,13 @@ export type MapEntry = {
   latitude: number | null;
   longitude: number | null;
   /**
-   * Optional external URL. When set, clicking the pin opens this URL in a new
-   * tab instead of navigating to `/entry/{slug}`. Used by atlas-routed records
-   * that point at their publisher's site.
+   * Optional internal route to navigate to instead of `/entry/{slug}`.
+   * Atlas-routed records use `/atlas/{id}` (their Hub description page).
+   */
+  internalHref?: string;
+  /**
+   * Legacy: external URL to open in a new tab. Honored only when no
+   * internalHref is provided.
    */
   externalUrl?: string;
 };
@@ -252,7 +256,11 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   onMouseMove={(e) => handleDotEnter(e, entry)}
                   onMouseLeave={() => setTooltip(null)}
                   onClick={() => {
-                    if (entry.externalUrl) {
+                    // Priority: internal Hub page (atlas record description or
+                    // full entry) > legacy external URL > default entry slug.
+                    if (entry.internalHref) {
+                      window.location.href = entry.internalHref;
+                    } else if (entry.externalUrl) {
                       window.open(entry.externalUrl, "_blank", "noopener,noreferrer");
                     } else {
                       window.location.href = `/entry/${entry.slug}`;
