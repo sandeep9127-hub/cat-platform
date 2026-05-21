@@ -1,22 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Droplets, AlertOctagon, ShieldCheck } from "lucide-react";
+import {
+  ArrowUp,
+  RefreshCw,
+  Sparkles,
+  Droplets,
+  AlertOctagon,
+  ShieldCheck,
+  Trees,
+  Coins,
+  Users,
+  ScrollText,
+  Wrench,
+  Loader2,
+  FileText,
+  ExternalLink,
+  X,
+} from "lucide-react";
 
-type Msg = { role: "user" | "assistant"; content: string; citedSlugs?: string[]; refused?: boolean };
+type Citation = {
+  index: number;
+  type: "entry" | "landscape";
+  label: string;
+  url: string;
+  preview: string;
+  score: number;
+};
 
-const STARTERS: Array<{
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  citations?: Citation[];
+  refused?: boolean;
+};
+
+const PROMPT_POOL: Array<{
   prompt: string;
   label: string;
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
-  tone: { bar: string; soft: string; glow: string; chipBg: string; chipFg: string };
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  tint: { bar: string; soft: string; glow: string; chipBg: string; chipFg: string };
 }> = [
   {
     prompt: "What's actually working on water in semi-arid India?",
     label: "Water",
     Icon: Droplets,
-    tone: {
+    tint: {
       bar: "#2E7573",
       soft: "rgba(46,117,115,0.09)",
       glow: "rgba(46,117,115,0.20)",
@@ -28,7 +58,7 @@ const STARTERS: Array<{
     prompt: "Show me programmes that publish what didn't work",
     label: "Honesty",
     Icon: AlertOctagon,
-    tone: {
+    tint: {
       bar: "#C68C2E",
       soft: "rgba(248,202,124,0.16)",
       glow: "rgba(248,202,124,0.30)",
@@ -40,7 +70,7 @@ const STARTERS: Array<{
     prompt: "Which entries are CAT-authored versus self-submitted?",
     label: "Provenance",
     Icon: ShieldCheck,
-    tone: {
+    tint: {
       bar: "#929CC5",
       soft: "rgba(146,156,197,0.12)",
       glow: "rgba(146,156,197,0.22)",
@@ -48,6 +78,71 @@ const STARTERS: Array<{
       chipFg: "#5C6796",
     },
   },
+  {
+    prompt: "What does the Patratu investment plan say about livestock?",
+    label: "Patratu",
+    Icon: Trees,
+    tint: {
+      bar: "#5C8C2E",
+      soft: "rgba(92,140,46,0.10)",
+      glow: "rgba(92,140,46,0.20)",
+      chipBg: "rgba(92,140,46,0.14)",
+      chipFg: "#5C8C2E",
+    },
+  },
+  {
+    prompt: "Summarise the funding mix for Patratu's investment plan",
+    label: "Finance",
+    Icon: Coins,
+    tint: {
+      bar: "#C68C2E",
+      soft: "rgba(248,202,124,0.14)",
+      glow: "rgba(248,202,124,0.26)",
+      chipBg: "rgba(248,202,124,0.20)",
+      chipFg: "#C68C2E",
+    },
+  },
+  {
+    prompt: "Which programmes work with women-led collectives?",
+    label: "Collectives",
+    Icon: Users,
+    tint: {
+      bar: "#929CC5",
+      soft: "rgba(146,156,197,0.10)",
+      glow: "rgba(146,156,197,0.20)",
+      chipBg: "rgba(146,156,197,0.14)",
+      chipFg: "#5C6796",
+    },
+  },
+  {
+    prompt: "What did not work in agroecology transitions, by entry?",
+    label: "Limitations",
+    Icon: ScrollText,
+    tint: {
+      bar: "#B85042",
+      soft: "rgba(184,80,66,0.08)",
+      glow: "rgba(184,80,66,0.18)",
+      chipBg: "rgba(184,80,66,0.10)",
+      chipFg: "#B85042",
+    },
+  },
+  {
+    prompt: "Compare soil-and-land programmes across states",
+    label: "Soil",
+    Icon: Wrench,
+    tint: {
+      bar: "#8C7A5C",
+      soft: "rgba(140,122,92,0.10)",
+      glow: "rgba(140,122,92,0.20)",
+      chipBg: "rgba(140,122,92,0.14)",
+      chipFg: "#8C7A5C",
+    },
+  },
+];
+
+const LANDSCAPE_SCOPES = [
+  { slug: "all", label: "All sources" },
+  { slug: "patratu", label: "Patratu only" },
 ];
 
 function getSessionToken(): string {
@@ -60,236 +155,425 @@ function getSessionToken(): string {
   return t;
 }
 
-export function AgentChat() {
+function sampleFour(): typeof PROMPT_POOL {
+  const pool = [...PROMPT_POOL];
+  const out: typeof PROMPT_POOL = [];
+  for (let i = 0; i < 4 && pool.length > 0; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    out.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+  return out;
+}
+
+export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const turnsUsed = messages.filter((m) => m.role === "user").length;
-  const turnsLeft = 5 - turnsUsed;
-  const endRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [scope, setScope] = useState<string>(initialScope);
+  const [cards, setCards] = useState(() => sampleFour());
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, busy]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, busy]);
 
   async function send(text: string) {
-    if (!text.trim() || busy || turnsLeft <= 0) return;
-    const nextMessages: Msg[] = [...messages, { role: "user", content: text.trim() }];
-    setMessages(nextMessages);
+    const trimmed = text.trim();
+    if (!trimmed || busy) return;
+    const next: Msg[] = [...messages, { role: "user", content: trimmed }];
+    setMessages(next);
     setInput("");
     setBusy(true);
-
+    setError(null);
     try {
       const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           sessionToken: getSessionToken(),
-          messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          scope,
         }),
       });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || j.refusal || `Request failed (${res.status})`);
+      }
       const data = (await res.json()) as {
         text?: string;
-        citedSlugs?: string[];
+        citations?: Citation[];
         refused?: boolean;
-        refusal?: string;
-        error?: string;
       };
-      if (data.error || data.refusal) {
-        setMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            content: data.refusal ?? data.error ?? "The agent could not respond.",
-            refused: true,
-          },
-        ]);
-      } else {
-        setMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            content: data.text ?? "",
-            citedSlugs: data.citedSlugs,
-            refused: !!data.refused,
-          },
-        ]);
-      }
-    } catch {
-      setMessages((m) => [
-        ...m,
+      setMessages([
+        ...next,
         {
           role: "assistant",
-          content: "The agent service is unreachable right now. Browse by theme or use search instead.",
-          refused: true,
+          content: data.text ?? "",
+          citations: data.citations ?? [],
+          refused: data.refused,
         },
       ]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setBusy(false);
     }
   }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 lg:gap-12">
-      <div className="flex flex-col gap-6 min-h-[40vh]">
-        {messages.length === 0 ? (
-          <div>
-            <p className="font-sans italic text-[17px] text-ink-soft leading-[1.6] mb-6 font-light max-w-[44ch]">
-              Start with one of these or write your own.
-            </p>
-            <ul className="list-none p-0 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {STARTERS.map((s) => {
-                const Icon = s.Icon;
-                return (
-                  <li key={s.prompt}>
-                    <button
-                      type="button"
-                      onClick={() => send(s.prompt)}
-                      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 text-left w-full h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
-                      style={{
-                        boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${s.tone.glow}`,
-                        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${s.tone.soft} 100%)`,
-                      }}
-                    >
-                      <span
-                        aria-hidden
-                        className="absolute top-0 left-0 right-0 h-[2px]"
-                        style={{
-                          background: `linear-gradient(90deg, ${s.tone.bar} 0%, ${s.tone.bar}cc 60%, transparent 100%)`,
-                        }}
-                      />
-                      <span
-                        className="inline-flex items-center gap-2 mb-3 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold"
-                        style={{ color: s.tone.chipFg }}
-                      >
-                        <span
-                          className="w-7 h-7 rounded-[5px] inline-flex items-center justify-center"
-                          style={{ background: s.tone.chipBg, color: s.tone.chipFg }}
-                          aria-hidden
-                        >
-                          <Icon size={14} strokeWidth={1.7} />
-                        </span>
-                        {s.label}
-                      </span>
-                      <span className="block font-sans italic text-[15.5px] leading-[1.5] text-[color:var(--navy-teal)] max-w-[34ch]">
-                        &ldquo;{s.prompt}&rdquo;
-                      </span>
-                      <span
-                        className="absolute bottom-4 right-5 font-mono text-[11px] text-muted transition-all duration-300 group-hover:translate-x-0.5"
-                        style={{ color: s.tone.chipFg }}
-                      >
-                        →
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : (
-          messages.map((m, i) => (
-            <div
-              key={i}
-              className={`reveal-stagger ${m.role === "user" ? "" : ""}`}
-              style={{ animationDelay: "0ms" }}
-            >
-              <span className="eyebrow block mb-2">
-                {m.role === "user" ? "You" : m.refused ? "Refusal" : "Agent"}
-              </span>
-              <div
-                className={`font-serif text-[16.5px] leading-[1.6] whitespace-pre-wrap ${
-                  m.role === "user"
-                    ? "text-ink"
-                    : m.refused
-                      ? "text-red-alert italic"
-                      : "text-ink-soft"
-                } max-w-[64ch]`}
-              >
-                {m.content}
-              </div>
-              {m.citedSlugs && m.citedSlugs.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted self-center">
-                    Cited
-                  </span>
-                  {m.citedSlugs.map((s) => (
-                    <Link
-                      key={s}
-                      href={`/entry/${s}`}
-                      className="font-mono text-[10px] uppercase tracking-[0.12em] text-deep-teal border border-line px-2 py-1 rounded-[2px] hover:border-teal hover:text-teal transition-colors"
-                    >
-                      {s}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))
-        )}
-        {busy && (
-          <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal animate-pulse">
-            Reading the library…
-          </div>
-        )}
-        <div ref={endRef} />
+  const charCount = input.length;
+  const remaining = Math.max(0, 1000 - charCount);
+  const scopeLabel = useMemo(
+    () => LANDSCAPE_SCOPES.find((s) => s.slug === scope)?.label ?? "All sources",
+    [scope]
+  );
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-          className="mt-auto pt-6 border-t border-line-soft grid grid-cols-[1fr_auto] gap-2"
+  return (
+    <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
+      {messages.length === 0 ? (
+        // ─── Landing state ─────────────────────────────────────────────
+        <>
+          <div className="pt-4 pb-2">
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-teal font-semibold inline-flex items-center gap-2">
+              <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" />
+              The assistant
+            </span>
+            <h1 className="font-sans font-light text-[clamp(40px,5.4vw,72px)] tracking-[-0.025em] leading-[1.05] text-[color:var(--navy-teal)] mt-4 max-w-[20ch]">
+              Hello there.
+              <br />
+              What would you like to{" "}
+              <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>
+                know?
+              </em>
+            </h1>
+            <p className="font-sans italic text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[52ch] mt-5 font-light">
+              Use one of the prompts below or write your own. Answers come from the curated
+              library — published entries plus ingested investment plans. Nothing else.
+            </p>
+          </div>
+
+          {/* Prompt cards · 2×2 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+            {cards.map((c) => {
+              const Icon = c.Icon;
+              return (
+                <button
+                  key={c.prompt}
+                  type="button"
+                  onClick={() => {
+                    setInput(c.prompt);
+                    void send(c.prompt);
+                  }}
+                  className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-5 sm:p-6 text-left transition-all duration-300 ease-out hover:-translate-y-0.5"
+                  style={{
+                    boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${c.tint.glow}`,
+                    backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${c.tint.soft} 100%)`,
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-0 right-0 h-[2px]"
+                    style={{
+                      background: `linear-gradient(90deg, ${c.tint.bar} 0%, ${c.tint.bar}cc 60%, transparent 100%)`,
+                    }}
+                  />
+                  <span
+                    className="inline-flex items-center gap-2 mb-3 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold"
+                    style={{ color: c.tint.chipFg }}
+                  >
+                    <span
+                      className="w-8 h-8 rounded-[6px] inline-flex items-center justify-center"
+                      style={{ background: c.tint.chipBg, color: c.tint.chipFg }}
+                      aria-hidden
+                    >
+                      <Icon size={15} strokeWidth={1.7} />
+                    </span>
+                    {c.label}
+                  </span>
+                  <span className="block font-sans italic text-[16px] leading-[1.5] text-[color:var(--navy-teal)] max-w-[34ch]">
+                    &ldquo;{c.prompt}&rdquo;
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCards(sampleFour())}
+            className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal hover:text-deep-teal transition-colors mt-5"
+          >
+            <RefreshCw size={12} strokeWidth={1.8} />
+            Refresh prompts
+          </button>
+        </>
+      ) : (
+        // ─── Conversation state ────────────────────────────────────────
+        <div
+          ref={scrollRef}
+          className="pt-4 pb-2 max-h-[55vh] overflow-y-auto"
         >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={
-              turnsLeft <= 0
-                ? "Session limit reached. Refresh to start over."
-                : "Ask anything about the library…"
+          {messages.map((m, i) => (
+            <MessageBubble key={i} msg={m} />
+          ))}
+          {busy && (
+            <div className="inline-flex items-center gap-2 mt-3 mb-2 text-muted">
+              <Loader2 size={14} className="animate-spin" />
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
+                Reading the library
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Composer */}
+      <Composer
+        input={input}
+        setInput={setInput}
+        send={send}
+        busy={busy}
+        charCount={charCount}
+        remaining={remaining}
+        scope={scope}
+        setScope={setScope}
+        scopeLabel={scopeLabel}
+        inputRef={inputRef}
+      />
+
+      {error && (
+        <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber-deep">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Composer({
+  input,
+  setInput,
+  send,
+  busy,
+  charCount,
+  remaining,
+  scope,
+  setScope,
+  scopeLabel,
+  inputRef,
+}: {
+  input: string;
+  setInput: (v: string) => void;
+  send: (text: string) => void;
+  busy: boolean;
+  charCount: number;
+  remaining: number;
+  scope: string;
+  setScope: (s: string) => void;
+  scopeLabel: string;
+  inputRef: React.RefObject<HTMLTextAreaElement | null>;
+}) {
+  const [scopeOpen, setScopeOpen] = useState(false);
+  return (
+    <div className="mt-7">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          send(input);
+        }}
+        className="relative overflow-hidden rounded-[10px] border border-line bg-paper transition-shadow focus-within:shadow-[0_1px_2px_rgba(26,38,37,0.04),0_12px_32px_-16px_rgba(46,117,115,0.30),0_0_0_3px_rgba(46,117,115,0.10)]"
+        style={{
+          boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 22px -16px rgba(46,117,115,0.18)",
+        }}
+      >
+        {/* Scope chip — top-right */}
+        <div className="absolute top-3 right-3 z-10">
+          <button
+            type="button"
+            onClick={() => setScopeOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-paper hover:bg-cream/60 transition-colors font-mono text-[10px] uppercase tracking-[0.14em] text-deep-teal"
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: scope === "all" ? "#2E7573" : "#929CC5" }}
+            />
+            {scopeLabel}
+            <span className="text-muted">▾</span>
+          </button>
+          {scopeOpen && (
+            <div
+              className="absolute top-full right-0 mt-2 min-w-[180px] rounded-[6px] border border-line bg-paper p-1.5 z-20"
+              style={{
+                boxShadow:
+                  "0 1px 2px rgba(26,38,37,0.04), 0 12px 28px -12px rgba(26,38,37,0.30)",
+              }}
+            >
+              {LANDSCAPE_SCOPES.map((s) => (
+                <button
+                  key={s.slug}
+                  type="button"
+                  onClick={() => {
+                    setScope(s.slug);
+                    setScopeOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${
+                    scope === s.slug
+                      ? "bg-cream/80 text-deep-teal font-semibold"
+                      : "text-ink-soft hover:bg-cream/60"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <textarea
+          ref={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value.slice(0, 1000))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              send(input);
             }
-            disabled={busy || turnsLeft <= 0}
-            className="w-full px-4 py-3 bg-cream border border-line rounded-[2px] font-serif italic text-[16px] text-ink placeholder:text-muted placeholder:not-italic placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors disabled:opacity-60"
-            aria-label="Your question"
-          />
+          }}
+          placeholder="Ask whatever you want…"
+          rows={2}
+          className="block w-full resize-none bg-transparent px-5 sm:px-6 pt-5 pr-32 pb-3 font-sans text-[16px] text-ink leading-[1.5] outline-none placeholder:text-muted placeholder:italic min-h-[112px]"
+        />
+
+        <div className="flex items-center justify-between gap-3 px-3 sm:px-4 pb-3 pt-1">
+          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted tabular-nums ml-2">
+            {charCount}/1000
+          </span>
           <button
             type="submit"
-            disabled={busy || turnsLeft <= 0 || !input.trim()}
-            className="px-5 py-3 bg-deep-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-[2px] hover:bg-teal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!input.trim() || busy}
+            aria-label="Send"
+            className="group inline-flex items-center justify-center w-10 h-10 rounded-[8px] bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_6px_16px_-6px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
-            Ask
+            <ArrowUp size={14} strokeWidth={2} className="group-hover:translate-y-[-1px] transition-transform" />
           </button>
-        </form>
+        </div>
+      </form>
+
+      {/* Microcopy — exactly as specified */}
+      <p className="font-mono italic text-[10.5px] uppercase tracking-[0.14em] text-muted mt-3 text-center sm:text-left">
+        Powered by AI. This information is generated from curated content, not the web.
+      </p>
+    </div>
+  );
+}
+
+function MessageBubble({ msg }: { msg: Msg }) {
+  if (msg.role === "user") {
+    return (
+      <div className="flex justify-end mb-3 reveal-stagger">
+        <div
+          className="max-w-[78%] px-4 py-2.5 rounded-[12px] rounded-br-[4px] font-mono text-[13px] leading-[1.55] text-paper"
+          style={{
+            background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
+            boxShadow:
+              "0 1px 2px rgba(26,38,37,0.06), 0 6px 16px -8px rgba(46,117,115,0.30)",
+          }}
+        >
+          {msg.content}
+        </div>
+      </div>
+    );
+  }
+  // Assistant
+  return (
+    <div className="mb-5 reveal-stagger">
+      <div
+        className="relative overflow-hidden rounded-[10px] border border-line bg-paper p-4 sm:p-5"
+        style={{
+          boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 22px -14px rgba(46,117,115,0.18)",
+          backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.4) 100%)",
+        }}
+      >
+        <span
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-[2px]"
+          style={{
+            background:
+              "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)",
+          }}
+        />
+        <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-1.5">
+          <Sparkles size={10} strokeWidth={1.8} className="text-amber-deep" />
+          {msg.refused ? "Refusal · honest answer" : "From the library"}
+        </span>
+        <p className="font-sans text-[15px] text-ink leading-[1.65] mt-3 whitespace-pre-wrap">
+          {msg.content}
+        </p>
       </div>
 
-      <aside className="flex flex-col gap-6">
-        <div className="border-l-2 border-amber-deep pl-4">
-          <span className="eyebrow block mb-2">This preview</span>
-          <p className="text-[13.5px] text-ink-soft leading-[1.55]">
-            {turnsLeft > 0
-              ? `${turnsLeft} of 5 turns remaining in this session.`
-              : "Session capped. Refresh to start a new one."}
-          </p>
-        </div>
-        <div className="border-l-2 border-teal pl-4">
-          <span className="eyebrow block mb-2">What it can do</span>
-          <ul className="list-none p-0 m-0 flex flex-col gap-1.5 text-[13.5px] text-ink-soft leading-[1.55]">
-            <li>Search published entries</li>
-            <li>Summarise a programme</li>
-            <li>Compare entries on a theme</li>
-            <li>Cite by title with links</li>
+      {msg.citations && msg.citations.length > 0 && (
+        <div className="mt-3 ml-1">
+          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-1.5 mb-2">
+            <span className="w-3 h-px bg-amber-deep" />
+            Sources
+          </span>
+          <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {msg.citations.map((c) => {
+              const isLandscape = c.type === "landscape";
+              const tint = isLandscape
+                ? { bg: "rgba(146,156,197,0.10)", fg: "#5C6796", bar: "#929CC5" }
+                : { bg: "rgba(248,202,124,0.16)", fg: "#C68C2E", bar: "#C68C2E" };
+              const Icon = isLandscape ? Trees : FileText;
+              return (
+                <li key={c.index}>
+                  <Link
+                    href={c.url}
+                    className="group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-all duration-300 ease-out hover:-translate-y-0.5"
+                    style={{
+                      boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -12px ${tint.bar}55`,
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute top-0 left-0 bottom-0 w-[2px]"
+                      style={{ background: tint.bar }}
+                    />
+                    <div className="flex items-start gap-2.5 pl-1">
+                      <span
+                        className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-[3px] mt-0.5"
+                        style={{ background: tint.bg, color: tint.fg }}
+                        aria-hidden
+                      >
+                        <Icon size={11} strokeWidth={1.8} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-[9px] uppercase tracking-[0.14em] font-semibold" style={{ color: tint.fg }}>
+                            [{c.index}] {c.label}
+                          </span>
+                          <span className="font-mono text-[8.5px] tabular-nums text-muted">
+                            {c.score.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="font-sans text-[12px] text-ink-soft leading-snug mt-1 max-w-[40ch]">
+                          {c.preview.length > 140 ? c.preview.slice(0, 138) + "…" : c.preview}
+                        </p>
+                        <span className="inline-flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.14em] text-teal mt-1.5">
+                          Open <ExternalLink size={9} strokeWidth={1.8} />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
-        <div className="border-l-2 border-line-soft pl-4">
-          <span className="eyebrow block mb-2">What it won&apos;t</span>
-          <ul className="list-none p-0 m-0 flex flex-col gap-1.5 text-[13.5px] text-ink-soft leading-[1.55]">
-            <li>Answer off-topic questions</li>
-            <li>Invent facts not in the library</li>
-            <li>Replace a CAT editor</li>
-          </ul>
-        </div>
-      </aside>
+      )}
     </div>
   );
 }

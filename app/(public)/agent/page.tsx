@@ -1,56 +1,53 @@
 import { AgentChat } from "@/components/agent/AgentChat";
+import { LANDSCAPES } from "@/lib/data/landscapes";
+import { ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "Agent preview",
+  title: "Ask the Hub",
   description:
-    "A scoped preview of the Transformation Hub agent. Ask questions of the library; the agent answers from published entries with citations.",
+    "A scoped assistant for the Transformation Hub. Reads only the curated library; refuses anything outside it.",
 };
 
-export default function AgentPage() {
+type Search = { scope?: string };
+
+export default async function AgentPage({
+  searchParams,
+}: {
+  searchParams: Promise<Search>;
+}) {
+  const sp = await searchParams;
   const enabled = !!process.env.NVIDIA_API_KEY;
+  // Validate scope — must be 'all' or a known landscape slug
+  const rawScope = sp.scope ?? "all";
+  const scope =
+    rawScope === "all" || LANDSCAPES[rawScope] ? rawScope : "all";
 
   return (
-    <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-20 pb-24">
-      <header className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
-        <div className="reveal-stagger">
-          <span className="eyebrow flex items-center gap-2">
-            Preview
-            <span className="inline-block px-1.5 py-0.5 bg-amber/40 text-deep-teal rounded-[2px] text-[9px]">
-              v1 demo
-            </span>
-          </span>
-          <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-            Ask the <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>library</em>.
-          </h1>
-          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[46ch] mt-5 font-light">
-            The full agent ships in v2. This preview answers from the current library only, in
-            short paragraphs, with citations. Up to five turns per session. Refuses anything
-            off-topic.
-          </p>
+    <article className="pt-8 sm:pt-12 lg:pt-16 pb-24">
+      {/* Slim trust strip above the assistant */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-paper font-mono text-[10px] uppercase tracking-[0.16em] text-teal">
+          <ShieldCheck size={11} strokeWidth={1.8} aria-hidden />
+          No answer travels outside the library. Period.
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
-          <span className="eyebrow">Scoped strictly to</span>
-          <ul className="list-none p-0 mt-3 flex flex-col gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-soft">
-            <li>· Published entries only</li>
-            <li>· Cited by title, never invented</li>
-            <li>· Refuses off-topic questions</li>
-            <li>· 5 turns per session</li>
-          </ul>
-        </aside>
-      </header>
+      </div>
 
-      <section className="mt-12 border-t border-line pt-8">
+      <section className="pt-2">
         {enabled ? (
-          <AgentChat />
+          <AgentChat initialScope={scope} />
         ) : (
-          <div className="max-w-[60ch] py-10">
-            <span className="eyebrow text-red-alert">Not configured</span>
-            <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mt-3 font-light">
-              The agent preview is built and wired, but requires an NVIDIA API key (the one
-              that gives Kimi access) to respond. Set{" "}
-              <code className="font-mono text-[14px] not-italic">NVIDIA_API_KEY</code> in your
-              environment (free tier), restart the server, and refresh this page.
-            </p>
+          <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
+            <div className="max-w-[60ch] py-10">
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-red-alert font-semibold">
+                Not configured
+              </span>
+              <p className="font-sans italic text-[18px] text-ink-soft leading-[1.6] mt-3 font-light">
+                The assistant is built and wired, but requires an NVIDIA API key (the one
+                that gives Kimi access) to respond. Set{" "}
+                <code className="font-mono text-[14px] not-italic">NVIDIA_API_KEY</code> in your
+                environment, restart the server, and refresh this page.
+              </p>
+            </div>
           </div>
         )}
       </section>
