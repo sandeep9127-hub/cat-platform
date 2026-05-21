@@ -3,7 +3,12 @@ import { db, schema } from "@/lib/db";
 import { gte, sql } from "drizzle-orm";
 import { searchEntries } from "@/lib/db/search";
 import { searchLandscapeChunks } from "@/lib/db/landscape-kb";
-import { kimiChat, kimiEnabled, kimiCostUsd, type ChatMessage } from "@/lib/ai/kimi";
+import {
+  kimiChatStream,
+  kimiEnabled,
+  kimiCostUsd,
+  type ChatMessage,
+} from "@/lib/ai/kimi";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 
 export const runtime = "nodejs";
@@ -271,48 +276,84 @@ export async function POST(req: NextRequest) {
     content: `${contextBlock}\n\n---\n\nReader question: ${latestUserMessage}`,
   });
 
-  let assistantText = "";
-  let inputTokens = 0;
-  let outputTokens = 0;
-  try {
-    const res = await kimiChat(kimiMessages, { temperature: 0.2, maxTokens: 700 });
-    assistantText = res.text;
-    inputTokens = res.inputTokens;
-    outputTokens = res.outputTokens;
-  } catch (e) {
-    return NextResponse.json(
-      {
-        error: "The assistant service is unavailable right now.",
-        detail: (e as Error).message,
-      },
-      { status: 502 }
-    );
-  }
+  // Stream the response. The client subscribes via fetch + getReader and
+  // updates the assistant message text as deltas arrive. Each SSE event is
+  // a single line `data: <json>\n\n` for easy parsing in the browser.
+  //
+  // Event types:
+  //   { type: "meta", citations, scope }   — first event, before any tokens
+  //   { type: "delta", text }              — many of these, one per token batch
+  //   { type: "done", refused }            — last event, after the stream ends
+  //   { type: "error", message }           — on transport/API failure
+  const turnCount = messages.filter((m) => m.role === "user").length;
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      function send(obj: unknown) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      }
+      // Meta first so the citation tray can render immediately, even before
+      // the first token arrives.
+      send({ type: "meta", citations, scope: scope || "all" });
 
-  const wasRefused =
-    /not in the library/i.test(assistantText) ||
-    /^i (do|don)/i.test(assistantText.trim());
+      let assistantText = "";
+      let inputTokens = 0;
+      let outputTokens = 0;
+      try {
+        for await (const evt of kimiChatStream(kimiMessages, {
+          temperature: 0.2,
+          maxTokens: 700,
+        })) {
+          if (evt.type === "delta") {
+            assistantText += evt.text;
+            send({ type: "delta", text: evt.text });
+          } else if (evt.type === "done") {
+            inputTokens = evt.inputTokens;
+            outputTokens = evt.outputTokens;
+          }
+        }
+      } catch (e) {
+        send({
+          type: "error",
+          message: "The assistant service is unavailable right now.",
+          detail: (e as Error).message,
+        });
+        controller.close();
+        return;
+      }
 
-  // Log to the existing agent_conversations table
-  try {
-    await db.insert(schema.agentConversations).values({
-      sessionToken,
-      turnCount: messages.filter((m) => m.role === "user").length,
-      totalInputTokens: inputTokens,
-      totalOutputTokens: outputTokens,
-      costUsd: kimiCostUsd(inputTokens, outputTokens),
-      wasRefused,
-      refusalReason: wasRefused ? "library_insufficient" : null,
-      citedEntryIds: [],
-    });
-  } catch {
-    // Non-fatal
-  }
+      const wasRefused =
+        /not in the library/i.test(assistantText) ||
+        /^i (do|don)/i.test(assistantText.trim());
 
-  return NextResponse.json({
-    text: assistantText,
-    citations,
-    refused: wasRefused,
-    scope: scope || "all",
+      // Telemetry — non-fatal if it fails
+      try {
+        await db.insert(schema.agentConversations).values({
+          sessionToken,
+          turnCount,
+          totalInputTokens: inputTokens,
+          totalOutputTokens: outputTokens,
+          costUsd: kimiCostUsd(inputTokens, outputTokens),
+          wasRefused,
+          refusalReason: wasRefused ? "library_insufficient" : null,
+          citedEntryIds: [],
+        });
+      } catch {
+        // ignore
+      }
+
+      send({ type: "done", refused: wasRefused });
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      // Hint to disable buffering on proxies that respect it
+      "X-Accel-Buffering": "no",
+      Connection: "keep-alive",
+    },
   });
 }

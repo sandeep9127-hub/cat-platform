@@ -185,11 +185,19 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
-    const next: Msg[] = [...messages, { role: "user", content: trimmed }];
-    setMessages(next);
+    const userMsg: Msg = { role: "user", content: trimmed };
+    const next: Msg[] = [...messages, userMsg];
+    // Push the assistant placeholder right away so the user sees a row appear
+    // and the citation tray can populate as soon as the meta event arrives.
+    const withPlaceholder: Msg[] = [
+      ...next,
+      { role: "assistant", content: "", citations: [], refused: false },
+    ];
+    setMessages(withPlaceholder);
     setInput("");
     setBusy(true);
     setError(null);
+
     try {
       const res = await fetch("/api/agent", {
         method: "POST",
@@ -200,25 +208,97 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
           scope,
         }),
       });
-      if (!res.ok) {
+
+      // Non-stream responses (refusal floor, rate-limit, config error) come
+      // back as JSON. Detect by content-type and handle accordingly.
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("text/event-stream")) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || j.refusal || `Request failed (${res.status})`);
+        if (!res.ok) {
+          throw new Error(j.error || j.refusal || `Request failed (${res.status})`);
+        }
+        // Refusal (no library match above floor) — backend returns full JSON
+        setMessages([
+          ...next,
+          {
+            role: "assistant",
+            content: j.text ?? "",
+            citations: j.citations ?? [],
+            refused: j.refused,
+          },
+        ]);
+        return;
       }
-      const data = (await res.json()) as {
-        text?: string;
-        citations?: Citation[];
-        refused?: boolean;
-      };
-      setMessages([
-        ...next,
-        {
-          role: "assistant",
-          content: data.text ?? "",
-          citations: data.citations ?? [],
-          refused: data.refused,
-        },
-      ]);
+
+      // Streaming path. Read SSE lines from res.body and incrementally update
+      // the placeholder assistant message.
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let acc = "";
+      let citations: Citation[] = [];
+      let refused = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine.startsWith("data:")) continue;
+          const payload = trimmedLine.slice(5).trimStart();
+          if (!payload) continue;
+          let evt: {
+            type: string;
+            text?: string;
+            citations?: Citation[];
+            refused?: boolean;
+            message?: string;
+          };
+          try {
+            evt = JSON.parse(payload);
+          } catch {
+            continue;
+          }
+          if (evt.type === "meta") {
+            citations = evt.citations ?? [];
+            // Update placeholder citations immediately
+            setMessages((curr) => {
+              const idx = curr.length - 1;
+              if (idx < 0 || curr[idx].role !== "assistant") return curr;
+              const updated = curr.slice();
+              updated[idx] = { ...updated[idx], citations };
+              return updated;
+            });
+          } else if (evt.type === "delta" && evt.text) {
+            acc += evt.text;
+            // Append to placeholder content
+            setMessages((curr) => {
+              const idx = curr.length - 1;
+              if (idx < 0 || curr[idx].role !== "assistant") return curr;
+              const updated = curr.slice();
+              updated[idx] = { ...updated[idx], content: acc };
+              return updated;
+            });
+          } else if (evt.type === "done") {
+            refused = Boolean(evt.refused);
+            setMessages((curr) => {
+              const idx = curr.length - 1;
+              if (idx < 0 || curr[idx].role !== "assistant") return curr;
+              const updated = curr.slice();
+              updated[idx] = { ...updated[idx], refused };
+              return updated;
+            });
+          } else if (evt.type === "error") {
+            throw new Error(evt.message || "The assistant service failed.");
+          }
+        }
+      }
     } catch (e) {
+      // Drop the placeholder on error so the user can retry cleanly
+      setMessages(next);
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setBusy(false);
