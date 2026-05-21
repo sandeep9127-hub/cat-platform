@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Transformation Hub · Salient features</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --paper: #FBF8F2;
+    --cream: #F4EDDD;
+    --ink: #1A2625;
+    --ink-soft: #4D5757;
+    --muted: #767E7E;
+    --deep-teal: #334B4A;
+    --teal: #2E7573;
+    --amber: #F8CA7C;
+    --amber-deep: #C68C2E;
+    --periwinkle: #929CC5;
+    --line: #DDD8CC;
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #2c3938;
+    font-family: Georgia, "Iowan Old Style", serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .deck {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 48px 24px 96px;
+  }
+  .slide {
+    width: var(--slide-w);
+    height: var(--slide-h);
+    background: var(--paper);
+    color: var(--ink);
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 24px 64px -16px rgba(0,0,0,0.45), 0 6px 16px rgba(0,0,0,0.18);
+    page-break-after: always;
+    break-after: page;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .slide.dark {
+    background: var(--deep-teal);
+    color: var(--paper);
+    background-image:
+      radial-gradient(ellipse 50% 60% at 8% 12%, rgba(248,202,124,0.28), transparent 60%),
+      radial-gradient(ellipse 60% 70% at 92% 90%, rgba(46,117,115,0.40), transparent 65%);
+  }
+  .slide header,
+  .slide footer { padding: 30px 56px; display: flex; justify-content: space-between; align-items: center; }
+  .slide header { font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--teal); }
+  .slide.dark header { color: var(--amber); }
+  .slide footer { font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .slide.dark footer { color: rgba(251,248,242,0.55); border-top: 1px solid rgba(251,248,242,0.10); }
+  .slide .body { padding: 0 56px; align-self: center; }
+
+  .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .brand svg { width: 28px; height: 28px; }
+  .brand .name { font-family: Georgia, serif; font-style: normal; font-size: 14px; letter-spacing: -0.01em; color: var(--ink); }
+  .slide.dark .brand .name { color: var(--paper); }
+  .brand .name em { color: var(--teal); font-style: italic; font-weight: normal; }
+  .slide.dark .brand .name em { color: var(--amber); }
+
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    color: var(--teal);
+    font-weight: 600;
+  }
+  .slide.dark .eyebrow { color: var(--amber); }
+
+  h1 { font-weight: normal; letter-spacing: -0.025em; line-height: 1.04; margin: 14px 0 0; }
+  h2 { font-weight: normal; letter-spacing: -0.020em; line-height: 1.08; margin: 14px 0 0; }
+  h3 { font-weight: 500; letter-spacing: -0.012em; line-height: 1.15; margin: 0; }
+  .h-xl { font-size: 92px; }
+  .h-lg { font-size: 60px; }
+  .h-md { font-size: 44px; }
+  .lede {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--ink-soft);
+    font-size: 22px;
+    line-height: 1.5;
+    max-width: 64ch;
+    margin: 24px 0 0;
+  }
+  .slide.dark .lede { color: rgba(251,248,242,0.80); }
+
+  .rule { width: 56px; height: 2px; background: var(--amber-deep); margin: 32px 0 0; }
+  .slide.dark .rule { background: var(--amber); }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 36px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 32px; }
+  .panel {
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.55) 100%);
+    padding: 22px 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide.dark .panel {
+    background: rgba(251,248,242,0.06);
+    border: 1px solid rgba(251,248,242,0.16);
+  }
+  .panel .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--amber-deep);
+    font-weight: 600;
+  }
+  .slide.dark .panel .num { color: var(--amber); }
+  .panel h3 { font-size: 20px; margin-top: 10px; }
+  .slide.dark .panel h3 { color: var(--paper); }
+  .panel p { font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin: 10px 0 0; max-width: 36ch; }
+  .slide.dark .panel p { color: rgba(251,248,242,0.78); }
+
+  .kpi {
+    text-align: left;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  .kpi .label { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .kpi .value { font-family: Georgia, serif; font-size: 42px; color: var(--deep-teal); margin-top: 12px; letter-spacing: -0.018em; line-height: 1; }
+  .kpi .sub { font-style: italic; font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  ul.editorial { list-style: none; padding: 0; margin: 24px 0 0; display: flex; flex-direction: column; gap: 14px; }
+  ul.editorial li { display: grid; grid-template-columns: 36px 1fr; align-items: baseline; font-size: 18px; color: var(--ink-soft); line-height: 1.5; }
+  ul.editorial li .n { font-family: "JetBrains Mono", monospace; color: var(--amber-deep); font-size: 13px; letter-spacing: 0.10em; font-weight: 600; }
+  .slide.dark ul.editorial li { color: rgba(251,248,242,0.80); }
+  .slide.dark ul.editorial li .n { color: var(--amber); }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pill.amber { background: var(--amber); color: var(--deep-teal); }
+  .pill.ghost { border: 1px solid rgba(251,248,242,0.4); color: var(--paper); }
+
+  .tag {
+    display: inline-block; padding: 3px 8px; border-radius: 2px;
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .tag.amber { background: var(--amber); color: var(--deep-teal); }
+  .tag.teal { background: var(--teal); color: var(--paper); }
+  .tag.periwinkle { background: var(--periwinkle); color: var(--paper); }
+  .tag.outline { border: 1px solid var(--line); color: var(--muted); }
+
+  .quote { font-size: 30px; line-height: 1.32; max-width: 22ch; font-style: italic; color: var(--ink); margin: 0; letter-spacing: -0.012em; }
+  .slide.dark .quote { color: var(--paper); }
+  .attrib { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 18px; }
+
+  .featurelist { display: grid; grid-template-columns: 28px 1fr; column-gap: 14px; row-gap: 18px; margin-top: 32px; }
+  .featurelist .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber-deep); margin-top: 9px; }
+  .slide.dark .featurelist .dot { background: var(--amber); }
+  .featurelist .label { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); font-weight: 600; }
+  .slide.dark .featurelist .label { color: var(--amber); }
+  .featurelist p { margin: 4px 0 0; font-size: 16px; color: var(--ink-soft); line-height: 1.5; }
+  .slide.dark .featurelist p { color: rgba(251,248,242,0.80); }
+
+  .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+
+  /* Decorative arches motif on cover */
+  .arches {
+    position: absolute; right: -120px; bottom: -120px; width: 520px; height: 520px;
+    opacity: 0.5; pointer-events: none;
+  }
+
+  /* Print: one slide per page, no shadow/background */
+  @media print {
+    html, body { background: white; }
+    .deck { padding: 0; gap: 0; }
+    .slide {
+      border-radius: 0;
+      box-shadow: none;
+      width: 297mm;
+      height: 210mm;
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 01 · Cover -->
+<section class="slide dark">
+  <header>
+    <span class="brand">
+      <svg viewBox="0 0 64 64" fill="none" stroke-width="2.6" stroke-linecap="round">
+        <path d="M9 30 A 23 23 0 0 1 55 30" stroke="#FBF8F2"/>
+        <path d="M16 30 A 16 16 0 0 1 48 30" stroke="#F8CA7C"/>
+        <path d="M24 30 A 8 8 0 0 1 40 30" stroke="#929CC5"/>
+        <g stroke="#929CC5">
+          <path d="M32 33 C 22 38, 20 50, 28 58 C 32 53, 34 46, 32 33 Z" fill="none"/>
+          <path d="M32 33 C 42 38, 44 50, 36 58 C 32 53, 30 46, 32 33 Z" fill="none"/>
+        </g>
+      </svg>
+      <span class="name">Transformation <em>Hub</em></span>
+    </span>
+    <span>Salient features · 21 May 2026</span>
+  </header>
+  <div class="body" style="align-self: end; padding-bottom: 64px;">
+    <div class="eyebrow">Volume 01 · Edition 2026</div>
+    <h1 class="h-xl">A dashboard for<br><em style="color: var(--amber); font-style: italic;">sustainable</em> food systems.</h1>
+    <p class="lede">An editorial record of credible food systems work in India. Curated by the Consortium for Agroecological Transformations.</p>
+    <div class="badge-row">
+      <span class="pill amber">cat-platform-fawn.vercel.app</span>
+      <span class="pill ghost">Programmes read, not pitched</span>
+    </div>
+  </div>
+  <footer>
+    <span>Consortium for Agroecological Transformations</span>
+    <span>01 · 13</span>
+  </footer>
+</section>
+
+<!-- 02 · What this is in one sentence -->
+<section class="slide">
+  <header>
+    <span>The brief</span>
+    <span>02 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">In one sentence</div>
+    <h1 class="h-lg" style="max-width: 22ch;">An editorial dashboard that documents what is being done about food systems in India, and what is not working alongside what is.</h1>
+    <div class="rule"></div>
+    <p class="lede">The Hub is the public-facing publication of CAT. It covers programmes nationally, not just CAT's portfolio. Government missions, NGO programmes, federations, market infrastructure, policy experiments.</p>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Curated, not crowdsourced</span>
+  </footer>
+</section>
+
+<!-- 03 · What it is / what it is not -->
+<section class="slide">
+  <header>
+    <span>Stance</span>
+    <span>03 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">What this is, and what this is not</div>
+    <div class="grid-2">
+      <div>
+        <h3 style="color: var(--deep-teal); font-size: 22px;">It is</h3>
+        <ul class="editorial" style="margin-top: 14px;">
+          <li><span class="n">01.</span><span>A reading surface for funders, programme designers, and researchers.</span></li>
+          <li><span class="n">02.</span><span>An AI-assisted editorial publication. People decide, AI scales production.</span></li>
+          <li><span class="n">03.</span><span>A defensible record of what was attempted, what worked, what did not.</span></li>
+          <li><span class="n">04.</span><span>Open, link-driven, no registration to read.</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color: var(--amber-deep); font-size: 22px;">It is not</h3>
+        <ul class="editorial" style="margin-top: 14px;">
+          <li><span class="n">01.</span><span>A project-management tool. CAT does not run operations from here.</span></li>
+          <li><span class="n">02.</span><span>A GIS platform. The map is editorial illustration, never survey-grade.</span></li>
+          <li><span class="n">03.</span><span>A CAT marketing site. CAT is the editor, not the subject.</span></li>
+          <li><span class="n">04.</span><span>A volume directory. Curation is the bar, scale is not the win.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Honesty over affiliation</span>
+  </footer>
+</section>
+
+<!-- 04 · Three surfaces -->
+<section class="slide">
+  <header>
+    <span>Architecture</span>
+    <span>04 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Three reading surfaces</div>
+    <h2 class="h-md" style="max-width: 24ch;">Landscapes, Atlas, Library, plus an assistant that reads them all.</h2>
+    <div class="grid-3">
+      <div class="panel">
+        <span class="num">01 · CLOSED SET</span>
+        <h3>CAT Landscapes</h3>
+        <p>Eleven focus geographies CAT works in directly. Each profile has a five-section editorial entry, KPI dashboard, and downloadable brief.</p>
+      </div>
+      <div class="panel">
+        <span class="num">02 · OPEN LIBRARY</span>
+        <h3>Solutions Atlas</h3>
+        <p>National programmes filtered by theme and state. CAT-authored, CAT-endorsed, or listed for transparency, with the tier shown on every entry.</p>
+      </div>
+      <div class="panel">
+        <span class="num">03 · SOURCE LAYER</span>
+        <h3>Library & Ask</h3>
+        <p>Reports, briefs, datasets, citable URLs. The assistant reads only this library, cites entries it draws from, refuses to invent.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Three surfaces, one voice</span>
+  </footer>
+</section>
+
+<!-- 05 · CAT Landscapes feature -->
+<section class="slide">
+  <header>
+    <span>Feature · Landscapes</span>
+    <span>05 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">CAT Landscapes</div>
+    <h2 class="h-md">Eleven landscapes. One deep-dive ready (Patratu).</h2>
+    <div class="grid-4" style="margin-top: 36px;">
+      <div class="kpi">
+        <span class="label">Landscapes</span>
+        <div class="value">11</div>
+        <div class="sub">Profiles live today</div>
+      </div>
+      <div class="kpi">
+        <span class="label">Deep-dive ready</span>
+        <div class="value">1 / 11</div>
+        <div class="sub">Patratu (Jharkhand)</div>
+      </div>
+      <div class="kpi">
+        <span class="label">Patratu chunks</span>
+        <div class="value">552</div>
+        <div class="sub">Searchable narrative passages</div>
+      </div>
+      <div class="kpi">
+        <span class="label">Budget lines</span>
+        <div class="value">60</div>
+        <div class="sub">Costed intervention rows</div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top: 28px;">Every landscape page carries a Land / People / Money lens slicer with six KPIs per lens. Where the investment plan is ingested, the Money lens unlocks a budget explorer and a scoped AI assistant.</p>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>11 landscapes</span>
+  </footer>
+</section>
+
+<!-- 06 · Budget explorer + downloads -->
+<section class="slide">
+  <header>
+    <span>Feature · Money &amp; Downloads</span>
+    <span>06 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Read the line items, take the brief</div>
+    <h2 class="h-md" style="max-width: 24ch;">Every intervention costed. Every profile downloadable.</h2>
+    <div class="grid-2" style="grid-template-columns: 1.1fr 0.9fr; margin-top: 32px;">
+      <div>
+        <ul class="editorial">
+          <li><span class="n">·</span><span>Per-landscape budget explorer: filter by category, package, intervention type.</span></li>
+          <li><span class="n">·</span><span>Total plan size, external investment required, government convergence, community contribution, broken down line by line.</span></li>
+          <li><span class="n">·</span><span>Top spend by category visualised in a compact bar, no chart-junk.</span></li>
+          <li><span class="n">·</span><span>One-click PDF or DOCX brief generated server-side from the same source data.</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <span class="num">PATRATU · 7-YEAR PLAN</span>
+        <h3 style="margin-top: 10px;">Total plan size</h3>
+        <p style="font-family: Georgia, serif; font-size: 36px; color: var(--deep-teal); line-height: 1; margin-top: 18px;">~ ₹ 60 cr</p>
+        <p style="font-size: 12px; color: var(--muted); margin-top: 10px;">Costed across 60 intervention lines, 12 packages. Numbers shown on the live Hub are pulled live from the ingested LIP.</p>
+        <div class="badge-row" style="margin-top: 20px;">
+          <span class="tag amber">PDF</span>
+          <span class="tag teal">DOCX</span>
+          <span class="tag outline">Generated live</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Patratu pilot live</span>
+  </footer>
+</section>
+
+<!-- 07 · AI assistant -->
+<section class="slide dark">
+  <header>
+    <span>Feature · Assistant</span>
+    <span>07 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Ask the Hub</div>
+    <h2 class="h-md">A scoped AI assistant that reads only the published library and cites every entry it draws from.</h2>
+    <div class="featurelist">
+      <span class="dot"></span>
+      <div>
+        <div class="label">Route aware</div>
+        <p>On a landscape page, the assistant scopes to that landscape's library. Elsewhere it draws from the full library.</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">Refuses to invent</div>
+        <p>If the context is thin, it says so and suggests related themes. No hallucinated programmes.</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">Floating, keyboard-first</div>
+        <p>Hover-pill at bottom-right of every reading page. Cmd or Ctrl + K opens. Esc closes.</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">Transparent</div>
+        <p>Citation chips link back to the source entry. The user always sees what the assistant read.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>AI scales production, never editorial judgement</span>
+  </footer>
+</section>
+
+<!-- 08 · Editorial standards -->
+<section class="slide">
+  <header>
+    <span>Standards</span>
+    <span>08 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Three editorial tiers, shown on every entry</div>
+    <h2 class="h-md" style="max-width: 22ch;">Authored, Endorsed, Listed. The label tells you how much we vouch.</h2>
+    <div class="grid-3" style="margin-top: 36px;">
+      <div class="panel">
+        <span class="tag teal" style="background: var(--deep-teal);">CAT AUTHORED</span>
+        <h3 style="margin-top: 14px;">Wholly read and written by CAT editors.</h3>
+        <p>We vouch for the reading and the framing. The highest editorial weight on the Hub.</p>
+      </div>
+      <div class="panel">
+        <span class="tag" style="background: var(--teal); color: var(--paper);">CAT ENDORSED</span>
+        <h3 style="margin-top: 14px;">Written by a partner. Edited and verified by CAT.</h3>
+        <p>We stand behind the description as published; the framing came from the implementer.</p>
+      </div>
+      <div class="panel">
+        <span class="tag" style="background: var(--cream); color: var(--ink); border: 1px solid var(--line);">CAT LISTED</span>
+        <h3 style="margin-top: 14px;">The programme exists and is documented.</h3>
+        <p>CAT has not done deep editorial work yet. Useful for cross-referencing.</p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top: 28px;">Every published entry must carry five sections in fixed order. Context, what is being done, what is working, what is not working, what we are watching next.</p>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Limitations sit beside achievements</span>
+  </footer>
+</section>
+
+<!-- 09 · Voice and copy rules -->
+<section class="slide">
+  <header>
+    <span>Voice</span>
+    <span>09 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">How the Hub writes</div>
+    <p class="quote">&ldquo;Plain language. Short sentences. Specifics over abstractions. We write as if briefing a thoughtful funder over coffee, not pitching a panel.&rdquo;</p>
+    <div class="attrib">From the Hub style guide</div>
+    <div class="grid-3" style="margin-top: 44px;">
+      <div>
+        <span class="eyebrow">No em dashes</span>
+        <p style="font-size: 14px; color: var(--ink-soft); margin-top: 10px; line-height: 1.55;">Anywhere. We use commas, full stops, parentheses, colons.</p>
+      </div>
+      <div>
+        <span class="eyebrow">No marketing words</span>
+        <p style="font-size: 14px; color: var(--ink-soft); margin-top: 10px; line-height: 1.55;">No &ldquo;leverage&rdquo;, &ldquo;stakeholder&rdquo;, &ldquo;ecosystem&rdquo;, &ldquo;transformative&rdquo;.</p>
+      </div>
+      <div>
+        <span class="eyebrow">Indian English</span>
+        <p style="font-size: 14px; color: var(--ink-soft); margin-top: 10px; line-height: 1.55;">Organise, programme, centre. Indian numerals on budgets and populations.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Voice over jargon</span>
+  </footer>
+</section>
+
+<!-- 10 · Trust and privacy -->
+<section class="slide">
+  <header>
+    <span>Trust</span>
+    <span>10 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">What we store, what we do not</div>
+    <h2 class="h-md" style="max-width: 22ch;">No tracking, no ads, no funnels. Open by default.</h2>
+    <div class="grid-2" style="margin-top: 36px;">
+      <div>
+        <span class="eyebrow">Funders never register</span>
+        <p style="font-size: 16px; color: var(--ink-soft); margin-top: 12px; line-height: 1.55;">Every filter, search state, and entry is a shareable URL. Senior readers can land from a meeting and find what they need in under a minute.</p>
+      </div>
+      <div>
+        <span class="eyebrow">No tracking cookies</span>
+        <p style="font-size: 16px; color: var(--ink-soft); margin-top: 12px; line-height: 1.55;">Aggregate page-view counts only, via Vercel Analytics. No Google Analytics, no Mixpanel, no Hotjar. The one functional cookie is the session cookie after a contributor signs in.</p>
+      </div>
+      <div>
+        <span class="eyebrow">Editorial right protected</span>
+        <p style="font-size: 16px; color: var(--ink-soft); margin-top: 12px; line-height: 1.55;">Funders cannot request the removal of a &ldquo;what did not work&rdquo; section from any entry. The independence rule is published, not assumed.</p>
+      </div>
+      <div>
+        <span class="eyebrow">Removal on request</span>
+        <p style="font-size: 16px; color: var(--ink-soft); margin-top: 12px; line-height: 1.55;">Contributors can remove their account, submissions, and any agent-conversation records linked to their session by writing to editors@cat.org.in.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Curated, not crowdsourced</span>
+  </footer>
+</section>
+
+<!-- 11 · Tech stack -->
+<section class="slide dark">
+  <header>
+    <span>Under the hood</span>
+    <span>11 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">A modest, dependable stack</div>
+    <h2 class="h-md" style="max-width: 22ch;">Built on Next.js, Postgres with pgvector, hosted on Vercel.</h2>
+    <div class="featurelist">
+      <span class="dot"></span>
+      <div>
+        <div class="label">Reading layer</div>
+        <p>Next.js 15 App Router · TypeScript strict · Tailwind v3 with brand tokens.</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">Data layer</div>
+        <p>Drizzle ORM on Postgres in an isolated <code style="background: rgba(251,248,242,0.10); padding: 2px 6px; border-radius: 2px;">cat</code> schema · pgvector for RAG search · Supabase Postgres in ap-south-1 (Mumbai).</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">AI layer</div>
+        <p>Kimi K2.6 served via NVIDIA's hosted API for assistant calls. nv-embedqa-e5-v5 for 1024-dim chunk embeddings. Anthropic Claude Sonnet for discovery agent calls with web search.</p>
+      </div>
+      <span class="dot"></span>
+      <div>
+        <div class="label">Editorial pipeline</div>
+        <p>DOCX and XLSX intake, chunked and embedded server-side, indexed to pgvector with an HNSW cosine index.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Lean stack, careful editing</span>
+  </footer>
+</section>
+
+<!-- 12 · Who it serves -->
+<section class="slide">
+  <header>
+    <span>Audience</span>
+    <span>12 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Designed for, in this order</div>
+    <h2 class="h-md" style="max-width: 24ch;">Senior readers who arrive from a meeting, not a feed.</h2>
+    <div class="grid-2" style="margin-top: 36px; grid-template-columns: 1.05fr 0.95fr;">
+      <ul class="editorial">
+        <li><span class="n">01.</span><span><strong style="color: var(--ink);">Funders and their advisors.</strong> Quick-glance, link-driven. Will spend 3 to 8 minutes on a single entry.</span></li>
+        <li><span class="n">02.</span><span><strong style="color: var(--ink);">NGOs and programme designers.</strong> Read deeply. Care about &ldquo;what did not work&rdquo; more than headlines.</span></li>
+        <li><span class="n">03.</span><span><strong style="color: var(--ink);">Researchers, students, journalists.</strong> Follow citations, share URLs, request downloads.</span></li>
+        <li><span class="n">04.</span><span><strong style="color: var(--ink);">Government and policy actors.</strong> Light usage, occasional deep dive on state-mission overlaps.</span></li>
+      </ul>
+      <div class="panel">
+        <span class="num">DESIGN PRINCIPLE</span>
+        <h3 style="margin-top: 10px;">Not optimised for</h3>
+        <p>The casual web visitor browsing for &ldquo;trending AI in agriculture&rdquo; content. The Hub is not SEO-bait, not engagement-driven, not feed-shaped.</p>
+        <div class="rule" style="margin-top: 22px;"></div>
+        <p style="font-style: italic; font-size: 14px; margin-top: 14px;">&ldquo;The bar is honesty, not affiliation.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Transformation Hub</span>
+    <span>Readers, not visitors</span>
+  </footer>
+</section>
+
+<!-- 13 · Closing / CTA -->
+<section class="slide dark">
+  <header>
+    <span>Closing</span>
+    <span>13 · 13</span>
+  </header>
+  <div class="body">
+    <div class="eyebrow">Open to feedback, contributions, partnerships</div>
+    <h1 class="h-lg" style="max-width: 22ch;">A quiet, <em style="color: var(--amber); font-style: italic;">honest</em> record of food systems work in India.</h1>
+    <div class="grid-3" style="margin-top: 44px;">
+      <div>
+        <span class="eyebrow">Visit</span>
+        <p style="font-size: 16px; color: rgba(251,248,242,0.85); margin-top: 12px; line-height: 1.55;">cat-platform-fawn.vercel.app</p>
+      </div>
+      <div>
+        <span class="eyebrow">Contribute</span>
+        <p style="font-size: 16px; color: rgba(251,248,242,0.85); margin-top: 12px; line-height: 1.55;">A paragraph plus two source links. /contribute on the Hub.</p>
+      </div>
+      <div>
+        <span class="eyebrow">Editors</span>
+        <p style="font-size: 16px; color: rgba(251,248,242,0.85); margin-top: 12px; line-height: 1.55;">editors@cat.org.in for submissions, corrections, briefings.</p>
+      </div>
+    </div>
+    <div class="rule" style="margin-top: 40px;"></div>
+    <p class="lede" style="margin-top: 24px;">Curated by the Consortium for Agroecological Transformations. The Hub is built and edited by CAT. Programmes are read, not pitched. Limitations sit beside achievements.</p>
+  </div>
+  <footer>
+    <span>Transformation Hub · Vol. 01 · 2026</span>
+    <span>Made in India · For food systems</span>
+  </footer>
+</section>
+
+</div>
+</body>
+</html>
