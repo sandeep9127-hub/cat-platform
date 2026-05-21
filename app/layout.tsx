@@ -1,20 +1,31 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { BrandBar } from "@/components/layout/BrandBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingAsk } from "@/components/global/FloatingAsk";
 import { Analytics } from "@vercel/analytics/react";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  axes: ["opsz"],
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
+/**
+ * Inter variable (opsz, wght) served locally from /public/fonts/inter.
+ * Open-source under the SIL Open Font License. Inter is now the sitewide
+ * typeface: it is wired as BOTH the sans and the serif token so every
+ * `font-serif` and `font-sans` Tailwind class resolves to Inter.
+ */
+const inter = localFont({
+  src: [
+    {
+      path: "../public/fonts/inter/Inter-Variable.ttf",
+      style: "normal",
+      weight: "100 900",
+    },
+    {
+      path: "../public/fonts/inter/Inter-Italic-Variable.ttf",
+      style: "italic",
+      weight: "100 900",
+    },
+  ],
   variable: "--font-inter",
   display: "swap",
 });
@@ -54,8 +65,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable}`}>
-      <body className="min-h-dvh">
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrains.variable}`}
+      // Inter is the sitewide typeface. Mirror it on the legacy --font-fraunces
+      // CSS variable so every existing `font-serif` Tailwind class also resolves
+      // to Inter without touching 100+ markup files.
+      style={{ ["--font-fraunces" as string]: `var(--font-inter)` }}
+    >
+      <body className="min-h-dvh font-sans">
         <a href="#main" className="skip-to-content">
           Skip to content
         </a>
