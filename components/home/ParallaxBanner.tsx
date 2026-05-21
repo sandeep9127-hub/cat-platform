@@ -12,6 +12,12 @@ type ParallaxBannerProps = {
   alt?: string;
   /** How strongly the back layer shifts relative to scroll. 0 = static, 0.5 = strong. Default 0.25. */
   strength?: number;
+  /**
+   * How strongly the foreground text drifts relative to scroll. Independent
+   * of the back layer so the two move at different rates, creating depth.
+   * Positive = text rises as you scroll past the hero. Default 0.10.
+   */
+  textStrength?: number;
   /** Optional caption shown bottom-left. */
   caption?: string;
   /** Override the aspect ratio. Default 5.9 / 1 (LinkedIn cover) — ignored when `children` provided. */
@@ -38,6 +44,7 @@ export function ParallaxBanner({
   poster,
   alt,
   strength = 0.25,
+  textStrength = 0.10,
   caption,
   aspect = "5.9 / 1",
   minHeight,
@@ -45,6 +52,7 @@ export function ParallaxBanner({
 }: ParallaxBannerProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLDivElement | null>(null);
   const ticking = useRef(false);
   const isHero = Boolean(children);
   const resolvedMinHeight = minHeight ?? (isHero ? 540 : 160);
@@ -52,6 +60,7 @@ export function ParallaxBanner({
   useEffect(() => {
     const frame = frameRef.current;
     const img = imgRef.current;
+    const text = textRef.current;
     if (!frame || !img) return;
 
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -62,8 +71,21 @@ export function ParallaxBanner({
       const viewportH = window.innerHeight || document.documentElement.clientHeight;
       // Progress: -1 (well below) → 0 (centered) → 1 (well above). Roughly.
       const progress = (rect.top + rect.height / 2 - viewportH / 2) / viewportH;
-      const shift = -progress * rect.height * strength;
-      img!.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0)`;
+
+      // Background drifts opposite to scroll direction — classic parallax.
+      const bgShift = -progress * rect.height * strength;
+      img!.style.transform = `translate3d(0, ${bgShift.toFixed(2)}px, 0)`;
+
+      // Foreground text drifts in the SAME direction as scroll but at a smaller
+      // rate, so as you scroll down past the hero the headline rises off the
+      // page. This produces real two-layer depth.
+      if (text) {
+        const textShift = progress * rect.height * textStrength;
+        // Add a gentle fade as the hero leaves the viewport.
+        const fade = Math.max(0, 1 - Math.abs(progress) * 1.6);
+        text.style.transform = `translate3d(0, ${textShift.toFixed(2)}px, 0)`;
+        text.style.opacity = String(fade.toFixed(3));
+      }
       ticking.current = false;
     }
 
@@ -82,7 +104,7 @@ export function ParallaxBanner({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [strength]);
+  }, [strength, textStrength]);
 
   const hasVideo = Boolean(videoSrc);
   const hasImage = !hasVideo && Boolean(src);
@@ -209,8 +231,16 @@ export function ParallaxBanner({
           />
         ))}
 
-      {/* Hero content overlay */}
-      {isHero && <div className="relative z-10">{children}</div>}
+      {/* Hero content overlay — parallaxed independently of the background */}
+      {isHero && (
+        <div
+          ref={textRef}
+          className="relative z-10 will-change-transform"
+          style={{ transform: "translate3d(0,0,0)" }}
+        >
+          {children}
+        </div>
+      )}
 
       {/* Thin amber underline (banner variant; hero blends into page instead) */}
       {!isHero && (
