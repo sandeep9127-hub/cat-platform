@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage, type PDFImage } from "pdf-lib";
-import fontkit from "@pdf-lib/fontkit";
 import type { LandscapeProfile, LandscapePhoto } from "@/lib/data/landscapes";
 import type { BudgetSummary } from "@/lib/db/landscape-kb";
 
@@ -38,8 +37,17 @@ type Ctx = {
 
 const CONTENT_W = PAGE.w - M.left - M.right;
 
+function wrapPageDrawText(page: PDFPage) {
+  const original = page.drawText.bind(page);
+  (page as unknown as { drawText: typeof original }).drawText = ((
+    text: string,
+    opts?: Parameters<typeof original>[1]
+  ) => original(asciify(text), opts)) as typeof original;
+}
+
 function newPage(ctx: Ctx) {
   ctx.page = ctx.doc.addPage([PAGE.w, PAGE.h]);
+  wrapPageDrawText(ctx.page);
   ctx.page.drawRectangle({
     x: 0,
     y: 0,
@@ -84,7 +92,7 @@ function drawText(
   const lineHeight = opts.lineHeight ?? size * 1.5;
   const maxW = opts.maxW ?? CONTENT_W;
   const x = opts.x ?? M.left;
-  const lines = wrap(text, font, size, maxW);
+  const lines = wrap(asciify(text), font, size, maxW);
   for (const line of lines) {
     ensure(ctx, lineHeight);
     ctx.page.drawText(line, { x, y: ctx.y - size, size, font, color });
@@ -294,9 +302,23 @@ function formatMonth(iso: string): string {
 
 function inrShort(n: number): string {
   if (!n || !isFinite(n)) return "—";
-  if (n >= 1e7) return `₹${(n / 1e7).toFixed(n >= 1e8 ? 0 : 2)} cr`;
-  if (n >= 1e5) return `₹${(n / 1e5).toFixed(2)} lakh`;
-  return `₹${n.toLocaleString("en-IN")}`;
+  // PDF standard fonts (WinAnsi) cannot encode ₹ U+20B9, so we use "INR" in
+  // the PDF brief. The DOCX brief renders ₹ correctly through Word's font system.
+  if (n >= 1e7) return `INR ${(n / 1e7).toFixed(n >= 1e8 ? 0 : 2)} cr`;
+  if (n >= 1e5) return `INR ${(n / 1e5).toFixed(2)} lakh`;
+  return `INR ${n.toLocaleString("en-IN")}`;
+}
+
+// Replace characters not encodable by WinAnsi standard fonts with safe ASCII
+// equivalents. Belt-and-braces — if any prose contains an em dash or curly
+// quote it doesn't crash the encoder.
+function asciify(s: string): string {
+  return s
+    .replace(/[–—]/g, "-") // en/em dash
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/…/g, "...")
+    .replace(/₹/g, "INR ");
 }
 
 function pct(part: number, whole: number): string {
@@ -801,38 +823,24 @@ export async function buildLandscapeBriefPdf(
   opts: BriefOpts = {}
 ): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.registerFontkit(fontkit);
   doc.setTitle(`${p.name} · Landscape Investment Brief`);
   doc.setAuthor("Consortium for Agroecological Transformations");
   doc.setSubject(`Landscape investment brief for ${p.name}`);
   doc.setKeywords(["CAT", "Transformation Hub", "landscape", "food systems", p.name, p.district]);
 
-  // Load the local Inter (variable) TTFs so the PDF can render unicode glyphs
-  // beyond WinAnsi — the rupee sign ₹, middle dots, etc. Fall back to standard
-  // fonts if the file can't be read for any reason.
-  let sans: PDFFont;
-  let sansBold: PDFFont;
-  let serif: PDFFont;
-  let mono: PDFFont;
-  try {
-    const interRegular = await readFile(
-      path.join(process.cwd(), "public/fonts/inter/Inter-Variable.ttf")
-    );
-    sans = await doc.embedFont(interRegular, { subset: true });
-    sansBold = sans; // same variable font; we'll just use it for both weights
-    serif = sans;
-    mono = await doc.embedFont(StandardFonts.Courier);
-  } catch {
-    sans = await doc.embedFont(StandardFonts.Helvetica);
-    sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
-    serif = await doc.embedFont(StandardFonts.TimesRoman);
-    mono = await doc.embedFont(StandardFonts.Courier);
-  }
-  const serifBold = sansBold;
+  // Use standard fonts. `asciify` substitutes anything outside WinAnsi
+  // (rupee sign, en/em dashes, smart quotes, ellipsis) before drawing.
+  const serif = await doc.embedFont(StandardFonts.TimesRoman);
+  const serifBold = await doc.embedFont(StandardFonts.TimesRomanBold);
+  const sans = await doc.embedFont(StandardFonts.Helvetica);
+  const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const mono = await doc.embedFont(StandardFonts.Courier);
 
+  const coverPage = doc.addPage([PAGE.w, PAGE.h]);
+  wrapPageDrawText(coverPage);
   const ctx: Ctx = {
     doc,
-    page: doc.addPage([PAGE.w, PAGE.h]),
+    page: coverPage,
     y: 0,
     serif,
     serifBold,
