@@ -321,26 +321,63 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-4 bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-[2px] hover:bg-teal transition-colors disabled:opacity-60"
+          className="group relative inline-flex items-center justify-center gap-2 px-7 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-[8px] text-paper bg-gradient-to-br from-deep-teal via-teal to-deep-teal shadow-[0_10px_24px_-8px_rgba(46,117,115,0.55),0_2px_4px_rgba(26,38,37,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal hover:-translate-y-px hover:shadow-[0_14px_32px_-8px_rgba(46,117,115,0.65),0_4px_8px_rgba(26,38,37,0.14),inset_0_1px_0_rgba(255,255,255,0.22)] active:translate-y-0 active:shadow-[0_4px_10px_-2px_rgba(46,117,115,0.45),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all duration-200 ease-out disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {submitting ? "Submitting…" : "Submit for editorial review →"}
+          {submitting ? "Submitting…" : "Submit for editorial review"}
+          <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
         </button>
       </div>
 
-      <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-        <div className="border-l-2 border-amber-deep pl-4">
-          <span className="eyebrow block mb-2">Status</span>
-          <p className="font-mono text-[10.5px] text-ink-soft leading-[1.55]">
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+        <div
+          className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5"
+          style={{
+            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -14px rgba(248,202,124,0.30)",
+            backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,202,124,0.10) 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{ background: "linear-gradient(90deg, #C68C2E 0%, rgba(198,140,46,0.6) 60%, transparent 100%)" }}
+          />
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">Status</span>
+          <p className="font-mono text-[10.5px] text-ink-soft leading-[1.55] mt-2.5">
             {savedAt ? `Saved locally · ${savedAt.toLocaleTimeString("en-GB")}` : "Autosaves locally as you type"}
           </p>
         </div>
-        <div className="border-l-2 border-teal pl-4">
-          <span className="eyebrow block mb-2">After you submit</span>
-          <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[13.5px] text-ink-soft leading-[1.55]">
-            <li>1. Lands in the editor queue.</li>
-            <li>2. A CAT editor reads it against your sources.</li>
-            <li>3. We may ask clarifying questions by email.</li>
-            <li>4. Decision: approved as CAT-endorsed, listed for transparency, or returned for edits.</li>
+        <div
+          className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5"
+          style={{
+            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -14px rgba(46,117,115,0.22)",
+            backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(46,117,115,0.06) 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{ background: "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)" }}
+          />
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+            After you submit
+          </span>
+          <ul className="list-none p-0 mt-3 flex flex-col gap-2 text-[13.5px] text-ink-soft leading-[1.55]">
+            <li className="flex gap-2.5 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">01</span>
+              <span>Lands in the editor queue.</span>
+            </li>
+            <li className="flex gap-2.5 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">02</span>
+              <span>A CAT editor reads it against your sources.</span>
+            </li>
+            <li className="flex gap-2.5 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">03</span>
+              <span>We may ask clarifying questions by email.</span>
+            </li>
+            <li className="flex gap-2.5 items-baseline">
+              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">04</span>
+              <span>Decision: approved as CAT-endorsed, listed for transparency, or returned for edits.</span>
+            </li>
           </ul>
         </div>
       </aside>
@@ -349,7 +386,7 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
 }
 
 const inputCls =
-  "w-full mt-1.5 px-4 py-3 bg-cream border border-line rounded-[2px] font-serif text-[15px] leading-[1.55] text-ink focus:outline-2 focus:outline-teal focus:bg-paper transition-colors";
+  "w-full mt-2 px-4 py-3 bg-paper border border-line rounded-[6px] font-sans text-[15px] leading-[1.55] text-ink placeholder:text-muted/70 placeholder:italic shadow-[inset_0_1px_0_rgba(26,38,37,0.04)] hover:border-line-soft hover:bg-cream/40 focus:outline-none focus:border-teal focus:bg-paper focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.04),0_0_0_3px_rgba(46,117,115,0.18),0_0_0_4px_rgba(248,202,124,0.45)] transition-all duration-200 ease-out";
 
 function Field({
   label,
