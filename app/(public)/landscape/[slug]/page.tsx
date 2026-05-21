@@ -7,6 +7,7 @@ import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, budgetSummary, listLandscapeDocuments } from "@/lib/db/landscape-kb";
 import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashboard";
 import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
+import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,14 @@ export default async function LandscapeDetailPage({ params }: Props) {
           </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 border-t border-line pt-5 lg:border-t-0 lg:pt-0 flex flex-col gap-4 lg:self-end lg:pb-2">
+          {/* Procedural signature mark — unique to this landscape's slug */}
+          <div className="hidden lg:block -mb-2 opacity-90">
+            <LandscapeSignature slug={slug} width={260} />
+            <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted block mt-1">
+              <span className="inline-block w-3 h-px bg-amber-deep align-middle mr-1.5" />
+              Signature mark · procedurally generated
+            </span>
+          </div>
           <FactRow label="Landscape Investment Plan">
             {p.lipStatus === "published" ? (
               <span className="text-deep-teal">
