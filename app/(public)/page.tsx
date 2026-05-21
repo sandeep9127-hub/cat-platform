@@ -63,6 +63,21 @@ export default async function LandingPage() {
   const mapEntries = [...dbMapEntries, ...atlasMapEntries];
   const combinedTotal = entries.length + atlasRecords.length;
 
+  const THEME_COLOURS_HOME: Record<string, string> = {
+    "soil-and-land": "#8C7A5C",
+    water: "#2C7BD0",
+    "seeds-and-biodiversity": "#5C8C2E",
+    "farmer-livelihoods": "#C68C2E",
+    nutrition: "#C24A2E",
+    "climate-resilience": "#2E7573",
+    "markets-and-value-chains": "#2EA37A",
+    "policy-and-finance": "#334B4A",
+    "knowledge-and-capacity": "#5C6796",
+    "women-and-collectives": "#929CC5",
+  };
+  const prettyThemeHome = (slug: string): string =>
+    slug.split("-").map((w) => (w[0]?.toUpperCase() ?? "") + w.slice(1)).join(" ");
+
   const dbListEntries = entries.map((e, i) => ({
     id: e.id,
     slug: e.slug,
@@ -78,7 +93,30 @@ export default async function LandingPage() {
     themes: e.themes,
   }));
 
-  const listEntries = dbListEntries;
+  // Atlas records as list rows so the home right-rail reflects the full 35,
+  // capped at 5 + a "Read more" CTA linking to /map.
+  const atlasListEntries = atlasRecords.map((r, i) => ({
+    id: r.id,
+    slug: r.id,
+    index: dbListEntries.length + i + 1,
+    total: combinedTotal,
+    title: r.title,
+    tagline: r.summary,
+    stateName: r.district ?? r.stateCode ?? "—",
+    startYear: r.publishedAt ? Number(r.publishedAt.slice(0, 4)) : new Date().getFullYear(),
+    endYear: null,
+    scaleBand: r.scaleBand ?? "multi_district",
+    catEndorsement: "cat_listed" as const,
+    themes: r.themes.slice(0, 2).map((t) => ({
+      slug: t,
+      name: prettyThemeHome(t),
+      colourHex: THEME_COLOURS_HOME[t] ?? "#334B4A",
+    })),
+    externalUrl: r.sourceUrl,
+    sourceName: r.sourceName,
+  }));
+
+  const listEntries = [...dbListEntries, ...atlasListEntries];
 
   const lastUpdate =
     entries[0]?.lastReviewedAt ?? entries[0]?.publishedDate ?? new Date();
