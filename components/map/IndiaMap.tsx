@@ -18,6 +18,12 @@ export type MapEntry = {
   stateCode: string;
   latitude: number | null;
   longitude: number | null;
+  /**
+   * Optional external URL. When set, clicking the pin opens this URL in a new
+   * tab instead of navigating to `/entry/{slug}`. Used by atlas-routed records
+   * that point at their publisher's site.
+   */
+  externalUrl?: string;
 };
 
 type Props = {
@@ -246,7 +252,11 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   onMouseMove={(e) => handleDotEnter(e, entry)}
                   onMouseLeave={() => setTooltip(null)}
                   onClick={() => {
-                    window.location.href = `/entry/${entry.slug}`;
+                    if (entry.externalUrl) {
+                      window.open(entry.externalUrl, "_blank", "noopener,noreferrer");
+                    } else {
+                      window.location.href = `/entry/${entry.slug}`;
+                    }
                   }}
                   className="cursor-pointer dot-group"
                   style={{ color: isAmber ? "var(--amber-deep)" : "var(--teal)" }}

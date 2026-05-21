@@ -15,13 +15,30 @@ export type EntryListItemData = {
   scaleBand: string;
   catEndorsement: "cat_authored" | "cat_endorsed" | "cat_listed";
   themes: { slug: string; name: string; colourHex: string }[];
+  /**
+   * When set, the row links to this external URL (opens in a new tab) instead
+   * of `/entry/{slug}`. Used by atlas-routed discovery records that point at
+   * their original publisher.
+   */
+  externalUrl?: string;
+  /** Optional short source label, e.g. "RySS" or "Sikkim Dept of Agriculture". */
+  sourceName?: string;
 };
 
 export function EntryListItem({ data }: { data: EntryListItemData }) {
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
+  const isExternal = Boolean(data.externalUrl);
+  const Wrapper = isExternal ? "a" : Link;
+  const wrapperProps = isExternal
+    ? {
+        href: data.externalUrl,
+        target: "_blank" as const,
+        rel: "noreferrer",
+      }
+    : { href: `/entry/${data.slug}` };
   return (
-    <Link
-      href={`/entry/${data.slug}`}
+    <Wrapper
+      {...(wrapperProps as never)}
       className="block group border-b border-line-soft transition-colors hover:bg-teal-wash/40 focus-visible:bg-teal-wash/40 focus-visible:outline-none"
     >
       <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
@@ -63,7 +80,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <EndorsementBadge tier={data.catEndorsement} />
         </div>
       </article>
-    </Link>
+    </Wrapper>
   );
 }
 
