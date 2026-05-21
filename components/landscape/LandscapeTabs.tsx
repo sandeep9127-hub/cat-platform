@@ -44,7 +44,7 @@ export function LandscapeTabs({
                   {t.label}
                 </Link>
               ) : (
-                <span className={cls} title="Available when the LIP is published">
+                <span className={cls} title="Available when the investment plan is published">
                   {t.label} <span className="text-[9px] tracking-[0.14em] ml-1">soon</span>
                 </span>
               )}

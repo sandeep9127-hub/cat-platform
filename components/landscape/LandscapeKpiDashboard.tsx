@@ -23,7 +23,7 @@ export type KpiDashboardProps = {
   villages: string;
   keyChallengesCount: number;
   lipStatus: "published" | "in_preparation";
-  /** Present only when the LIP is ingested. */
+  /** Present only when the investment plan is ingested. */
   money?: {
     totalCostInr: number;
     investmentRequiredInr: number;
@@ -61,7 +61,7 @@ export function LandscapeKpiDashboard(props: KpiDashboardProps) {
         { label: "Agroclimatic zone", value: shortZone(props.agroclimaticZone), sub: "Per Planning Commission" },
         { label: "Region", value: props.region.split(",")[0]?.trim() ?? props.region, sub: props.state },
         { label: "Key challenges", value: String(props.keyChallengesCount), sub: "Per CAT diagnostic" },
-        { label: "LIP status", value: props.lipStatus === "published" ? "Published" : "In preparation", sub: props.lipStatus === "published" ? "Editorial review complete" : "Draft in review" },
+        { label: "Investment plan status", value: props.lipStatus === "published" ? "Published" : "In preparation", sub: props.lipStatus === "published" ? "Editorial review complete" : "Draft in review" },
       ];
     }
     if (lens === "people") {
@@ -80,7 +80,7 @@ export function LandscapeKpiDashboard(props: KpiDashboardProps) {
     // money
     const m = props.money;
     if (!m) {
-      return Array(6).fill(0).map(() => ({ label: "—", value: "—", sub: "LIP not yet ingested" }));
+      return Array(6).fill(0).map(() => ({ label: "—", value: "—", sub: "Investment plan not yet ingested" }));
     }
     return [
       { label: "Total plan size", value: inrShort(m.totalCostInr), sub: `${m.horizonYears}-year programme` },
@@ -157,7 +157,7 @@ function LensSlicer({
       label: "Money",
       Icon: Coins,
       disabled: !hasMoney,
-      hint: hasMoney ? undefined : "Available once the LIP is ingested",
+      hint: hasMoney ? undefined : "Available once the investment plan is ingested",
     },
   ];
   return (

@@ -197,7 +197,7 @@ export default async function LandscapesPage() {
                         className="inline-block w-1.5 h-1.5 rounded-full"
                         style={{ background: tone.bar }}
                       />
-                      {published ? "LIP published" : "LIP in preparation"}
+                      {published ? "Investment plan published" : "Investment plan in preparation"}
                     </span>
                     <span className="text-teal group-hover:text-amber-deep group-hover:translate-x-0.5 transition-all">
                       Read →

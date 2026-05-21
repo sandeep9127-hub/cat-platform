@@ -24,7 +24,7 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
         : "border-line text-muted bg-paper";
   return (
     <span
-      className={`group relative font-mono text-[9px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-[2px] whitespace-nowrap cursor-help ${cls}`}
+      className={`group relative font-mono text-[9px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-[3px] whitespace-nowrap cursor-help inline-block ${cls}`}
       tabIndex={0}
       aria-describedby={`tier-${tier}`}
     >
@@ -32,9 +32,24 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
       <span
         id={`tier-${tier}`}
         role="tooltip"
-        className="pointer-events-none absolute right-0 top-full z-30 mt-2 w-[240px] text-left normal-case font-sans font-normal text-[12px] leading-[1.45] tracking-normal bg-deep-teal text-cream border border-deep-teal px-3 py-2.5 opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
+        className="pointer-events-none absolute right-0 bottom-full z-[60] mb-2.5 w-[260px] text-left normal-case font-sans font-normal text-[12.5px] leading-[1.5] tracking-normal text-paper rounded-[6px] px-3.5 py-3 opacity-0 translate-y-1 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
+        style={{
+          background:
+            "linear-gradient(135deg, #1A2625 0%, #2C4544 60%, #334B4A 100%)",
+          boxShadow:
+            "0 16px 36px -10px rgba(26,38,37,0.55), 0 4px 10px rgba(26,38,37,0.22), inset 0 1px 0 rgba(255,255,255,0.10)",
+        }}
       >
         {EXPLAINER[tier]}
+        {/* Pointer arrow below the tooltip */}
+        <span
+          aria-hidden
+          className="absolute right-3 top-full w-3 h-3 -translate-y-1.5 rotate-45"
+          style={{
+            background: "#334B4A",
+            boxShadow: "2px 2px 4px -2px rgba(26,38,37,0.30)",
+          }}
+        />
       </span>
     </span>
   );

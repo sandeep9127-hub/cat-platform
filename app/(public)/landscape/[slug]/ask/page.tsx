@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 const STARTER_TEMPLATES = [
-  "What does the LIP say about climate resilience for {name}?",
+  "What does the investment plan say about climate resilience for {name}?",
   "Compare the budget for soil & water versus livestock interventions.",
   "Which interventions are women-led and what's their total budget?",
   "What's the Phase 1 ask and how is it financed?",
@@ -42,7 +42,7 @@ export default async function AskPage({ params }: { params: Promise<{ slug: stri
         <LandscapeTabs slug={slug} active="ask" hasLip={hasLip} />
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
           <p className="font-serif italic text-ink-soft text-[18px] max-w-[44ch]">
-            The {p.name} LIP is in preparation. Scoped chat will land here once the LIP is
+            The {p.name} investment plan is in preparation. Scoped chat will land here once the investment plan is
             indexed.
           </p>
         </section>
@@ -69,7 +69,7 @@ export default async function AskPage({ params }: { params: Promise<{ slug: stri
         </h1>
         <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
           A scoped agent that draws only from the {p.name} Landscape Investment Plan. Asks
-          you for the question; cites the passages it used; refuses anything outside the LIP.
+          you for the question; cites the passages it used; refuses anything outside the investment plan.
         </p>
       </header>
 

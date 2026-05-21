@@ -3,7 +3,7 @@
  * https://agroecologyindia.org/wp-content/uploads/2026/03/CAT-Landscape-Profiles-February_2026.pdf
  *
  * Each profile records the canonical attribution (district, region) so we can
- * remove any earlier placeholder language. LIP status is from CAT's own page.
+ * remove any earlier placeholder language. Investment plan status is from CAT's own page.
  */
 
 export type LandscapeProfile = {
@@ -24,7 +24,7 @@ export type LandscapeProfile = {
   households: string;
   villages: string;
   keyChallenges: string[];
-  /** "published" → LIP report is out; "in_preparation" → in progress per CAT site. */
+  /** "published" → investment plan is published; "in_preparation" → in progress per CAT site. */
   lipStatus: "published" | "in_preparation";
 };
 

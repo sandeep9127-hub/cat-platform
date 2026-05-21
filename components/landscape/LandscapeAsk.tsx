@@ -150,7 +150,7 @@ export function LandscapeAsk({
         )}
         {busy && (
           <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal animate-pulse">
-            Reading the {landscapeName} LIP…
+            Reading the {landscapeName} investment plan…
           </div>
         )}
         <div ref={endRef} />
@@ -169,7 +169,7 @@ export function LandscapeAsk({
             placeholder={
               left <= 0
                 ? "Session limit reached. Refresh to start over."
-                : `Ask ${landscapeName} anything from the LIP…`
+                : `Ask ${landscapeName} anything from the investment plan…`
             }
             disabled={busy || left <= 0}
             className="w-full px-4 py-3 bg-cream border border-line rounded-[2px] font-serif italic text-[16px] text-ink placeholder:text-muted placeholder:not-italic placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors disabled:opacity-60"
@@ -197,7 +197,7 @@ export function LandscapeAsk({
         <div className="border-l-2 border-teal pl-4">
           <span className="eyebrow block mb-2">What it knows</span>
           <ul className="list-none p-0 m-0 flex flex-col gap-1.5 text-[13.5px] text-ink-soft leading-[1.55]">
-            <li>The {landscapeName} LIP (narrative + interventions)</li>
+            <li>The {landscapeName} investment plan (narrative + interventions)</li>
             <li>Budget package summaries</li>
             <li>Citation by passage, never invented</li>
           </ul>

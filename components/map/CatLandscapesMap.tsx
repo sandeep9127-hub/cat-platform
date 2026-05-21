@@ -94,7 +94,7 @@ export function CatLandscapesMap({ pins, className }: Props) {
         </div>
         <div className="flex gap-2 items-center">
           <span className="w-2.5 h-2.5 rounded-full border-2 border-amber-deep" />
-          LIP published
+          Investment plan published
         </div>
       </div>
 

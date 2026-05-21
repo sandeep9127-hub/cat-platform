@@ -2,6 +2,18 @@
 
 import { useMemo, useState } from "react";
 import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import {
+  Wallet,
+  Landmark,
+  HandHeart,
+  TrendingUp,
+  Home,
+  Trees,
+  Beef,
+  Filter,
+  X as XIcon,
+} from "lucide-react";
 
 function inr(n: number | string | null | undefined): string {
   const v = Number(n ?? 0);
@@ -15,6 +27,45 @@ function pct(part: number, whole: number): string {
   if (!whole) return "0%";
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
+
+type Accent = {
+  bar: string;
+  soft: string;
+  glow: string;
+  iconBg: string;
+  iconFg: string;
+};
+
+const ACCENTS = {
+  amber: {
+    bar: "#C68C2E",
+    soft: "rgba(248,202,124,0.14)",
+    glow: "rgba(248,202,124,0.30)",
+    iconBg: "rgba(248,202,124,0.22)",
+    iconFg: "#C68C2E",
+  } as Accent,
+  teal: {
+    bar: "#2E7573",
+    soft: "rgba(46,117,115,0.08)",
+    glow: "rgba(46,117,115,0.20)",
+    iconBg: "rgba(46,117,115,0.12)",
+    iconFg: "#2E7573",
+  } as Accent,
+  periwinkle: {
+    bar: "#929CC5",
+    soft: "rgba(146,156,197,0.12)",
+    glow: "rgba(146,156,197,0.24)",
+    iconBg: "rgba(146,156,197,0.18)",
+    iconFg: "#5C6796",
+  } as Accent,
+  deepTeal: {
+    bar: "#334B4A",
+    soft: "rgba(51,75,74,0.06)",
+    glow: "rgba(51,75,74,0.18)",
+    iconBg: "rgba(51,75,74,0.10)",
+    iconFg: "#334B4A",
+  } as Accent,
+};
 
 export function BudgetExplorer({
   summary,
@@ -41,8 +92,8 @@ export function BudgetExplorer({
     });
   }, [lines, cat, pkg]);
 
-  const filteredTotals = useMemo(() => {
-    const t = {
+  const t = useMemo(() => {
+    const o = {
       total: 0,
       govt: 0,
       community: 0,
@@ -56,60 +107,93 @@ export function BudgetExplorer({
       animals: 0,
     };
     for (const l of filtered) {
-      t.total += Number(l.totalCostInr ?? 0);
-      t.govt += Number(l.govtInr ?? 0);
-      t.community += Number(l.communityInr ?? 0);
-      t.investment += Number(l.investmentRequiredInr ?? 0);
-      t.grants += Number(l.grantsInr ?? 0);
-      t.returnable += Number(l.returnableGrantInr ?? 0);
-      t.outcome += Number(l.outcomeFinanceInr ?? 0);
-      t.debt += Number(l.debtInr ?? 0);
-      t.households += Number(l.impactHouseholds ?? 0);
-      t.hectares += Number(l.impactHectares ?? 0);
-      t.animals += Number(l.impactAnimals ?? 0);
+      o.total += Number(l.totalCostInr ?? 0);
+      o.govt += Number(l.govtInr ?? 0);
+      o.community += Number(l.communityInr ?? 0);
+      o.investment += Number(l.investmentRequiredInr ?? 0);
+      o.grants += Number(l.grantsInr ?? 0);
+      o.returnable += Number(l.returnableGrantInr ?? 0);
+      o.outcome += Number(l.outcomeFinanceInr ?? 0);
+      o.debt += Number(l.debtInr ?? 0);
+      o.households += Number(l.impactHouseholds ?? 0);
+      o.hectares += Number(l.impactHectares ?? 0);
+      o.animals += Number(l.impactAnimals ?? 0);
     }
-    return t;
+    return o;
   }, [filtered]);
 
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24">
-      {/* Top-line totals */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-px bg-line-soft border border-line-soft mt-8">
-        <Stat label="Total cost · 7 years" value={inr(filteredTotals.total)} accent="deep-teal" />
-        <Stat
-          label="Govt convergence"
-          value={inr(filteredTotals.govt)}
-          sub={pct(filteredTotals.govt, filteredTotals.total)}
+      {/* Top-line totals as floating tiles */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+        <StatCard
+          label="Total cost · 7 years"
+          value={inr(t.total)}
+          sub="Programme size"
+          icon={Wallet}
+          accent={ACCENTS.deepTeal}
         />
-        <Stat
-          label="Community"
-          value={inr(filteredTotals.community)}
-          sub={pct(filteredTotals.community, filteredTotals.total)}
+        <StatCard
+          label="Government convergence"
+          value={inr(t.govt)}
+          sub={`${pct(t.govt, t.total)} of plan`}
+          icon={Landmark}
+          accent={ACCENTS.teal}
         />
-        <Stat
-          label="Investment required"
-          value={inr(filteredTotals.investment)}
-          sub={pct(filteredTotals.investment, filteredTotals.total)}
-          accent="amber-deep"
+        <StatCard
+          label="Community contribution"
+          value={inr(t.community)}
+          sub={`${pct(t.community, t.total)} of plan`}
+          icon={HandHeart}
+          accent={ACCENTS.periwinkle}
+        />
+        <StatCard
+          label="External investment"
+          value={inr(t.investment)}
+          sub={`${pct(t.investment, t.total)} of plan`}
+          icon={TrendingUp}
+          accent={ACCENTS.amber}
+          highlighted
         />
       </section>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-px bg-line-soft border-x border-b border-line-soft">
-        <Stat label="Grants" value={inr(filteredTotals.grants)} subtle />
-        <Stat label="Returnable grant" value={inr(filteredTotals.returnable)} subtle />
-        <Stat label="Outcome-based" value={inr(filteredTotals.outcome)} subtle />
-        <Stat label="Debt" value={inr(filteredTotals.debt)} subtle />
-      </section>
+      {/* Funding mix — single stacked horizontal bar */}
+      <FundingMix totals={t} />
 
-      {/* Impact stats */}
-      <section className="grid grid-cols-3 gap-px bg-line-soft border border-line-soft mt-px">
-        <Stat label="Households reached" value={Math.round(filteredTotals.households).toLocaleString("en-IN")} />
-        <Stat label="Hectares" value={Math.round(filteredTotals.hectares).toLocaleString("en-IN")} />
-        <Stat label="Animals" value={Math.round(filteredTotals.animals).toLocaleString("en-IN")} />
+      {/* Impact tiles */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+        <StatCard
+          label="Households reached"
+          value={Math.round(t.households).toLocaleString("en-IN") || "—"}
+          sub="Cumulative across interventions"
+          icon={Home}
+          accent={ACCENTS.teal}
+          compact
+        />
+        <StatCard
+          label="Hectares"
+          value={Math.round(t.hectares).toLocaleString("en-IN") || "—"}
+          sub="Land surface treated"
+          icon={Trees}
+          accent={ACCENTS.deepTeal}
+          compact
+        />
+        <StatCard
+          label="Animals"
+          value={Math.round(t.animals).toLocaleString("en-IN") || "—"}
+          sub="Livestock interventions"
+          icon={Beef}
+          accent={ACCENTS.periwinkle}
+          compact
+        />
       </section>
 
       {/* Filters */}
-      <section className="mt-12 flex flex-wrap gap-3 items-end">
+      <section className="mt-14 flex flex-wrap gap-3 items-end">
+        <span className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
+          <Filter size={12} strokeWidth={1.8} />
+          Filter the plan
+        </span>
         <FilterDropdown label="Category" value={cat} onChange={setCat} options={categories} />
         <FilterDropdown label="Package" value={pkg} onChange={setPkg} options={packages} />
         {(cat || pkg) && (
@@ -118,20 +202,21 @@ export function BudgetExplorer({
               setCat("");
               setPkg("");
             }}
-            className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal hover:text-teal font-semibold py-2"
+            className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
           >
-            Clear all ×
+            <XIcon size={12} strokeWidth={2} />
+            Clear filters
           </button>
         )}
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto self-center">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
           {filtered.length} of {lines.length} lines
         </span>
       </section>
 
-      {/* Category and package summary visualisations */}
+      {/* Category and package breakdowns */}
       {!cat && !pkg && (
-        <section className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <BreakdownTable
+        <section className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <BreakdownCard
             title="By category"
             rows={summary.byCategory.map((c) => ({
               label: c.category,
@@ -139,8 +224,9 @@ export function BudgetExplorer({
               investment: c.investment,
             }))}
             grandTotal={summary.totalCostInr}
+            accent={ACCENTS.teal}
           />
-          <BreakdownTable
+          <BreakdownCard
             title="By package"
             rows={summary.byPackage.map((p) => ({
               label: p.package,
@@ -148,56 +234,75 @@ export function BudgetExplorer({
               investment: p.investment,
             }))}
             grandTotal={summary.totalCostInr}
+            accent={ACCENTS.amber}
           />
         </section>
       )}
 
       {/* Line table */}
-      <section className="mt-12">
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">
+      <section className="mt-14">
+        <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
+          <span className="w-4 h-px bg-amber-deep" />
           {filtered.length === lines.length ? "All intervention lines" : "Filtered lines"}
         </div>
-        <div className="overflow-x-auto border border-line-soft">
+        <div
+          className="overflow-x-auto rounded-[8px] border border-line"
+          style={{
+            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.18)",
+          }}
+        >
           <table className="w-full text-[14px]">
-            <thead className="bg-cream">
-              <tr className="text-left font-mono uppercase text-[10px] tracking-[0.12em] text-muted">
-                <th className="p-3 font-semibold">Category</th>
-                <th className="p-3 font-semibold">Intervention</th>
-                <th className="p-3 font-semibold">Package</th>
-                <th className="p-3 font-semibold text-right">Total</th>
-                <th className="p-3 font-semibold text-right">Govt</th>
-                <th className="p-3 font-semibold text-right">Investment</th>
-                <th className="p-3 font-semibold text-right">HH</th>
+            <thead
+              className="text-cream"
+              style={{
+                background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
+              }}
+            >
+              <tr className="text-left font-mono uppercase text-[10px] tracking-[0.14em]">
+                <th className="px-4 py-3.5 font-semibold">Category</th>
+                <th className="px-4 py-3.5 font-semibold">Intervention</th>
+                <th className="px-4 py-3.5 font-semibold">Package</th>
+                <th className="px-4 py-3.5 font-semibold text-right">Total</th>
+                <th className="px-4 py-3.5 font-semibold text-right">Govt</th>
+                <th className="px-4 py-3.5 font-semibold text-right">Investment</th>
+                <th className="px-4 py-3.5 font-semibold text-right">HH</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((l) => (
-                <tr key={l.id} className="border-t border-line-soft hover:bg-teal-wash/30">
-                  <td className="p-3 align-top">
-                    <div className="font-serif text-ink">{l.category ?? "—"}</div>
+              {filtered.map((l, i) => (
+                <tr
+                  key={l.id}
+                  className={`border-t border-line-soft hover:bg-cream/60 transition-colors ${
+                    i % 2 === 0 ? "bg-paper" : "bg-cream/30"
+                  }`}
+                >
+                  <td className="px-4 py-3.5 align-top">
+                    <div className="font-sans text-ink leading-snug">{l.category ?? "—"}</div>
                     {l.subintervention && (
                       <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-1">
                         {l.subintervention}
                       </div>
                     )}
                   </td>
-                  <td className="p-3 align-top font-serif text-ink-soft">
+                  <td className="px-4 py-3.5 align-top font-sans text-ink-soft leading-snug">
                     {l.intervention ?? "—"}
                   </td>
-                  <td className="p-3 align-top font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+                  <td className="px-4 py-3.5 align-top font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
                     {l.package ?? "—"}
                   </td>
-                  <td className="p-3 align-top text-right font-mono tabular-nums text-deep-teal">
+                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-deep-teal font-semibold">
                     {inr(l.totalCostInr)}
                   </td>
-                  <td className="p-3 align-top text-right font-mono tabular-nums text-teal">
+                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-teal">
                     {inr(l.govtInr)}
                   </td>
-                  <td className="p-3 align-top text-right font-mono tabular-nums text-amber-deep">
+                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-amber-deep">
                     {inr(l.investmentRequiredInr)}
                   </td>
-                  <td className="p-3 align-top text-right font-mono tabular-nums text-ink-soft">
-                    {l.impactHouseholds ? Math.round(Number(l.impactHouseholds)).toLocaleString("en-IN") : "—"}
+                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-ink-soft">
+                    {l.impactHouseholds
+                      ? Math.round(Number(l.impactHouseholds)).toLocaleString("en-IN")
+                      : "—"}
                   </td>
                 </tr>
               ))}
@@ -209,29 +314,162 @@ export function BudgetExplorer({
   );
 }
 
-function Stat({
+function StatCard({
   label,
   value,
   sub,
+  icon: Icon,
   accent,
-  subtle,
+  highlighted,
+  compact,
 }: {
   label: string;
   value: string;
   sub?: string;
-  accent?: "deep-teal" | "amber-deep";
-  subtle?: boolean;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  accent: Accent;
+  highlighted?: boolean;
+  compact?: boolean;
 }) {
-  const colour =
-    accent === "amber-deep" ? "text-amber-deep" : accent === "deep-teal" ? "text-deep-teal" : "text-ink";
   return (
-    <div className={`bg-paper p-5 sm:p-6 ${subtle ? "opacity-90" : ""}`}>
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{label}</span>
-      <div className={`font-serif text-[22px] sm:text-[26px] font-medium leading-none tracking-[-0.02em] mt-2 ${colour}`}>
-        {value}
+    <div
+      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 transition-all duration-300 ease-out hover:-translate-y-0.5"
+      style={{
+        boxShadow: highlighted
+          ? `0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -14px ${accent.glow}`
+          : `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -14px ${accent.glow}`,
+        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
+      }}
+    >
+      <span
+        aria-hidden
+        className="absolute top-0 left-0 right-0"
+        style={{
+          height: highlighted ? 4 : 3,
+          background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
+        }}
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
+          {label}
+        </span>
+        <span
+          className="shrink-0 w-9 h-9 rounded-[6px] inline-flex items-center justify-center"
+          style={{ background: accent.iconBg, color: accent.iconFg }}
+          aria-hidden
+        >
+          <Icon size={16} strokeWidth={1.7} />
+        </span>
       </div>
-      {sub && <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-1">{sub}</div>}
+      <div
+        className={`relative font-serif font-medium leading-none tracking-[-0.022em] mt-4 text-deep-teal tabular-nums ${
+          compact ? "text-[28px] sm:text-[32px]" : "text-[28px] sm:text-[34px] lg:text-[36px]"
+        }`}
+      >
+        <AnimatedNumber value={value} />
+      </div>
+      {sub && (
+        <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
+          <span className="inline-block w-3 h-px" style={{ background: accent.bar }} />
+          <span style={{ color: accent.iconFg }}>{sub}</span>
+        </div>
+      )}
     </div>
+  );
+}
+
+function FundingMix({
+  totals,
+}: {
+  totals: {
+    total: number;
+    govt: number;
+    community: number;
+    investment: number;
+    grants: number;
+    returnable: number;
+    outcome: number;
+    debt: number;
+  };
+}) {
+  const segments = [
+    { label: "Government", value: totals.govt, color: "#2E7573" },
+    { label: "Community", value: totals.community, color: "#929CC5" },
+    { label: "Grants", value: totals.grants, color: "#C68C2E" },
+    { label: "Returnable", value: totals.returnable, color: "#F8CA7C" },
+    { label: "Outcome-based", value: totals.outcome, color: "#5C6796" },
+    { label: "Debt", value: totals.debt, color: "#334B4A" },
+  ].filter((s) => s.value > 0);
+
+  const sum = segments.reduce((acc, s) => acc + s.value, 0);
+  if (!sum) return null;
+
+  return (
+    <section
+      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 mt-4"
+      style={{
+        boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.20)",
+        backgroundImage:
+          "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.55) 100%)",
+      }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-2">
+          <span className="w-4 h-px bg-amber-deep" />
+          Funding mix
+        </span>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted tabular-nums">
+          {inr(sum)}
+        </span>
+      </div>
+
+      <div className="relative h-3 w-full rounded-full overflow-hidden bg-line-soft">
+        {(() => {
+          let offset = 0;
+          return segments.map((s, i) => {
+            const w = (s.value / sum) * 100;
+            const left = offset;
+            offset += w;
+            return (
+              <div
+                key={s.label + i}
+                className="absolute top-0 bottom-0 transition-all duration-700 ease-out"
+                style={{
+                  left: `${left}%`,
+                  width: `${w}%`,
+                  background: `linear-gradient(180deg, ${s.color}, ${s.color}dd)`,
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
+                }}
+                title={`${s.label}: ${inr(s.value)} (${((s.value / sum) * 100).toFixed(1)}%)`}
+              />
+            );
+          });
+        })()}
+      </div>
+
+      <ul className="list-none p-0 mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {segments.map((s) => (
+          <li key={s.label} className="flex items-start gap-2.5">
+            <span
+              className="mt-1 w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ background: s.color, boxShadow: `0 0 0 3px ${s.color}1f` }}
+              aria-hidden
+            />
+            <div className="min-w-0">
+              <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted leading-none">
+                {s.label}
+              </div>
+              <div className="font-mono text-[12.5px] text-deep-teal tabular-nums leading-tight mt-1">
+                {inr(s.value)}
+              </div>
+              <div className="font-mono text-[9.5px] tabular-nums text-muted leading-none mt-0.5">
+                {((s.value / sum) * 100).toFixed(1)}%
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -252,7 +490,7 @@ function FilterDropdown({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3 py-2 bg-cream border border-line rounded-[2px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft focus:outline-2 focus:outline-teal"
+        className="px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-all"
       >
         <option value="">All</option>
         {options.map((o) => (
@@ -265,36 +503,60 @@ function FilterDropdown({
   );
 }
 
-function BreakdownTable({
+function BreakdownCard({
   title,
   rows,
   grandTotal,
+  accent,
 }: {
   title: string;
   rows: { label: string; total: number; investment: number }[];
   grandTotal: number;
+  accent: Accent;
 }) {
   return (
-    <div>
-      <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">{title}</div>
-      <ul className="list-none p-0 m-0 flex flex-col gap-2">
+    <div
+      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6"
+      style={{
+        boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px ${accent.glow}`,
+        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
+      }}
+    >
+      <span
+        aria-hidden
+        className="absolute top-0 left-0 right-0 h-[3px]"
+        style={{
+          background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
+        }}
+      />
+      <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-5 inline-flex items-center gap-2">
+        <span className="w-3.5 h-px" style={{ background: accent.bar }} />
+        {title}
+      </div>
+      <ul className="list-none p-0 m-0 flex flex-col gap-4">
         {rows.map((r) => {
           const p = grandTotal ? (r.total / grandTotal) * 100 : 0;
           return (
             <li key={r.label}>
               <div className="flex justify-between items-baseline gap-3 text-[14px]">
-                <span className="font-serif text-ink truncate">{r.label}</span>
-                <span className="font-mono tabular-nums text-deep-teal whitespace-nowrap">{inr(r.total)}</span>
+                <span className="font-sans text-ink truncate">{r.label}</span>
+                <span className="font-mono tabular-nums text-deep-teal whitespace-nowrap font-semibold">
+                  {inr(r.total)}
+                </span>
               </div>
-              <div className="mt-1 h-1.5 bg-line-soft rounded-full overflow-hidden">
+              <div className="mt-2 h-2 bg-line-soft rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-teal"
-                  style={{ width: `${Math.min(100, p)}%` }}
+                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  style={{
+                    width: `${Math.min(100, p)}%`,
+                    background: `linear-gradient(90deg, ${accent.bar}, ${accent.bar}aa)`,
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.20)`,
+                  }}
                 />
               </div>
-              <div className="flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted mt-1">
+              <div className="flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted mt-1.5 tabular-nums">
                 <span>{p.toFixed(1)}% of total</span>
-                <span>investment: {inr(r.investment)}</span>
+                <span>Investment: {inr(r.investment)}</span>
               </div>
             </li>
           );

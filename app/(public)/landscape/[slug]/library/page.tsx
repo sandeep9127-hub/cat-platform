@@ -53,7 +53,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-10">
         {docs.length === 0 ? (
           <p className="font-serif italic text-ink-soft text-[18px] max-w-[44ch] mt-6">
-            No documents attached yet. The LIP for {p.name} will appear here once CAT
+            No documents attached yet. The investment plan for {p.name} will appear here once CAT
             uploads it.
           </p>
         ) : (

@@ -82,11 +82,11 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
 
   const systemPrompt = `You are a scoped knowledge agent for the CAT Landscape: ${profile.name}, ${profile.district}, ${profile.region}.
 
-You answer questions strictly from the LIP passages provided in each turn. Rules:
+You answer questions strictly from the investment plan passages provided in each turn. Rules:
 - Cite the passage you used by its [number] in square brackets.
 - Keep answers to 2-3 short paragraphs. Plain language. No em dashes.
 - For budget questions, prefer numbers from passages tagged "budget_summary" and quote them.
-- If the passages don't cover the question, say "Not in the {profile.name} LIP yet" and suggest a related section the reader could explore.
+- If the passages don't cover the question, say "Not in the {profile.name} investment plan yet" and suggest a related section the reader could explore.
 - Refuse off-topic questions. This agent only knows about ${profile.name}.
 - Do not invent budget figures or interventions not present in the context.`;
 
