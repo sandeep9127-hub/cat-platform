@@ -64,8 +64,8 @@ export default async function LandingPage() {
         alt="Seamless looping parallax animation, evoking the landscapes the Hub documents"
         strength={0.28}
       >
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-28 sm:pb-32 lg:pb-40 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end min-h-[540px] sm:min-h-[620px] lg:min-h-[680px]">
-          <div>
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-28 sm:pb-32 lg:pb-40 min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] flex">
+          <div className="max-w-[60ch] lg:max-w-[62ch]">
             <div
               className="flex items-center gap-3 sm:gap-4 mb-6 flex-wrap reveal-stagger"
               style={{ animationDelay: "0ms" }}
@@ -125,29 +125,26 @@ export default async function LandingPage() {
               </Link>
             </div>
           </div>
-          <aside
-            className="lg:self-end lg:pb-1 reveal-stagger"
-            style={{ animationDelay: "560ms" }}
-          >
-            <div className="bg-deep-teal/45 backdrop-blur-md border border-paper/15 rounded-[3px] p-5 lg:p-6 max-w-[40ch]">
-              <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber font-semibold">
-                Editor&apos;s note
-              </span>
-              <p className="text-[13.5px] text-paper/85 mt-3 leading-[1.55]">
-                The Hub covers credible food systems work nationally, not only CAT&apos;s
-                portfolio. Government missions, NGO programmes, federations, market infrastructure.
-                The bar is honesty, not affiliation.
-              </p>
-              <div className="mt-4 flex gap-2.5 items-center">
-                <span className="w-6 h-px bg-amber" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-paper/75">
-                  Curated, not crowdsourced
-                </span>
-              </div>
-            </div>
-          </aside>
         </div>
       </ParallaxBanner>
+
+      {/* EDITOR'S NOTE — sits on paper, below the hero, never over the video */}
+      <section className="relative border-b border-line bg-cream/60">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-x-8 gap-y-3 items-baseline">
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold whitespace-nowrap">
+            Editor&apos;s note
+          </span>
+          <p className="font-serif text-[14.5px] text-ink-soft leading-[1.55] max-w-[80ch]">
+            The Hub covers credible food systems work nationally, not only CAT&apos;s
+            portfolio. Government missions, NGO programmes, federations, market infrastructure.
+            The bar is honesty, not affiliation.
+          </p>
+          <span className="hidden lg:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep whitespace-nowrap">
+            <span className="w-5 h-px bg-amber-deep" />
+            Curated, not crowdsourced
+          </span>
+        </div>
+      </section>
 
       {/* STAT STRIP */}
       <StatStrip
