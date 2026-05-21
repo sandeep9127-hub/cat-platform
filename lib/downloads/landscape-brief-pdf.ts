@@ -1,41 +1,70 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage, type PDFImage } from "pdf-lib";
-import type { LandscapeProfile, LandscapePhoto } from "@/lib/data/landscapes";
+/**
+ * Landscape Investment Brief — PDF generator
+ *
+ * McKinsey-style consultancy document: single sans-serif family, disciplined
+ * margins, exhibit-style headings with a thin teal rule, horizontal bar
+ * visualisations, hairline rules, page header + footer on every page, and
+ * the official CAT mark embedded as a vector lockup on each page.
+ *
+ * Explicit non-features (per the editor):
+ *   - No photographs anywhere. Photos disturb the design and inflate file
+ *     size (the prior generator shipped 5.5 MB for a 6-page brief).
+ *   - No decorative serif body type. Bodies are Helvetica throughout.
+ *   - No filler whitespace. Every page is dense; the brief earns its length.
+ */
+import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from "pdf-lib";
+import type { LandscapeProfile } from "@/lib/data/landscapes";
 import type { BudgetSummary } from "@/lib/db/landscape-kb";
 
-const PAGE = { w: 595.28, h: 841.89 }; // A4 portrait
-const M = { top: 56, right: 56, bottom: 56, left: 56 };
+// ─── Geometry ────────────────────────────────────────────────────────────
+// A4 portrait. Margins tightened to consultancy norms (52pt outer, generous
+// internal grids).
+const PAGE = { w: 595.28, h: 841.89 };
+const M = { top: 56, right: 52, bottom: 56, left: 52 };
+const CONTENT_W = PAGE.w - M.left - M.right;
+// Reserve space above the bottom margin for the footer band.
+const SAFE_BOTTOM = M.bottom + 26;
 
-const COLOR = {
-  ink: rgb(0.10, 0.15, 0.15),
-  inkSoft: rgb(0.30, 0.34, 0.34),
-  muted: rgb(0.46, 0.50, 0.50),
-  navy: rgb(0.215, 0.247, 0.353), // #373F5A — official wordmark navy
-  deepTeal: rgb(0.20, 0.29, 0.29),
-  teal: rgb(0.176, 0.459, 0.455), // #2D7574 — official symbol teal
-  periwinkle: rgb(0.392, 0.427, 0.588), // #646D96 — official symbol periwinkle
-  amber: rgb(0.973, 0.792, 0.486),
-  amberDeep: rgb(0.776, 0.549, 0.180),
-  sage: rgb(0.624, 0.722, 0.651), // sage accent
-  paper: rgb(0.984, 0.972, 0.949),
-  cream: rgb(0.957, 0.929, 0.870),
-  line: rgb(0.86, 0.86, 0.83),
-  lineSoft: rgb(0.91, 0.90, 0.86),
+// ─── Colour palette ──────────────────────────────────────────────────────
+// Cool near-black ink, deep teal accent, single amber stroke. Pure white
+// page (consultancy default; the editorial paper cream was reading craft-y,
+// not professional).
+const C = {
+  paper: rgb(1.0, 1.0, 1.0),
+  ink: rgb(0.10, 0.13, 0.16),
+  inkSoft: rgb(0.30, 0.34, 0.38),
+  muted: rgb(0.52, 0.56, 0.60),
+  navy: rgb(0.16, 0.20, 0.30), // CAT wordmark navy
+  teal: rgb(0.176, 0.459, 0.455), // CAT symbol teal #2D7574
+  tealSoft: rgb(0.78, 0.86, 0.85), // 25% teal — bar background
+  periwinkle: rgb(0.392, 0.427, 0.588),
+  amber: rgb(0.776, 0.549, 0.180),
+  hairline: rgb(0.85, 0.87, 0.89),
+  rowAlt: rgb(0.965, 0.970, 0.975),
 };
 
+// ─── Context object ──────────────────────────────────────────────────────
 type Ctx = {
   doc: PDFDocument;
   page: PDFPage;
   y: number;
-  serif: PDFFont;
-  serifBold: PDFFont;
+  pageTitle: string;
+  pageNumber: number;
+  brief: { landscapeName: string; district: string };
   sans: PDFFont;
   sansBold: PDFFont;
   mono: PDFFont;
 };
 
-const CONTENT_W = PAGE.w - M.left - M.right;
+// ─── ASCII safety (WinAnsi standard fonts can't encode ₹ or em-dashes) ───
+function asciify(s: string): string {
+  return s
+    .replace(/[–—]/g, "-")
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/…/g, "...")
+    .replace(/₹/g, "INR ");
+}
 
 function wrapPageDrawText(page: PDFPage) {
   const original = page.drawText.bind(page);
@@ -45,27 +74,9 @@ function wrapPageDrawText(page: PDFPage) {
   ) => original(asciify(text), opts)) as typeof original;
 }
 
-function newPage(ctx: Ctx) {
-  ctx.page = ctx.doc.addPage([PAGE.w, PAGE.h]);
-  wrapPageDrawText(ctx.page);
-  ctx.page.drawRectangle({
-    x: 0,
-    y: 0,
-    width: PAGE.w,
-    height: PAGE.h,
-    color: COLOR.paper,
-  });
-  ctx.y = PAGE.h - M.top;
-}
-
-function ensure(ctx: Ctx, needed: number) {
-  if (ctx.y - needed < M.bottom + 30) {
-    newPage(ctx);
-  }
-}
-
+// ─── Text layout helpers ────────────────────────────────────────────────
 function wrap(text: string, font: PDFFont, size: number, maxW: number): string[] {
-  const words = text.replace(/\s+/g, " ").split(" ");
+  const words = asciify(text).replace(/\s+/g, " ").split(" ");
   const lines: string[] = [];
   let line = "";
   for (const w of words) {
@@ -81,18 +92,24 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number): string[]
   return lines;
 }
 
-function drawText(
+function ensure(ctx: Ctx, needed: number) {
+  if (ctx.y - needed < SAFE_BOTTOM) {
+    newPage(ctx, ctx.pageTitle);
+  }
+}
+
+function drawBody(
   ctx: Ctx,
   text: string,
-  opts: { x?: number; size?: number; font?: PDFFont; color?: ReturnType<typeof rgb>; lineHeight?: number; maxW?: number }
+  opts: { x?: number; size?: number; color?: ReturnType<typeof rgb>; lineHeight?: number; maxW?: number; bold?: boolean } = {}
 ) {
-  const size = opts.size ?? 10.5;
-  const font = opts.font ?? ctx.serif;
-  const color = opts.color ?? COLOR.inkSoft;
+  const size = opts.size ?? 10;
+  const color = opts.color ?? C.inkSoft;
   const lineHeight = opts.lineHeight ?? size * 1.5;
   const maxW = opts.maxW ?? CONTENT_W;
   const x = opts.x ?? M.left;
-  const lines = wrap(asciify(text), font, size, maxW);
+  const font = opts.bold ? ctx.sansBold : ctx.sans;
+  const lines = wrap(text, font, size, maxW);
   for (const line of lines) {
     ensure(ctx, lineHeight);
     ctx.page.drawText(line, { x, y: ctx.y - size, size, font, color });
@@ -100,516 +117,643 @@ function drawText(
   }
 }
 
-function drawSectionOpener(ctx: Ctx, number: string, label: string) {
-  ensure(ctx, 28);
-  // sage rule
+function hairline(ctx: Ctx, opts: { gap?: number; color?: ReturnType<typeof rgb>; thickness?: number } = {}) {
+  const gap = opts.gap ?? 12;
+  ensure(ctx, gap * 2);
   ctx.page.drawRectangle({
     x: M.left,
-    y: ctx.y - 6,
-    width: 14,
-    height: 1.2,
-    color: COLOR.sage,
-  });
-  // number in sage
-  ctx.page.drawText(number, {
-    x: M.left + 20,
-    y: ctx.y - 10,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.sage,
-  });
-  // dot separator
-  ctx.page.drawText("·", {
-    x: M.left + 38,
-    y: ctx.y - 10,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.muted,
-  });
-  // label in navy
-  ctx.page.drawText(label.toUpperCase(), {
-    x: M.left + 46,
-    y: ctx.y - 10,
-    size: 8.5,
-    font: ctx.sansBold,
-    color: COLOR.navy,
-  });
-  ctx.y -= 26;
-}
-
-function drawHeading(ctx: Ctx, text: string, size = 28, color = COLOR.navy) {
-  const lines = wrap(text, ctx.sansBold, size, CONTENT_W);
-  for (const line of lines) {
-    ensure(ctx, size + 10);
-    ctx.page.drawText(line, {
-      x: M.left,
-      y: ctx.y - size,
-      size,
-      font: ctx.sansBold,
-      color,
-    });
-    ctx.y -= size + 6;
-  }
-  ctx.y -= 4;
-}
-
-function drawDivider(ctx: Ctx) {
-  ensure(ctx, 18);
-  ctx.page.drawRectangle({
-    x: M.left,
-    y: ctx.y - 4,
+    y: ctx.y - gap,
     width: CONTENT_W,
-    height: 0.5,
-    color: COLOR.line,
+    height: opts.thickness ?? 0.4,
+    color: opts.color ?? C.hairline,
   });
-  ctx.y -= 18;
+  ctx.y -= gap * 2;
 }
 
-/**
- * Official CAT lockup drawn into the PDF — symbol + wordmark + supertext.
- * Compact horizontal lockup sized to fit at the top of a page header.
- */
-function drawCatLockup(ctx: Ctx, x: number, y: number, height = 28) {
-  const symW = height; // square symbol on the left
-  // arches
-  for (const r of [11, 8, 4.5]) {
-    ctx.page.drawSvgPath(
-      `M ${-r} 0 A ${r} ${r} 0 0 1 ${r} 0`,
-      {
-        x: x + symW / 2,
-        y: y + height * 0.45,
-        borderColor: COLOR.teal,
-        borderWidth: 1.5,
-        scale: 1,
-      }
-    );
-  }
-  // leaves
-  ctx.page.drawSvgPath(
-    "M 0 1 C -5 4, -6 11, -2 16 C 0 13, 1 8, 0 1 Z",
-    {
-      x: x + symW / 2,
-      y: y + height * 0.45,
-      borderColor: COLOR.periwinkle,
-      borderWidth: 1.2,
+// ─── CAT lockup ──────────────────────────────────────────────────────────
+// Compact vector form of the CAT symbol (three concentric arches + two
+// leaves), drawn at any height. Used in every page header.
+function drawCatSymbol(page: PDFPage, x: number, y: number, height: number) {
+  const cx = x + height / 2;
+  const baseY = y + height * 0.42;
+  // Arches — outer to inner
+  const arcs = [
+    { r: height * 0.42, stroke: 1.1 },
+    { r: height * 0.30, stroke: 1.0 },
+    { r: height * 0.18, stroke: 0.9 },
+  ];
+  for (const a of arcs) {
+    page.drawSvgPath(`M ${-a.r} 0 A ${a.r} ${a.r} 0 0 1 ${a.r} 0`, {
+      x: cx,
+      y: baseY,
+      borderColor: C.teal,
+      borderWidth: a.stroke,
       scale: 1,
-    }
-  );
-  ctx.page.drawSvgPath(
-    "M 0 1 C 5 4, 6 11, 2 16 C 0 13, -1 8, 0 1 Z",
-    {
-      x: x + symW / 2,
-      y: y + height * 0.45,
-      borderColor: COLOR.periwinkle,
-      borderWidth: 1.2,
-      scale: 1,
-    }
-  );
-  // wordmark: three lines
-  const tx = x + symW + 8;
-  const labelSize = 9.5;
-  const lineH = labelSize * 1.18;
-  ctx.page.drawText("Consortium for", {
-    x: tx,
-    y: y + height - labelSize - 2,
-    size: labelSize,
-    font: ctx.sansBold,
-    color: COLOR.navy,
-  });
-  ctx.page.drawText("Agroecological", {
-    x: tx,
-    y: y + height - labelSize - 2 - lineH,
-    size: labelSize,
-    font: ctx.sansBold,
-    color: COLOR.navy,
-  });
-  ctx.page.drawText("Transformations", {
-    x: tx,
-    y: y + height - labelSize - 2 - lineH * 2,
-    size: labelSize,
-    font: ctx.sansBold,
-    color: COLOR.navy,
-  });
-}
-
-/** Try to read a JPEG from public/. Returns null if missing or unreadable. */
-async function readJpg(relativePath: string): Promise<Buffer | null> {
-  try {
-    const cleaned = relativePath.replace(/^\//, "");
-    const full = path.join(process.cwd(), "public", cleaned);
-    return await readFile(full);
-  } catch {
-    return null;
+    });
   }
+  // Two leaves rising from the base
+  const leafScale = height * 0.018;
+  page.drawSvgPath("M 0 1 C -5 4, -6 11, -2 16 C 0 13, 1 8, 0 1 Z", {
+    x: cx,
+    y: baseY,
+    borderColor: C.periwinkle,
+    borderWidth: 0.9,
+    scale: leafScale,
+  });
+  page.drawSvgPath("M 0 1 C 5 4, 6 11, 2 16 C 0 13, -1 8, 0 1 Z", {
+    x: cx,
+    y: baseY,
+    borderColor: C.periwinkle,
+    borderWidth: 0.9,
+    scale: leafScale,
+  });
 }
 
-/** Embed a JPEG photo into the doc and draw it at the requested position. */
-async function drawPhoto(
+function drawCatLockup(
   ctx: Ctx,
-  photo: LandscapePhoto,
   x: number,
   y: number,
-  w: number,
-  h: number
-): Promise<PDFImage | null> {
-  const bytes = await readJpg(photo.src);
-  if (!bytes) return null;
-  const img = await ctx.doc.embedJpg(bytes);
-  // Cover crop: pdf-lib draws the whole image at the given dimensions.
-  // To get cover-crop behaviour, we draw at the larger of the two scale
-  // factors and clip via a rectangle clipping path. Simpler approach for
-  // an editorial brief: just letterbox to the given box maintaining aspect.
-  const imgAspect = img.width / img.height;
-  const boxAspect = w / h;
-  let drawW = w;
-  let drawH = h;
-  let drawX = x;
-  let drawY = y;
-  if (imgAspect > boxAspect) {
-    // image is wider — scale to cover height, crop sides
-    drawH = h;
-    drawW = h * imgAspect;
-    drawX = x - (drawW - w) / 2;
-  } else {
-    drawW = w;
-    drawH = w / imgAspect;
-    drawY = y - (drawH - h) / 2;
+  opts: { symbolHeight?: number; wordmark?: boolean } = {}
+) {
+  const sh = opts.symbolHeight ?? 22;
+  drawCatSymbol(ctx.page, x, y, sh);
+  if (opts.wordmark !== false) {
+    const tx = x + sh + 8;
+    const labelSize = 7.5;
+    const lineH = labelSize * 1.22;
+    const lines = ["Consortium for", "Agroecological", "Transformations"];
+    for (let i = 0; i < lines.length; i++) {
+      ctx.page.drawText(lines[i], {
+        x: tx,
+        y: y + sh - labelSize - 2 - i * lineH,
+        size: labelSize,
+        font: ctx.sansBold,
+        color: C.navy,
+      });
+    }
   }
-  // Clip by drawing a paper rectangle frame after the image
-  ctx.page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH });
-  return img;
 }
 
-function formatMonth(iso: string): string {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const [y, m] = iso.split("-");
-  const idx = Number(m) - 1;
-  return idx >= 0 && idx < 12 ? `${months[idx]} ${y}` : iso;
+// ─── Page chrome ─────────────────────────────────────────────────────────
+function newPage(ctx: Ctx, title: string) {
+  ctx.page = ctx.doc.addPage([PAGE.w, PAGE.h]);
+  wrapPageDrawText(ctx.page);
+  ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: PAGE.h, color: C.paper });
+  ctx.pageTitle = title;
+  ctx.pageNumber += 1;
+  drawPageHeader(ctx, title);
+  ctx.y = PAGE.h - M.top - 30;
 }
 
+function drawPageHeader(ctx: Ctx, title: string) {
+  // CAT symbol top-left
+  drawCatSymbol(ctx.page, M.left, PAGE.h - M.top + 4, 14);
+  // Tiny brand mark, navy
+  ctx.page.drawText("CAT  ·  Transformation Hub", {
+    x: M.left + 20,
+    y: PAGE.h - M.top + 7,
+    size: 7,
+    font: ctx.sansBold,
+    color: C.navy,
+  });
+  // Page title, right-aligned
+  const titleUpper = title.toUpperCase();
+  const titleW = ctx.mono.widthOfTextAtSize(titleUpper, 7);
+  ctx.page.drawText(titleUpper, {
+    x: PAGE.w - M.right - titleW,
+    y: PAGE.h - M.top + 7,
+    size: 7,
+    font: ctx.mono,
+    color: C.muted,
+  });
+  // Top rule
+  ctx.page.drawRectangle({
+    x: M.left,
+    y: PAGE.h - M.top - 6,
+    width: CONTENT_W,
+    height: 0.4,
+    color: C.hairline,
+  });
+}
+
+function drawFooters(ctx: Ctx, citationUrl: string) {
+  const pages = ctx.doc.getPages();
+  const total = pages.length;
+  // Skip the cover (page 1) — it has its own bottom band.
+  for (let i = 1; i < total; i++) {
+    const page = pages[i];
+    // Bottom rule
+    page.drawRectangle({
+      x: M.left,
+      y: M.bottom - 4,
+      width: CONTENT_W,
+      height: 0.4,
+      color: C.hairline,
+    });
+    // Citation (left)
+    page.drawText(citationUrl, {
+      x: M.left,
+      y: M.bottom - 18,
+      size: 7,
+      font: ctx.mono,
+      color: C.muted,
+    });
+    // Page n / N (right)
+    const counter = `${i + 1} / ${total}`;
+    const w = ctx.mono.widthOfTextAtSize(counter, 7);
+    page.drawText(counter, {
+      x: PAGE.w - M.right - w,
+      y: M.bottom - 18,
+      size: 7,
+      font: ctx.mono,
+      color: C.muted,
+    });
+  }
+}
+
+// ─── Exhibit headings ────────────────────────────────────────────────────
+// Each major section opens with: short amber eyebrow ("EXHIBIT 03 ·
+// CONTEXT"), 0.4pt teal rule, then the bold title. McKinsey-style.
+function drawExhibitHeader(ctx: Ctx, exhibitNumber: string, eyebrow: string, title: string) {
+  ensure(ctx, 50);
+  // Eyebrow
+  ctx.page.drawText(`EXHIBIT ${exhibitNumber}  ·  ${eyebrow.toUpperCase()}`, {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+    // pdf-lib doesn't support letter-spacing; the all-caps + bold reads tight
+    // enough in Helvetica at this size.
+  });
+  ctx.y -= 12;
+  // Thin teal rule, 36pt long
+  ctx.page.drawRectangle({
+    x: M.left,
+    y: ctx.y,
+    width: 36,
+    height: 1.4,
+    color: C.teal,
+  });
+  ctx.y -= 14;
+  // Title
+  ctx.page.drawText(title, {
+    x: M.left,
+    y: ctx.y - 18,
+    size: 18,
+    font: ctx.sansBold,
+    color: C.navy,
+  });
+  ctx.y -= 28;
+}
+
+// ─── INR formatting ──────────────────────────────────────────────────────
 function inrShort(n: number): string {
-  if (!n || !isFinite(n)) return "—";
-  // PDF standard fonts (WinAnsi) cannot encode ₹ U+20B9, so we use "INR" in
-  // the PDF brief. The DOCX brief renders ₹ correctly through Word's font system.
+  if (!n || !isFinite(n)) return "-";
   if (n >= 1e7) return `INR ${(n / 1e7).toFixed(n >= 1e8 ? 0 : 2)} cr`;
   if (n >= 1e5) return `INR ${(n / 1e5).toFixed(2)} lakh`;
   return `INR ${n.toLocaleString("en-IN")}`;
 }
 
-// Replace characters not encodable by WinAnsi standard fonts with safe ASCII
-// equivalents. Belt-and-braces — if any prose contains an em dash or curly
-// quote it doesn't crash the encoder.
-function asciify(s: string): string {
-  return s
-    .replace(/[–—]/g, "-") // en/em dash
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/…/g, "...")
-    .replace(/₹/g, "INR ");
+function pct(part: number, whole: number): number {
+  if (!whole) return 0;
+  return (part / whole) * 100;
 }
 
-function pct(part: number, whole: number): string {
-  if (!whole) return "—";
+function pctStr(part: number, whole: number): string {
+  if (!whole) return "-";
   return `${Math.round((part / whole) * 100)}%`;
 }
 
-// ─── Pages ───────────────────────────────────────────────────────────────
+// ─── COVER (Page 1) ──────────────────────────────────────────────────────
+function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
+  // No page chrome on cover — clean, centred composition.
+  ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: PAGE.h, color: C.paper });
 
-async function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
-  // CAT lockup top-left
-  drawCatLockup(ctx, M.left, PAGE.h - M.top + 6, 30);
+  // CAT lockup, top-left
+  drawCatLockup(ctx, M.left, PAGE.h - M.top - 26, { symbolHeight: 26 });
 
-  // Edition tag, top-right
-  ctx.page.drawText("VOL. 01 · EDITION 2026", {
-    x: PAGE.w - M.right - ctx.mono.widthOfTextAtSize("VOL. 01 · EDITION 2026", 8),
-    y: PAGE.h - M.top - 8,
+  // Edition meta, top-right
+  const editionLine = "VOL. 01  ·  EDITION 2026";
+  const editionW = ctx.mono.widthOfTextAtSize(editionLine, 8);
+  ctx.page.drawText(editionLine, {
+    x: PAGE.w - M.right - editionW,
+    y: PAGE.h - M.top - 4,
     size: 8,
     font: ctx.mono,
-    color: COLOR.muted,
+    color: C.muted,
+  });
+  ctx.page.drawText("LANDSCAPE INVESTMENT BRIEF", {
+    x: PAGE.w - M.right - ctx.sansBold.widthOfTextAtSize("LANDSCAPE INVESTMENT BRIEF", 7.5),
+    y: PAGE.h - M.top - 18,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
   });
 
-  ctx.y = PAGE.h - M.top - 56;
+  // Centre composition — title set vertically just above middle.
+  const titleY = PAGE.h * 0.58;
+  // Eyebrow "Landscape" — small amber line
+  ctx.page.drawText("LANDSCAPE", {
+    x: M.left,
+    y: titleY + 80,
+    size: 9,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  // Teal rule
+  ctx.page.drawRectangle({
+    x: M.left + 70,
+    y: titleY + 84,
+    width: CONTENT_W - 70,
+    height: 0.6,
+    color: C.teal,
+  });
+  // Big landscape name
+  const nameSize = p.name.length > 16 ? 44 : 56;
+  ctx.page.drawText(p.name, {
+    x: M.left,
+    y: titleY,
+    size: nameSize,
+    font: ctx.sansBold,
+    color: C.navy,
+  });
+  // Subtitle — district · state
+  ctx.page.drawText(`${p.district}  ·  ${stateName}`, {
+    x: M.left,
+    y: titleY - 26,
+    size: 13,
+    font: ctx.sans,
+    color: C.inkSoft,
+  });
 
-  // Anchor photograph — 5:2 strip at top
-  const anchorH = CONTENT_W * (2 / 5);
-  const anchorY = ctx.y - anchorH;
-  if (p.photos && p.photos.length > 0) {
-    await drawPhoto(ctx, p.photos[0], M.left, anchorY, CONTENT_W, anchorH);
-    // Soft bottom darkening for the caption overlay
-    ctx.page.drawRectangle({
+  // Body gloss — single paragraph editorial context
+  const glossY = titleY - 80;
+  const lines = wrap(p.context, ctx.sans, 11, CONTENT_W * 0.78);
+  for (let i = 0; i < Math.min(lines.length, 4); i++) {
+    ctx.page.drawText(lines[i], {
       x: M.left,
-      y: anchorY,
-      width: CONTENT_W,
-      height: 38,
-      color: rgb(0.10, 0.15, 0.15),
-      opacity: 0.55,
-    });
-    // Caption inside the photo's bottom
-    ctx.page.drawText(p.photos[0].caption, {
-      x: M.left + 14,
-      y: anchorY + 22,
-      size: 10,
+      y: glossY - i * 16,
+      size: 11,
       font: ctx.sans,
-      color: COLOR.paper,
-    });
-    ctx.page.drawText(`${p.photos[0].credit} · ${formatMonth(p.photos[0].date)}`, {
-      x: M.left + 14,
-      y: anchorY + 9,
-      size: 7.5,
-      font: ctx.mono,
-      color: rgb(0.973, 0.792, 0.486),
-    });
-  } else {
-    // Sage gradient panel fallback
-    ctx.page.drawRectangle({
-      x: M.left,
-      y: anchorY,
-      width: CONTENT_W,
-      height: anchorH,
-      color: rgb(0.91, 0.94, 0.91),
-    });
-    ctx.page.drawText("Procedural mark", {
-      x: M.left + 14,
-      y: anchorY + 14,
-      size: 8,
-      font: ctx.mono,
-      color: COLOR.muted,
+      color: C.ink,
     });
   }
-  ctx.y = anchorY - 28;
 
-  drawSectionOpener(ctx, "VOL. 01", "Landscape investment brief");
-
-  // Title
-  drawHeading(ctx, p.name, 36, COLOR.navy);
-
-  // Subtitle
-  ensure(ctx, 16);
-  ctx.page.drawText(`${p.district} · ${stateName}`, {
-    x: M.left,
-    y: ctx.y - 12,
-    size: 12,
-    font: ctx.sans,
-    color: COLOR.inkSoft,
-  });
-  ctx.y -= 26;
-
-  // Editorial context paragraph (italic-feel via Times)
-  drawText(ctx, p.context, {
-    size: 11.5,
-    font: ctx.serif,
-    color: COLOR.ink,
-    lineHeight: 17,
-  });
-
-  // Bottom strip: URL and generated date
-  const stripY = M.bottom + 4;
+  // Bottom band — citation, date, URL
+  const bandY = M.bottom + 40;
   ctx.page.drawRectangle({
     x: M.left,
-    y: stripY + 14,
-    width: CONTENT_W,
-    height: 0.5,
-    color: COLOR.line,
+    y: bandY + 18,
+    width: 36,
+    height: 1.4,
+    color: C.teal,
   });
-  const now = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  ctx.page.drawText("cat-platform-fawn.vercel.app", {
+  ctx.page.drawText("CONSORTIUM FOR AGROECOLOGICAL TRANSFORMATIONS", {
     x: M.left,
-    y: stripY,
+    y: bandY,
     size: 8,
-    font: ctx.mono,
-    color: COLOR.muted,
+    font: ctx.sansBold,
+    color: C.navy,
+  });
+  const now = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
   ctx.page.drawText(`Generated ${now}`, {
-    x: PAGE.w - M.right - ctx.mono.widthOfTextAtSize(`Generated ${now}`, 8),
-    y: stripY,
+    x: M.left,
+    y: bandY - 12,
+    size: 8,
+    font: ctx.sans,
+    color: C.muted,
+  });
+  const urlText = `cat-platform-fawn.vercel.app/landscape/${p.slug}`;
+  const urlW = ctx.mono.widthOfTextAtSize(urlText, 8);
+  ctx.page.drawText(urlText, {
+    x: PAGE.w - M.right - urlW,
+    y: bandY,
     size: 8,
     font: ctx.mono,
-    color: COLOR.muted,
+    color: C.muted,
   });
 }
 
-function drawAtAGlance(ctx: Ctx, p: LandscapeProfile, stateName: string) {
-  newPage(ctx);
-  drawSectionOpener(ctx, "01", "At a glance");
+// ─── CONTENTS (Page 2) ───────────────────────────────────────────────────
+function drawContents(
+  ctx: Ctx,
+  items: { exhibit: string; title: string }[]
+) {
+  newPage(ctx, "Contents");
+  drawExhibitHeader(ctx, "00", "Navigation", "Contents");
 
-  drawHeading(ctx, "At a glance", 22, COLOR.navy);
-  ctx.y -= 4;
+  drawBody(
+    ctx,
+    "This brief is a snapshot of the landscape as recorded in the Hub. Each exhibit stands on its own; the document is designed for tab-and-skim reading.",
+    { size: 10, lineHeight: 14, color: C.inkSoft, maxW: CONTENT_W * 0.78 }
+  );
+  ctx.y -= 10;
+  hairline(ctx);
 
-  const rows: { label: string; value: string }[] = [
-    { label: "Region", value: p.region },
-    { label: "Agroclimatic zone", value: shorten(p.agroclimaticZone, 84) },
-    { label: "State", value: stateName },
-    { label: "District", value: p.district },
-    { label: "Geographical area", value: p.area },
-    { label: "Population", value: p.population },
-    { label: "Households", value: p.households },
-    { label: "Inhabited villages", value: p.villages },
-    { label: "Investment plan status", value: p.lipStatus === "published" ? "Published" : "In preparation" },
-    { label: "Key challenges identified", value: String(p.keyChallenges.length) },
-  ];
-
-  // Two-column grid
-  const colW = CONTENT_W / 2;
-  const rowH = 36;
-  rows.forEach((r, i) => {
-    const col = i % 2;
-    const x = M.left + col * colW;
-    if (col === 0) ensure(ctx, rowH);
-    const y = ctx.y;
-    ctx.page.drawText(r.label.toUpperCase(), {
-      x,
-      y: y - 9,
-      size: 7.5,
+  for (const item of items) {
+    ensure(ctx, 26);
+    // Exhibit number
+    ctx.page.drawText(item.exhibit, {
+      x: M.left,
+      y: ctx.y - 12,
+      size: 10,
       font: ctx.mono,
-      color: COLOR.muted,
+      color: C.amber,
     });
-    const valueSize = 11.5;
-    const valueLines = wrap(r.value, ctx.sansBold, valueSize, colW - 12);
-    ctx.page.drawText(valueLines[0] ?? "", {
-      x,
-      y: y - 9 - 14,
+    // Title
+    ctx.page.drawText(item.title, {
+      x: M.left + 42,
+      y: ctx.y - 12,
+      size: 12,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    // Trailing rule
+    ctx.page.drawRectangle({
+      x: M.left + 42,
+      y: ctx.y - 16,
+      width: CONTENT_W - 42,
+      height: 0.3,
+      color: C.hairline,
+    });
+    ctx.y -= 26;
+  }
+}
+
+// ─── AT A GLANCE (Executive dashboard) ───────────────────────────────────
+function drawAtAGlance(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit: string) {
+  newPage(ctx, "At a glance");
+  drawExhibitHeader(ctx, exhibit, "Executive snapshot", "At a glance");
+
+  // Lede sentence
+  drawBody(ctx, p.gloss, { size: 11, lineHeight: 16, color: C.ink, maxW: CONTENT_W * 0.82 });
+  ctx.y -= 8;
+  hairline(ctx);
+
+  // Six headline tiles — Population, Households, Villages, Area,
+  // Challenges identified, Plan status. Three columns × two rows.
+  const tileW = CONTENT_W / 3;
+  const tileH = 64;
+  const tiles = [
+    { label: "POPULATION", value: p.population, sub: "Persons" },
+    { label: "HOUSEHOLDS", value: p.households, sub: "Reached by plan" },
+    { label: "VILLAGES", value: p.villages, sub: "Inhabited" },
+    { label: "LANDSCAPE AREA", value: p.area, sub: "Geographical" },
+    {
+      label: "CHALLENGES",
+      value: String(p.keyChallenges.length),
+      sub: "Identified in plan",
+    },
+    {
+      label: "PLAN STATUS",
+      value: p.lipStatus === "published" ? "Published" : "In prep.",
+      sub: "Investment plan",
+    },
+  ];
+  for (let i = 0; i < tiles.length; i++) {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const tx = M.left + col * tileW;
+    const ty = ctx.y - row * tileH;
+    // Top hairline
+    ctx.page.drawRectangle({ x: tx, y: ty, width: tileW - 8, height: 0.6, color: C.hairline });
+    // Label
+    ctx.page.drawText(tiles[i].label, {
+      x: tx,
+      y: ty - 12,
+      size: 7,
+      font: ctx.sansBold,
+      color: C.muted,
+    });
+    // Value
+    const value = tiles[i].value;
+    const valueSize = value.length > 9 ? 18 : 22;
+    ctx.page.drawText(value, {
+      x: tx,
+      y: ty - 12 - valueSize - 4,
       size: valueSize,
       font: ctx.sansBold,
-      color: COLOR.deepTeal,
+      color: C.navy,
     });
-    if (col === 1) ctx.y -= rowH;
+    // Sub
+    ctx.page.drawText(tiles[i].sub, {
+      x: tx,
+      y: ty - tileH + 6,
+      size: 7.5,
+      font: ctx.sans,
+      color: C.muted,
+    });
+  }
+  ctx.y -= tileH * 2 + 12;
+
+  hairline(ctx);
+
+  // Two-column metadata table
+  const metaRows: { label: string; value: string }[] = [
+    { label: "Region", value: p.region },
+    { label: "Agroclimatic zone", value: shorten(p.agroclimaticZone, 90) },
+    { label: "State", value: stateName },
+    { label: "District", value: p.district },
+  ];
+  drawTwoColTable(ctx, metaRows);
+}
+
+function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
+  const labelW = 130;
+  const valueW = CONTENT_W - labelW - 12;
+  rows.forEach((r, i) => {
+    const valueLines = wrap(r.value, ctx.sans, 10, valueW);
+    const rowH = Math.max(20, valueLines.length * 14 + 6);
+    ensure(ctx, rowH);
+    // Alt row band (very subtle)
+    if (i % 2 === 1) {
+      ctx.page.drawRectangle({
+        x: M.left,
+        y: ctx.y - rowH + 4,
+        width: CONTENT_W,
+        height: rowH,
+        color: C.rowAlt,
+      });
+    }
+    ctx.page.drawText(r.label.toUpperCase(), {
+      x: M.left + 4,
+      y: ctx.y - 12,
+      size: 7.5,
+      font: ctx.sansBold,
+      color: C.muted,
+    });
+    for (let k = 0; k < valueLines.length; k++) {
+      ctx.page.drawText(valueLines[k], {
+        x: M.left + labelW,
+        y: ctx.y - 12 - k * 14,
+        size: 10,
+        font: ctx.sans,
+        color: C.ink,
+      });
+    }
+    ctx.y -= rowH;
   });
-  if (rows.length % 2 !== 0) ctx.y -= rowH;
+}
+
+// ─── CONTEXT ─────────────────────────────────────────────────────────────
+function drawContext(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
+  newPage(ctx, "Context");
+  drawExhibitHeader(ctx, exhibit, "Landscape context", "Context");
+  drawBody(ctx, p.bodyContext, { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 });
+
+  ctx.y -= 10;
+  hairline(ctx);
+
+  // Agroclimatic sub-heading
+  ctx.page.drawText("AGROCLIMATIC ZONE", {
+    x: M.left,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
+  });
+  ctx.y -= 18;
+  drawBody(ctx, p.agroclimaticZone, { size: 10.5, lineHeight: 15.5, color: C.inkSoft });
+}
+
+// ─── KEY CHALLENGES ──────────────────────────────────────────────────────
+function drawChallenges(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
+  newPage(ctx, "Key challenges");
+  drawExhibitHeader(ctx, exhibit, "Findings", "Key landscape challenges");
+  drawBody(
+    ctx,
+    `${p.keyChallenges.length} systemic constraints identified across rainfall, terrain, livelihoods, market access and infrastructure.`,
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.82 }
+  );
   ctx.y -= 12;
-}
+  hairline(ctx);
 
-function drawContext(ctx: Ctx, p: LandscapeProfile) {
-  newPage(ctx);
-  drawSectionOpener(ctx, "02", "Context");
-  drawHeading(ctx, "Context", 22, COLOR.navy);
-  ctx.y -= 2;
-  drawText(ctx, p.bodyContext, { size: 11, lineHeight: 17, color: COLOR.inkSoft });
-
-  ctx.y -= 8;
-  drawDivider(ctx);
-  drawSectionOpener(ctx, "03", "Agroclimatic zone");
-  drawHeading(ctx, "Agroclimatic zone", 20, COLOR.navy);
-  ctx.y -= 2;
-  drawText(ctx, p.agroclimaticZone, { size: 11, lineHeight: 17, color: COLOR.inkSoft });
-}
-
-function drawChallenges(ctx: Ctx, p: LandscapeProfile) {
-  newPage(ctx);
-  drawSectionOpener(ctx, "04", "Key landscape challenges");
-  drawHeading(ctx, "Key landscape challenges", 22, COLOR.navy);
-  ctx.y -= 4;
   p.keyChallenges.forEach((c, i) => {
-    ensure(ctx, 32);
     const num = String(i + 1).padStart(2, "0");
+    const lines = wrap(c, ctx.sans, 10.5, CONTENT_W - 56);
+    const rowH = Math.max(28, lines.length * 15 + 12);
+    ensure(ctx, rowH);
+    // Numeric chip
     ctx.page.drawText(num, {
       x: M.left,
-      y: ctx.y - 10,
-      size: 11,
-      font: ctx.mono,
-      color: COLOR.amberDeep,
+      y: ctx.y - 12,
+      size: 16,
+      font: ctx.sansBold,
+      color: C.teal,
     });
-    const lines = wrap(c, ctx.serif, 11, CONTENT_W - 36);
-    for (let j = 0; j < lines.length; j++) {
-      ensure(ctx, 17);
-      ctx.page.drawText(lines[j], {
-        x: M.left + 32,
-        y: ctx.y - 10,
-        size: 11,
-        font: ctx.serif,
-        color: COLOR.inkSoft,
+    // Body
+    for (let k = 0; k < lines.length; k++) {
+      ctx.page.drawText(lines[k], {
+        x: M.left + 38,
+        y: ctx.y - 12 - k * 15,
+        size: 10.5,
+        font: ctx.sans,
+        color: C.ink,
       });
-      ctx.y -= 17;
     }
-    ctx.y -= 6;
+    // Trailing hairline
+    ctx.page.drawRectangle({
+      x: M.left + 38,
+      y: ctx.y - rowH + 4,
+      width: CONTENT_W - 38,
+      height: 0.3,
+      color: C.hairline,
+    });
+    ctx.y -= rowH;
   });
 }
 
-function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary) {
-  newPage(ctx);
-  drawSectionOpener(ctx, "05", "Investment plan at a glance");
-  drawHeading(ctx, "Investment plan at a glance", 22, COLOR.navy);
-  ctx.y -= 4;
+// ─── FINANCE ─────────────────────────────────────────────────────────────
+function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhibit: string) {
+  newPage(ctx, "Financials");
+  drawExhibitHeader(ctx, exhibit, "Financials", "Investment plan");
 
-  // Headline figure
-  ensure(ctx, 60);
-  ctx.page.drawText("Total plan size · 7-year horizon", {
+  // Headline + caption
+  ctx.page.drawText("TOTAL PLAN SIZE  ·  7-YEAR HORIZON", {
     x: M.left,
-    y: ctx.y - 9,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.muted,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.muted,
   });
+  ctx.y -= 20;
   ctx.page.drawText(inrShort(budget.totalCostInr), {
     x: M.left,
-    y: ctx.y - 9 - 38,
-    size: 38,
+    y: ctx.y - 32,
+    size: 36,
     font: ctx.sansBold,
-    color: COLOR.deepTeal,
+    color: C.teal,
   });
-  ctx.y -= 64;
+  ctx.y -= 48;
 
-  // Four-tile finance summary
-  drawDivider(ctx);
+  // Headline tiles — 4 columns, with bottom hairline only
   const tileW = CONTENT_W / 4;
-  const tileH = 60;
   const tiles = [
-    { label: "External investment", value: inrShort(budget.investmentRequiredInr), sub: `${pct(budget.investmentRequiredInr, budget.totalCostInr)} of plan` },
-    { label: "Government convergence", value: inrShort(budget.govtInr), sub: `${pct(budget.govtInr, budget.totalCostInr)} of plan` },
-    { label: "Community contribution", value: inrShort(budget.communityInr), sub: `${pct(budget.communityInr, budget.totalCostInr)} of plan` },
-    { label: "Returnable / outcome", value: inrShort(budget.returnableGrantInr + budget.outcomeFinanceInr), sub: "Innovative finance" },
+    {
+      label: "EXTERNAL INVESTMENT",
+      value: inrShort(budget.investmentRequiredInr),
+      sub: `${pctStr(budget.investmentRequiredInr, budget.totalCostInr)} of plan`,
+    },
+    {
+      label: "GOVT. CONVERGENCE",
+      value: inrShort(budget.govtInr),
+      sub: `${pctStr(budget.govtInr, budget.totalCostInr)} of plan`,
+    },
+    {
+      label: "COMMUNITY CONTRIBUTION",
+      value: inrShort(budget.communityInr),
+      sub: `${pctStr(budget.communityInr, budget.totalCostInr)} of plan`,
+    },
+    {
+      label: "INNOVATIVE FINANCE",
+      value: inrShort(budget.returnableGrantInr + budget.outcomeFinanceInr),
+      sub: "Returnable + outcome",
+    },
   ];
-  ensure(ctx, tileH + 4);
-  const tilesYTop = ctx.y;
-  tiles.forEach((t, i) => {
-    const x = M.left + i * tileW;
-    ctx.page.drawText(t.label.toUpperCase(), {
-      x: x + 2,
-      y: tilesYTop - 9,
+  const tileY = ctx.y;
+  ctx.page.drawRectangle({ x: M.left, y: tileY, width: CONTENT_W, height: 0.6, color: C.hairline });
+  for (let i = 0; i < tiles.length; i++) {
+    const tx = M.left + i * tileW;
+    ctx.page.drawText(tiles[i].label, {
+      x: tx,
+      y: tileY - 12,
       size: 7,
-      font: ctx.mono,
-      color: COLOR.muted,
+      font: ctx.sansBold,
+      color: C.muted,
     });
-    ctx.page.drawText(t.value, {
-      x: x + 2,
-      y: tilesYTop - 9 - 18,
+    ctx.page.drawText(tiles[i].value, {
+      x: tx,
+      y: tileY - 30,
       size: 16,
       font: ctx.sansBold,
-      color: COLOR.deepTeal,
+      color: C.navy,
     });
-    ctx.page.drawText(t.sub, {
-      x: x + 2,
-      y: tilesYTop - 9 - 36,
-      size: 8,
+    ctx.page.drawText(tiles[i].sub, {
+      x: tx,
+      y: tileY - 46,
+      size: 7.5,
       font: ctx.sans,
-      color: COLOR.muted,
+      color: C.muted,
     });
-  });
-  ctx.y -= tileH + 8;
+  }
+  ctx.page.drawRectangle({ x: M.left, y: tileY - 58, width: CONTENT_W, height: 0.4, color: C.hairline });
+  ctx.y = tileY - 72;
 
-  drawDivider(ctx);
-
-  // Funding mix table
+  // FUNDING MIX with horizontal bars
   ctx.page.drawText("FUNDING MIX", {
     x: M.left,
-    y: ctx.y - 9,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.teal,
+    y: ctx.y - 8,
+    size: 8,
+    font: ctx.sansBold,
+    color: C.amber,
   });
-  ctx.y -= 22;
+  ctx.y -= 20;
+
   const sources = [
     { label: "Government", value: budget.govtInr },
     { label: "Community", value: budget.communityInr },
@@ -619,200 +763,265 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary) {
     { label: "Debt", value: budget.debtInr },
   ].filter((s) => s.value > 0);
   const sumSources = sources.reduce((acc, s) => acc + s.value, 0);
+  const maxBarW = CONTENT_W * 0.42;
+  const labelColW = 140;
+  const barX = M.left + labelColW;
+  const valueColX = barX + maxBarW + 12;
+
   sources.forEach((s) => {
-    ensure(ctx, 18);
+    ensure(ctx, 20);
+    const proportion = s.value / sumSources;
+    const barW = Math.max(1, proportion * maxBarW);
+    // Label
     ctx.page.drawText(s.label, {
       x: M.left,
-      y: ctx.y - 10,
-      size: 10.5,
+      y: ctx.y - 11,
+      size: 10,
       font: ctx.sans,
-      color: COLOR.ink,
+      color: C.ink,
     });
+    // Bar background
+    ctx.page.drawRectangle({
+      x: barX,
+      y: ctx.y - 12,
+      width: maxBarW,
+      height: 6,
+      color: C.tealSoft,
+    });
+    // Bar fill
+    ctx.page.drawRectangle({
+      x: barX,
+      y: ctx.y - 12,
+      width: barW,
+      height: 6,
+      color: C.teal,
+    });
+    // Pct
+    const pctText = pctStr(s.value, sumSources);
+    ctx.page.drawText(pctText, {
+      x: valueColX,
+      y: ctx.y - 11,
+      size: 9,
+      font: ctx.sansBold,
+      color: C.teal,
+    });
+    // Value
     const valueText = inrShort(s.value);
-    const pctText = `${pct(s.value, sumSources)} `;
-    const valueW = ctx.sansBold.widthOfTextAtSize(valueText, 10.5);
-    const pctW = ctx.mono.widthOfTextAtSize(pctText, 9);
+    const valueW = ctx.sansBold.widthOfTextAtSize(valueText, 10);
     ctx.page.drawText(valueText, {
       x: PAGE.w - M.right - valueW,
-      y: ctx.y - 10,
-      size: 10.5,
+      y: ctx.y - 11,
+      size: 10,
       font: ctx.sansBold,
-      color: COLOR.deepTeal,
-    });
-    ctx.page.drawText(pctText, {
-      x: PAGE.w - M.right - valueW - pctW - 12,
-      y: ctx.y - 10,
-      size: 9,
-      font: ctx.mono,
-      color: COLOR.amberDeep,
+      color: C.navy,
     });
     ctx.y -= 18;
   });
 
-  ctx.y -= 8;
-  drawDivider(ctx);
+  ctx.y -= 4;
+  hairline(ctx);
 
-  // Top spend categories
+  // TOP SPEND BY CATEGORY
   ctx.page.drawText("TOP SPEND BY CATEGORY", {
     x: M.left,
-    y: ctx.y - 9,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.teal,
+    y: ctx.y - 8,
+    size: 8,
+    font: ctx.sansBold,
+    color: C.amber,
   });
-  ctx.y -= 22;
+  ctx.y -= 20;
+
   const topCats = budget.byCategory.filter((c) => c.total > 0).slice(0, 5);
+  const maxCatTotal = topCats[0]?.total ?? 1;
+
   topCats.forEach((c, i) => {
     ensure(ctx, 22);
     const numText = String(i + 1).padStart(2, "0");
     ctx.page.drawText(numText, {
       x: M.left,
-      y: ctx.y - 10,
+      y: ctx.y - 11,
       size: 9,
       font: ctx.mono,
-      color: COLOR.amberDeep,
+      color: C.amber,
     });
-    const lines = wrap(c.category, ctx.sans, 10.5, CONTENT_W - 130);
-    ctx.page.drawText(lines[0] ?? "", {
-      x: M.left + 24,
-      y: ctx.y - 10,
-      size: 10.5,
+    // Category name
+    const catLines = wrap(c.category, ctx.sans, 10, 180);
+    ctx.page.drawText(catLines[0] ?? "", {
+      x: M.left + 22,
+      y: ctx.y - 11,
+      size: 10,
       font: ctx.sans,
-      color: COLOR.ink,
+      color: C.ink,
     });
+    // Bar
+    const proportion = c.total / maxCatTotal;
+    const barW = Math.max(1, proportion * maxBarW);
+    ctx.page.drawRectangle({
+      x: barX,
+      y: ctx.y - 12,
+      width: maxBarW,
+      height: 6,
+      color: C.tealSoft,
+    });
+    ctx.page.drawRectangle({
+      x: barX,
+      y: ctx.y - 12,
+      width: barW,
+      height: 6,
+      color: C.teal,
+    });
+    // Value
     const valueText = inrShort(c.total);
-    const valueW = ctx.sansBold.widthOfTextAtSize(valueText, 10.5);
+    const valueW = ctx.sansBold.widthOfTextAtSize(valueText, 10);
     ctx.page.drawText(valueText, {
       x: PAGE.w - M.right - valueW,
-      y: ctx.y - 10,
-      size: 10.5,
+      y: ctx.y - 11,
+      size: 10,
       font: ctx.sansBold,
-      color: COLOR.deepTeal,
+      color: C.navy,
     });
-    ctx.y -= 18;
+    ctx.y -= 20;
   });
 
-  ctx.y -= 12;
-  drawText(
+  ctx.y -= 6;
+  drawBody(
     ctx,
-    `Drawn from the ${p.name} Landscape Investment Plan. Live explorer with line-level filters at cat-platform-fawn.vercel.app/landscape/${p.slug}/budget.`,
-    { size: 9, lineHeight: 13, color: COLOR.muted }
+    `Source: ${p.name} Landscape Investment Plan. Line-level detail at cat-platform-fawn.vercel.app/landscape/${p.slug}/budget.`,
+    { size: 7.5, lineHeight: 11, color: C.muted }
   );
 }
 
-async function drawFieldRecord(ctx: Ctx, p: LandscapeProfile) {
-  if (!p.photos || p.photos.length <= 1) return;
-  newPage(ctx);
-  drawSectionOpener(ctx, "06", "Field record");
-  drawHeading(ctx, `Photographs from ${p.name}`, 22, COLOR.navy);
-  ctx.y -= 2;
-  drawText(
+// ─── IMPLEMENTATION SNAPSHOT (replaces field_record; text only) ──────────
+function drawImplementationSnapshot(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
+  newPage(ctx, "Implementation snapshot");
+  drawExhibitHeader(ctx, exhibit, "Pathway", "Implementation snapshot");
+  drawBody(
     ctx,
-    "Documentary frames from CAT field work in the landscape. Treated as primary source material, not decoration.",
-    { size: 10.5, lineHeight: 16, color: COLOR.inkSoft, font: ctx.serif }
+    "How the landscape moves from plan to ground. The pathway is built around three levers — climate resilience, ecological adaptation, and mitigation — applied through the entry-points below.",
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.82 }
   );
-  ctx.y -= 8;
+  ctx.y -= 12;
+  hairline(ctx);
 
-  // Two-column grid of remaining photos (skip the anchor at index 0)
-  const remaining = p.photos.slice(1, 5); // cap at 4
-  const gap = 12;
-  const colW = (CONTENT_W - gap) / 2;
-  const aspect = 4 / 3;
-  const imgH = colW / aspect;
-  const captionH = 36;
-
-  for (let i = 0; i < remaining.length; i += 2) {
-    ensure(ctx, imgH + captionH + 12);
-    const yTop = ctx.y;
-    for (let j = 0; j < 2 && i + j < remaining.length; j++) {
-      const x = M.left + j * (colW + gap);
-      const photo = remaining[i + j];
-      const photoY = yTop - imgH;
-      await drawPhoto(ctx, photo, x, photoY, colW, imgH);
-      // Caption block below
-      ctx.page.drawText(photo.caption, {
-        x,
-        y: photoY - 14,
+  // Three-column "levers" panel
+  const levers = [
+    {
+      label: "CLIMATE RESILIENCE",
+      title: "Build resilience to shocks",
+      body:
+        "Rainwater retention structures, soil cover and crop diversification across rainfed plots to dampen the rainfall variability that drives single-season failure.",
+    },
+    {
+      label: "ECOLOGICAL ADAPTATION",
+      title: "Adapt to landscape ecology",
+      body:
+        "Crop and livelihood choices matched to the agroclimatic zone. Seeds, varieties and livestock systems are selected for the soil and rainfall profile.",
+    },
+    {
+      label: "MITIGATION",
+      title: "Mitigate emissions, restore land",
+      body:
+        "Tree cover, soil organic carbon, and reduced dependence on synthetic inputs across landscape commons and private parcels.",
+    },
+  ];
+  const colW = (CONTENT_W - 16) / 3;
+  const colTop = ctx.y;
+  for (let i = 0; i < 3; i++) {
+    const cx = M.left + i * (colW + 8);
+    ctx.page.drawRectangle({
+      x: cx,
+      y: colTop,
+      width: colW,
+      height: 0.8,
+      color: C.teal,
+    });
+    ctx.page.drawText(levers[i].label, {
+      x: cx,
+      y: colTop - 14,
+      size: 7.5,
+      font: ctx.sansBold,
+      color: C.amber,
+    });
+    ctx.page.drawText(levers[i].title, {
+      x: cx,
+      y: colTop - 30,
+      size: 11,
+      font: ctx.sansBold,
+      color: C.navy,
+    });
+    const bodyLines = wrap(levers[i].body, ctx.sans, 9.5, colW - 6);
+    for (let k = 0; k < bodyLines.length; k++) {
+      ctx.page.drawText(bodyLines[k], {
+        x: cx,
+        y: colTop - 48 - k * 13,
         size: 9.5,
         font: ctx.sans,
-        color: COLOR.navy,
-        maxWidth: colW,
-      });
-      ctx.page.drawText(`${photo.credit} · ${formatMonth(photo.date)}`, {
-        x,
-        y: photoY - 14 - 12,
-        size: 7.5,
-        font: ctx.mono,
-        color: COLOR.muted,
+        color: C.inkSoft,
       });
     }
-    ctx.y -= imgH + captionH;
   }
+  ctx.y = colTop - 140;
 }
 
-function drawColophon(ctx: Ctx, p: LandscapeProfile) {
-  newPage(ctx);
-  drawSectionOpener(ctx, "—", "Editorial note");
-  drawHeading(ctx, "About this brief", 22, COLOR.navy);
-  ctx.y -= 2;
+// ─── COLOPHON (last page) ────────────────────────────────────────────────
+function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
+  newPage(ctx, "About this brief");
+  drawExhibitHeader(ctx, exhibit, "Editorial note", "About this brief");
 
-  drawText(
+  drawBody(
     ctx,
-    `This brief is generated live from the Transformation Hub, the public, curated dashboard of credible food systems work in India by the Consortium for Agroecological Transformations. Every entry is read by a CAT editor before it goes live. Limitations sit beside achievements.`,
-    { size: 10.5, lineHeight: 16, color: COLOR.inkSoft }
+    "This brief is generated from the Transformation Hub, the public, curated dashboard of credible food-systems work in India by the Consortium for Agroecological Transformations. Every entry is read by a CAT editor before it goes live. Limitations sit beside achievements.",
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
   );
-  ctx.y -= 8;
-
-  drawText(
+  ctx.y -= 6;
+  drawBody(
     ctx,
-    `Programmes are read, not pitched. The Hub treats photographs as primary sources, not decoration. The bar is honesty, not affiliation.`,
-    { size: 10.5, lineHeight: 16, color: COLOR.inkSoft, font: ctx.serif }
+    "Programmes are read, not pitched. The bar is honesty, not affiliation. Where investment-plan finance is shown, the underlying line-level data is queryable in the budget explorer at the URL on this page.",
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
   );
-  ctx.y -= 12;
-  drawDivider(ctx);
+  ctx.y -= 14;
+  hairline(ctx);
 
-  // Citation block
+  // How to cite
   ctx.page.drawText("HOW TO CITE THIS BRIEF", {
     x: M.left,
-    y: ctx.y - 9,
-    size: 8.5,
-    font: ctx.mono,
-    color: COLOR.teal,
+    y: ctx.y - 8,
+    size: 7.5,
+    font: ctx.sansBold,
+    color: C.amber,
   });
   ctx.y -= 20;
   const year = new Date().getFullYear();
   const citation = `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. cat-platform-fawn.vercel.app/landscape/${p.slug}`;
-  drawText(ctx, citation, { size: 10, lineHeight: 14, color: COLOR.ink, font: ctx.sans });
+  drawBody(ctx, citation, { size: 10, lineHeight: 14, color: C.ink });
+  ctx.y -= 8;
+
+  hairline(ctx);
+
+  // Imprint block
+  drawCatLockup(ctx, M.left, ctx.y - 30, { symbolHeight: 24 });
+  ctx.page.drawText("CONSORTIUM FOR AGROECOLOGICAL TRANSFORMATIONS", {
+    x: M.left + 110,
+    y: ctx.y - 16,
+    size: 8,
+    font: ctx.sansBold,
+    color: C.navy,
+  });
+  ctx.page.drawText("Transformation Hub  ·  cat-platform-fawn.vercel.app", {
+    x: M.left + 110,
+    y: ctx.y - 28,
+    size: 8,
+    font: ctx.sans,
+    color: C.muted,
+  });
 }
 
-// ─── Page footers ────────────────────────────────────────────────────────
-
-function drawFooters(ctx: Ctx) {
-  const pages = ctx.doc.getPages();
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    // Skip cover, since cover has its own bottom strip
-    if (i === 0) continue;
-    const total = pages.length;
-    page.drawText(`${i + 1} of ${total}`, {
-      x: PAGE.w - M.right - 30,
-      y: 28,
-      size: 7.5,
-      font: ctx.mono,
-      color: COLOR.muted,
-    });
-    page.drawText("Transformation Hub · Vol. 01 · 2026", {
-      x: M.left,
-      y: 28,
-      size: 7.5,
-      font: ctx.mono,
-      color: COLOR.muted,
-    });
-  }
+function shorten(s: string, n: number): string {
+  if (s.length <= n) return s;
+  return s.slice(0, n - 1).replace(/\s+\S*$/, "") + "...";
 }
 
-// ─── Main builder ────────────────────────────────────────────────────────
-
+// ─── Public API ──────────────────────────────────────────────────────────
 export type BriefSection =
   | "cover"
   | "at_a_glance"
@@ -834,12 +1043,6 @@ export const ALL_BRIEF_SECTIONS: BriefSection[] = [
 
 export type BriefOpts = {
   budget?: BudgetSummary;
-  /**
-   * Section allow-list. If undefined, render all applicable sections.
-   * If provided, only render the listed sections (in canonical order).
-   * Conditional sections (finance, field_record) still require their
-   * upstream data — if not present, they hide silently.
-   */
   sections?: BriefSection[];
 };
 
@@ -854,12 +1057,20 @@ export async function buildLandscapeBriefPdf(
   doc.setTitle(`${p.name} · Landscape Investment Brief`);
   doc.setAuthor("Consortium for Agroecological Transformations");
   doc.setSubject(`Landscape investment brief for ${p.name}`);
-  doc.setKeywords(["CAT", "Transformation Hub", "landscape", "food systems", p.name, p.district]);
+  doc.setKeywords([
+    "CAT",
+    "Transformation Hub",
+    "landscape",
+    "food systems",
+    p.name,
+    p.district,
+  ]);
+  doc.setProducer("Transformation Hub");
+  doc.setCreator("Transformation Hub");
 
-  // Use standard fonts. `asciify` substitutes anything outside WinAnsi
-  // (rupee sign, en/em dashes, smart quotes, ellipsis) before drawing.
-  const serif = await doc.embedFont(StandardFonts.TimesRoman);
-  const serifBold = await doc.embedFont(StandardFonts.TimesRomanBold);
+  // Standard WinAnsi fonts only. Helvetica family + Courier for tiny mono
+  // captions / counters. Times Roman has been removed — the document is
+  // sans-throughout to match consultancy convention.
   const sans = await doc.embedFont(StandardFonts.Helvetica);
   const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
   const mono = await doc.embedFont(StandardFonts.Courier);
@@ -870,47 +1081,69 @@ export async function buildLandscapeBriefPdf(
     doc,
     page: coverPage,
     y: 0,
-    serif,
-    serifBold,
+    pageTitle: "Cover",
+    pageNumber: 1,
+    brief: { landscapeName: p.name, district: p.district },
     sans,
     sansBold,
     mono,
   };
-  ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: PAGE.h, color: COLOR.paper });
-  ctx.y = PAGE.h - M.top;
 
-  // Page 1 · Cover
-  if (want("cover")) await drawCover(ctx, p, stateName);
+  // Cover
+  if (want("cover")) drawCover(ctx, p, stateName);
 
-  // Page 2 · At a glance
-  if (want("at_a_glance")) drawAtAGlance(ctx, p, stateName);
-
-  // Page 3 · Context + agroclimatic zone
-  if (want("context")) drawContext(ctx, p);
-
-  // Page 4 · Key challenges
-  if (want("challenges")) drawChallenges(ctx, p);
-
-  // Page 5 · Investment plan finance (conditional)
+  // Compute exhibit numbering on the fly (only exhibits we'll render)
+  const planned: { key: BriefSection; title: string }[] = [];
+  if (want("at_a_glance")) planned.push({ key: "at_a_glance", title: "At a glance" });
+  if (want("context")) planned.push({ key: "context", title: "Context" });
+  if (want("challenges")) planned.push({ key: "challenges", title: "Key challenges" });
   if (want("finance") && opts.budget && opts.budget.totalCostInr > 0) {
-    drawFinance(ctx, p, opts.budget);
+    planned.push({ key: "finance", title: "Investment plan" });
+  }
+  if (want("field_record")) {
+    planned.push({ key: "field_record", title: "Implementation snapshot" });
+  }
+  if (want("colophon")) planned.push({ key: "colophon", title: "About this brief" });
+
+  // Contents page (only when there are 3+ exhibits to navigate)
+  if (planned.length >= 3) {
+    drawContents(
+      ctx,
+      planned.map((p, i) => ({
+        exhibit: String(i + 1).padStart(2, "0"),
+        title: p.title,
+      }))
+    );
   }
 
-  // Page 6 · Field record (conditional)
-  if (want("field_record") && p.photos && p.photos.length > 1) {
-    await drawFieldRecord(ctx, p);
+  // Render each requested exhibit with sequential numbering
+  for (let i = 0; i < planned.length; i++) {
+    const exhibit = String(i + 1).padStart(2, "0");
+    switch (planned[i].key) {
+      case "at_a_glance":
+        drawAtAGlance(ctx, p, stateName, exhibit);
+        break;
+      case "context":
+        drawContext(ctx, p, exhibit);
+        break;
+      case "challenges":
+        drawChallenges(ctx, p, exhibit);
+        break;
+      case "finance":
+        if (opts.budget) drawFinance(ctx, p, opts.budget, exhibit);
+        break;
+      case "field_record":
+        drawImplementationSnapshot(ctx, p, exhibit);
+        break;
+      case "colophon":
+        drawColophon(ctx, p, exhibit);
+        break;
+    }
   }
 
-  // Last page · Colophon
-  if (want("colophon")) drawColophon(ctx, p);
-
-  // Page footers
-  drawFooters(ctx);
+  // Footers (page n / N + citation), applied after page count is known
+  const citationUrl = `cat-platform-fawn.vercel.app/landscape/${p.slug}`;
+  drawFooters(ctx, citationUrl);
 
   return await doc.save();
-}
-
-function shorten(s: string, n: number): string {
-  if (s.length <= n) return s;
-  return s.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
 }
