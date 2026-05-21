@@ -28,20 +28,33 @@ const globalForPg = globalThis as unknown as {
 // config; strip it so our { rejectUnauthorized: false } takes effect.
 const cleanedUrl = connectionString.replace(/[?&]sslmode=[^&]+/g, "");
 
+/**
+ * On Vercel each serverless lambda re-evaluates this module on cold start
+ * and reuses it on warm invocations. The pool would normally accumulate
+ * across cold starts and saturate Supabase's session pooler
+ * (EMAXCONNSESSION: max client connections reached) once 20-30 lambdas
+ * are warm at once. Two guardrails:
+ *
+ *   - max: 1 — a single lambda invocation is single-threaded, so one
+ *     connection is enough. Concurrent invocations get their own
+ *     lambda (and their own pool of 1) rather than competing for slots.
+ *   - Cache via globalThis in ALL environments (not just dev), so that
+ *     repeated module evaluations within a single lambda runtime never
+ *     leak a second pool.
+ */
 const pool =
   globalForPg.pgPool ??
   new Pool({
     connectionString: cleanedUrl,
-    max: 4,
-    idleTimeoutMillis: 20_000,
+    max: 1,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 8_000,
     // Supabase Postgres requires TLS but presents a self-signed cert at the
     // direct endpoint; reject-unauthorized=false is the documented setting.
     ssl: { rejectUnauthorized: false },
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPg.pgPool = pool;
-}
+globalForPg.pgPool = pool;
 
 export const db = drizzle(pool, { schema });
 export { schema };
