@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
-import { buildLandscapeProfilePdf } from "@/lib/downloads/landscape-pdf";
-import { buildLandscapeProfileDocx } from "@/lib/downloads/landscape-docx";
+import { buildLandscapeBriefPdf } from "@/lib/downloads/landscape-brief-pdf";
+import { buildLandscapeBriefDocx } from "@/lib/downloads/landscape-brief-docx";
+import { budgetSummary, landscapeHasLip } from "@/lib/db/landscape-kb";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -41,26 +42,37 @@ export async function GET(
     // Non-fatal — fall back to region string from static profile.
   }
 
+  // If the landscape has an ingested investment plan, pull the budget summary
+  // so the finance page renders. Hides cleanly otherwise.
+  let budget: Awaited<ReturnType<typeof budgetSummary>> | undefined;
+  try {
+    if (await landscapeHasLip(slug)) {
+      budget = await budgetSummary(slug);
+    }
+  } catch {
+    // Non-fatal — finance page just won't render.
+  }
+
   if (format === "docx") {
-    const buf = await buildLandscapeProfileDocx(p, stateName);
+    const buf = await buildLandscapeBriefDocx(p, stateName, { budget });
     return new NextResponse(new Uint8Array(buf), {
       status: 200,
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="${slug}-landscape-profile.docx"`,
+        "Content-Disposition": `attachment; filename="${slug}-investment-brief.docx"`,
         "Cache-Control": "public, max-age=3600, must-revalidate",
       },
     });
   }
 
   // Default: PDF
-  const bytes = await buildLandscapeProfilePdf(p, stateName);
+  const bytes = await buildLandscapeBriefPdf(p, stateName, { budget });
   return new NextResponse(new Uint8Array(bytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${slug}-landscape-profile.pdf"`,
+      "Content-Disposition": `attachment; filename="${slug}-investment-brief.pdf"`,
       "Cache-Control": "public, max-age=3600, must-revalidate",
     },
   });

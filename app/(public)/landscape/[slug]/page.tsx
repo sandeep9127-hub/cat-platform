@@ -208,27 +208,28 @@ export default async function LandscapeDetailPage({ params }: Props) {
                   "radial-gradient(ellipse 90% 50% at 100% 0%, rgba(248,202,124,0.20), transparent 60%)",
               }}
             />
-            <span className="relative eyebrow block mb-3">Download this profile</span>
+            <span className="relative eyebrow block mb-3">Download the brief</span>
             <div className="relative flex flex-col gap-2.5">
               <a
                 href={`/api/landscape/${slug}/download?format=pdf`}
                 className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
-                download={`${slug}-landscape-profile.pdf`}
+                download={`${slug}-investment-brief.pdf`}
               >
                 <FileText size={13} strokeWidth={1.6} aria-hidden />
-                Landscape profile · PDF
+                Investment brief · PDF
               </a>
               <a
                 href={`/api/landscape/${slug}/download?format=docx`}
                 className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors self-start"
-                download={`${slug}-landscape-profile.docx`}
+                download={`${slug}-investment-brief.docx`}
               >
                 <FileType2 size={13} strokeWidth={1.6} aria-hidden />
-                Landscape profile · DOCX
+                Investment brief · DOCX
               </a>
             </div>
-            <p className="relative font-serif italic text-[12.5px] text-muted mt-3 leading-snug">
-              One-page editorial brief, generated live from the Feb 2026 CAT profile.
+            <p className="relative font-sans italic text-[12.5px] text-muted mt-3 leading-snug">
+              Editorial brief generated live. Includes context, key challenges, finance summary
+              and field photographs where available.
             </p>
           </div>
           <div>
