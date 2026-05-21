@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage, type PDFImage } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 import type { LandscapeProfile, LandscapePhoto } from "@/lib/data/landscapes";
 import type { BudgetSummary } from "@/lib/db/landscape-kb";
 
@@ -800,16 +801,34 @@ export async function buildLandscapeBriefPdf(
   opts: BriefOpts = {}
 ): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
+  doc.registerFontkit(fontkit);
   doc.setTitle(`${p.name} · Landscape Investment Brief`);
   doc.setAuthor("Consortium for Agroecological Transformations");
   doc.setSubject(`Landscape investment brief for ${p.name}`);
   doc.setKeywords(["CAT", "Transformation Hub", "landscape", "food systems", p.name, p.district]);
 
-  const serif = await doc.embedFont(StandardFonts.TimesRoman);
-  const serifBold = await doc.embedFont(StandardFonts.TimesRomanBold);
-  const sans = await doc.embedFont(StandardFonts.Helvetica);
-  const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const mono = await doc.embedFont(StandardFonts.Courier);
+  // Load the local Inter (variable) TTFs so the PDF can render unicode glyphs
+  // beyond WinAnsi — the rupee sign ₹, middle dots, etc. Fall back to standard
+  // fonts if the file can't be read for any reason.
+  let sans: PDFFont;
+  let sansBold: PDFFont;
+  let serif: PDFFont;
+  let mono: PDFFont;
+  try {
+    const interRegular = await readFile(
+      path.join(process.cwd(), "public/fonts/inter/Inter-Variable.ttf")
+    );
+    sans = await doc.embedFont(interRegular, { subset: true });
+    sansBold = sans; // same variable font; we'll just use it for both weights
+    serif = sans;
+    mono = await doc.embedFont(StandardFonts.Courier);
+  } catch {
+    sans = await doc.embedFont(StandardFonts.Helvetica);
+    sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
+    serif = await doc.embedFont(StandardFonts.TimesRoman);
+    mono = await doc.embedFont(StandardFonts.Courier);
+  }
+  const serifBold = sansBold;
 
   const ctx: Ctx = {
     doc,
