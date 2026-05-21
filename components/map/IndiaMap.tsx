@@ -107,18 +107,30 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
   return (
     <div
       ref={wrapRef}
-      className={`relative bg-cream border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[2px] ${className ?? ""}`}
+      className={`relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[10px] overflow-hidden ${className ?? ""}`}
+      style={{
+        background:
+          "radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,0.65), transparent 70%), linear-gradient(180deg, rgba(248,243,232,1) 0%, rgba(244,237,221,0.85) 100%)",
+        boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 12px 32px -16px rgba(46,117,115,0.20)",
+      }}
     >
-      <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none" />
+      <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none rounded-[6px]" />
 
       {/* Counter */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 bg-deep-teal text-cream px-2.5 py-2 sm:px-3.5 sm:py-2.5 rounded-[2px] font-mono text-[9px] sm:text-[10px] uppercase tracking-mono-mid flex items-center gap-1.5 sm:gap-2 shadow-[0_4px_14px_-8px_rgba(0,0,0,0.4)] max-w-[calc(100%-2rem)]">
-        <span className="text-amber text-[12px] sm:text-[13px] font-semibold tracking-[0.06em]">
+      <div
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-[8px] font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
+        style={{
+          background: "linear-gradient(135deg, #334B4A 0%, #2E7573 60%, #334B4A 100%)",
+          boxShadow:
+            "0 10px 28px -12px rgba(26,38,37,0.45), 0 2px 6px rgba(26,38,37,0.18), inset 0 1px 0 rgba(255,255,255,0.10)",
+        }}
+      >
+        <span className="text-amber text-[12px] sm:text-[13px] font-semibold tracking-[0.06em] tabular-nums">
           {visibleEntries.length}
         </span>
         <span>programmes</span>
         <span className="text-teal-soft hidden sm:inline">·</span>
-        <span className="text-amber text-[12px] sm:text-[13px] font-semibold tracking-[0.06em] hidden sm:inline">
+        <span className="text-amber text-[12px] sm:text-[13px] font-semibold tracking-[0.06em] hidden sm:inline tabular-nums">
           {totalStates ?? new Set(entries.map((e) => e.stateCode)).size}
         </span>
         <span className="hidden sm:inline">states</span>
@@ -128,7 +140,14 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
 
       {/* Filter chip */}
       {activeState && (
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 bg-amber text-deep-teal px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-[2px] font-mono text-[9px] sm:text-[10px] uppercase tracking-mono-mid font-semibold flex items-center gap-2">
+        <div
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 px-3 py-2 rounded-[8px] font-mono text-[10px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 text-deep-teal"
+          style={{
+            background: "linear-gradient(135deg, rgba(248,202,124,0.95), rgba(248,202,124,0.75))",
+            boxShadow:
+              "0 8px 22px -10px rgba(198,140,46,0.55), 0 2px 4px rgba(198,140,46,0.20), inset 0 1px 0 rgba(255,255,255,0.30)",
+          }}
+        >
           Filter: <span>{stateNameFor(activeState)}</span>
           <button
             onClick={() => {
@@ -136,7 +155,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               setHoveredState(null);
               onFilterState?.(null);
             }}
-            className="bg-transparent border-0 cursor-pointer text-inherit pl-1 ml-1 border-l border-deep-teal/30"
+            className="bg-transparent border-0 cursor-pointer text-inherit pl-1.5 ml-1 border-l border-deep-teal/40 hover:text-deep-teal/70 transition-colors"
             aria-label="Clear filter"
           >
             CLEAR ×
@@ -145,7 +164,13 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 bg-paper/90 backdrop-blur-[4px] border border-line px-2.5 py-2 sm:px-3.5 sm:py-3 flex flex-col gap-1.5 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-mono-mid text-ink-soft">
+      <div
+        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
+        style={{
+          background: "rgba(251,248,242,0.92)",
+          boxShadow: "0 6px 16px -10px rgba(26,38,37,0.20), 0 1px 2px rgba(26,38,37,0.04)",
+        }}
+      >
         <div className="flex gap-2 items-center">
           <span className="w-2.5 h-2.5 rounded-full bg-teal shadow-[0_0_0_3px_rgba(46,117,115,0.18)]" />
           Self-submitted
@@ -184,7 +209,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
             <tspan x={PROJECTION_VIEWBOX.width / 2} dy="14">TO LOAD THE INDIA BASEMAP</tspan>
           </text>
         ) : (
-          <g>
+          <g className="map-country">
             {paths.map((p) => (
               <path
                 key={p.code + p.name}
@@ -203,7 +228,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
 
         {projectPoint && (
           <g>
-            {entries.map((entry) => {
+            {entries.map((entry, idx) => {
               if (entry.latitude == null || entry.longitude == null) return null;
               const pt = projectPoint(entry.longitude, entry.latitude);
               if (!pt) return null;
@@ -212,6 +237,8 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               const halo = scaleHaloRadius(entry.scaleBand);
               const core = scaleCoreRadius(entry.scaleBand);
               const dim = activeState && entry.stateCode !== activeState;
+              // Stagger halo pulse so pins breathe in a wave, not unison.
+              const haloDelay = `${(idx % 8) * 0.45}s`;
               return (
                 <g
                   key={entry.id}
@@ -221,14 +248,17 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   onClick={() => {
                     window.location.href = `/entry/${entry.slug}`;
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer dot-group"
+                  style={{ color: isAmber ? "var(--amber-deep)" : "var(--teal)" }}
                 >
                   <circle
                     cx={x}
                     cy={y}
                     r={halo}
+                    className="dot-halo"
                     fill={isAmber ? "var(--amber-deep)" : "var(--teal)"}
                     opacity={isAmber ? 0.18 : 0.15}
+                    style={{ animationDelay: haloDelay }}
                   />
                   <circle
                     cx={x}
@@ -247,11 +277,20 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute z-20 pointer-events-none bg-deep-teal text-cream px-3 py-2.5 min-w-[180px] rounded-[2px] shadow-[0_8px_24px_-10px_rgba(0,0,0,0.4)]"
-          style={{ left: tooltip.x, top: tooltip.y }}
+          className="absolute z-20 pointer-events-none text-cream px-3.5 py-3 min-w-[200px] rounded-[8px] border border-paper/10"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
+            boxShadow:
+              "0 12px 32px -12px rgba(26,38,37,0.55), 0 4px 10px rgba(26,38,37,0.20), inset 0 1px 0 rgba(255,255,255,0.10)",
+          }}
         >
-          <div className="font-serif text-[13.5px] font-medium text-paper">{tooltip.entry.title}</div>
-          <div className="font-mono text-[9px] uppercase tracking-mono-mid text-amber mt-1">
+          <div className="font-sans text-[13.5px] font-medium text-paper leading-snug">
+            {tooltip.entry.title}
+          </div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-amber mt-2 flex items-center gap-1.5">
+            <span className="inline-block w-2.5 h-px bg-amber/70" />
             {stateNameFor(tooltip.entry.stateCode)} · {humaniseScale(tooltip.entry.scaleBand)} ·{" "}
             {tooltip.entry.provenance === "sourced" ? "CAT-sourced" : "Self-submitted"}
           </div>

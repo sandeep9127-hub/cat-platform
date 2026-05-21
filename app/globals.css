@@ -231,22 +231,55 @@ body::before {
   fill: rgba(46, 117, 115, 0.07);
   stroke: rgba(46, 117, 115, 0.32);
   stroke-width: 0.6;
-  transition: fill 0.18s ease;
+  transition: fill 280ms ease-out, stroke 280ms ease-out, stroke-width 280ms ease-out;
   cursor: pointer;
 }
 .map-state:hover {
-  fill: rgba(46, 117, 115, 0.18);
+  fill: rgba(46, 117, 115, 0.22);
+  stroke: rgba(46, 117, 115, 0.55);
+  stroke-width: 0.8;
 }
 .map-state.active {
-  fill: rgba(248, 202, 124, 0.42);
+  fill: rgba(248, 202, 124, 0.48);
   stroke: var(--amber-deep);
-  stroke-width: 0.9;
+  stroke-width: 1.1;
+  filter: drop-shadow(0 4px 10px rgba(198, 140, 46, 0.30));
+}
+/* Lift the whole country group with a soft drop-shadow */
+.map-country {
+  filter: drop-shadow(0 6px 14px rgba(26, 38, 37, 0.10));
 }
 
 .dot-core {
   stroke: var(--paper);
   stroke-width: 1.5;
   cursor: pointer;
+  transition: r 240ms cubic-bezier(0.22, 1, 0.36, 1), filter 240ms ease-out;
+}
+.dot-group:hover .dot-core {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Pulsing pin halos — staggered so they breathe in a wave, not in unison */
+@keyframes pin-pulse {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.50;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.18;
+  }
+}
+.dot-halo {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pin-pulse 3.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-halo {
+    animation: none;
+  }
 }
 
 /* ─── Motion ────────────────────────────────────────── */
