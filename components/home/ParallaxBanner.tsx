@@ -234,6 +234,18 @@ export function ParallaxBanner({
                   "linear-gradient(180deg, rgba(251,248,242,0) 0%, rgba(251,248,242,0.55) 60%, rgba(251,248,242,1) 100%)",
               }}
             />
+            {/* Top paper veil: the translucent sticky nav sits over this band.
+                The illustration's bright sky/mountain pixels would otherwise
+                bleed through the backdrop-blur. Fading cream→transparent in
+                the first ~90px makes the nav read as part of the page tone. */}
+            <div
+              aria-hidden
+              className="absolute top-0 left-0 right-0 h-24 sm:h-28 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(251,248,242,0.95) 0%, rgba(251,248,242,0.55) 50%, rgba(251,248,242,0) 100%)",
+              }}
+            />
           </>
         ) : (
           <div

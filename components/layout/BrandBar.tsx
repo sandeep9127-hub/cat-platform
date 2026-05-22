@@ -36,11 +36,20 @@ export function BrandBar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b bg-paper transition-[border-color,box-shadow] duration-300 ease-out ${
+      className={`sticky top-0 z-50 border-b backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
         scrolled
           ? "border-line shadow-[0_8px_24px_-16px_rgba(26,38,37,0.18)]"
           : "border-line-soft"
       }`}
+      style={{
+        // Tailwind's bg-paper/92 produces an invalid color because --paper is
+        // a hex value, not RGB channels. Use rgba() directly so the
+        // translucency actually applies and the backdrop-blur has something
+        // to tint.
+        backgroundColor: scrolled
+          ? "rgba(251, 248, 242, 0.86)"
+          : "rgba(251, 248, 242, 0.78)",
+      }}
     >
       {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
       <div className="h-px w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
