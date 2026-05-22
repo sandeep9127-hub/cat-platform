@@ -36,10 +36,10 @@ export function BrandBar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b backdrop-blur transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
+      className={`sticky top-0 z-50 border-b bg-paper transition-[border-color,box-shadow] duration-300 ease-out ${
         scrolled
-          ? "bg-paper/92 supports-[backdrop-filter]:bg-paper/78 border-line shadow-[0_8px_24px_-16px_rgba(26,38,37,0.18)]"
-          : "bg-paper/95 supports-[backdrop-filter]:bg-paper/80 border-line-soft"
+          ? "border-line shadow-[0_8px_24px_-16px_rgba(26,38,37,0.18)]"
+          : "border-line-soft"
       }`}
     >
       {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
