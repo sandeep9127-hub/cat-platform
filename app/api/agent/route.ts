@@ -25,10 +25,37 @@ const NVIDIA_EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
  */
 const SCORE_FLOOR = 0.30;
 
+/**
+ * Section paths and chunk text ingested from the investment plan DOCX
+ * carry raw HTML anchors (e.g. `<a id="_heading=h.gycv42fvbl6c"></a>`)
+ * and markdown escape characters (e.g. `5\.13\.1`, `post\-programme\.`).
+ * Both render as visual junk in the citation tray. These helpers strip
+ * the artefacts so the labels and previews read as plain prose.
+ */
+function sanitizeSectionPath(s: string): string {
+  return s
+    .replace(/<a\b[^>]*><\/a>/gi, "") // empty <a id="..."></a>
+    .replace(/<[^>]+>/g, "") // any other HTML tag
+    .replace(/\\([.\-_()])/g, "$1") // markdown escape: `\.`  -> `.`
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function sanitizeChunkText(s: string): string {
+  return s
+    .replace(/<a\b[^>]*><\/a>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\\([.\-_()*])/g, "$1")
+    .replace(/_{2,}/g, "") // markdown bold underscores left over
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const SYSTEM_PROMPT = `You are the Transformation Hub assistant — an analytical reader of the Consortium for Agroecological Transformations' curated India food-systems library.
 
 How you answer:
-- Write naturally, as a knowledgeable colleague would. Just answer the question. Do not preface with "Based on the library context", "According to the passages", "From the documents provided" or any equivalent. The reader knows where you read; show them what you found.
+- Start your answer with the subject of the question itself, not a meta-comment about where the answer comes from. NEVER begin a sentence with the phrases "Based on", "According to the passages", "From the passages", "From the documents", "From the library", "The passages show", "Looking at the passages", or any equivalent. These phrases are forbidden anywhere in your reply — the reader can see your citations and already knows where the answer came from. Saying it again is dead weight.
+- Don't use markdown formatting. No ** for bold, no _ for italic, no # for headings, no - or * for bullet lists. Write in continuous plain prose. The renderer does not interpret markdown and the asterisks show as literal characters to the reader.
 - You may synthesise, compare, infer the implication of a finding, and connect two passages where they relate. Analytical reasoning is welcome — as long as every factual claim is grounded in the passages.
 - Cite with bracketed numbers like [1], [2] immediately after the sentence that uses that source. One sentence can carry more than one citation if it draws on more than one passage. Group citations at the end of the relevant sentence, not the end of the paragraph.
 - Plain, direct language. Short sentences are usually right. No marketing words. No em dashes.
@@ -163,15 +190,18 @@ async function retrieve(
   }));
 
   const chunkHits: Hit[] = chunks.map((c) => {
-    // Try to find the landscape slug by querying the landscape_slug column from the result
-    // searchLandscapeChunks doesn't return slug today, so we use the scope when known.
-    // For demo simplicity we label by section path.
     const landscapeSlug = onlyThisLandscape ?? "patratu";
     const landscapeName = LANDSCAPES[landscapeSlug]?.name ?? landscapeSlug;
+    // Section paths from the ingested investment plan were leaking raw HTML
+    // anchors like `<a id="_heading=h.xxxxx"></a>` and markdown escapes like
+    // `5\.13\.1`. Both surface as ugly junk in the citation tray. Strip
+    // tags, undo markdown escapes, and collapse whitespace before display.
+    const cleanSection = sanitizeSectionPath(c.sectionPath ?? "");
+    const cleanPreview = sanitizeChunkText(c.chunkText);
     return {
-      label: `${landscapeName} Investment Plan${c.sectionPath ? ` · ${c.sectionPath}` : ""}`,
+      label: `${landscapeName} Investment Plan${cleanSection ? ` · ${cleanSection}` : ""}`,
       url: `/landscape/${landscapeSlug}`,
-      preview: c.chunkText.slice(0, 240) + (c.chunkText.length > 240 ? "…" : ""),
+      preview: cleanPreview.slice(0, 240) + (cleanPreview.length > 240 ? "…" : ""),
       score: c.score, // already cosine-similarity 0..1
       type: "landscape",
       raw: c,
@@ -296,20 +326,49 @@ export async function POST(req: NextRequest) {
       // the first token arrives.
       send({ type: "meta", citations, scope: scope || "all" });
 
+      // Forbidden openers — the system prompt bans these but the model
+      // occasionally leaks them anyway. Belt-and-braces: scrub them off
+      // the first 80 characters server-side before they reach the
+      // browser. We buffer the opening then flush a single delta with
+      // the cleaned text; subsequent deltas stream through untouched.
+      const PREAMBLE_RE =
+        /^(?:Based on (?:the |my |these )?(?:passages|library context|documents|context|sources|provided (?:passages|content))[,:.\s]*|According to (?:the )?(?:passages|library|documents|sources)[,:.\s]*|From (?:the )?(?:passages|library|documents|sources)[,:.\s]*|Looking at (?:the )?(?:passages|library)[,:.\s]*|The (?:passages|library) (?:show|indicate|suggest)s?[,:.\s]*)/i;
+
       let assistantText = "";
+      let buffer = "";
+      let bufferingDone = false;
       let inputTokens = 0;
       let outputTokens = 0;
+
+      function flushBuffer() {
+        if (bufferingDone) return;
+        const cleaned = buffer
+          .replace(PREAMBLE_RE, "")
+          .replace(/^([a-z])/, (m) => m.toUpperCase());
+        assistantText = cleaned;
+        send({ type: "delta", text: cleaned });
+        buffer = "";
+        bufferingDone = true;
+      }
+
       try {
         for await (const evt of kimiChatStream(kimiMessages, {
           temperature: 0.2,
           maxTokens: 700,
         })) {
           if (evt.type === "delta") {
-            assistantText += evt.text;
-            send({ type: "delta", text: evt.text });
+            if (!bufferingDone) {
+              buffer += evt.text;
+              if (buffer.length >= 80) flushBuffer();
+            } else {
+              assistantText += evt.text;
+              send({ type: "delta", text: evt.text });
+            }
           } else if (evt.type === "done") {
             inputTokens = evt.inputTokens;
             outputTokens = evt.outputTokens;
+            // If the whole response was shorter than 80 chars, flush now
+            if (!bufferingDone) flushBuffer();
           }
         }
       } catch (e) {

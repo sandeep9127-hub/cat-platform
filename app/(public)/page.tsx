@@ -135,6 +135,12 @@ export default async function LandingPage() {
           cropping the image. */}
       <ParallaxBanner
         videoSrc="/videos/hero-parallax.mp4"
+        // Poster is critical: Chrome's autoplay policy pauses
+        // "video-only background media" (muted with no audio track) to
+        // save power, leaving the section blank. The poster guarantees
+        // a frame of the illustration is always visible, regardless of
+        // whether the browser allows autoplay.
+        poster="/videos/hero-poster.jpg"
         alt="Looping illustration of Indian food systems and landscapes"
         strength={0.06}
         textStrength={0.05}

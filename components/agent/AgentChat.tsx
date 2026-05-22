@@ -400,14 +400,24 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
           {messages.map((m, i) => (
             <MessageBubble key={i} msg={m} />
           ))}
-          {busy && (
-            <div className="inline-flex items-center gap-2 mt-3 mb-2 text-muted">
-              <Loader2 size={14} className="animate-spin" />
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
-                Reading the library
-              </span>
-            </div>
-          )}
+          {/* Spinner only while we're waiting on the FIRST token. Once
+              the assistant message has any content, the streaming text
+              itself is the affordance — the spinner becomes redundant
+              and visually noisy. */}
+          {busy &&
+            (() => {
+              const last = messages[messages.length - 1];
+              const stillWaiting =
+                !last || last.role !== "assistant" || last.content.length === 0;
+              return stillWaiting ? (
+                <div className="inline-flex items-center gap-2 mt-3 mb-2 text-muted">
+                  <Loader2 size={14} className="animate-spin" />
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
+                    Reading the library
+                  </span>
+                </div>
+              ) : null;
+            })()}
         </div>
       )}
 
@@ -591,7 +601,7 @@ function MessageBubble({ msg }: { msg: Msg }) {
           {msg.refused ? "Refusal · honest answer" : "From the library"}
         </span>
         <p className="font-sans text-[15px] text-ink leading-[1.65] mt-3 whitespace-pre-wrap">
-          {msg.content}
+          {renderInlineMarkdown(msg.content)}
         </p>
       </div>
 
@@ -672,4 +682,37 @@ function MessageBubble({ msg }: { msg: Msg }) {
       )}
     </div>
   );
+}
+
+// Safety-net inline markdown renderer. The system prompt forbids
+// markdown formatting in agent replies, but when the model slips a
+// **bold** through it should not render as literal asterisks to the
+// reader. Only bold and italic; no headings, lists, links or code.
+function renderInlineMarkdown(text: string): React.ReactNode[] {
+  if (!text) return [];
+  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|_[^_\n]+_)/g;
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const tok = m[0];
+    if (tok.startsWith("**")) {
+      out.push(
+        <strong key={`b-${key++}`} className="font-semibold">
+          {tok.slice(2, -2)}
+        </strong>
+      );
+    } else {
+      out.push(
+        <em key={`i-${key++}`} className="italic">
+          {tok.slice(1, -1)}
+        </em>
+      );
+    }
+    last = m.index + tok.length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
 }
