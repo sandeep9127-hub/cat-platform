@@ -145,13 +145,15 @@ export function BrandBar() {
       {open && (
         <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
-            {NAV_LINKS.map(({ href, label, Icon }, i) => (
+            {NAV_LINKS.map(({ href, label, Icon }) => (
+              // No per-item stagger — the parent drawer already animates
+              // in. The stagger had items at opacity 0 mid-flight which
+              // made the menu read as half-empty on mobile.
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft last:border-b-0 reveal-stagger inline-flex items-center gap-3"
-                style={{ animationDelay: `${i * 40}ms` }}
+                className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft last:border-b-0 inline-flex items-center gap-3"
               >
                 <Icon size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
                 <span>{label}</span>

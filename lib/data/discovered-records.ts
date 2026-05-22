@@ -1012,7 +1012,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "State-level natural farming programme operating across Andhra Pradesh, with farmer-trainer cadres and women's self-help group convergence at its core. Scale band: multi-district.",
     sourceName: "Rythu Sadhikara Samstha",
-    sourceUrl: "https://apcnf.in",
+    sourceUrl: "https://apcnf.in/about-apcnf/",
     publishedAt: "2016-01-01",
     themes: ["soil-and-land", "policy-and-finance"],
     stateCode: "AP",
@@ -1046,7 +1046,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Programme to revive millets in Odisha's tribal districts, with procurement at MSP through the Public Distribution System and farmer-collective-led seed sourcing.",
     sourceName: "Special Programme for Promotion of Millets, Odisha",
-    sourceUrl: "https://milletsodisha.com",
+    sourceUrl: "https://milletsodisha.com/about-program",
     publishedAt: "2017-04-01",
     themes: ["seeds-and-biodiversity", "nutrition", "markets-and-value-chains"],
     stateCode: "OD",
