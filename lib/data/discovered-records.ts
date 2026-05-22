@@ -78,7 +78,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "The state-led APCNF continues to expand, with public reporting placing enrolled farmer numbers above ten lakh. Yield results across pulses and millets remain uneven; cotton stays a stress crop.",
     sourceName: "Down To Earth",
-    sourceUrl: "https://www.downtoearth.org.in/agriculture",
+    sourceUrl: "https://www.downtoearth.org.in/agriculture/not-just-green-natural-farming-in-andhra-yielded-more-produce-than-conventional-methods-shows-study-88713",
     publishedAt: "2025-08-12",
     themes: ["soil-and-land", "policy-and-finance"],
     language: "en",
@@ -90,7 +90,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Union Ministry of Agriculture press release on the PM Programme for Restoration, Awareness, Nourishment and Amelioration of Mother Earth, with new states added under the chemical-fertiliser reduction incentive framework.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-06-20",
     themes: ["soil-and-land", "policy-and-finance"],
     language: "en",
@@ -114,7 +114,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Sikkim, declared India's first fully organic state in 2016, reviewed implementation gaps and the income story for smallholder farmers a decade in, with mixed verdicts on price realisation.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-05-18",
     themes: ["soil-and-land", "markets-and-value-chains"],
     language: "en",
@@ -162,7 +162,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Long-term Indian Council of Agricultural Research trial results across the Central Plateau, looking at tree-crop integration on degraded farms, with mixed productivity findings tied to species selection.",
     sourceName: "ICAR News",
-    sourceUrl: "https://icar.org.in",
+    sourceUrl: "https://icar.org.in/press-release",
     publishedAt: "2025-01-22",
     themes: ["soil-and-land", "climate-resilience"],
     language: "en",
@@ -186,7 +186,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Civil society reporting on community-led pond and check-dam restoration across six Bundelkhand districts, with measurable rabi cropping intensity gains documented in three blocks.",
     sourceName: "People's Archive of Rural India",
-    sourceUrl: "https://ruralindiaonline.org",
+    sourceUrl: "https://ruralindiaonline.org/en/articles/categories/farming-and-its-crisis/",
     publishedAt: "2025-09-05",
     themes: ["water", "women-and-collectives"],
     language: "en",
@@ -198,7 +198,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Three years after the International Year of Millets, NAFED's procurement footprint for ragi, jowar and bajra is reviewed, with regional differences in farmer realisation and storage capacity flagged.",
     sourceName: "IndiaSpend",
-    sourceUrl: "https://www.indiaspend.com",
+    sourceUrl: "https://www.indiaspend.com/agriculture",
     publishedAt: "2025-10-14",
     themes: ["seeds-and-biodiversity", "markets-and-value-chains", "nutrition"],
     language: "en",
@@ -222,7 +222,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "National Institution for Transforming India hosted secretaries from twelve states for a working session on harmonising natural farming subsidies, certification and procurement guarantees.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-06-04",
     themes: ["policy-and-finance"],
     language: "en",
@@ -234,7 +234,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Indian Institute of Soil Science release flagging soil organic carbon depletion across the Indo-Gangetic plain, with policy recommendations on residue management and reduced-tillage adoption.",
     sourceName: "ICAR News",
-    sourceUrl: "https://icar.org.in",
+    sourceUrl: "https://icar.org.in/press-release",
     publishedAt: "2025-07-19",
     themes: ["soil-and-land", "climate-resilience"],
     language: "en",
@@ -246,7 +246,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ICRISAT and ICAR jointly announce release of three new sorghum varieties developed under the Climate-Resilient Agriculture programme, with shorter cycles and improved post-harvest profiles.",
     sourceName: "ICRISAT",
-    sourceUrl: "https://www.icrisat.org",
+    sourceUrl: "https://www.icrisat.org/category/press-release/",
     publishedAt: "2025-05-02",
     themes: ["seeds-and-biodiversity", "climate-resilience"],
     language: "en",
@@ -258,7 +258,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Agriculture and Farmers Welfare confirms formation of all targeted Farmer Producer Organisations under the 10,000-FPO scheme, with regional variation in business activation rates documented.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-04-22",
     themes: ["markets-and-value-chains", "policy-and-finance"],
     language: "en",
@@ -282,7 +282,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Punjab Agricultural University and state agriculture department released findings from a pilot incentive for paddy farmers shifting to bajra and other millets in over-extracted blocks.",
     sourceName: "The Tribune",
-    sourceUrl: "https://www.tribuneindia.com",
+    sourceUrl: "https://www.tribuneindia.com/topic/agriculture-economy",
     publishedAt: "2025-11-08",
     themes: ["water", "seeds-and-biodiversity", "policy-and-finance"],
     language: "en",
@@ -294,7 +294,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "WASSAN and the Telangana government convened farmer collectives across six tribal districts to formalise a state-wide seed bank federation focused on coarse cereals and pulses.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-09-22",
     themes: ["seeds-and-biodiversity", "women-and-collectives"],
     language: "en",
@@ -318,7 +318,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Himachal Pradesh agriculture department issues progress report on Subhash Palekar Natural Farming-aligned BPKP, with apple, vegetable and pulse acreage tracked across six districts.",
     sourceName: "Indian Express",
-    sourceUrl: "https://indianexpress.com",
+    sourceUrl: "https://indianexpress.com/section/india/",
     publishedAt: "2025-02-17",
     themes: ["soil-and-land"],
     language: "en",
@@ -342,7 +342,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "CSA published case studies on non-pesticide management transitions in cotton-growing belts of Andhra Pradesh and Telangana, with cost and income tradeoffs documented.",
     sourceName: "Civil Society Online",
-    sourceUrl: "https://www.civilsocietyonline.com",
+    sourceUrl: "https://www.civilsocietyonline.com/category/agriculture/",
     publishedAt: "2025-05-25",
     themes: ["soil-and-land", "farmer-livelihoods"],
     language: "en",
@@ -354,7 +354,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Phase two of the Karnataka soil health programme, building on ICRISAT's earlier soil-test-based-recommendation work, with expanded coverage to dryland districts and refined micronutrient protocols.",
     sourceName: "ICRISAT",
-    sourceUrl: "https://www.icrisat.org",
+    sourceUrl: "https://www.icrisat.org/category/press-release/",
     publishedAt: "2025-01-09",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     language: "en",
@@ -366,7 +366,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Tribal farmer federations in MP signed a blended-finance facility with NABARD and a foundation consortium for capital expenditure on processing infrastructure across six tribal blocks.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-08-04",
     themes: ["markets-and-value-chains", "policy-and-finance"],
     language: "en",
@@ -378,7 +378,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "MAVIM-supported and Mahila Kisan-led collectives in vegetable belts of Maharashtra publish a residue-free supply protocol for urban retailer linkages, with first-season volumes documented.",
     sourceName: "The Wire Science",
-    sourceUrl: "https://science.thewire.in",
+    sourceUrl: "https://science.thewire.in/category/agriculture",
     publishedAt: "2025-09-17",
     themes: ["markets-and-value-chains", "women-and-collectives"],
     language: "en",
@@ -402,7 +402,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Bharatiya Agro Industries Foundation's tribal Wadi (orchard) model, in operation since the 1970s, now spans 200,000+ households across Maharashtra, Gujarat, Jharkhand and Karnataka.",
     sourceName: "Civil Society Online",
-    sourceUrl: "https://www.civilsocietyonline.com",
+    sourceUrl: "https://www.civilsocietyonline.com/category/agriculture/",
     publishedAt: "2025-07-26",
     themes: ["soil-and-land", "farmer-livelihoods"],
     language: "en",
@@ -426,7 +426,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Adaptation Fund and Green Climate Fund pipeline reviews place landscape-level interventions in dryland India on the priority list, with NABARD and state governments as implementing entities.",
     sourceName: "IndiaSpend",
-    sourceUrl: "https://www.indiaspend.com",
+    sourceUrl: "https://www.indiaspend.com/agriculture",
     publishedAt: "2025-03-08",
     themes: ["climate-resilience", "policy-and-finance"],
     language: "en",
@@ -438,7 +438,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Food and Public Distribution announces millet inclusion pilots in four states' PDS, with farmer-collective procurement linkages built into the supply chain.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-10-02",
     themes: ["nutrition", "markets-and-value-chains"],
     language: "en",
@@ -450,7 +450,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Punjab Pollution Control Board's pesticide residue surveillance data prompts a department-level review of recommended-use protocols, with civil society pressing for tighter input regulation.",
     sourceName: "The Tribune",
-    sourceUrl: "https://www.tribuneindia.com",
+    sourceUrl: "https://www.tribuneindia.com/topic/agriculture-economy",
     publishedAt: "2025-05-30",
     themes: ["soil-and-land", "policy-and-finance"],
     language: "en",
@@ -474,7 +474,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A Vidarbha-based cotton farmer federation negotiates a documented premium for residue-free bales with two textile buyers, building on multi-season transition support.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-09-12",
     themes: ["markets-and-value-chains", "farmer-livelihoods"],
     language: "en",
@@ -486,7 +486,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "An independent panel commissioned by the Department of Agriculture publishes a five-year review of Climate Smart Agriculture (CSA) outcomes, with mixed findings across districts.",
     sourceName: "The Wire",
-    sourceUrl: "https://thewire.in",
+    sourceUrl: "https://thewire.in/category/agriculture",
     publishedAt: "2025-02-26",
     themes: ["climate-resilience", "policy-and-finance"],
     language: "en",
@@ -498,7 +498,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Gujarat completes a state-wide refresh of soil health cards, with district-level dashboards published and recommendations issued through extension services.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-08-15",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     language: "en",
@@ -510,7 +510,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A multi-state pilot across Western Ghats tribal blocks aligns spices, fruit, fuelwood and fodder in agroforestry mixes, with first-three-year income data published.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-04-30",
     themes: ["soil-and-land", "farmer-livelihoods"],
     language: "en",
@@ -534,7 +534,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Land Resources releases a refreshed watershed atlas with finer-resolution micro-watershed mapping, intended to align programme planning under the Watershed Development Component.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-10-08",
     themes: ["water", "policy-and-finance"],
     language: "en",
@@ -546,7 +546,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A coalition of 80-plus civil society organisations released a joint statement calling for a binding agroecology transition framework with state-wise targets and financing commitments.",
     sourceName: "Civil Society Online",
-    sourceUrl: "https://www.civilsocietyonline.com",
+    sourceUrl: "https://www.civilsocietyonline.com/category/agriculture/",
     publishedAt: "2025-11-26",
     themes: ["policy-and-finance"],
     language: "en",
@@ -558,7 +558,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "State-level convergence agreement signed between the natural farming mission and Maharashtra State Rural Livelihoods Mission for joint extension and capital support across 10 districts.",
     sourceName: "Indian Express",
-    sourceUrl: "https://indianexpress.com",
+    sourceUrl: "https://indianexpress.com/section/india/",
     publishedAt: "2025-09-30",
     themes: ["women-and-collectives", "knowledge-and-capacity"],
     language: "en",
@@ -594,7 +594,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Anand-pattern cooperatives in Gujarat run a pilot on regenerative pasture and fodder species with member households, intended to improve dairy productivity and household income.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-08-22",
     themes: ["farmer-livelihoods", "soil-and-land"],
     language: "en",
@@ -606,7 +606,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ICAR and CIRAD announce a joint research programme on standardised agroecology indicators that can be applied across Indian smallholder systems, with field sites in three agroclimatic zones.",
     sourceName: "ICAR News",
-    sourceUrl: "https://icar.org.in",
+    sourceUrl: "https://icar.org.in/press-release",
     publishedAt: "2025-05-09",
     themes: ["knowledge-and-capacity"],
     language: "en",
@@ -633,7 +633,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "National Institution for Transforming India's strategic note on operationalising natural farming at scale, with state-wise considerations and recommended convergence with existing schemes.",
     sourceName: "Niti Aayog",
-    sourceUrl: "https://www.niti.gov.in",
+    sourceUrl: "https://www.niti.gov.in/reports-publications",
     publishedAt: "2023-07-15",
     themes: ["policy-and-finance"],
     resourceType: "report",
@@ -646,7 +646,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "International Panel of Experts on Sustainable Food Systems policy brief on aligning public and philanthropic finance with agroecology, with seven principles for funder behaviour.",
     sourceName: "IPES-Food",
-    sourceUrl: "https://www.ipes-food.org",
+    sourceUrl: "https://ipes-food.org/reports/",
     publishedAt: "2024-11-01",
     themes: ["policy-and-finance"],
     resourceType: "report",
@@ -659,7 +659,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ICAR-NCONF review of natural farming practices, evidence base, agronomic considerations and outstanding research questions, intended for extension agencies and state agriculture departments.",
     sourceName: "ICAR",
-    sourceUrl: "https://icar.org.in",
+    sourceUrl: "https://icar.org.in/press-release",
     publishedAt: "2023-06-20",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     resourceType: "report",
@@ -672,7 +672,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Rythu Sadhikara Samstha review of one decade of APCNF, covering enrolment, capacity-building structures, district variation, yield observations and procurement linkages.",
     sourceName: "Rythu Sadhikara Samstha",
-    sourceUrl: "https://apcnf.in",
+    sourceUrl: "https://apcnf.in/publications/",
     publishedAt: "2024-04-18",
     themes: ["soil-and-land", "policy-and-finance"],
     resourceType: "case_study",
@@ -685,7 +685,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Agriculture, Cooperation and Farmers Welfare's evaluation of the Soil Health Card scheme, district-wise sampling coverage, advisory uptake and extension considerations.",
     sourceName: "Department of Agriculture, GoI",
-    sourceUrl: "https://soilhealth.dac.gov.in",
+    sourceUrl: "https://soilhealth.dac.gov.in/",
     publishedAt: "2023-10-12",
     themes: ["soil-and-land", "policy-and-finance"],
     resourceType: "report",
@@ -698,7 +698,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Niti Aayog's evaluation of the Watershed Development Component of Pradhan Mantri Krishi Sinchayee Yojana, with state-wise outcome findings and structural recommendations.",
     sourceName: "Niti Aayog",
-    sourceUrl: "https://www.niti.gov.in",
+    sourceUrl: "https://www.niti.gov.in/reports-publications",
     publishedAt: "2024-02-26",
     themes: ["water", "policy-and-finance"],
     resourceType: "report",
@@ -711,7 +711,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A practitioner toolkit on watershed-plus and landscape-scale interventions, combining ridge-to-valley treatments, common property regeneration, fodder and livelihood elements.",
     sourceName: "NABARD",
-    sourceUrl: "https://www.nabard.org",
+    sourceUrl: "https://www.nabard.org/Publication.aspx",
     publishedAt: "2024-09-04",
     themes: ["water", "soil-and-land"],
     resourceType: "toolkit",
@@ -724,7 +724,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Agriculture annual dataset on millet area, production, productivity and procurement across all major states, with disaggregation by ragi, jowar, bajra and small millets.",
     sourceName: "Department of Agriculture, GoI",
-    sourceUrl: "https://agricoop.nic.in",
+    sourceUrl: "https://agricoop.nic.in/en/Documents",
     publishedAt: "2025-03-20",
     themes: ["seeds-and-biodiversity", "nutrition"],
     resourceType: "dataset",
@@ -737,7 +737,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "IPES-Food landmark report on the case for diversified, agroecological systems as the route out of degenerative trends in global food and farming.",
     sourceName: "IPES-Food",
-    sourceUrl: "https://www.ipes-food.org",
+    sourceUrl: "https://ipes-food.org/reports/",
     publishedAt: "2016-06-01",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     resourceType: "report",
@@ -750,7 +750,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Central Research Institute for Dryland Agriculture's review of climate change impacts on Indian agricultural systems, with crop-specific adaptation strategies for rainfed contexts.",
     sourceName: "ICAR-CRIDA",
-    sourceUrl: "https://crida.in",
+    sourceUrl: "https://crida.in/publication.html",
     publishedAt: "2024-08-30",
     themes: ["climate-resilience"],
     resourceType: "report",
@@ -802,7 +802,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "The Energy and Resources Institute report on sustainable land management practices, with attention to soil degradation hotspots and a portfolio of remediation approaches.",
     sourceName: "TERI",
-    sourceUrl: "https://www.teriin.org",
+    sourceUrl: "https://www.teriin.org/publication",
     publishedAt: "2023-11-14",
     themes: ["soil-and-land", "climate-resilience"],
     resourceType: "report",
@@ -815,7 +815,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "An open-access soil organic carbon dataset combining Mahindra and IISc field sampling and remote-sensing-aligned modelling for pan-India coverage at district resolution.",
     sourceName: "Indian Institute of Science",
-    sourceUrl: "https://iisc.ac.in",
+    sourceUrl: "https://iisc.ac.in/research/",
     publishedAt: "2025-01-30",
     themes: ["soil-and-land", "climate-resilience"],
     resourceType: "dataset",
@@ -828,7 +828,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Vikalp Sangam's curated set of grassroots case studies on alternative farming, water and food systems practices from across India, intended for practitioners and researchers.",
     sourceName: "Vikalp Sangam",
-    sourceUrl: "https://vikalpsangam.org",
+    sourceUrl: "https://vikalpsangam.org/category/agriculture/",
     publishedAt: "2024-10-04",
     themes: ["knowledge-and-capacity"],
     resourceType: "case_study",
@@ -841,7 +841,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Bharat Krishak Samaj's national survey of smallholder credit access, with state-disaggregated findings on formal versus informal credit and credit gaps for agroecological transitions.",
     sourceName: "Bharat Krishak Samaj",
-    sourceUrl: "https://bharatkrishaksamaj.org",
+    sourceUrl: "https://bharatkrishaksamaj.org/publications",
     publishedAt: "2024-06-28",
     themes: ["farmer-livelihoods", "policy-and-finance"],
     resourceType: "report",
@@ -854,7 +854,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "WWF India's documentation of forest-edge agroforestry interventions across Western Ghats blocks, with species selection, yield and biodiversity findings.",
     sourceName: "WWF India",
-    sourceUrl: "https://www.wwfindia.org",
+    sourceUrl: "https://www.wwfindia.org/news_facts/publications/",
     publishedAt: "2024-09-11",
     themes: ["soil-and-land", "seeds-and-biodiversity"],
     resourceType: "case_study",
@@ -867,7 +867,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "GIST Impact methodology and a worked example of natural capital accounting across an agricultural landscape, intended for landscape-level investment decision-making.",
     sourceName: "GIST Impact",
-    sourceUrl: "https://gistimpact.com",
+    sourceUrl: "https://gistimpact.com/publications/",
     publishedAt: "2024-12-15",
     themes: ["policy-and-finance", "knowledge-and-capacity"],
     resourceType: "report",
@@ -880,7 +880,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "CSE's annual state-of-the-sector report on agricultural pesticide regulation, residue surveillance and policy gaps, used widely by civil society and regulators.",
     sourceName: "Centre for Science and Environment",
-    sourceUrl: "https://www.cseindia.org",
+    sourceUrl: "https://www.cseindia.org/publications-50",
     publishedAt: "2024-07-08",
     themes: ["soil-and-land", "policy-and-finance"],
     resourceType: "report",
@@ -893,7 +893,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Open dataset and accompanying brief on dietary diversification trends in India by income quintile, with implications for cropping pattern and farm-income diversification.",
     sourceName: "Tata-Cornell Institute",
-    sourceUrl: "https://tci.cornell.edu",
+    sourceUrl: "https://tci.cornell.edu/publications/",
     publishedAt: "2024-03-02",
     themes: ["nutrition", "markets-and-value-chains"],
     resourceType: "dataset",
@@ -919,7 +919,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "IIFSR's benchmark study on integrated farming system models across agroclimatic zones of India, with cropping pattern, livestock and aquaculture combinations.",
     sourceName: "IIFSR",
-    sourceUrl: "https://iifsr.icar.gov.in",
+    sourceUrl: "https://iifsr.icar.gov.in/publications/",
     publishedAt: "2024-02-15",
     themes: ["farmer-livelihoods", "soil-and-land"],
     resourceType: "report",
@@ -932,7 +932,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Multi-state benchmark of pulses production, with district-level yield gap analysis and recommended intensification pathways aligned to agroecology principles.",
     sourceName: "ICRISAT",
-    sourceUrl: "https://www.icrisat.org",
+    sourceUrl: "https://www.icrisat.org/category/research/",
     publishedAt: "2024-08-19",
     themes: ["seeds-and-biodiversity", "nutrition"],
     resourceType: "report",
@@ -945,7 +945,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Department of Agriculture dataset on Mission for Integrated Development of Horticulture coverage, by district and crop, with multi-year time series.",
     sourceName: "Department of Agriculture, GoI",
-    sourceUrl: "https://midh.gov.in",
+    sourceUrl: "https://midh.gov.in/Publications.aspx",
     publishedAt: "2025-04-10",
     themes: ["markets-and-value-chains", "farmer-livelihoods"],
     resourceType: "dataset",
@@ -971,7 +971,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ATREE's primer on seed sovereignty considerations in Indian smallholder farming, with case studies of community seed banks and policy implications.",
     sourceName: "ATREE",
-    sourceUrl: "https://www.atree.org",
+    sourceUrl: "https://www.atree.org/publications",
     publishedAt: "2024-01-18",
     themes: ["seeds-and-biodiversity"],
     resourceType: "brief",
@@ -984,7 +984,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "TERI's toolkit for state agencies on agricultural residue burning mitigation, including in-situ management, ex-situ utilisation, and incentive design.",
     sourceName: "TERI",
-    sourceUrl: "https://www.teriin.org",
+    sourceUrl: "https://www.teriin.org/publication",
     publishedAt: "2024-11-08",
     themes: ["soil-and-land", "climate-resilience"],
     resourceType: "toolkit",
@@ -997,7 +997,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ICSSR's review of common property resources in rural India, with implications for grazing, fuelwood and water access in agricultural landscape interventions.",
     sourceName: "ICSSR",
-    sourceUrl: "https://icssr.org",
+    sourceUrl: "https://icssr.org/publication",
     publishedAt: "2023-08-22",
     themes: ["women-and-collectives", "knowledge-and-capacity"],
     resourceType: "report",
@@ -1527,7 +1527,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Punjab Department of Agriculture announces fresh budgetary support for crop diversification away from paddy in over-extracted blocks, with cotton, maize and pulses in the mix.",
     sourceName: "The Tribune",
-    sourceUrl: "https://www.tribuneindia.com",
+    sourceUrl: "https://www.tribuneindia.com/topic/agriculture-economy",
     publishedAt: "2025-10-21",
     themes: ["water", "seeds-and-biodiversity"],
     language: "en",
@@ -1551,7 +1551,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Multi-year findings from ICRISAT's heat-tolerant chickpea breeding programme released, with three varieties recommended for release in central India dryland districts.",
     sourceName: "ICRISAT",
-    sourceUrl: "https://www.icrisat.org",
+    sourceUrl: "https://www.icrisat.org/category/press-release/",
     publishedAt: "2025-09-08",
     themes: ["seeds-and-biodiversity", "climate-resilience"],
     language: "en",
@@ -1563,7 +1563,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Ministry of Environment, Forest and Climate Change convened a multi-state consultation on mainstreaming farm-forestry and agroforestry interventions on private holdings.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-08-19",
     themes: ["soil-and-land", "policy-and-finance"],
     language: "en",
@@ -1575,7 +1575,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "ONDC, in collaboration with state APMCs, kicks off an agri-focus pilot connecting farmer producer organisations to direct buyers across three states.",
     sourceName: "IndiaSpend",
-    sourceUrl: "https://www.indiaspend.com",
+    sourceUrl: "https://www.indiaspend.com/agriculture",
     publishedAt: "2025-07-23",
     themes: ["markets-and-value-chains", "policy-and-finance"],
     language: "en",
@@ -1587,7 +1587,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Ministry of Tribal Affairs releases a comprehensive evaluation of the Van Dhan Vikas Yojana, with district-level findings on minor forest produce value-addition.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-06-15",
     themes: ["farmer-livelihoods", "markets-and-value-chains"],
     language: "en",
@@ -1623,7 +1623,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Maharashtra State Disaster Management Authority publishes an updated heat-action plan with a new farmer-advisory layer for kharif protection in vulnerable districts.",
     sourceName: "Mongabay India",
-    sourceUrl: "https://india.mongabay.com",
+    sourceUrl: "https://india.mongabay.com/list/agriculture/",
     publishedAt: "2025-04-08",
     themes: ["climate-resilience"],
     language: "en",
@@ -1635,7 +1635,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Small Farmers' Agribusiness Consortium (SFAC) approves a fresh round of equity and credit support for newly formed FPOs across nine states.",
     sourceName: "Press Information Bureau",
-    sourceUrl: "https://pib.gov.in",
+    sourceUrl: "https://pib.gov.in/AllReleasem.aspx?MenuId=14",
     publishedAt: "2025-03-22",
     themes: ["markets-and-value-chains", "policy-and-finance"],
     language: "en",
@@ -1647,7 +1647,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Telangana agriculture department releases first-season findings from a drone-based fertiliser advisory pilot, with cost-benefit analysis across 22 mandals.",
     sourceName: "The Wire Science",
-    sourceUrl: "https://science.thewire.in",
+    sourceUrl: "https://science.thewire.in/category/agriculture",
     publishedAt: "2025-02-18",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     language: "en",
@@ -1671,7 +1671,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Eastern Indian states accelerate adoption of direct seeded rice as a water-saving intervention, with rounding subsidies and extension support announced.",
     sourceName: "IndiaSpend",
-    sourceUrl: "https://www.indiaspend.com",
+    sourceUrl: "https://www.indiaspend.com/agriculture",
     publishedAt: "2025-09-04",
     themes: ["water", "soil-and-land"],
     language: "en",
@@ -1695,7 +1695,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "International convening on India's pulses production and consumption, with seven-year retrospective on the 2016 International Year of Pulses and follow-up policy options.",
     sourceName: "Civil Society Online",
-    sourceUrl: "https://www.civilsocietyonline.com",
+    sourceUrl: "https://www.civilsocietyonline.com/category/agriculture/",
     publishedAt: "2025-07-02",
     themes: ["seeds-and-biodiversity", "nutrition"],
     language: "en",
@@ -1735,7 +1735,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "CSE periodic report on the state of organic farming and certification regimes in India, with district-wise area, PGS-India coverage and export figures.",
     sourceName: "Centre for Science and Environment",
-    sourceUrl: "https://www.cseindia.org",
+    sourceUrl: "https://www.cseindia.org/publications-50",
     publishedAt: "2024-10-08",
     themes: ["soil-and-land", "markets-and-value-chains"],
     resourceType: "report",
@@ -1761,7 +1761,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "NABARD's annual dataset on the status of microfinance and SHG bank-linkage in India, with state-wise disaggregation and trend analysis.",
     sourceName: "NABARD",
-    sourceUrl: "https://www.nabard.org",
+    sourceUrl: "https://www.nabard.org/Publication.aspx",
     publishedAt: "2024-12-30",
     themes: ["farmer-livelihoods", "women-and-collectives"],
     resourceType: "dataset",
@@ -1787,7 +1787,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Five-year programmatic review of the Tata Trusts' Mission Sustainable Indian Agriculture, with district-level adoption findings, gaps and forward considerations.",
     sourceName: "Tata Trusts",
-    sourceUrl: "https://www.tatatrusts.org",
+    sourceUrl: "https://www.tatatrusts.org/our-work/livelihoods-and-aspirations",
     publishedAt: "2024-05-15",
     themes: ["farmer-livelihoods", "policy-and-finance"],
     resourceType: "report",
@@ -1800,7 +1800,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Indian Institute of Soil and Water Conservation's compendium of good practices for hill, plateau, alluvial, coastal and arid regions of India.",
     sourceName: "ICAR-IISWC",
-    sourceUrl: "https://iiswc.icar.gov.in",
+    sourceUrl: "https://iiswc.icar.gov.in/publications/",
     publishedAt: "2024-02-21",
     themes: ["soil-and-land", "water"],
     resourceType: "toolkit",
@@ -1826,7 +1826,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "International Food Policy Research Institute's open dataset on cropping pattern shifts across Indian districts over twenty years, useful for landscape planning.",
     sourceName: "IFPRI",
-    sourceUrl: "https://www.ifpri.org",
+    sourceUrl: "https://www.ifpri.org/publications",
     publishedAt: "2024-03-29",
     themes: ["seeds-and-biodiversity", "knowledge-and-capacity"],
     resourceType: "dataset",
