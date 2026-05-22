@@ -50,10 +50,18 @@ export function BrandBar() {
         }`}
       >
         <Link href="/" className="flex items-center gap-3 no-underline text-ink group shrink-0">
-          <CatLogo
-            size={scrolled ? 28 : 36}
-            className="shrink-0 transition-all duration-300 ease-out group-hover:rotate-[-4deg]"
-          />
+          {/* The logo is rendered ONCE at 36px and CSS-scaled when the
+              bar shrinks on scroll. Changing the SVG's size attribute
+              forced a full re-render mid-scroll, and at ~28px the
+              smallest inner arch fell into sub-pixel territory and
+              visibly flickered. Transform-scale skips the re-render. */}
+          <div
+            className={`shrink-0 origin-left transition-transform duration-300 ease-out group-hover:rotate-[-4deg] ${
+              scrolled ? "scale-[0.78]" : "scale-100"
+            }`}
+          >
+            <CatLogo size={36} />
+          </div>
           <span className="flex flex-col">
             <span
               className={`font-serif font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap transition-[font-size] duration-300 ease-out ${
