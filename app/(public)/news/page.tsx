@@ -154,9 +154,38 @@ export default async function NewsPage({
       {/* Feed */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24">
         {news.length === 0 ? (
-          <p className="font-sans italic text-ink-soft text-[18px] max-w-[44ch] mt-10 leading-[1.6]">
-            No news matches these filters. Widen the time window or pick a different theme.
-          </p>
+          <div className="mt-10 max-w-[52ch] py-8 px-6 rounded-[8px] border border-line bg-paper">
+            <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
+              Nothing matches
+            </span>
+            <p className="font-sans text-[16px] text-ink leading-[1.55] mt-3">
+              No news matches{" "}
+              {windowDays && (
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] mx-1 text-[14px]"
+                  style={{ background: "rgba(46,117,115,0.10)", color: "#2E7573" }}
+                >
+                  last {windowDays} days
+                </span>
+              )}
+              {windowDays && themeFilter && " and "}
+              {themeFilter && (
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] mx-1 text-[14px]"
+                  style={{ background: "rgba(146,156,197,0.14)", color: "#5C6796" }}
+                >
+                  theme: {themeLabel(themeFilter).name}
+                </span>
+              )}
+              .
+            </p>
+            <Link
+              href="/news"
+              className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
+            >
+              ← Clear filters
+            </Link>
+          </div>
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0 mt-4">
             {news.map((item, i) => {

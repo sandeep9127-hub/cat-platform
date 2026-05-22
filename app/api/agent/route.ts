@@ -13,6 +13,12 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Pin the agent lambda to Vercel's Mumbai region. Supabase Postgres
+// sits in ap-south-1 too, so every retrieval query is now an in-region
+// hop (~5-15ms RTT) instead of a transatlantic round-trip from iad1
+// (~150-250ms each way). With FTS + pgvector running in parallel that
+// shaves ~300-500ms off TTFB before the LLM even starts streaming.
+export const preferredRegion = "bom1";
 
 const MAX_TURNS = 8;
 const MAX_CONTEXT_HITS_PER_SOURCE = 6;
@@ -354,7 +360,9 @@ export async function POST(req: NextRequest) {
       try {
         for await (const evt of kimiChatStream(kimiMessages, {
           temperature: 0.2,
-          maxTokens: 700,
+          // 1200 tokens ≈ 900 words. Was 700 which truncated longer
+          // analyses mid-sentence on broad questions.
+          maxTokens: 1200,
         })) {
           if (evt.type === "delta") {
             if (!bufferingDone) {

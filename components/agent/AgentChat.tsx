@@ -176,9 +176,15 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // Auto-scroll the chat to the latest delta — but only when the user
+  // is already near the bottom. If they've scrolled UP to re-read an
+  // earlier message, leave them alone instead of yanking them back.
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom < 120) {
+      el.scrollTop = el.scrollHeight;
     }
   }, [messages, busy]);
 
@@ -606,13 +612,37 @@ function MessageBubble({ msg }: { msg: Msg }) {
       </div>
 
       {msg.citations && msg.citations.length > 0 && (
-        <div className="mt-3 ml-1">
-          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-1.5 mb-2">
-            <span className="w-3 h-px bg-amber-deep" />
-            Sources
-          </span>
-          <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {msg.citations.map((c) => {
+        <CitationTray citations={msg.citations} />
+      )}
+    </div>
+  );
+}
+
+function CitationTray({ citations }: { citations: Citation[] }) {
+  // Show top 3 by default. When there are more, render a "Show all" toggle
+  // so the input doesn't get pushed off the fold by a long citation list.
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? citations : citations.slice(0, 3);
+  const hidden = Math.max(0, citations.length - 3);
+  return (
+    <div className="mt-3 ml-1">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-1.5">
+          <span className="w-3 h-px bg-amber-deep" />
+          Sources <span className="text-amber-deep">{citations.length}</span>
+        </span>
+        {hidden > 0 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
+          >
+            {expanded ? "Show top 3 ←" : `Show all ${citations.length} →`}
+          </button>
+        )}
+      </div>
+      <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {visible.map((c) => {
               const isLandscape = c.type === "landscape";
               const tint = isLandscape
                 ? { bg: "rgba(146,156,197,0.10)", fg: "#5C6796", bar: "#929CC5" }
@@ -677,9 +707,7 @@ function MessageBubble({ msg }: { msg: Msg }) {
                 </li>
               );
             })}
-          </ul>
-        </div>
-      )}
+      </ul>
     </div>
   );
 }
