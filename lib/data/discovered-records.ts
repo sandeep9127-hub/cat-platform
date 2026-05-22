@@ -789,7 +789,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Centre for Sustainable Agriculture's national review of women-led farming collectives, with case studies, capacity-building patterns and policy implications.",
     sourceName: "Centre for Sustainable Agriculture",
-    sourceUrl: "https://csa-india.org",
+    sourceUrl: "https://csa-india.org/about-us/",
     publishedAt: "2024-03-19",
     themes: ["women-and-collectives", "farmer-livelihoods"],
     resourceType: "report",
@@ -1063,7 +1063,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Seventy-two-village water parliament that governs use of the revived Arvari river in Alwar, Rajasthan. The institution has outlasted its founders and continues to operate.",
     sourceName: "Tarun Bharat Sangh",
-    sourceUrl: "https://tarunbharatsangh.in",
+    sourceUrl: "https://tarunbharatsangh.in/rivers-rejuvenated/",
     publishedAt: "1994-01-01",
     themes: ["water", "women-and-collectives"],
     stateCode: "RJ",
@@ -1076,18 +1076,19 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
   {
     id: "a-005",
     destination: "atlas",
-    title: "Vidarbha Cotton Cooperative",
+    title: "Chetna Organic · Vidarbha cotton producer company",
     summary:
-      "Farmer-owned alternative to the broker chain in Vidarbha's cotton belt. Premium for residue-free cotton has held across two seasons.",
-    sourceName: "Vidarbha Cotton Cooperative",
-    sourceUrl: "https://www.civilsocietyonline.com",
+      "Fairtrade-certified cotton producer company organising over 15,000 smallholder cotton farmers across 13 cooperatives in Vidarbha and Telangana. Pays a Fairtrade Minimum Price plus a premium back to the farmer-owners.",
+    sourceName: "Chetna Organic · Fairtrade India",
+    sourceUrl:
+      "https://fairtradeindia.org/blog/producer-profile-chetna-organic-agriculture-producer-company-limited",
     publishedAt: "2019-01-01",
     themes: ["markets-and-value-chains", "women-and-collectives"],
     stateCode: "MH",
-    district: "Yavatmal",
+    district: "Yavatmal & Adilabad",
     latitude: 20.3886,
-    longitude: 78.1300,
-    organisation: "Vidarbha Cotton Cooperative",
+    longitude: 78.13,
+    organisation: "Chetna Organic Agriculture Producer Company",
     provenance: "federation",
   },
   {
@@ -1097,7 +1098,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Multi-state tribal orchard model integrating fruit trees, forestry and crops on smallholder land, in operation across Maharashtra, Gujarat, Jharkhand and Karnataka since the 1970s.",
     sourceName: "BAIF Development Research Foundation",
-    sourceUrl: "https://www.baif.org.in",
+    sourceUrl: "https://baif.org.in/what-we-do/Agri-horti-forestry/",
     publishedAt: "1979-01-01",
     themes: ["soil-and-land", "farmer-livelihoods"],
     stateCode: "MH",
@@ -1114,7 +1115,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Programme on community-led groundwater management, dryland sustainable agriculture and tribal landscape work across Telangana and adjacent states.",
     sourceName: "WASSAN",
-    sourceUrl: "https://www.wassan.org",
+    sourceUrl: "https://wassan.org/theme/watershed-management",
     publishedAt: "2003-01-01",
     themes: ["water", "soil-and-land"],
     stateCode: "TG",
@@ -1131,7 +1132,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A Karnataka-based collective focused on conservation, multiplication and exchange of traditional seed varieties, with active farmer-breeder networks.",
     sourceName: "Sahaja Samrudha",
-    sourceUrl: "https://sahajasamrudha.org",
+    sourceUrl: "https://sahajasamrudha.org/seed-conservation/",
     publishedAt: "2002-01-01",
     themes: ["seeds-and-biodiversity"],
     stateCode: "KA",
@@ -1148,7 +1149,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "A Telangana-based federation of women sanghams in Medak district, running community grain banks, biodiverse millet farms and a community radio.",
     sourceName: "Deccan Development Society",
-    sourceUrl: "https://ddsindia.com",
+    sourceUrl: "http://ddsindia.com/www/activities.html",
     publishedAt: "1985-01-01",
     themes: ["women-and-collectives", "seeds-and-biodiversity", "nutrition"],
     stateCode: "TG",
@@ -1165,7 +1166,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "WOTR's multi-decade watershed work across Maharashtra, integrating ridge-to-valley treatment, community institutions and livelihood components on a landscape scale.",
     sourceName: "Watershed Organisation Trust",
-    sourceUrl: "https://wotr.org",
+    sourceUrl: "https://wotr.org/maharashtra/",
     publishedAt: "1993-01-01",
     themes: ["water", "soil-and-land"],
     stateCode: "MH",
@@ -1182,7 +1183,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "PRADAN-led tribal landscape and women's-collective work across Jharkhand and Chhattisgarh, integrating agriculture, common land regeneration and SHG-led credit.",
     sourceName: "PRADAN",
-    sourceUrl: "https://www.pradan.net",
+    sourceUrl: "https://www.pradan.net/what-we-do/",
     publishedAt: "1983-01-01",
     themes: ["women-and-collectives", "farmer-livelihoods"],
     stateCode: "JH",
@@ -1216,7 +1217,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Multi-state seed conservation network with anchor farms in Uttarakhand, focused on conserving indigenous seed varieties and training organic farmers.",
     sourceName: "Navdanya",
-    sourceUrl: "https://navdanya.org",
+    sourceUrl: "https://navdanya.org/biodiversity-based-organic-farming/",
     publishedAt: "1987-01-01",
     themes: ["seeds-and-biodiversity"],
     stateCode: "UK",
@@ -1354,7 +1355,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Hyderabad-based practitioner organisation with a multi-state network supporting non-pesticide management, FPO formation and policy advocacy on food systems.",
     sourceName: "Centre for Sustainable Agriculture",
-    sourceUrl: "https://csa-india.org",
+    sourceUrl: "https://csa-india.org/about-us/",
     publishedAt: "2004-01-01",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     stateCode: "TG",
@@ -1388,7 +1389,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Research-led landscape programmes across Tamil Nadu coastal blocks and Odisha tribal districts, with biodiversity, climate adaptation and women-led collectives focus.",
     sourceName: "MS Swaminathan Research Foundation",
-    sourceUrl: "https://www.mssrf.org",
+    sourceUrl: "https://www.mssrf.org/programmes/coastal-system-research/",
     publishedAt: "1988-01-01",
     themes: ["climate-resilience", "seeds-and-biodiversity"],
     stateCode: "TN",
@@ -1422,7 +1423,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Anand-based foundation working across nine states on community-led regeneration of common lands, water catchments and pasture, with measurable ecosystem outcomes.",
     sourceName: "Foundation for Ecological Security",
-    sourceUrl: "https://fes.org.in",
+    sourceUrl: "https://fes.org.in/commons/",
     publishedAt: "2001-01-01",
     themes: ["water", "soil-and-land"],
     stateCode: "GJ",
@@ -1456,7 +1457,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "State-wide women's collective network running nutrition-garden, joint-farming-group, and producer-company programmes across all 14 districts of Kerala.",
     sourceName: "Kudumbashree Mission",
-    sourceUrl: "https://www.kudumbashree.org",
+    sourceUrl: "https://www.kudumbashree.org/pages/171",
     publishedAt: "1998-01-01",
     themes: ["women-and-collectives", "nutrition"],
     stateCode: "KL",
@@ -1490,7 +1491,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Self-regulatory organisation of community development finance institutions and farmer producer companies, with members across all states.",
     sourceName: "Sa-Dhan",
-    sourceUrl: "https://www.sa-dhan.net",
+    sourceUrl: "https://www.sa-dhan.net/about-us/",
     publishedAt: "1999-01-01",
     themes: ["farmer-livelihoods", "policy-and-finance"],
     stateCode: "DL",
@@ -1507,7 +1508,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Nashik-based farmer-owned producer company with a vertically-integrated horticulture supply chain, traceable from member farms to export markets.",
     sourceName: "Sahyadri Farms",
-    sourceUrl: "https://www.sahyadrifarms.com",
+    sourceUrl: "https://www.sahyadrifarms.com/about-us/our-story",
     publishedAt: "2010-01-01",
     themes: ["markets-and-value-chains", "farmer-livelihoods"],
     stateCode: "MH",
@@ -1708,7 +1709,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "Watershed Support Services and Activities Network's practitioner framework for block-level dryland planning, with attention to common-property resources and gender.",
     sourceName: "WASSAN",
-    sourceUrl: "https://www.wassan.org",
+    sourceUrl: "https://wassan.org/theme/watershed-management",
     publishedAt: "2024-04-09",
     themes: ["water", "policy-and-finance"],
     resourceType: "toolkit",
@@ -1721,7 +1722,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "FES report on the state of pastoralism, grazing commons and shared land governance across India, with implications for landscape-scale interventions.",
     sourceName: "Foundation for Ecological Security",
-    sourceUrl: "https://fes.org.in",
+    sourceUrl: "https://fes.org.in/commons/",
     publishedAt: "2024-06-12",
     themes: ["soil-and-land", "women-and-collectives"],
     resourceType: "report",
@@ -1747,7 +1748,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "MSSRF's case studies on community-led climate adaptation across coastal Tamil Nadu and tribal Odisha, focused on seed sovereignty and food security.",
     sourceName: "MS Swaminathan Research Foundation",
-    sourceUrl: "https://www.mssrf.org",
+    sourceUrl: "https://www.mssrf.org/programmes/coastal-system-research/",
     publishedAt: "2024-07-19",
     themes: ["climate-resilience", "seeds-and-biodiversity"],
     resourceType: "case_study",
@@ -1773,7 +1774,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "CSA's practitioner toolkit for transitioning cotton, paddy and vegetable farming systems to non-pesticide management, with cost-benefit profiles per crop.",
     sourceName: "Centre for Sustainable Agriculture",
-    sourceUrl: "https://csa-india.org",
+    sourceUrl: "https://csa-india.org/about-us/",
     publishedAt: "2024-08-04",
     themes: ["soil-and-land", "knowledge-and-capacity"],
     resourceType: "toolkit",
@@ -1812,7 +1813,7 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
     summary:
       "BAIF Development Research Foundation's fifty-year retrospective on the Wadi orchard model, including socio-economic outcomes across tribal landscapes.",
     sourceName: "BAIF Development Research Foundation",
-    sourceUrl: "https://www.baif.org.in",
+    sourceUrl: "https://baif.org.in/what-we-do/Agri-horti-forestry/",
     publishedAt: "2024-11-25",
     themes: ["soil-and-land", "farmer-livelihoods"],
     resourceType: "report",
