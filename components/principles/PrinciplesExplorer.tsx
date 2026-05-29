@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   PRINCIPLES,
   LEVELS,
@@ -288,6 +288,9 @@ function Detail({
         </ul>
       </div>
 
+      {/* Grounded "read more" — answers from the HLPE report on demand */}
+      <PrincipleAsk principle={principle} />
+
       <div className="ae-detail-nav">
         <button onClick={onPrev} className="ae-navbtn">
           <span aria-hidden="true">←</span> Previous
@@ -305,6 +308,123 @@ function Detail({
           Solutions atlas →
         </Link>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Embedded grounded explainer. On click it asks the Hub assistant what the
+ * HLPE report says about this principle, streams the answer inline, and shows
+ * the source citations. Keyed by principle so state resets on change.
+ */
+function PrincipleAsk({ principle }: { principle: Principle }) {
+  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
+  const [answer, setAnswer] = useState("");
+  const [citations, setCitations] = useState<
+    { index: number; label: string; url: string }[]
+  >([]);
+  const abortRef = useRef<AbortController | null>(null);
+
+  async function ask() {
+    if (state === "loading") return;
+    setState("loading");
+    setAnswer("");
+    setCitations([]);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const question = `What does the HLPE report say about the agroecology principle of ${principle.title.toLowerCase()}? Explain its meaning and why it matters.`;
+    try {
+      const res = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: question }],
+          scope: "all",
+        }),
+        signal: controller.signal,
+      });
+      const ctype = res.headers.get("content-type") ?? "";
+      // Refusal path returns plain JSON; the answer path streams SSE.
+      if (ctype.includes("application/json")) {
+        const data = await res.json();
+        setAnswer(data.text ?? "The report doesn't cover this directly.");
+        setCitations(data.citations ?? []);
+        setState("done");
+        return;
+      }
+      const reader = res.body!.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n");
+        buf = parts.pop() ?? "";
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data:")) continue;
+          try {
+            const evt = JSON.parse(line.slice(5).trim());
+            if (evt.type === "meta") setCitations(evt.citations ?? []);
+            else if (evt.type === "delta") setAnswer((a) => a + evt.text);
+          } catch {
+            /* ignore partial */
+          }
+        }
+      }
+      setState("done");
+    } catch {
+      if (!controller.signal.aborted) {
+        setAnswer("The assistant is unavailable right now. Try the floating chat.");
+        setState("done");
+      }
+    }
+  }
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
+
+  return (
+    <div className="ae-ask">
+      <div className="ae-ask-head">
+        <span className="ae-ask-label">Read more · from the source</span>
+      </div>
+      {state === "idle" ? (
+        <button className="ae-ask-btn" onClick={ask}>
+          What does the HLPE report say about {principle.title.toLowerCase()}? →
+        </button>
+      ) : (
+        <div className="ae-ask-body">
+          {answer ? (
+            <p className="ae-ask-answer">{answer}</p>
+          ) : (
+            <p className="ae-ask-loading">Reading the report…</p>
+          )}
+          {citations.length > 0 && (
+            <ul className="ae-ask-cites">
+              {citations.slice(0, 4).map((c) => (
+                <li key={c.index}>
+                  <a
+                    href={c.url}
+                    target={c.url.startsWith("http") ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className="ae-ask-cite"
+                  >
+                    [{c.index}] {c.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {state === "done" && (
+            <button className="ae-ask-again" onClick={ask}>
+              Ask again ↻
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -410,6 +530,19 @@ function Styles() {
       .ae-india-text { font-size: 14px; line-height: 1.6; color: rgba(31,38,31,.8); margin: 8px 0 12px; }
       .ae-levers { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
       .ae-lever { font-family: var(--font-jetbrains), monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); color: rgba(31,38,31,.7); }
+      .ae-ask { margin-bottom: 24px; border-top: 1px solid var(--ae-line); padding-top: 18px; }
+      .ae-ask-head { margin-bottom: 10px; }
+      .ae-ask-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
+      .ae-ask-btn { width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ae-forest); background: rgba(63,125,141,.07); border: 1px solid rgba(63,125,141,.22); border-radius: 12px; padding: 13px 15px; transition: all 160ms; }
+      .ae-ask-btn:hover { background: rgba(63,125,141,.12); border-color: rgba(63,125,141,.4); }
+      .ae-ask-body { background: rgba(31,38,31,.03); border: 1px solid var(--ae-line); border-radius: 12px; padding: 15px 16px; }
+      .ae-ask-answer { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.85); margin: 0; }
+      .ae-ask-loading { font-size: 14px; color: rgba(31,38,31,.5); margin: 0; font-style: italic; }
+      .ae-ask-cites { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--ae-line); display: flex; flex-direction: column; gap: 5px; }
+      .ae-ask-cite { font-family: var(--font-jetbrains), monospace; font-size: 11px; line-height: 1.4; color: #2f6d7a; text-decoration: none; }
+      .ae-ask-cite:hover { text-decoration: underline; }
+      .ae-ask-again { margin-top: 12px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: rgba(31,38,31,.55); background: none; border: 0; cursor: pointer; padding: 0; }
+      .ae-ask-again:hover { color: var(--ae-forest); }
       .ae-detail-nav { display: flex; gap: 10px; margin-bottom: 22px; }
       .ae-navbtn { flex: 1; padding: 11px 14px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(31,38,31,.18); background: none; color: var(--ae-ink); font-family: inherit; font-size: 14px; font-weight: 500; transition: all 150ms; }
       .ae-navbtn:hover { background: var(--ae-forest); color: var(--ae-cream); border-color: var(--ae-forest); }
