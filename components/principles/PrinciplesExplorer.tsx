@@ -91,6 +91,8 @@ export function PrinciplesExplorer() {
             {PRINCIPLES.map((p) => {
               const on = p.n === selected;
               const lk = levelOf(p.n);
+              // Icon markup is from our own trusted static data, never user input.
+              const listIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p.icon}</svg>`;
               const header =
                 p.n === 1 || p.n === 8 ? (
                   <li className="ae-list-divider" key={`h${p.n}`} aria-hidden="true">
@@ -113,6 +115,11 @@ export function PrinciplesExplorer() {
                     onMouseLeave={() => setHovered(null)}
                   >
                     <span className="ae-list-num">{String(p.n).padStart(2, "0")}</span>
+                    <span
+                      className="ae-list-icon"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: listIcon }}
+                    />
                     <span className="ae-list-title">{p.title}</span>
                   </button>
                 </li>
@@ -305,6 +312,9 @@ function Styles() {
         transition: background 150ms, color 150ms;
       }
       .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
+      .ae-list-icon { flex: 0 0 auto; display: grid; place-items: center; opacity: .75; }
+      .ae-list-item.is-active .ae-list-icon,
+      .ae-list-item.is-hover .ae-list-icon { opacity: 1; }
       .ae-list-title { font-size: 15px; font-weight: 500; letter-spacing: -.1px; }
       .ae-list-item:hover { background: rgba(31,38,31,.06); }
       /* Hover from the wheel mirrors the wheel's teal highlight so both
