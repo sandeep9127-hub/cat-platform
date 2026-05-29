@@ -164,9 +164,9 @@ export function PrincipleWheel({
           const numPos = polar(C, C, rOuter - 22, mid);
           const fill = isActive ? palette.accent : lv[key].sector;
           const ink = isActive ? palette.accentInk : lv[key].ink;
-          // Icon markup is from our own trusted static data, never user input.
-          const iconSize = isActive ? 40 : 34;
-          const iconSvg = `<svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 200ms; pointer-events:none">${p.icon}</svg>`;
+          // Colourful emblem badge — the common icon used across wheel,
+          // sidebar and detail. Active grows a touch.
+          const emSize = isActive ? 58 : 48;
 
           return (
             <g
@@ -211,9 +211,13 @@ export function PrincipleWheel({
                 </text>
               </g>
               <g transform={`rotate(${-rot} ${iconPos.x.toFixed(2)} ${iconPos.y.toFixed(2)})`}>
-                <g
-                  transform={`translate(${(iconPos.x - iconSize / 2).toFixed(2)} ${(iconPos.y - iconSize / 2).toFixed(2)})`}
-                  dangerouslySetInnerHTML={{ __html: iconSvg }}
+                <image
+                  href={`/images/principle-icons/p${p.n}.png`}
+                  x={(iconPos.x - emSize / 2).toFixed(2)}
+                  y={(iconPos.y - emSize / 2).toFixed(2)}
+                  width={emSize}
+                  height={emSize}
+                  style={{ pointerEvents: "none", transition: "width 200ms, height 200ms" }}
                 />
               </g>
             </g>

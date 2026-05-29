@@ -91,8 +91,6 @@ export function PrinciplesExplorer() {
             {PRINCIPLES.map((p) => {
               const on = p.n === selected;
               const lk = levelOf(p.n);
-              // Icon markup is from our own trusted static data, never user input.
-              const listIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p.icon}</svg>`;
               const header =
                 p.n === 1 || p.n === 8 ? (
                   <li className="ae-list-divider" key={`h${p.n}`} aria-hidden="true">
@@ -115,10 +113,12 @@ export function PrinciplesExplorer() {
                     onMouseLeave={() => setHovered(null)}
                   >
                     <span className="ae-list-num">{String(p.n).padStart(2, "0")}</span>
-                    <span
-                      className="ae-list-icon"
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="ae-list-emblem"
+                      src={`/images/principle-icons/p${p.n}.png`}
+                      alt=""
                       aria-hidden
-                      dangerouslySetInnerHTML={{ __html: listIcon }}
                     />
                     <span className="ae-list-title">{p.title}</span>
                   </button>
@@ -312,10 +312,9 @@ function Styles() {
         transition: background 150ms, color 150ms;
       }
       .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12.5px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
-      .ae-list-icon { flex: 0 0 auto; display: grid; place-items: center; opacity: .75; }
-      .ae-list-icon svg { width: 19px; height: 19px; }
-      .ae-list-item.is-active .ae-list-icon,
-      .ae-list-item.is-hover .ae-list-icon { opacity: 1; }
+      .ae-list-emblem { width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: #fff; border: 1px solid rgba(31,38,31,.10); }
+      .ae-list-item.is-active .ae-list-emblem,
+      .ae-list-item.is-hover .ae-list-emblem { border-color: rgba(255,255,255,.5); }
       .ae-list-title { font-size: 16.5px; font-weight: 500; letter-spacing: -.1px; }
       .ae-list-item:hover { background: rgba(31,38,31,.06); }
       /* Hover from the wheel mirrors the wheel's teal highlight so both
