@@ -276,7 +276,7 @@ function Styles() {
         --ae-accent: #3f7d8d;
         --ae-accent-ink: #f4f7ee;
         --ae-line: rgba(31,38,31,.12);
-        --ae-side-w: 288px;
+        --ae-side-w: 312px;
         --ae-detail-w: 420px;
         background: var(--ae-bg);
         color: var(--ae-ink);
@@ -306,16 +306,17 @@ function Styles() {
       .ae-list-divider-dot { width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto; }
       .ae-list-divider-range { margin-left: auto; opacity: .5; font-weight: 600; }
       .ae-list-item {
-        width: 100%; display: flex; align-items: center; gap: 12px;
-        background: none; border: 0; cursor: pointer; padding: 9px 12px; border-radius: 9px;
+        width: 100%; display: flex; align-items: center; gap: 13px;
+        background: none; border: 0; cursor: pointer; padding: 12px 14px; border-radius: 10px;
         color: var(--ae-ink); text-align: left; font-family: inherit;
         transition: background 150ms, color 150ms;
       }
-      .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
+      .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12.5px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
       .ae-list-icon { flex: 0 0 auto; display: grid; place-items: center; opacity: .75; }
+      .ae-list-icon svg { width: 19px; height: 19px; }
       .ae-list-item.is-active .ae-list-icon,
       .ae-list-item.is-hover .ae-list-icon { opacity: 1; }
-      .ae-list-title { font-size: 15px; font-weight: 500; letter-spacing: -.1px; }
+      .ae-list-title { font-size: 16.5px; font-weight: 500; letter-spacing: -.1px; }
       .ae-list-item:hover { background: rgba(31,38,31,.06); }
       /* Hover from the wheel mirrors the wheel's teal highlight so both
          sides match; a direct cursor hover on the list keeps the lighter
@@ -335,7 +336,7 @@ function Styles() {
         font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-ink);
         padding: 2px 8px; border-radius: 999px; opacity: .85; border: 1px solid rgba(31,38,31,.22); white-space: nowrap;
       }
-      .ae-wheel { width: 100%; max-width: min(660px, calc(100vh - 220px)); height: auto; }
+      .ae-wheel { width: 100%; max-width: min(720px, calc(100vh - 200px)); height: auto; }
       .ae-wheel g[role="button"]:focus { outline: none; }
       .ae-wheel g[role="button"]:focus-visible path { stroke: var(--ae-accent); stroke-width: 3; }
 
