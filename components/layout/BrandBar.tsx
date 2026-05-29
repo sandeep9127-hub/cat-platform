@@ -9,10 +9,12 @@ import {
   Newspaper,
   MessageCircle,
   Info,
+  Compass,
 } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
 const NAV_LINKS = [
+  { href: "/principles", label: "Principles", Icon: Compass },
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
   { href: "/resources", label: "Resources", Icon: BookOpen },
