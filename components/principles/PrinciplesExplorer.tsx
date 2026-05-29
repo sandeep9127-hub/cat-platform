@@ -300,9 +300,13 @@ function Styles() {
       }
       .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
       .ae-list-title { font-size: 15px; font-weight: 500; letter-spacing: -.1px; }
-      .ae-list-item:hover,
-      .ae-list-item.is-hover { background: rgba(31,38,31,.06); }
+      .ae-list-item:hover { background: rgba(31,38,31,.06); }
+      /* Hover from the wheel mirrors the wheel's teal highlight so both
+         sides match; a direct cursor hover on the list keeps the lighter
+         tint until clicked. */
+      .ae-list-item.is-hover,
       .ae-list-item.is-active { background: var(--ae-accent); color: var(--ae-accent-ink); }
+      .ae-list-item.is-hover .ae-list-num,
       .ae-list-item.is-active .ae-list-num { opacity: 1; }
 
       /* stage */
