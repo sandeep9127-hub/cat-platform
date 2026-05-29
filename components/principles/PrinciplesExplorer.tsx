@@ -105,7 +105,9 @@ export function PrinciplesExplorer() {
                 <li key={p.n} className="ae-list-cell">
                   {header}
                   <button
-                    className={`ae-list-item${on ? " is-active" : ""}`}
+                    className={`ae-list-item${on ? " is-active" : ""}${
+                      !on && p.n === hovered ? " is-hover" : ""
+                    }`}
                     onClick={() => setSelected(p.n)}
                     onMouseEnter={() => setHovered(p.n)}
                     onMouseLeave={() => setHovered(null)}
@@ -298,7 +300,8 @@ function Styles() {
       }
       .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
       .ae-list-title { font-size: 15px; font-weight: 500; letter-spacing: -.1px; }
-      .ae-list-item:hover { background: rgba(31,38,31,.06); }
+      .ae-list-item:hover,
+      .ae-list-item.is-hover { background: rgba(31,38,31,.06); }
       .ae-list-item.is-active { background: var(--ae-accent); color: var(--ae-accent-ink); }
       .ae-list-item.is-active .ae-list-num { opacity: 1; }
 
