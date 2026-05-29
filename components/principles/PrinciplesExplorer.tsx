@@ -1,335 +1,369 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   PRINCIPLES,
-  PRINCIPLE_LEVELS,
+  LEVELS,
+  levelOf,
   type Principle,
-  type PrincipleLevel,
 } from "@/lib/data/principles";
+import { PrincipleWheel, type WheelPalette } from "./PrincipleWheel";
 
-const LEVEL_ORDER: PrincipleLevel[] = ["efficiency", "resilience", "equity"];
-
-const LEVEL_ACCENT: Record<
-  PrincipleLevel,
-  { dot: string; rail: string; text: string; chip: string; ring: string }
-> = {
-  efficiency: {
-    dot: "bg-amber-deep",
-    rail: "bg-amber-deep",
-    text: "text-amber-deep",
-    chip: "text-amber-deep border-amber-deep/30 bg-amber-deep/[0.06]",
-    ring: "ring-amber-deep/40",
-  },
-  resilience: {
-    dot: "bg-teal",
-    rail: "bg-teal",
-    text: "text-teal",
-    chip: "text-teal border-teal/30 bg-teal/[0.06]",
-    ring: "ring-teal/40",
-  },
-  equity: {
-    dot: "bg-periwinkle",
-    rail: "bg-periwinkle",
-    text: "text-periwinkle",
-    chip: "text-periwinkle border-periwinkle/30 bg-periwinkle/[0.06]",
-    ring: "ring-periwinkle/40",
+// Forest palette — the Regen10-style dark hero. Two semantic level colours
+// (agro = green, food = amber) independent of any accent.
+const PALETTE: WheelPalette = {
+  bg: "#0f150e",
+  accent: "#8fb84e",
+  accentInk: "#16240f",
+  hub: "#f2f1eb",
+  hubInk: "#1e3a1c",
+  hubMuted: "#6c8160",
+  hubRing: "rgba(0,0,0,.10)",
+  levels: {
+    agro: { band: "#86b14e", sector: "#2b3a1d", ink: "#d9e3c6" },
+    food: { band: "#cf9242", sector: "#39301e", ink: "#ecdcc2" },
   },
 };
 
-export function PrinciplesExplorer() {
-  const [activeSlug, setActiveSlug] = useState<string>(PRINCIPLES[0].slug);
-  const railRef = useRef<HTMLDivElement | null>(null);
+const LEVEL_CHIP = {
+  agro: { dot: "#6fae3f", text: "#4e7a2e" },
+  food: { dot: "#c8893f", text: "#9a6526" },
+};
 
-  // Read ?p= or hash on first paint so external links can deep-link.
+export function PrinciplesExplorer() {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  // Deep link via hash on first paint.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const fromQuery = params.get("p");
-    const fromHash = window.location.hash.replace("#", "");
-    const candidate = fromQuery || fromHash;
-    if (candidate && PRINCIPLES.some((p) => p.slug === candidate)) {
-      setActiveSlug(candidate);
-    }
+    const hash = window.location.hash.replace("#", "");
+    const found = PRINCIPLES.find((p) => p.slug === hash);
+    if (found) setSelected(found.n);
   }, []);
 
-  // Keep the URL hash in sync — shareable links work.
+  // Keep hash in sync.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const next = `#${activeSlug}`;
-    if (window.location.hash !== next) {
-      window.history.replaceState(null, "", next);
-    }
-  }, [activeSlug]);
+    const slug = selected ? PRINCIPLES.find((p) => p.n === selected)?.slug : "";
+    const next = slug ? `#${slug}` : window.location.pathname;
+    window.history.replaceState(null, "", next);
+  }, [selected]);
 
-  // Keyboard navigation on the rail — up/down arrows step through principles.
+  const go = useCallback((dir: number) => {
+    setSelected((cur) => {
+      const base = cur ?? (dir > 0 ? 0 : 1);
+      let n = base + dir;
+      if (n < 1) n = PRINCIPLES.length;
+      if (n > PRINCIPLES.length) n = 1;
+      return n;
+    });
+  }, []);
+
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (!railRef.current?.contains(document.activeElement)) return;
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      e.preventDefault();
-      const idx = PRINCIPLES.findIndex((p) => p.slug === activeSlug);
-      const next = e.key === "ArrowDown"
-        ? (idx + 1) % PRINCIPLES.length
-        : (idx - 1 + PRINCIPLES.length) % PRINCIPLES.length;
-      setActiveSlug(PRINCIPLES[next].slug);
-    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+      if (selected != null) {
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          go(1);
+        }
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          go(-1);
+        }
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeSlug]);
+  }, [selected, go]);
 
-  const active: Principle = useMemo(
-    () => PRINCIPLES.find((p) => p.slug === activeSlug) ?? PRINCIPLES[0],
-    [activeSlug],
-  );
-  const accent = LEVEL_ACCENT[active.level];
+  const selP = selected ? PRINCIPLES.find((p) => p.n === selected) ?? null : null;
 
   return (
-    <div className="bg-paper">
-      {/* Editorial header */}
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-14 lg:pt-16 pb-8 sm:pb-10">
-        <div className="flex items-center gap-3 mb-5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-            Reference
-          </span>
-          <span className="h-px w-12 bg-line" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep">
-            13 principles
-          </span>
-        </div>
-        <h1 className="font-serif text-[36px] sm:text-[48px] lg:text-[60px] leading-[0.98] tracking-[-0.018em] text-ink max-w-[22ch]">
-          The principles of <span className="text-teal italic font-normal">agroecology</span>.
-        </h1>
-        <p className="mt-6 font-serif text-[17px] sm:text-[19px] leading-[1.55] text-ink-soft max-w-[68ch]">
-          Thirteen working principles, organised by operational level. Pick any from the rail to
-          read its definition, how it shows up in Indian landscapes, and the practical levers behind
-          it.
-        </p>
-        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
-          Source · HLPE Report 14 (2019), UN Committee on World Food Security ·{" "}
-          <a
-            href="https://www.fao.org/3/ca5602en/ca5602en.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-teal hover:underline underline-offset-4"
-          >
-            Read the source
-          </a>
-        </p>
-      </section>
-
-      {/* Explorer */}
-      <section className="border-t border-line-soft">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-10 lg:py-14">
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 lg:gap-14">
-            {/* LEFT RAIL */}
-            <aside
-              ref={railRef}
-              className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto pr-1"
-              aria-label="Choose a principle"
-            >
-              <nav className="space-y-7">
-                {LEVEL_ORDER.map((level) => {
-                  const meta = PRINCIPLE_LEVELS[level];
-                  const principles = PRINCIPLES.filter((p) => p.level === level);
-                  const levelAccent = LEVEL_ACCENT[level];
-                  return (
-                    <div key={level}>
-                      <div className="flex items-baseline gap-2 mb-2.5 px-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${levelAccent.dot}`} />
-                        <span className={`font-mono text-[9.5px] uppercase tracking-[0.16em] ${levelAccent.text}`}>
-                          {meta.title}
-                        </span>
-                      </div>
-                      <ul className="space-y-0.5">
-                        {principles.map((p) => {
-                          const isActive = p.slug === activeSlug;
-                          return (
-                            <li key={p.slug} className="relative">
-                              {/* Active rail indicator */}
-                              {isActive && (
-                                <span
-                                  aria-hidden
-                                  className={`absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r ${levelAccent.rail}`}
-                                />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setActiveSlug(p.slug)}
-                                aria-pressed={isActive}
-                                className={`w-full text-left flex items-baseline gap-3 px-3 py-2 rounded-md transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 ${levelAccent.ring} focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${
-                                  isActive
-                                    ? "bg-ink/[0.04] text-ink"
-                                    : "text-ink-soft hover:text-ink hover:bg-ink/[0.02]"
-                                }`}
-                              >
-                                <span className="font-mono text-[10.5px] tabular-nums text-muted w-5 shrink-0">
-                                  {String(p.number).padStart(2, "0")}
-                                </span>
-                                <span
-                                  className={`font-serif text-[15px] leading-[1.3] ${
-                                    isActive ? "font-medium" : ""
-                                  }`}
-                                >
-                                  {p.name}
-                                </span>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </nav>
-
-              <p className="mt-8 px-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
-                ↑ ↓ Arrow keys to browse
-              </p>
-            </aside>
-
-            {/* RIGHT DETAIL PANEL */}
-            <article
-              key={active.slug}
-              className="min-w-0 animate-fade-up"
-              aria-live="polite"
-            >
-              {/* Crumb */}
-              <div className="flex items-center gap-3 mb-4">
-                <span className={`w-1.5 h-1.5 rounded-full ${accent.dot}`} />
-                <span className={`font-mono text-[10px] uppercase tracking-[0.16em] ${accent.text}`}>
-                  {PRINCIPLE_LEVELS[active.level].title}
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                  · Principle {String(active.number).padStart(2, "0")} of 13
-                </span>
-              </div>
-
-              {/* Title */}
-              <h2 className="font-serif text-[40px] sm:text-[52px] lg:text-[60px] leading-[0.98] tracking-[-0.018em] text-ink">
-                {active.name}
-              </h2>
-
-              {/* Definition */}
-              <p className="mt-6 font-serif text-[20px] sm:text-[22px] leading-[1.5] text-ink-soft max-w-[60ch]">
-                {active.definition}
-              </p>
-
-              {/* Divider — dynamic gradient classnames don't survive Tailwind JIT,
-                  so we use the solid accent rail color at low opacity. */}
-              <div className={`mt-10 h-px w-16 ${accent.rail} opacity-50`} />
-
-              {/* In India */}
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-10">
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep">
-                    In India
-                  </span>
-                </div>
-                <p className="font-serif text-[17px] leading-[1.6] text-ink-soft max-w-[68ch]">
-                  {active.inIndia}
-                </p>
-              </div>
-
-              {/* Levers */}
-              <div className="mt-10 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-10">
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                    Practical levers
-                  </span>
-                </div>
-                <ul className="flex flex-wrap gap-2">
-                  {active.levers.map((lever) => (
-                    <li
-                      key={lever}
-                      className={`font-mono text-[10px] uppercase tracking-[0.1em] px-2.5 py-1.5 rounded-full border ${accent.chip}`}
-                    >
-                      {lever}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Prev / Next */}
-              <nav className="mt-14 flex items-center justify-between border-t border-line-soft pt-6">
-                <PrevNextLink
-                  label="Previous"
-                  direction="prev"
-                  current={active}
-                  onSelect={setActiveSlug}
-                />
-                <PrevNextLink
-                  label="Next"
-                  direction="next"
-                  current={active}
-                  onSelect={setActiveSlug}
-                />
-              </nav>
-
-              {/* Connect to practice */}
-              <div className="mt-14 rounded-xl border border-line-soft bg-cream/40 p-6 sm:p-8">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep">
-                  Where this meets practice
-                </span>
-                <h3 className="mt-3 font-serif text-[20px] sm:text-[22px] leading-[1.2] tracking-[-0.01em] text-ink">
-                  Principles describe a direction. Programmes are where the work happens.
-                </h3>
-                <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/landscapes"
-                    className="inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-2.5 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper hover:from-teal hover:to-deep-teal transition-all whitespace-nowrap"
+    <div className="ae">
+      <div className="ae-main">
+        {/* SIDEBAR */}
+        <nav className="ae-sidebar" aria-label="The 13 principles">
+          <ul className="ae-list">
+            {PRINCIPLES.map((p) => {
+              const on = p.n === selected;
+              const lk = levelOf(p.n);
+              const header =
+                p.n === 1 || p.n === 8 ? (
+                  <li className="ae-list-divider" key={`h${p.n}`} aria-hidden="true">
+                    <span className="ae-list-divider-dot" style={{ background: PALETTE.levels[lk].band }} />
+                    {LEVELS[lk].short}
+                    <span className="ae-list-divider-range">
+                      {LEVELS[lk].range.replace("Principles ", "")}
+                    </span>
+                  </li>
+                ) : null;
+              return (
+                <li key={p.n} className="ae-list-cell">
+                  {header}
+                  <button
+                    className={`ae-list-item${on ? " is-active" : ""}`}
+                    onClick={() => setSelected(p.n)}
+                    onMouseEnter={() => setHovered(p.n)}
+                    onMouseLeave={() => setHovered(null)}
                   >
-                    Browse landscapes →
-                  </Link>
-                  <Link
-                    href="/map"
-                    className="inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-2.5 rounded-full border border-line text-ink hover:border-teal hover:text-teal transition-colors whitespace-nowrap"
-                  >
-                    Solutions atlas →
-                  </Link>
-                </div>
+                    <span className="ae-list-num">{String(p.n).padStart(2, "0")}</span>
+                    <span className="ae-list-title">{p.title}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* STAGE — wheel hero */}
+        <section className="ae-stage">
+          <div className="ae-legend">
+            {(["agro", "food"] as const).map((k) => (
+              <div className="ae-legend-item" key={k}>
+                <span className="ae-legend-dot" style={{ background: PALETTE.levels[k].band }} />
+                <span className="ae-legend-name">{LEVELS[k].label}</span>
+                <span className="ae-legend-range">{LEVELS[k].range.replace("Principles ", "")}</span>
               </div>
-            </article>
+            ))}
           </div>
-        </div>
-      </section>
+          <PrincipleWheel
+            principles={PRINCIPLES}
+            selected={selected}
+            hovered={hovered}
+            onSelect={(n) => setSelected((cur) => (cur === n ? null : n))}
+            onHover={setHovered}
+            palette={PALETTE}
+          />
+        </section>
+
+        {/* DETAIL */}
+        <aside className="ae-detail-wrap">
+          <Detail
+            principle={selP}
+            onPrev={() => go(-1)}
+            onNext={() => go(1)}
+            onClose={() => setSelected(null)}
+          />
+        </aside>
+      </div>
+
+      <Styles />
     </div>
   );
 }
 
-function PrevNextLink({
-  label,
-  direction,
-  current,
-  onSelect,
+function Detail({
+  principle,
+  onPrev,
+  onNext,
+  onClose,
 }: {
-  label: string;
-  direction: "prev" | "next";
-  current: Principle;
-  onSelect: (slug: string) => void;
+  principle: Principle | null;
+  onPrev: () => void;
+  onNext: () => void;
+  onClose: () => void;
 }) {
-  const idx = PRINCIPLES.findIndex((p) => p.slug === current.slug);
-  const next =
-    direction === "next"
-      ? PRINCIPLES[(idx + 1) % PRINCIPLES.length]
-      : PRINCIPLES[(idx - 1 + PRINCIPLES.length) % PRINCIPLES.length];
+  if (!principle) {
+    return (
+      <div className="ae-detail ae-detail--empty">
+        <div className="ae-eyebrow">The framework</div>
+        <h2 className="ae-detail-intro-title">Two scales of transformation</h2>
+        <p className="ae-intro-lead">
+          Agroecology applies ecological principles to farming and food systems — a science, a set
+          of practices and a social movement. Its thirteen consolidated principles work at two
+          scales: the first seven transform the <strong>agroecosystem</strong>, the last six
+          transform the wider <strong>food system</strong>.
+        </p>
+        <p className="ae-intro-hint">Select a principle on the wheel or in the list to explore it.</p>
+        <div className="ae-intro-groups">
+          {(["agro", "food"] as const).map((k) => (
+            <div className="ae-intro-level" key={k}>
+              <span className="ae-intro-level-dot" style={{ background: LEVEL_CHIP[k].dot }} />
+              <div>
+                <div className="ae-intro-level-name">
+                  {LEVELS[k].label}
+                  <span className="ae-intro-level-range">{LEVELS[k].range}</span>
+                </div>
+                <div className="ae-intro-level-blurb">{LEVELS[k].blurb}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
+  const lk = levelOf(principle.n);
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(next.slug)}
-      className={`group flex flex-col gap-1 ${
-        direction === "next" ? "items-end text-right" : "items-start text-left"
-      }`}
-    >
-      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted group-hover:text-teal transition-colors">
-        {direction === "prev" ? "← " : ""}
-        {label}
-        {direction === "next" ? " →" : ""}
-      </span>
-      <span className="font-serif text-[15px] text-ink group-hover:text-teal transition-colors">
-        {next.name}
-      </span>
-    </button>
+    <div className="ae-detail" key={principle.n}>
+      <div className="ae-detail-head">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className="ae-detail-emblem"
+          src={`/images/principle-icons/p${principle.n}.png`}
+          alt=""
+        />
+        <div className="ae-detail-num">{String(principle.n).padStart(2, "0")}</div>
+        <button className="ae-detail-close" onClick={onClose} aria-label="Close detail">
+          ×
+        </button>
+      </div>
+      <div className="ae-detail-level" style={{ color: LEVEL_CHIP[lk].text }}>
+        <span className="ae-chip-dot" style={{ background: LEVEL_CHIP[lk].dot }} />
+        {LEVELS[lk].label}
+        <span className="ae-detail-op">· {principle.group}</span>
+      </div>
+      <h2 className="ae-detail-title">{principle.title}</h2>
+      <p className="ae-detail-def">{principle.definition}</p>
+      <p className="ae-detail-body">{principle.body}</p>
+
+      <div className="ae-detail-india">
+        <span className="ae-india-label">In India</span>
+        <p className="ae-india-text">{principle.inIndia}</p>
+        <ul className="ae-levers">
+          {principle.levers.map((l) => (
+            <li key={l} className="ae-lever">
+              {l}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="ae-detail-nav">
+        <button onClick={onPrev} className="ae-navbtn">
+          <span aria-hidden="true">←</span> Previous
+        </button>
+        <button onClick={onNext} className="ae-navbtn">
+          Next <span aria-hidden="true">→</span>
+        </button>
+      </div>
+
+      <div className="ae-practice">
+        <Link href="/landscapes" className="ae-practice-btn ae-practice-btn--solid">
+          Browse landscapes →
+        </Link>
+        <Link href="/map" className="ae-practice-btn">
+          Solutions atlas →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function Styles() {
+  return (
+    <style>{`
+      .ae {
+        --ae-bg: #0f150e;
+        --ae-cream: #f2f1eb;
+        --ae-ink: #1f261f;
+        --ae-forest: #1e3a1c;
+        --ae-accent: #8fb84e;
+        --ae-accent-ink: #16240f;
+        --ae-side-w: 288px;
+        --ae-detail-w: 420px;
+        background: var(--ae-bg);
+        color: var(--ae-cream);
+        font-family: var(--font-inter), system-ui, sans-serif;
+      }
+      .ae-main {
+        display: grid;
+        grid-template-columns: var(--ae-side-w) 1fr var(--ae-detail-w);
+        min-height: calc(100vh - 64px);
+      }
+
+      /* sidebar */
+      .ae-sidebar { border-right: 1px solid rgba(255,255,255,.09); padding: 22px 14px 28px 20px; overflow-y: auto; }
+      .ae-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+      .ae-list-cell { display: contents; }
+      .ae-list-divider {
+        display: flex; align-items: center; gap: 8px; white-space: nowrap;
+        font-family: var(--font-jetbrains), monospace;
+        font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+        padding: 18px 12px 8px; color: var(--ae-cream); opacity: .92;
+      }
+      .ae-list-cell:first-child .ae-list-divider { padding-top: 4px; }
+      .ae-list-divider-dot { width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto; }
+      .ae-list-divider-range { margin-left: auto; opacity: .5; font-weight: 600; }
+      .ae-list-item {
+        width: 100%; display: flex; align-items: center; gap: 12px;
+        background: none; border: 0; cursor: pointer; padding: 9px 12px; border-radius: 9px;
+        color: var(--ae-cream); text-align: left; font-family: inherit;
+        transition: background 150ms, color 150ms;
+      }
+      .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
+      .ae-list-title { font-size: 15px; font-weight: 500; letter-spacing: -.1px; }
+      .ae-list-item:hover { background: rgba(255,255,255,.06); }
+      .ae-list-item.is-active { background: var(--ae-accent); color: var(--ae-accent-ink); }
+      .ae-list-item.is-active .ae-list-num { opacity: 1; }
+
+      /* stage */
+      .ae-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 28px; min-height: 0; }
+      .ae-legend { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
+      .ae-legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+      .ae-legend-dot { width: 11px; height: 11px; border-radius: 999px; }
+      .ae-legend-name { font-weight: 600; letter-spacing: -.1px; }
+      .ae-legend-range {
+        font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600;
+        padding: 2px 8px; border-radius: 999px; opacity: .85; border: 1px solid rgba(255,255,255,.2); white-space: nowrap;
+      }
+      .ae-wheel { width: 100%; max-width: 540px; height: auto; }
+      .ae-wheel g[role="button"]:focus { outline: none; }
+      .ae-wheel g[role="button"]:focus-visible path { stroke: var(--ae-accent); stroke-width: 3; }
+
+      /* detail */
+      .ae-detail-wrap { border-left: 1px solid rgba(255,255,255,.09); background: var(--ae-cream); overflow-y: auto; }
+      .ae-detail { padding: 30px 32px 40px; color: var(--ae-ink); min-height: 100%; }
+      .ae-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+      .ae-detail-emblem { width: 88px; height: 88px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: #fbfaf4; border: 1px solid rgba(31,38,31,.12); }
+      .ae-detail-num { font-family: var(--font-jetbrains), monospace; font-size: 38px; font-weight: 700; letter-spacing: -1px; color: var(--ae-forest); line-height: 1; opacity: .9; }
+      .ae-detail-close { margin-left: auto; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); background: none; cursor: pointer; font-size: 20px; line-height: 1; color: var(--ae-ink); opacity: .55; transition: all 150ms; }
+      .ae-detail-close:hover { opacity: 1; background: rgba(31,38,31,.06); }
+      .ae-detail-level { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; flex-wrap: wrap; }
+      .ae-chip-dot { width: 9px; height: 9px; border-radius: 999px; flex: 0 0 auto; }
+      .ae-detail-op { color: rgba(31,38,31,.5); font-weight: 600; letter-spacing: .3px; text-transform: none; }
+      .ae-detail-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 32px; font-weight: 600; letter-spacing: -.6px; margin: 0 0 18px; line-height: 1.05; }
+      .ae-detail-def { font-family: var(--font-fraunces), Georgia, serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
+      .ae-detail-body { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.78); margin: 0 0 22px; }
+      .ae-detail-india { border-top: 1px solid rgba(31,38,31,.12); padding-top: 18px; margin-bottom: 24px; }
+      .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
+      .ae-india-text { font-size: 14px; line-height: 1.6; color: rgba(31,38,31,.8); margin: 8px 0 12px; }
+      .ae-levers { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
+      .ae-lever { font-family: var(--font-jetbrains), monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); color: rgba(31,38,31,.7); }
+      .ae-detail-nav { display: flex; gap: 10px; margin-bottom: 22px; }
+      .ae-navbtn { flex: 1; padding: 11px 14px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(31,38,31,.18); background: none; color: var(--ae-ink); font-family: inherit; font-size: 14px; font-weight: 500; transition: all 150ms; }
+      .ae-navbtn:hover { background: var(--ae-forest); color: var(--ae-cream); border-color: var(--ae-forest); }
+      .ae-practice { display: flex; flex-direction: column; gap: 9px; }
+      .ae-practice-btn { display: inline-flex; align-items: center; justify-content: center; padding: 11px 16px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-ink); text-decoration: none; font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; transition: all 150ms; }
+      .ae-practice-btn:hover { border-color: var(--ae-forest); }
+      .ae-practice-btn--solid { background: var(--ae-forest); color: var(--ae-cream); border-color: var(--ae-forest); }
+      .ae-practice-btn--solid:hover { opacity: .9; }
+
+      /* empty state */
+      .ae-detail--empty { display: flex; flex-direction: column; }
+      .ae-eyebrow { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ae-forest); margin-bottom: 14px; }
+      .ae-detail-intro-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 30px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 0 0 18px; }
+      .ae-intro-lead { font-size: 15.5px; line-height: 1.55; color: rgba(31,38,31,.8); margin: 0 0 16px; }
+      .ae-intro-hint { font-size: 14px; color: var(--ae-forest); font-weight: 500; margin: 0 0 30px; }
+      .ae-intro-groups { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid rgba(31,38,31,.12); padding-top: 22px; }
+      .ae-intro-level { display: flex; align-items: flex-start; gap: 12px; }
+      .ae-intro-level-dot { width: 12px; height: 12px; border-radius: 999px; flex: 0 0 auto; margin-top: 4px; }
+      .ae-intro-level-name { font-size: 15px; font-weight: 600; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+      .ae-intro-level-range { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-forest); opacity: .7; }
+      .ae-intro-level-blurb { font-size: 13.5px; line-height: 1.5; color: rgba(31,38,31,.7); margin-top: 3px; }
+
+      @media (max-width: 1180px) { .ae { --ae-side-w: 240px; --ae-detail-w: 380px; } }
+      @media (max-width: 920px) {
+        .ae-main { grid-template-columns: 1fr; }
+        .ae-sidebar { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.09); }
+        .ae-list { flex-direction: row; flex-wrap: wrap; }
+        .ae-list-cell { display: block; }
+        .ae-list-divider { width: 100%; }
+        .ae-list-title { display: none; }
+        .ae-detail-wrap { border-left: 0; border-top: 1px solid rgba(255,255,255,.09); }
+      }
+    `}</style>
   );
 }
