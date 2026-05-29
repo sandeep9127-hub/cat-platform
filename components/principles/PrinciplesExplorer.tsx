@@ -278,7 +278,11 @@ function Styles() {
       .ae-main {
         display: grid;
         grid-template-columns: var(--ae-side-w) 1fr var(--ae-detail-w);
-        min-height: calc(100vh - 64px);
+        /* Fixed-viewport app layout: the three columns each manage their own
+           scroll. Because the grid height never changes, swapping the detail
+           content can't reflow the centre column — the wheel stays planted. */
+        height: calc(100vh - 64px);
+        overflow: hidden;
       }
 
       /* sidebar */
@@ -311,8 +315,8 @@ function Styles() {
       .ae-list-item.is-hover .ae-list-num,
       .ae-list-item.is-active .ae-list-num { opacity: 1; }
 
-      /* stage */
-      .ae-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 28px; min-height: 0; }
+      /* stage — locked, never scrolls; the wheel is centred and planted */
+      .ae-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; min-height: 0; overflow: hidden; }
       .ae-legend { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
       .ae-legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; }
       .ae-legend-dot { width: 11px; height: 11px; border-radius: 999px; }
@@ -368,13 +372,17 @@ function Styles() {
 
       @media (max-width: 1180px) { .ae { --ae-side-w: 240px; --ae-detail-w: 380px; } }
       @media (max-width: 920px) {
-        .ae-main { grid-template-columns: 1fr; }
-        .ae-sidebar { border-right: 0; border-bottom: 1px solid var(--ae-line); }
+        /* On small screens drop the fixed-viewport lock and let the page
+           scroll normally with the columns stacked. */
+        .ae-main { grid-template-columns: 1fr; height: auto; overflow: visible; }
+        .ae-sidebar { border-right: 0; border-bottom: 1px solid var(--ae-line); overflow: visible; }
         .ae-list { flex-direction: row; flex-wrap: wrap; }
         .ae-list-cell { display: block; }
         .ae-list-divider { width: 100%; }
         .ae-list-title { display: none; }
-        .ae-detail-wrap { border-left: 0; border-top: 1px solid var(--ae-line); }
+        .ae-stage { overflow: visible; }
+        .ae-detail-wrap { border-left: 0; border-top: 1px solid var(--ae-line); overflow: visible; }
+        .ae-detail { padding-bottom: 48px; }
       }
     `}</style>
   );

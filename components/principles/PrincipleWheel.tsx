@@ -155,14 +155,18 @@ export function PrincipleWheel({
           const key = levelOf(p.n);
           const isActive = p.n === active;
           const isSelected = p.n === selected;
-          const off = isActive ? 10 : 0;
+          // The active wedge grows outward — wider reach + a small lift — so
+          // the slot under the top pointer reads as "chosen".
+          const rOuter = isActive ? R_OUT + 22 : R_OUT;
+          const off = isActive ? 8 : 0;
           const ov = polar(0, 0, off, mid);
-          const iconPos = polar(C, C, (R_IN + R_OUT) / 2 + 4, mid);
-          const numPos = polar(C, C, R_OUT - 22, mid);
+          const iconPos = polar(C, C, (R_IN + rOuter) / 2 + 6, mid);
+          const numPos = polar(C, C, rOuter - 22, mid);
           const fill = isActive ? palette.accent : lv[key].sector;
           const ink = isActive ? palette.accentInk : lv[key].ink;
           // Icon markup is from our own trusted static data, never user input.
-          const iconSvg = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 200ms; pointer-events:none">${p.icon}</svg>`;
+          const iconSize = isActive ? 40 : 34;
+          const iconSvg = `<svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 200ms; pointer-events:none">${p.icon}</svg>`;
 
           return (
             <g
@@ -184,11 +188,11 @@ export function PrincipleWheel({
               }}
             >
               <path
-                d={annularSector(C, C, R_IN, R_OUT, a0, a1)}
+                d={annularSector(C, C, R_IN, rOuter, a0, a1)}
                 fill={fill}
                 stroke={palette.bg}
                 strokeWidth="2"
-                style={{ transition: "fill 200ms" }}
+                style={{ transition: "fill 200ms, d 220ms cubic-bezier(.2,.8,.2,1)" }}
               />
               {/* number + icon counter-rotate so they stay upright as the ring turns */}
               <g transform={`rotate(${-rot} ${numPos.x.toFixed(2)} ${numPos.y.toFixed(2)})`}>
@@ -208,7 +212,7 @@ export function PrincipleWheel({
               </g>
               <g transform={`rotate(${-rot} ${iconPos.x.toFixed(2)} ${iconPos.y.toFixed(2)})`}>
                 <g
-                  transform={`translate(${(iconPos.x - 17).toFixed(2)} ${(iconPos.y - 17).toFixed(2)})`}
+                  transform={`translate(${(iconPos.x - iconSize / 2).toFixed(2)} ${(iconPos.y - iconSize / 2).toFixed(2)})`}
                   dangerouslySetInnerHTML={{ __html: iconSvg }}
                 />
               </g>
