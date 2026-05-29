@@ -59,8 +59,6 @@ export function PrincipleWheel({
   hovered,
   onSelect,
   onHover,
-  onPrev,
-  onNext,
   palette,
 }: {
   principles: Principle[];
@@ -68,8 +66,6 @@ export function PrincipleWheel({
   hovered: number | null;
   onSelect: (n: number) => void;
   onHover: (n: number | null) => void;
-  onPrev: () => void;
-  onNext: () => void;
   palette: WheelPalette;
 }) {
   const SIZE = 660;
@@ -322,54 +318,6 @@ export function PrincipleWheel({
         </g>
       )}
 
-      {/* ROTATION ARROWS — in the hub, below the name */}
-      <g>
-        <circle
-          cx={C - 38}
-          cy={C + 58}
-          r="18"
-          fill="none"
-          stroke={palette.hubRing}
-          strokeWidth="1.5"
-          style={{ cursor: "pointer" }}
-          onClick={onPrev}
-        />
-        <text
-          x={C - 38}
-          y={C + 58}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="18"
-          fill={palette.hubMuted}
-          style={{ cursor: "pointer", pointerEvents: "none" }}
-        >
-          ‹
-        </text>
-        <circle
-          cx={C + 38}
-          cy={C + 58}
-          r="18"
-          fill="none"
-          stroke={palette.hubRing}
-          strokeWidth="1.5"
-          style={{ cursor: "pointer" }}
-          onClick={onNext}
-        />
-        <text
-          x={C + 38}
-          y={C + 58}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="18"
-          fill={palette.hubMuted}
-          style={{ cursor: "pointer", pointerEvents: "none" }}
-        >
-          ›
-        </text>
-        {/* invisible larger hit areas */}
-        <circle cx={C - 38} cy={C + 58} r="20" fill="transparent" style={{ cursor: "pointer" }} onClick={onPrev} aria-label="Previous principle" />
-        <circle cx={C + 38} cy={C + 58} r="20" fill="transparent" style={{ cursor: "pointer" }} onClick={onNext} aria-label="Next principle" />
-      </g>
     </svg>
   );
 }

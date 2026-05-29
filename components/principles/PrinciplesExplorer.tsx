@@ -141,16 +141,32 @@ export function PrinciplesExplorer() {
               </div>
             ))}
           </div>
-          <PrincipleWheel
-            principles={PRINCIPLES}
-            selected={selected}
-            hovered={hovered}
-            onSelect={(n) => setSelected(n)}
-            onHover={setHovered}
-            onPrev={() => go(-1)}
-            onNext={() => go(1)}
-            palette={PALETTE}
-          />
+          <div className="ae-wheel-row">
+            <button
+              type="button"
+              className="ae-rotate ae-rotate--prev"
+              onClick={() => go(-1)}
+              aria-label="Previous principle"
+            >
+              ‹
+            </button>
+            <PrincipleWheel
+              principles={PRINCIPLES}
+              selected={selected}
+              hovered={hovered}
+              onSelect={(n) => setSelected(n)}
+              onHover={setHovered}
+              palette={PALETTE}
+            />
+            <button
+              type="button"
+              className="ae-rotate ae-rotate--next"
+              onClick={() => go(1)}
+              aria-label="Next principle"
+            >
+              ›
+            </button>
+          </div>
         </section>
 
         {/* DETAIL */}
@@ -361,7 +377,17 @@ function Styles() {
         font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-ink);
         padding: 2px 8px; border-radius: 999px; opacity: .85; border: 1px solid rgba(31,38,31,.22); white-space: nowrap;
       }
+      .ae-wheel-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
       .ae-wheel { width: 100%; max-width: min(720px, calc(100vh - 200px)); height: auto; }
+      .ae-rotate {
+        flex: 0 0 auto; width: 52px; height: 52px; border-radius: 999px;
+        border: 1px solid rgba(31,38,31,.18); background: #fbf8f2; color: var(--ae-forest);
+        font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+        font-family: var(--font-fraunces), Georgia, serif;
+        box-shadow: 0 1px 2px rgba(31,38,31,.06); transition: all 180ms cubic-bezier(.2,.8,.2,1);
+      }
+      .ae-rotate:hover { border-color: var(--ae-forest); background: var(--ae-forest); color: #fbf8f2; transform: scale(1.06); }
+      .ae-rotate:focus-visible { outline: 2px solid var(--ae-accent); outline-offset: 2px; }
       .ae-wheel g[role="button"]:focus { outline: none; }
       .ae-wheel g[role="button"]:focus-visible path { stroke: var(--ae-accent); stroke-width: 3; }
 
