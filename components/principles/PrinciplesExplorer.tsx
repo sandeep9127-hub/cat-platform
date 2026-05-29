@@ -312,9 +312,7 @@ function Styles() {
         transition: background 150ms, color 150ms;
       }
       .ae-list-num { font-family: var(--font-jetbrains), monospace; font-size: 12.5px; font-weight: 600; opacity: .5; width: 20px; flex: 0 0 auto; }
-      .ae-list-emblem { width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: #fff; border: 1px solid rgba(31,38,31,.10); }
-      .ae-list-item.is-active .ae-list-emblem,
-      .ae-list-item.is-hover .ae-list-emblem { border-color: rgba(255,255,255,.5); }
+      .ae-list-emblem { width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain; }
       .ae-list-title { font-size: 16.5px; font-weight: 500; letter-spacing: -.1px; }
       .ae-list-item:hover { background: rgba(31,38,31,.06); }
       /* Hover from the wheel mirrors the wheel's teal highlight so both
@@ -343,7 +341,7 @@ function Styles() {
       .ae-detail-wrap { border-left: 1px solid var(--ae-line); background: #fbf8f2; overflow-y: auto; }
       .ae-detail { padding: 30px 32px 104px; color: var(--ae-ink); min-height: 100%; }
       .ae-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-      .ae-detail-emblem { width: 88px; height: 88px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: #fbfaf4; border: 1px solid rgba(31,38,31,.12); }
+      .ae-detail-emblem { width: 92px; height: 92px; flex: 0 0 auto; object-fit: contain; }
       .ae-detail-num { font-family: var(--font-jetbrains), monospace; font-size: 38px; font-weight: 700; letter-spacing: -1px; color: var(--ae-forest); line-height: 1; opacity: .9; }
       .ae-detail-close { margin-left: auto; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); background: none; cursor: pointer; font-size: 20px; line-height: 1; color: var(--ae-ink); opacity: .55; transition: all 150ms; }
       .ae-detail-close:hover { opacity: 1; background: rgba(31,38,31,.06); }
