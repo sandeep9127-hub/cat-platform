@@ -206,6 +206,32 @@ function Detail({
             </div>
           ))}
         </div>
+        <div className="ae-source">
+          <span className="ae-source-label">Source</span>
+          <p className="ae-source-text">
+            The 13 principles are drawn from HLPE Report 14 (2019), the UN Committee on World Food
+            Security&apos;s consolidated framework. The Hub assistant can answer questions from the
+            full report.
+          </p>
+          <div className="ae-source-links">
+            <a
+              href="https://www.fao.org/3/ca5602en/ca5602en.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ae-source-link"
+            >
+              Read the full report ↗
+            </a>
+            <a
+              href="/publications/hlpe-report-14.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ae-source-link"
+            >
+              Download PDF ↓
+            </a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -379,6 +405,12 @@ function Styles() {
       .ae-intro-level-name { font-size: 15px; font-weight: 600; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
       .ae-intro-level-range { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-forest); opacity: .7; }
       .ae-intro-level-blurb { font-size: 13.5px; line-height: 1.5; color: rgba(31,38,31,.7); margin-top: 3px; }
+      .ae-source { margin-top: 26px; border-top: 1px solid var(--ae-line); padding-top: 20px; }
+      .ae-source-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
+      .ae-source-text { font-size: 13.5px; line-height: 1.55; color: rgba(31,38,31,.72); margin: 7px 0 12px; }
+      .ae-source-links { display: flex; flex-wrap: wrap; gap: 8px; }
+      .ae-source-link { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-forest); text-decoration: none; transition: all 150ms; }
+      .ae-source-link:hover { border-color: var(--ae-forest); background: var(--ae-forest); color: #fbf8f2; }
 
       @media (max-width: 1180px) { .ae { --ae-side-w: 240px; --ae-detail-w: 380px; } }
       @media (max-width: 920px) {

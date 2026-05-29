@@ -158,13 +158,27 @@ async function retrieve(
   // Landscape chunk search per landscape slug. If a single scope, just that one.
   // Otherwise, search the Patratu landscape (the only one with chunks today).
   // Easy to extend to all ingested landscapes once more are loaded.
-  let chunks: Awaited<ReturnType<typeof searchLandscapeChunks>> = [];
+  // Each result is tagged with the slug it came from so citations can be
+  // labelled correctly when more than one knowledge base is searched.
+  let chunks: (Awaited<ReturnType<typeof searchLandscapeChunks>>[number] & {
+    _slug: string;
+  })[] = [];
   if (embedding && wantsLandscape) {
-    const slugsToSearch = onlyThisLandscape ? [onlyThisLandscape] : ["patratu"];
+    // A specific landscape scope searches only that landscape. The general
+    // ("all") scope searches the ingested landscapes plus the HLPE Report 14
+    // knowledge base, so principle questions resolve against the source.
+    const slugsToSearch = onlyThisLandscape
+      ? [onlyThisLandscape]
+      : ["patratu", "hlpe"];
     const chunkResults = await Promise.all(
-      slugsToSearch.map((slug) =>
-        searchLandscapeChunks(slug, embedding, MAX_CONTEXT_HITS_PER_SOURCE).catch(() => [])
-      )
+      slugsToSearch.map(async (slug) => {
+        const r = await searchLandscapeChunks(
+          slug,
+          embedding,
+          MAX_CONTEXT_HITS_PER_SOURCE
+        ).catch(() => []);
+        return r.map((c) => ({ ...c, _slug: slug }));
+      })
     );
     chunks = chunkResults.flat();
   }
@@ -196,17 +210,31 @@ async function retrieve(
   }));
 
   const chunkHits: Hit[] = chunks.map((c) => {
-    const landscapeSlug = onlyThisLandscape ?? "patratu";
-    const landscapeName = LANDSCAPES[landscapeSlug]?.name ?? landscapeSlug;
+    const slug = c._slug;
     // Section paths from the ingested investment plan were leaking raw HTML
     // anchors like `<a id="_heading=h.xxxxx"></a>` and markdown escapes like
     // `5\.13\.1`. Both surface as ugly junk in the citation tray. Strip
     // tags, undo markdown escapes, and collapse whitespace before display.
     const cleanSection = sanitizeSectionPath(c.sectionPath ?? "");
     const cleanPreview = sanitizeChunkText(c.chunkText);
+
+    // Non-landscape knowledge bases (e.g. the HLPE principles report) get
+    // their own label + outbound source link. Landscapes link to their
+    // internal investment-plan page.
+    let label: string;
+    let url: string;
+    if (slug === "hlpe") {
+      label = `HLPE Report 14${cleanSection ? ` · ${cleanSection}` : ""}`;
+      url = "https://www.fao.org/3/ca5602en/ca5602en.pdf";
+    } else {
+      const landscapeName = LANDSCAPES[slug]?.name ?? slug;
+      label = `${landscapeName} Investment Plan${cleanSection ? ` · ${cleanSection}` : ""}`;
+      url = `/landscape/${slug}`;
+    }
+
     return {
-      label: `${landscapeName} Investment Plan${cleanSection ? ` · ${cleanSection}` : ""}`,
-      url: `/landscape/${landscapeSlug}`,
+      label,
+      url,
       preview: cleanPreview.slice(0, 240) + (cleanPreview.length > 240 ? "…" : ""),
       score: c.score, // already cosine-similarity 0..1
       type: "landscape",

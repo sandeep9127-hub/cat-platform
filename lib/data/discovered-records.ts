@@ -614,6 +614,19 @@ export const DISCOVERED_RECORDS: DiscoveredRecord[] = [
 
   // ─── RESOURCES ────────────────────────────────────────────────────────
   {
+    id: "r-000",
+    destination: "resource",
+    title: "HLPE Report 14 · Agroecological and other innovative approaches",
+    summary:
+      "The foundational source for the 13 principles of agroecology. The High Level Panel of Experts' 2019 report for the UN Committee on World Food Security, consolidating the principles across two scales of transformation — the agroecosystem and the wider food system.",
+    sourceName: "HLPE / CFS / FAO",
+    sourceUrl: "https://www.fao.org/3/ca5602en/ca5602en.pdf",
+    publishedAt: "2019-07-01",
+    themes: ["knowledge-and-capacity"],
+    resourceType: "report",
+    language: "en",
+  },
+  {
     id: "r-001",
     destination: "resource",
     title: "The 10 Elements of Agroecology · Guiding the transition",
