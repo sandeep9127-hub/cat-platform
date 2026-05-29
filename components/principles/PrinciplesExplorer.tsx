@@ -16,8 +16,10 @@ import { PrincipleWheel, type WheelPalette } from "./PrincipleWheel";
 // food-system half, meeting at a forest-green hub.
 const PALETTE: WheelPalette = {
   bg: "#fbf8f2",
-  accent: "#3f7d8d",
-  accentInk: "#f4f7ee",
+  // Light teal so the dark line-art emblem stays legible on the active
+  // wedge (a dark teal fill killed contrast and ghosted the emblem edge).
+  accent: "#a7cdd2",
+  accentInk: "#14333a",
   hub: "#1e3a1c",
   hubInk: "#f4f3ec",
   hubMuted: "#a9bda1",
@@ -116,7 +118,7 @@ export function PrinciplesExplorer() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       className="ae-list-emblem"
-                      src={`/images/principle-icons/p${p.n}.png?v=3`}
+                      src={`/images/principle-icons/p${p.n}.png?v=4`}
                       alt=""
                       aria-hidden
                     />
@@ -215,7 +217,7 @@ function Detail({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="ae-detail-emblem"
-          src={`/images/principle-icons/p${principle.n}.png?v=3`}
+          src={`/images/principle-icons/p${principle.n}.png?v=4`}
           alt=""
         />
         <div className="ae-detail-num">{String(principle.n).padStart(2, "0")}</div>
@@ -273,8 +275,8 @@ function Styles() {
         --ae-cream: #fbf8f2;
         --ae-ink: #1f261f;
         --ae-forest: #1e3a1c;
-        --ae-accent: #3f7d8d;
-        --ae-accent-ink: #f4f7ee;
+        --ae-accent: #a7cdd2;
+        --ae-accent-ink: #14333a;
         --ae-line: rgba(31,38,31,.12);
         --ae-side-w: 312px;
         --ae-detail-w: 420px;
