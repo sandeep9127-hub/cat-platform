@@ -116,7 +116,7 @@ export function PrinciplesExplorer() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       className="ae-list-emblem"
-                      src={`/images/principle-icons/p${p.n}.png`}
+                      src={`/images/principle-icons/p${p.n}.png?v=3`}
                       alt=""
                       aria-hidden
                     />
@@ -215,7 +215,7 @@ function Detail({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="ae-detail-emblem"
-          src={`/images/principle-icons/p${principle.n}.png`}
+          src={`/images/principle-icons/p${principle.n}.png?v=3`}
           alt=""
         />
         <div className="ae-detail-num">{String(principle.n).padStart(2, "0")}</div>

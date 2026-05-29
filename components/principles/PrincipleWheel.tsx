@@ -212,7 +212,7 @@ export function PrincipleWheel({
               </g>
               <g transform={`rotate(${-rot} ${iconPos.x.toFixed(2)} ${iconPos.y.toFixed(2)})`}>
                 <image
-                  href={`/images/principle-icons/p${p.n}.png`}
+                  href={`/images/principle-icons/p${p.n}.png?v=3`}
                   x={(iconPos.x - emSize / 2).toFixed(2)}
                   y={(iconPos.y - emSize / 2).toFixed(2)}
                   width={emSize}
