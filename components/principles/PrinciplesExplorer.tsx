@@ -136,8 +136,10 @@ export function PrinciplesExplorer() {
             principles={PRINCIPLES}
             selected={selected}
             hovered={hovered}
-            onSelect={(n) => setSelected((cur) => (cur === n ? null : n))}
+            onSelect={(n) => setSelected(n)}
             onHover={setHovered}
+            onPrev={() => go(-1)}
+            onNext={() => go(1)}
             palette={PALETTE}
           />
         </section>
