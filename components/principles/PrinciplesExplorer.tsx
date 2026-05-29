@@ -15,7 +15,7 @@ import { PrincipleWheel, type WheelPalette } from "./PrincipleWheel";
 // accent: light-green sectors for the agroecosystem half, warm-tan for the
 // food-system half, meeting at a forest-green hub.
 const PALETTE: WheelPalette = {
-  bg: "#f2f1eb",
+  bg: "#fbf8f2",
   accent: "#3f7d8d",
   accentInk: "#f4f7ee",
   hub: "#1e3a1c",
@@ -258,8 +258,8 @@ function Styles() {
   return (
     <style>{`
       .ae {
-        --ae-bg: #f2f1eb;
-        --ae-cream: #f2f1eb;
+        --ae-bg: #fbf8f2;
+        --ae-cream: #fbf8f2;
         --ae-ink: #1f261f;
         --ae-forest: #1e3a1c;
         --ae-accent: #3f7d8d;
@@ -317,7 +317,7 @@ function Styles() {
       .ae-wheel g[role="button"]:focus-visible path { stroke: var(--ae-accent); stroke-width: 3; }
 
       /* detail */
-      .ae-detail-wrap { border-left: 1px solid var(--ae-line); background: #faf9f4; overflow-y: auto; }
+      .ae-detail-wrap { border-left: 1px solid var(--ae-line); background: #fbf8f2; overflow-y: auto; }
       .ae-detail { padding: 30px 32px 104px; color: var(--ae-ink); min-height: 100%; }
       .ae-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
       .ae-detail-emblem { width: 88px; height: 88px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: #fbfaf4; border: 1px solid rgba(31,38,31,.12); }
