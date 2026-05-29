@@ -575,13 +575,17 @@ function Styles() {
       @media (max-width: 920px) {
         /* Drop the fixed-viewport lock; stack and let the page scroll.
            The sidebar becomes a horizontal, swipeable principle strip. */
-        .ae-main { grid-template-columns: 1fr; height: auto; overflow: visible; }
+        /* minmax(0,…) lets the single column shrink to the viewport so the
+           sidebar's internal overflow-x can scroll instead of the cell
+           expanding to fit all chips (the grid min-width:auto gotcha). */
+        .ae-main { grid-template-columns: minmax(0, 1fr); height: auto; overflow: visible; }
         .ae-sidebar {
-          border-right: 0; border-bottom: 1px solid var(--ae-line);
+          min-width: 0; border-right: 0; border-bottom: 1px solid var(--ae-line);
           overflow-x: auto; overflow-y: hidden; padding: 12px 14px;
           -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+          overscroll-behavior-x: contain;
         }
-        .ae-list { flex-direction: row; flex-wrap: nowrap; gap: 6px; }
+        .ae-list { flex-direction: row; flex-wrap: nowrap; gap: 6px; width: max-content; }
         .ae-list-divider {
           flex-direction: column; align-items: flex-start; gap: 2px;
           padding: 4px 10px 4px 0; margin: 0 2px 0 0; flex: 0 0 auto;
@@ -589,18 +593,18 @@ function Styles() {
         }
         .ae-list-divider-range { margin-left: 0; }
         .ae-list-item { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; }
-        .ae-stage { overflow: visible; padding: 18px 10px 4px; }
-        .ae-wheel-row { gap: 4px; }
-        .ae-wheel { max-width: min(560px, 86vw); }
+        /* wheel flexes to fill the space left by the two arrows — never overflows */
+        .ae-stage { min-width: 0; overflow: visible; padding: 18px 8px 4px; }
+        .ae-wheel-row { gap: 6px; width: 100%; }
+        .ae-wheel { flex: 1 1 0; min-width: 0; max-width: none; }
         .ae-rotate { width: 42px; height: 42px; font-size: 22px; }
-        .ae-detail-wrap { border-left: 0; border-top: 1px solid var(--ae-line); overflow: visible; }
+        .ae-detail-wrap { min-width: 0; border-left: 0; border-top: 1px solid var(--ae-line); overflow: visible; }
         .ae-detail { padding: 26px 20px 56px; }
       }
       @media (max-width: 560px) {
         .ae-list-title { font-size: 14.5px; }
         .ae-stage { padding: 14px 6px 2px; }
-        .ae-wheel-row { gap: 2px; }
-        .ae-wheel { max-width: 90vw; }
+        .ae-wheel-row { gap: 4px; }
         .ae-rotate { width: 36px; height: 36px; font-size: 20px; }
         .ae-legend { gap: 16px; }
         .ae-legend-item { font-size: 12px; }
