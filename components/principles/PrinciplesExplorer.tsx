@@ -573,17 +573,43 @@ function Styles() {
 
       @media (max-width: 1180px) { .ae { --ae-side-w: 240px; --ae-detail-w: 380px; } }
       @media (max-width: 920px) {
-        /* On small screens drop the fixed-viewport lock and let the page
-           scroll normally with the columns stacked. */
+        /* Drop the fixed-viewport lock; stack and let the page scroll.
+           The sidebar becomes a horizontal, swipeable principle strip. */
         .ae-main { grid-template-columns: 1fr; height: auto; overflow: visible; }
-        .ae-sidebar { border-right: 0; border-bottom: 1px solid var(--ae-line); overflow: visible; }
-        .ae-list { flex-direction: row; flex-wrap: wrap; }
-        .ae-list-cell { display: block; }
-        .ae-list-divider { width: 100%; }
-        .ae-list-title { display: none; }
-        .ae-stage { overflow: visible; }
+        .ae-sidebar {
+          border-right: 0; border-bottom: 1px solid var(--ae-line);
+          overflow-x: auto; overflow-y: hidden; padding: 12px 14px;
+          -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+        }
+        .ae-list { flex-direction: row; flex-wrap: nowrap; gap: 6px; }
+        .ae-list-divider {
+          flex-direction: column; align-items: flex-start; gap: 2px;
+          padding: 4px 10px 4px 0; margin: 0 2px 0 0; flex: 0 0 auto;
+          border-right: 1px solid var(--ae-line);
+        }
+        .ae-list-divider-range { margin-left: 0; }
+        .ae-list-item { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; }
+        .ae-stage { overflow: visible; padding: 18px 10px 4px; }
+        .ae-wheel-row { gap: 4px; }
+        .ae-wheel { max-width: min(560px, 86vw); }
+        .ae-rotate { width: 42px; height: 42px; font-size: 22px; }
         .ae-detail-wrap { border-left: 0; border-top: 1px solid var(--ae-line); overflow: visible; }
-        .ae-detail { padding-bottom: 48px; }
+        .ae-detail { padding: 26px 20px 56px; }
+      }
+      @media (max-width: 560px) {
+        .ae-list-title { font-size: 14.5px; }
+        .ae-stage { padding: 14px 6px 2px; }
+        .ae-wheel-row { gap: 2px; }
+        .ae-wheel { max-width: 90vw; }
+        .ae-rotate { width: 36px; height: 36px; font-size: 20px; }
+        .ae-legend { gap: 16px; }
+        .ae-legend-item { font-size: 12px; }
+        .ae-detail { padding: 22px 16px 52px; }
+        .ae-detail-title { font-size: 27px; }
+        .ae-detail-def { font-size: 16.5px; }
+        .ae-detail-intro-title { font-size: 25px; }
+        .ae-detail-emblem { width: 72px; height: 72px; }
+        .ae-detail-num { font-size: 32px; }
       }
     `}</style>
   );
