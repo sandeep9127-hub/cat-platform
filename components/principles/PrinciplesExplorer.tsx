@@ -335,7 +335,7 @@ function Styles() {
         font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-ink);
         padding: 2px 8px; border-radius: 999px; opacity: .85; border: 1px solid rgba(31,38,31,.22); white-space: nowrap;
       }
-      .ae-wheel { width: 100%; max-width: 540px; height: auto; }
+      .ae-wheel { width: 100%; max-width: min(660px, calc(100vh - 220px)); height: auto; }
       .ae-wheel g[role="button"]:focus { outline: none; }
       .ae-wheel g[role="button"]:focus-visible path { stroke: var(--ae-accent); stroke-width: 3; }
 
