@@ -76,6 +76,7 @@ export function OrganizationsExplorer() {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const clusterRef = useRef<any>(null);
+  const highlightRef = useRef<any>(null);
 
   // fetch directory
   useEffect(() => {
@@ -121,7 +122,10 @@ export function OrganizationsExplorer() {
     [locs, filteredOrgIds, stateF]
   );
 
-  useEffect(() => setPage(0), [q, stateF, typeF, domainF]);
+  useEffect(() => {
+    setPage(0);
+    highlightRef.current?.clearLayers();
+  }, [q, stateF, typeF, domainF]);
 
   // init map
   useEffect(() => {
@@ -136,8 +140,12 @@ export function OrganizationsExplorer() {
       }).addTo(map);
       const cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 });
       map.addLayer(cluster);
+      // a separate, non-clustered layer for the highlighted org's pins so they
+      // always show on top of the cluster dots
+      const hl = L.layerGroup().addTo(map);
       mapRef.current = map;
       clusterRef.current = cluster;
+      highlightRef.current = hl;
       renderMarkers(L);
     });
     return () => {
@@ -181,9 +189,40 @@ export function OrganizationsExplorer() {
 
   function focusOrg(o: Org) {
     const L = (window as any).L;
-    if (!L || !mapRef.current) return;
-    const pts = locs.filter((l) => l.orgId === o.id).map((l) => [l.lat, l.lng]) as [number, number][];
-    if (pts.length) mapRef.current.fitBounds(pts, { maxZoom: 9, padding: [40, 40] });
+    if (!L || !mapRef.current || !highlightRef.current) return;
+    const hl = highlightRef.current;
+    hl.clearLayers();
+    const myLocs = locs.filter((l) => l.orgId === o.id);
+    const pts = myLocs.map((l) => [l.lat, l.lng]) as [number, number][];
+    if (!pts.length) return;
+
+    const pinIcon = L.divIcon({
+      className: "og-pin",
+      html:
+        `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">` +
+        `<path d="M15 0C6.7 0 0 6.7 0 15c0 10.3 15 25 15 25s15-14.7 15-25C30 6.7 23.3 0 15 0z" fill="#2D7574" stroke="#fff" stroke-width="2.5"/>` +
+        `<circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>`,
+      iconSize: [30, 40],
+      iconAnchor: [15, 40],
+      popupAnchor: [0, -36],
+    });
+
+    myLocs.forEach((l, i) => {
+      const m = L.marker([l.lat, l.lng], { icon: pinIcon, zIndexOffset: 1000 }).addTo(hl);
+      m.bindPopup(
+        `<strong>${esc(o.name)}</strong><br/>${esc(l.district || "")}${l.district && l.state ? ", " : ""}${esc(l.state || "")}` +
+          (o.contactPerson ? `<br/><span style="font-size:11px">${esc(o.contactPerson)}</span>` : "") +
+          (o.email ? `<br/><a href="mailto:${esc(o.email)}" style="font-size:11px;color:#2D7574">${esc(o.email)}</a>` : "")
+      );
+      if (i === 0) setTimeout(() => m.openPopup(), 380);
+    });
+
+    if (pts.length === 1) mapRef.current.setView(pts[0], 11, { animate: true });
+    else mapRef.current.fitBounds(pts, { maxZoom: 11, padding: [60, 60], animate: true });
+  }
+
+  function clearHighlight() {
+    highlightRef.current?.clearLayers();
   }
 
   const PAGE = 24;
@@ -569,6 +608,9 @@ function Styles() {
       .og-pager button:disabled { opacity:.4; cursor:default; }
       .og-map { border:1px solid var(--line); border-radius:12px; overflow:hidden; height:100%; min-height:520px; z-index:0; }
       .og-map .leaflet-container { height:100%; width:100%; background:#eef1ee; }
+      .og-pin { background:transparent !important; border:0 !important; }
+      .og-pin svg { filter: drop-shadow(0 3px 4px rgba(31,38,37,.35)); animation: og-drop .35s cubic-bezier(.2,.8,.2,1); transform-origin: 50% 100%; }
+      @keyframes og-drop { 0% { transform: translateY(-12px) scale(.7); opacity:0; } 100% { transform: none; opacity:1; } }
 
       /* modal */
       .og-modal { position:fixed; inset:0; background:rgba(26,38,37,.5); display:flex; align-items:flex-start; justify-content:center; z-index:1000; padding:40px 16px; overflow-y:auto; }
