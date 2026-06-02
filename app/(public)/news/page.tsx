@@ -187,7 +187,7 @@ export default async function NewsPage({
             </Link>
           </div>
         ) : (
-          {/* dated editorial list (not a card grid) — fits chronological news */}
+          // dated editorial list (not a card grid) — fits chronological news
           <ul className="list-none p-0 m-0 mt-2 border-t border-line">
             {news.map((item) => (
               <li key={item.id} className="border-b border-line">
