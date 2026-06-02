@@ -147,7 +147,10 @@ export function OrganizationsExplorer() {
         .then((r) => r.json())
         .then((gj) => {
           const india = L.geoJSON(gj, {
-            style: { color: "#2D7574", weight: 0.8, opacity: 0.45, fillColor: "#e7efe6", fillOpacity: 1 },
+            // Match the Solutions Atlas / Landscapes basemap: barely-tinted teal
+            // states defined mostly by a thin teal stroke, over the cream
+            // gradient set on the container. og-country adds the soft lift shadow.
+            style: { color: "#2e7573", weight: 0.6, opacity: 0.32, fillColor: "#2e7573", fillOpacity: 0.07, className: "og-country" },
           }).addTo(map);
           india.bringToBack();
           // Fit to where the data actually is (mainland) rather than the full
@@ -193,11 +196,14 @@ export function OrganizationsExplorer() {
     const markers = filteredLocs.map((l) => {
       const o = orgById.get(l.orgId);
       const m = L.circleMarker([l.lat, l.lng], {
+        // Glowing core pin, matching the Landscapes map dots: teal core with a
+        // paper-coloured ring; og-dot adds the soft outer glow.
         radius: 5,
-        color: "#2D7574",
-        weight: 1.5,
-        fillColor: "#3A8E8B",
-        fillOpacity: 0.7,
+        color: "#fbf8f2",
+        weight: 1.4,
+        fillColor: "#2e7573",
+        fillOpacity: 0.9,
+        className: "og-dot",
       });
       m.bindPopup(
         `<strong>${o ? esc(o.name) : "Organisation"}</strong><br/>${esc(l.district || "")}${
@@ -345,7 +351,27 @@ export function OrganizationsExplorer() {
             </div>
           )}
         </div>
-        <div className="og-map" ref={mapEl} />
+        <div className="og-mapwrap">
+          <div className="og-map" ref={mapEl} />
+          <div className="og-map-frame" aria-hidden />
+          {!loading && (
+            <>
+              <div className="og-map-badge">
+                <span className="n">{filteredLocs.length.toLocaleString()}</span>
+                <span>points</span>
+                <span className="dot">·</span>
+                <span className="n">
+                  {new Set(filteredLocs.map((l) => l.state).filter(Boolean)).size}
+                </span>
+                <span>states</span>
+              </div>
+              <div className="og-map-legend">
+                <div><span className="lg-dot t" /> Work location</div>
+                <div><span className="lg-dot c" /> Cluster · zoom in</div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {detailOrg && (
@@ -630,8 +656,40 @@ function Styles() {
       .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
       .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
       .og-pager button:disabled { opacity:.4; cursor:default; }
-      .og-map { border:1px solid var(--line); border-radius:12px; overflow:hidden; height:100%; min-height:520px; z-index:0; }
-      .og-map .leaflet-container { height:100%; width:100%; background:#dfe7ea; }
+      /* ── Map styled to match the Landscapes / Solutions Atlas basemap ── */
+      .og-mapwrap { position:relative; height:100%; min-height:520px; }
+      .og-map { border:1px solid var(--line); border-radius:10px; overflow:hidden; height:100%; min-height:520px; z-index:0;
+        box-shadow: 0 1px 2px rgba(26,38,37,.04), 0 12px 32px -16px rgba(46,117,115,.20); }
+      .og-map .leaflet-container { height:100%; width:100%;
+        background: radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,.65), transparent 70%),
+                    linear-gradient(180deg, rgba(248,243,232,1) 0%, rgba(244,237,221,.85) 100%); }
+      /* soft lift under the landmass + glow on each work-location dot */
+      .og-map .leaflet-overlay-pane path.og-country { filter: drop-shadow(0 5px 12px rgba(26,38,37,.10)); }
+      .og-map .leaflet-overlay-pane path.og-dot { filter: drop-shadow(0 0 4px rgba(46,117,115,.55)); }
+      /* dashed inner frame, echoing the Landscapes map */
+      .og-map-frame { position:absolute; inset:11px; border:1px dashed var(--line); border-radius:6px; pointer-events:none; z-index:650; }
+      /* teal counter badge, top-right */
+      .og-map-badge { position:absolute; top:14px; right:14px; z-index:660; display:flex; align-items:center; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.13em; color:#f3efe6;
+        background: linear-gradient(135deg,#334B4A 0%,#2E7573 60%,#334B4A 100%); padding:8px 12px; border-radius:8px;
+        border:1px solid rgba(251,248,242,.12); box-shadow:0 10px 28px -12px rgba(26,38,37,.45), inset 0 1px 0 rgba(255,255,255,.10); }
+      .og-map-badge .n { color:#f8ca7c; font-size:12px; font-weight:600; }
+      .og-map-badge .dot { opacity:.45; }
+      /* legend, bottom-left */
+      .og-map-legend { position:absolute; bottom:14px; left:14px; z-index:660; display:flex; flex-direction:column; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
+        background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:8px; padding:9px 11px;
+        box-shadow:0 6px 16px -10px rgba(26,38,37,.20); }
+      .og-map-legend > div { display:flex; align-items:center; gap:7px; }
+      .lg-dot { width:10px; height:10px; border-radius:999px; flex:0 0 auto; }
+      .lg-dot.t { background:#2e7573; box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      .lg-dot.c { background:linear-gradient(135deg,#2E7573,#1F5957); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      /* cluster bubbles → teal halo to match the dot language */
+      .og .marker-cluster { background:transparent; }
+      .og .marker-cluster div { background:linear-gradient(135deg, rgba(46,117,115,.94), rgba(31,89,87,.94)); color:#fbf8f2;
+        font-family:var(--font-jetbrains),monospace; font-weight:600; border:1.5px solid rgba(251,248,242,.92);
+        box-shadow:0 0 0 6px rgba(46,117,115,.16), 0 4px 10px -4px rgba(26,38,37,.4); }
+      .og .marker-cluster span { line-height:30px; }
       .og-pin { background:transparent !important; border:0 !important; }
       .og-pin svg { filter: drop-shadow(0 3px 4px rgba(31,38,37,.35)); animation: og-drop .35s cubic-bezier(.2,.8,.2,1); transform-origin: 50% 100%; }
       @keyframes og-drop { 0% { transform: translateY(-12px) scale(.7); opacity:0; } 100% { transform: none; opacity:1; } }
@@ -662,7 +720,8 @@ function Styles() {
       @media (max-width: 900px) {
         .og-split { grid-template-columns:1fr; height:auto; }
         .og-list { padding-right:0; max-height:none; }
-        .og-map { height:420px; margin-top:12px; }
+        .og-mapwrap { height:420px; min-height:0; margin-top:12px; }
+        .og-map { height:420px; min-height:0; }
         .og-row { grid-template-columns:1fr; }
       }
     `}</style>
