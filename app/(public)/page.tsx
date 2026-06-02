@@ -288,7 +288,7 @@ export default async function LandingPage() {
       </Reveal>
 
       {/* THEMES — dark editorial feature band (Research-Journal direction) */}
-      <Reveal as="section" className="mt-8 py-16 lg:py-24" style={{ background: "#1a2625" } as React.CSSProperties}>
+      <Reveal as="section" className="mt-8 py-16 lg:py-24 bg-ink">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber mb-3">
             Eight working areas
