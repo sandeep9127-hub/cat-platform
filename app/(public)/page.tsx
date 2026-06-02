@@ -298,7 +298,15 @@ export default async function LandingPage() {
           </h2>
         </div>
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {themes.map((t, i) => (
+          {[...themes]
+            .sort(
+              (a, b) =>
+                // Populated themes first (count desc); curated displayOrder
+                // breaks ties so empty working areas sink to the end.
+                b.entryCount - a.entryCount ||
+                (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+            )
+            .map((t, i) => (
             <Link
               key={t.slug}
               href={`/theme/${t.slug}`}
@@ -306,7 +314,7 @@ export default async function LandingPage() {
               style={{
                 ["--c" as string]: t.colourHex,
                 animationDelay: `${i * 60}ms`,
-                background: "#22302e",
+                background: "var(--ink-2)",
                 border: "1px solid rgba(255,255,255,0.08)",
               } as React.CSSProperties}
             >
@@ -333,7 +341,7 @@ export default async function LandingPage() {
                 →
               </span>
             </Link>
-          ))}
+            ))}
         </div>
       </Reveal>
 

@@ -109,12 +109,12 @@ export default async function EntryDetailPage({ params }: Props) {
           {entry.whatDidNotWork && (
             <div
               className="relative rounded-[8px] border border-line p-6 my-10"
-              style={{ background: "rgba(184,80,66,0.05)" }}
+              style={{ background: "var(--red-alert-wash)" }}
             >
               <span
                 aria-hidden
                 className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: "#B85042" }}
+                style={{ background: "var(--red-alert)" }}
               />
               <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-red-alert font-semibold flex gap-2 items-center mb-3">
                 <span className="w-3.5 h-px bg-red-alert" />
