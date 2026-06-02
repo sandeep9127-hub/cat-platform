@@ -150,9 +150,15 @@ export function OrganizationsExplorer() {
             style: { color: "#2D7574", weight: 0.8, opacity: 0.45, fillColor: "#e7efe6", fillOpacity: 1 },
           }).addTo(map);
           india.bringToBack();
+          // Fit to where the data actually is (mainland) rather than the full
+          // GeoJSON — the Andaman/Lakshadweep islands would otherwise force a
+          // zoom-out that shrinks mainland India. Loosen the pan boundary to
+          // the full country so the islands stay reachable.
           try {
-            map.fitBounds(india.getBounds(), { padding: [12, 12] });
-            map.setMaxBounds(india.getBounds().pad(0.3));
+            const pts = locs.filter((l) => l.lat && l.lng).map((l) => [l.lat, l.lng]) as [number, number][];
+            if (pts.length) map.fitBounds(pts, { padding: [16, 16] });
+            else map.fitBounds(india.getBounds(), { padding: [12, 12] });
+            map.setMaxBounds(india.getBounds().pad(0.4));
           } catch {}
         })
         .catch(() => {});
