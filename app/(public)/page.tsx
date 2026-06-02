@@ -194,14 +194,14 @@ export default async function LandingPage() {
             >
               <Link
                 href="/landscapes"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-4 py-2.5 rounded-full bg-amber text-deep-teal font-semibold shadow-[0_8px_24px_-8px_rgba(248,202,124,0.55),inset_0_1px_0_rgba(255,255,255,0.30)] hover:bg-amber-deep hover:text-paper transition-all"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] bg-amber text-deep-teal font-semibold hover:bg-amber-deep hover:text-paper transition-colors"
               >
                 Browse the 11 landscapes
                 <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
               </Link>
               <Link
                 href="/agent"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-4 py-2.5 rounded-full border border-paper/40 text-paper backdrop-blur-sm bg-deep-teal/20 hover:border-amber hover:text-amber hover:bg-deep-teal/30 transition-colors"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] border border-paper/50 text-paper hover:border-amber hover:text-amber transition-colors"
               >
                 Ask the assistant
               </Link>
@@ -287,64 +287,50 @@ export default async function LandingPage() {
         />
       </Reveal>
 
-      {/* THEMES */}
-      <Reveal as="section" className="bg-cream border-y border-line py-14 lg:py-20 mt-8">
-        <SectionHead title="Read by" italic="theme" meta="Eight working areas" />
+      {/* THEMES — dark editorial feature band (Research-Journal direction) */}
+      <Reveal as="section" className="mt-8 py-16 lg:py-24" style={{ background: "#1a2625" } as React.CSSProperties}>
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-9">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber mb-3">
+            Eight working areas
+          </div>
+          <h2 className="font-serif text-[34px] sm:text-[42px] leading-[1.04] tracking-[-0.02em] text-paper">
+            Read by <span className="italic font-normal text-amber">theme</span>.
+          </h2>
+        </div>
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {themes.map((t, i) => (
             <Link
               key={t.slug}
               href={`/theme/${t.slug}`}
-              className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-6 flex flex-col gap-4 min-h-[200px] reveal-stagger transition-all duration-300 ease-out hover:-translate-y-1"
+              className="group relative flex flex-col gap-3.5 min-h-[190px] p-6 rounded-[8px] reveal-stagger transition-colors duration-200"
               style={{
                 ["--c" as string]: t.colourHex,
-                animationDelay: `${i * 70}ms`,
-                boxShadow: `0 1px 2px rgba(26,38,37,0.05), 0 8px 24px -14px ${t.colourHex}55, inset 0 1px 0 rgba(255,255,255,0.6)`,
-                backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${t.colourHex}0d 100%), repeating-linear-gradient(-22deg, ${t.colourHex}0a 0px, ${t.colourHex}0a 1px, transparent 1px, transparent 14px)`,
+                animationDelay: `${i * 60}ms`,
+                background: "#22302e",
+                border: "1px solid rgba(255,255,255,0.08)",
               } as React.CSSProperties}
             >
-              {/* Theme-coloured top accent bar */}
+              {/* flat square icon tile — single theme colour, no gradient/glow */}
               <span
-                aria-hidden
-                className="absolute top-0 left-0 right-0 h-[3px]"
-                style={{
-                  background: `linear-gradient(90deg, ${t.colourHex} 0%, ${t.colourHex}cc 55%, transparent 100%)`,
-                }}
-              />
-              {/* Icon chip with inset highlight + theme glow */}
-              <span
-                className="w-[48px] h-[48px] rounded-[8px] relative flex items-center justify-center text-paper transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-2deg]"
-                style={{
-                  background: `linear-gradient(155deg, ${t.colourHex}, ${t.colourHex}d0)`,
-                  boxShadow: `0 6px 16px -8px ${t.colourHex}99, inset 0 1px 0 rgba(255,255,255,0.30)`,
-                }}
+                className="w-[40px] h-[40px] rounded-[6px] flex items-center justify-center text-paper"
+                style={{ background: t.colourHex }}
                 aria-hidden
               >
-                <ThemeIcon slug={t.slug} size={24} />
+                <ThemeIcon slug={t.slug} size={22} />
               </span>
-              <h3 className="font-serif text-[21px] font-medium tracking-[-0.01em] text-ink leading-[1.18] transition-colors duration-300 group-hover:text-[color:var(--c)] max-w-[20ch]">
+              <h3 className="font-serif text-[21px] font-medium tracking-[-0.012em] text-paper leading-[1.16] max-w-[20ch]">
                 {t.name}
               </h3>
-              <span className="font-mono text-[10px] uppercase tracking-mono-mid text-muted mt-auto flex gap-2 items-center">
-                <strong className="text-deep-teal text-[13px] font-semibold tracking-[0.04em]">
-                  {t.entryCount}
-                </strong>{" "}
-                programmes
+              {/* metadata as a bare mono label */}
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/45 mt-auto">
+                <strong className="text-paper/85 text-[13px] font-semibold">{t.entryCount}</strong> programmes
               </span>
               <span
-                className="absolute top-5 right-5 font-serif text-[20px] text-muted transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
+                className="absolute top-6 right-6 font-serif text-[18px] text-paper/35 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
                 aria-hidden
               >
                 →
               </span>
-              {/* Hover wash, bottom-right */}
-              <span
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 92% 105%, ${t.colourHex}26 0%, transparent 62%)`,
-                }}
-                aria-hidden
-              />
             </Link>
           ))}
         </div>

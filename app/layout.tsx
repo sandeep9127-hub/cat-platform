@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { BrandBar } from "@/components/layout/BrandBar";
 import { Footer } from "@/components/layout/Footer";
@@ -36,6 +36,19 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+/**
+ * Fraunces — a real display serif for the editorial "research journal" look.
+ * Wired to the existing `--font-fraunces` token so every `font-serif` heading
+ * across the site renders in Fraunces without touching markup.
+ */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces-real",
+  display: "swap",
+});
+
 const PROD_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
@@ -67,11 +80,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrains.variable}`}
-      // Inter is the sitewide typeface. Mirror it on the legacy --font-fraunces
-      // CSS variable so every existing `font-serif` Tailwind class also resolves
-      // to Inter without touching 100+ markup files.
-      style={{ ["--font-fraunces" as string]: `var(--font-inter)` }}
+      className={`${inter.variable} ${jetbrains.variable} ${fraunces.variable}`}
+      // Inter stays the sans/body face; Fraunces now drives every `font-serif`
+      // heading (the editorial "research journal" direction).
+      style={{ ["--font-fraunces" as string]: `var(--font-fraunces-real)` }}
     >
       <body className="min-h-dvh font-sans">
         <a href="#main" className="skip-to-content">
