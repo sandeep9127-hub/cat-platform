@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Info,
   Compass,
+  Users,
 } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
@@ -17,6 +18,7 @@ const NAV_LINKS = [
   { href: "/principles", label: "Principles", Icon: Compass },
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
+  { href: "/organizations", label: "Organizations", Icon: Users },
   { href: "/resources", label: "Resources", Icon: BookOpen },
   { href: "/news", label: "News", Icon: Newspaper },
   { href: "/agent", label: "Ask", Icon: MessageCircle },

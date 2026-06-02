@@ -1,0 +1,498 @@
+"use client";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type Org = {
+  id: string;
+  name: string;
+  orgType: string;
+  domains: string[];
+  locationCount: number;
+  states: string[];
+};
+type Loc = { orgId: string; lat: number; lng: number; state: string | null; district: string | null };
+
+const TYPE_ORDER = [
+  "NGO",
+  "Civil Society (CSO/CBO)",
+  "Non-profit",
+  "Farmer / FPO",
+  "Market player",
+  "Finance",
+  "Donor",
+  "Educational / Research",
+  "Other",
+];
+
+// Load Leaflet + markercluster from CDN once.
+let leafletPromise: Promise<any> | null = null;
+function loadLeaflet(): Promise<any> {
+  if (typeof window === "undefined") return Promise.reject();
+  if ((window as any).L?.markerClusterGroup) return Promise.resolve((window as any).L);
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve, reject) => {
+    const css = (href: string) => {
+      const l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = href;
+      document.head.appendChild(l);
+    };
+    css("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+    css("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
+    css("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
+    const s1 = document.createElement("script");
+    s1.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    s1.onload = () => {
+      const s2 = document.createElement("script");
+      s2.src = "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js";
+      s2.onload = () => resolve((window as any).L);
+      s2.onerror = reject;
+      document.body.appendChild(s2);
+    };
+    s1.onerror = reject;
+    document.body.appendChild(s1);
+  });
+  return leafletPromise;
+}
+
+export function OrganizationsExplorer() {
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [locs, setLocs] = useState<Loc[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [q, setQ] = useState("");
+  const [stateF, setStateF] = useState("");
+  const [typeF, setTypeF] = useState("");
+  const [domainF, setDomainF] = useState("");
+  const [page, setPage] = useState(0);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Org | null>(null);
+
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+  const clusterRef = useRef<any>(null);
+
+  // fetch directory
+  useEffect(() => {
+    fetch("/api/organizations")
+      .then((r) => r.json())
+      .then((d) => {
+        setOrgs(d.orgs || []);
+        setLocs(d.locations || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const states = useMemo(
+    () => Array.from(new Set(orgs.flatMap((o) => o.states))).sort(),
+    [orgs]
+  );
+  const domains = useMemo(
+    () => Array.from(new Set(orgs.flatMap((o) => o.domains))).sort(),
+    [orgs]
+  );
+
+  // filtered orgs
+  const filteredOrgs = useMemo(() => {
+    const ql = q.trim().toLowerCase();
+    return orgs.filter((o) => {
+      if (ql && !o.name.toLowerCase().includes(ql)) return false;
+      if (typeF && o.orgType !== typeF) return false;
+      if (stateF && !o.states.includes(stateF)) return false;
+      if (domainF && !o.domains.includes(domainF)) return false;
+      return true;
+    });
+  }, [orgs, q, typeF, stateF, domainF]);
+
+  const filteredOrgIds = useMemo(() => new Set(filteredOrgs.map((o) => o.id)), [filteredOrgs]);
+
+  // locations to show: belong to a filtered org, and (if state filter) in that state
+  const filteredLocs = useMemo(
+    () =>
+      locs.filter(
+        (l) => filteredOrgIds.has(l.orgId) && (!stateF || l.state === stateF)
+      ),
+    [locs, filteredOrgIds, stateF]
+  );
+
+  useEffect(() => setPage(0), [q, stateF, typeF, domainF]);
+
+  // init map
+  useEffect(() => {
+    if (loading || !mapEl.current) return;
+    let cancelled = false;
+    loadLeaflet().then((L) => {
+      if (cancelled || mapRef.current) return;
+      const map = L.map(mapEl.current, { scrollWheelZoom: true, attributionControl: true }).setView([22.5, 80], 5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+      const cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 });
+      map.addLayer(cluster);
+      mapRef.current = map;
+      clusterRef.current = cluster;
+      renderMarkers(L);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // re-render markers when filter changes
+  useEffect(() => {
+    const L = (window as any).L;
+    if (!L || !clusterRef.current) return;
+    renderMarkers(L);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredLocs]);
+
+  function renderMarkers(L: any) {
+    const cluster = clusterRef.current;
+    const orgById = new Map(orgs.map((o) => [o.id, o]));
+    cluster.clearLayers();
+    const markers = filteredLocs.map((l) => {
+      const o = orgById.get(l.orgId);
+      const m = L.circleMarker([l.lat, l.lng], {
+        radius: 5,
+        color: "#2D7574",
+        weight: 1.5,
+        fillColor: "#3A8E8B",
+        fillOpacity: 0.7,
+      });
+      m.bindPopup(
+        `<strong>${o ? esc(o.name) : "Organisation"}</strong><br/>${esc(l.district || "")}${
+          l.district && l.state ? ", " : ""
+        }${esc(l.state || "")}<br/><span style="color:#6B7280;font-size:11px">${o ? esc(o.orgType) : ""}</span>`
+      );
+      return m;
+    });
+    cluster.addLayers(markers);
+  }
+
+  function focusOrg(o: Org) {
+    const L = (window as any).L;
+    if (!L || !mapRef.current) return;
+    const pts = locs.filter((l) => l.orgId === o.id).map((l) => [l.lat, l.lng]) as [number, number][];
+    if (pts.length) mapRef.current.fitBounds(pts, { maxZoom: 9, padding: [40, 40] });
+  }
+
+  const PAGE = 24;
+  const pageCount = Math.ceil(filteredOrgs.length / PAGE);
+  const shown = filteredOrgs.slice(page * PAGE, page * PAGE + PAGE);
+
+  return (
+    <div className="og">
+      {/* header */}
+      <header className="og-head">
+        <div>
+          <div className="og-eyebrow">Who’s working where</div>
+          <h1 className="og-title">Organizations Atlas</h1>
+          <p className="og-sub">
+            {loading
+              ? "Loading the directory…"
+              : `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations. Source: NCNF · Core Stack survey (2021).`}
+          </p>
+        </div>
+        <button className="og-add" onClick={() => { setEditTarget(null); setFormOpen(true); }}>
+          + Add or update an organisation
+        </button>
+      </header>
+
+      {/* filters */}
+      <div className="og-filters">
+        <input
+          className="og-input"
+          placeholder="Search organisations…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <select className="og-select" value={stateF} onChange={(e) => setStateF(e.target.value)}>
+          <option value="">All states</option>
+          {states.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select className="og-select" value={typeF} onChange={(e) => setTypeF(e.target.value)}>
+          <option value="">All types</option>
+          {TYPE_ORDER.filter((t) => orgs.some((o) => o.orgType === t)).map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <select className="og-select" value={domainF} onChange={(e) => setDomainF(e.target.value)}>
+          <option value="">All domains</option>
+          {domains.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+        {(q || stateF || typeF || domainF) && (
+          <button className="og-clear" onClick={() => { setQ(""); setStateF(""); setTypeF(""); setDomainF(""); }}>
+            Clear
+          </button>
+        )}
+        <span className="og-count">{filteredOrgs.length} orgs · {filteredLocs.length} points</span>
+      </div>
+
+      {/* split: list + map */}
+      <div className="og-split">
+        <div className="og-list">
+          {shown.map((o) => (
+            <article key={o.id} className="og-card" onClick={() => focusOrg(o)}>
+              <div className="og-card-top">
+                <h3 className="og-card-name">{o.name}</h3>
+                <span className="og-type">{o.orgType}</span>
+              </div>
+              <div className="og-card-meta">
+                {o.locationCount} location{o.locationCount === 1 ? "" : "s"} · {o.states.length} state{o.states.length === 1 ? "" : "s"}
+              </div>
+              {o.domains.length > 0 && (
+                <div className="og-domains">
+                  {o.domains.slice(0, 4).map((d) => (
+                    <span key={d} className="og-domain">{d}</span>
+                  ))}
+                  {o.domains.length > 4 && <span className="og-domain-more">+{o.domains.length - 4}</span>}
+                </div>
+              )}
+              <button
+                className="og-edit"
+                onClick={(e) => { e.stopPropagation(); setEditTarget(o); setFormOpen(true); }}
+              >
+                Suggest an edit →
+              </button>
+            </article>
+          ))}
+          {!loading && shown.length === 0 && <p className="og-empty">No organisations match these filters.</p>}
+          {pageCount > 1 && (
+            <div className="og-pager">
+              <button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>← Prev</button>
+              <span>Page {page + 1} of {pageCount}</span>
+              <button disabled={page >= pageCount - 1} onClick={() => setPage((p) => p + 1)}>Next →</button>
+            </div>
+          )}
+        </div>
+        <div className="og-map" ref={mapEl} />
+      </div>
+
+      {formOpen && (
+        <SubmitForm
+          orgs={orgs}
+          editTarget={editTarget}
+          onClose={() => setFormOpen(false)}
+        />
+      )}
+
+      <Styles />
+    </div>
+  );
+}
+
+function esc(s: string) {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+}
+
+// ----- submission form -------------------------------------------------
+function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Org | null; onClose: () => void }) {
+  const [mode, setMode] = useState<"new" | "edit">(editTarget ? "edit" : "new");
+  const [targetId, setTargetId] = useState(editTarget?.id ?? "");
+  const [f, setF] = useState({
+    name: editTarget?.name ?? "",
+    orgType: editTarget?.orgType ?? "",
+    state: "",
+    district: "",
+    block: "",
+    domains: editTarget?.domains.join(", ") ?? "",
+    comments: "",
+    contactPerson: "",
+    contactEmail: "",
+    submitterNote: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [err, setErr] = useState("");
+
+  const up = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
+
+  async function submit() {
+    if (!f.name.trim()) { setErr("Organisation name is required."); return; }
+    if (!f.contactEmail.trim()) { setErr("Your email is required so we can verify the entry."); return; }
+    setBusy(true); setErr("");
+    try {
+      const res = await fetch("/api/organizations/submit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          submissionType: mode,
+          targetOrgId: mode === "edit" ? targetId || null : null,
+          name: f.name,
+          orgType: f.orgType,
+          domains: f.domains.split(",").map((d) => d.trim()).filter(Boolean),
+          state: f.state,
+          district: f.district,
+          block: f.block,
+          comments: f.comments,
+          contactPerson: f.contactPerson,
+          contactEmail: f.contactEmail,
+          submitterNote: f.submitterNote,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setDone(true);
+    } catch {
+      setErr("Could not submit. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="og-modal" onClick={onClose}>
+      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+        <button className="og-close" onClick={onClose} aria-label="Close">×</button>
+        {done ? (
+          <div className="og-thanks">
+            <h2>Thank you</h2>
+            <p>Your submission has been received and will be reviewed before it appears in the directory.</p>
+            <button className="og-submit" onClick={onClose}>Close</button>
+          </div>
+        ) : (
+          <>
+            <h2 className="og-sheet-title">Add or update an organisation</h2>
+            <div className="og-toggle">
+              <button className={mode === "new" ? "on" : ""} onClick={() => setMode("new")}>New organisation</button>
+              <button className={mode === "edit" ? "on" : ""} onClick={() => setMode("edit")}>Suggest an edit</button>
+            </div>
+
+            {mode === "edit" && (
+              <label className="og-field">
+                <span>Which organisation?</span>
+                <select value={targetId} onChange={(e) => {
+                  setTargetId(e.target.value);
+                  const o = orgs.find((x) => x.id === e.target.value);
+                  if (o) setF((s) => ({ ...s, name: o.name, orgType: o.orgType, domains: o.domains.join(", ") }));
+                }}>
+                  <option value="">Select…</option>
+                  {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                </select>
+              </label>
+            )}
+
+            <label className="og-field"><span>Organisation name *</span>
+              <input value={f.name} onChange={(e) => up("name", e.target.value)} /></label>
+            <div className="og-row">
+              <label className="og-field"><span>Type</span>
+                <select value={f.orgType} onChange={(e) => up("orgType", e.target.value)}>
+                  <option value="">Select…</option>
+                  {TYPE_ORDER.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select></label>
+              <label className="og-field"><span>State</span>
+                <input value={f.state} onChange={(e) => up("state", e.target.value)} /></label>
+            </div>
+            <div className="og-row">
+              <label className="og-field"><span>District</span>
+                <input value={f.district} onChange={(e) => up("district", e.target.value)} /></label>
+              <label className="og-field"><span>Block</span>
+                <input value={f.block} onChange={(e) => up("block", e.target.value)} /></label>
+            </div>
+            <label className="og-field"><span>Domains (comma-separated)</span>
+              <input value={f.domains} onChange={(e) => up("domains", e.target.value)} placeholder="Livelihoods, Soil conservation, Seed management" /></label>
+            <label className="og-field"><span>Anything else</span>
+              <textarea rows={2} value={f.comments} onChange={(e) => up("comments", e.target.value)} /></label>
+
+            <div className="og-pii">
+              <div className="og-pii-label">Your details (not published — used only to verify the entry)</div>
+              <div className="og-row">
+                <label className="og-field"><span>Your name</span>
+                  <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} /></label>
+                <label className="og-field"><span>Your email *</span>
+                  <input value={f.contactEmail} onChange={(e) => up("contactEmail", e.target.value)} /></label>
+              </div>
+            </div>
+
+            {err && <p className="og-err">{err}</p>}
+            <button className="og-submit" onClick={submit} disabled={busy}>
+              {busy ? "Submitting…" : mode === "new" ? "Submit new organisation" : "Submit edit"}
+            </button>
+            <p className="og-note">Submissions are reviewed before they appear. Personal details are never shown publicly.</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Styles() {
+  return (
+    <style>{`
+      .og { --t:#2D7574; --td:#1F5957; --ink:#1F261F; --muted:#6B7280; --paper:#fbf8f2; --line:rgba(31,38,31,.12);
+        background: var(--paper); font-family: var(--font-inter), system-ui, sans-serif; color: var(--ink); }
+      .og-head { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap;
+        max-width:1280px; margin:0 auto; padding:32px 24px 16px; }
+      .og-eyebrow { font-family: var(--font-jetbrains),monospace; font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:#b5793a; }
+      .og-title { font-family: var(--font-fraunces),Georgia,serif; font-size:40px; font-weight:600; letter-spacing:-.02em; margin:6px 0 4px; }
+      .og-sub { font-size:14.5px; color:var(--muted); max-width:70ch; }
+      .og-add { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+        padding:11px 16px; border-radius:999px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--td),var(--t)); color:#fff; }
+      .og-add:hover { opacity:.92; }
+      .og-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; max-width:1280px; margin:0 auto; padding:10px 24px 16px; }
+      .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); }
+      .og-input { min-width:220px; flex:1 1 220px; }
+      .og-clear { font-size:12px; color:var(--muted); background:none; border:0; cursor:pointer; text-decoration:underline; }
+      .og-count { margin-left:auto; font-family:var(--font-jetbrains),monospace; font-size:11px; color:var(--muted); }
+      .og-split { display:grid; grid-template-columns: 1fr 1fr; gap:0; max-width:1280px; margin:0 auto; padding:0 24px 40px;
+        height: calc(100vh - 250px); min-height:520px; }
+      .og-list { overflow-y:auto; padding-right:16px; display:flex; flex-direction:column; gap:10px; }
+      .og-card { border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+      .og-card:hover { border-color:rgba(45,117,116,.4); box-shadow:0 2px 10px -6px rgba(31,38,37,.2); }
+      .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+      .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.2; }
+      .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
+        color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
+      .og-card-meta { font-size:12.5px; color:var(--muted); margin-top:5px; }
+      .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+      .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
+      .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
+      .og-edit { margin-top:10px; font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+        color:var(--td); background:none; border:0; cursor:pointer; padding:0; }
+      .og-edit:hover { text-decoration:underline; }
+      .og-empty { color:var(--muted); padding:30px 0; }
+      .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
+      .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+      .og-pager button:disabled { opacity:.4; cursor:default; }
+      .og-map { border:1px solid var(--line); border-radius:12px; overflow:hidden; height:100%; min-height:520px; z-index:0; }
+      .og-map .leaflet-container { height:100%; width:100%; background:#eef1ee; }
+
+      /* modal */
+      .og-modal { position:fixed; inset:0; background:rgba(26,38,37,.5); display:flex; align-items:flex-start; justify-content:center; z-index:1000; padding:40px 16px; overflow-y:auto; }
+      .og-sheet { background:var(--paper); border-radius:16px; max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
+      .og-close { position:absolute; top:14px; right:16px; width:32px; height:32px; border-radius:999px; border:1px solid var(--line); background:none; cursor:pointer; font-size:20px; color:var(--muted); }
+      .og-sheet-title { font-family:var(--font-fraunces),Georgia,serif; font-size:24px; font-weight:600; margin:0 0 14px; }
+      .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius:10px; padding:4px; margin-bottom:16px; }
+      .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius:7px; background:none; cursor:pointer; color:var(--muted); }
+      .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+      .og-field { display:flex; flex-direction:column; gap:4px; margin-bottom:11px; }
+      .og-field > span { font-size:11.5px; color:var(--muted); }
+      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:13.5px; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+      .og-row { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+      .og-pii { border-top:1px dashed var(--line); margin-top:8px; padding-top:14px; }
+      .og-pii-label { font-size:11.5px; color:#b5793a; margin-bottom:8px; }
+      .og-err { color:#b3261e; font-size:12.5px; margin:4px 0; }
+      .og-submit { width:100%; margin-top:10px; font-family:var(--font-jetbrains),monospace; font-size:12px; text-transform:uppercase; letter-spacing:.08em;
+        padding:13px; border-radius:10px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--td),var(--t)); color:#fff; }
+      .og-submit:disabled { opacity:.6; }
+      .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }
+      .og-thanks { text-align:center; padding:20px 0; }
+      .og-thanks h2 { font-family:var(--font-fraunces),Georgia,serif; font-size:26px; margin-bottom:8px; }
+      .og-thanks p { color:var(--muted); font-size:14px; margin-bottom:18px; }
+
+      @media (max-width: 900px) {
+        .og-split { grid-template-columns:1fr; height:auto; }
+        .og-list { padding-right:0; max-height:none; }
+        .og-map { height:420px; margin-top:12px; }
+        .og-row { grid-template-columns:1fr; }
+      }
+    `}</style>
+  );
+}
