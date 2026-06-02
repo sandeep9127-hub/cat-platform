@@ -143,13 +143,7 @@ export function AtlasSection({
             {shouldCap && (
               <Link
                 href={readMoreHref}
-                className="group mt-3 self-start inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full text-deep-teal font-semibold font-mono text-[10.5px] uppercase tracking-[0.16em] transition-all hover:-translate-y-0.5"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(248,202,124,0.95) 0%, rgba(224,166,90,0.95) 100%)",
-                  boxShadow:
-                    "0 8px 22px -10px rgba(198,140,46,0.55), inset 0 1px 0 rgba(255,255,255,0.30)",
-                }}
+                className="group mt-3 self-start inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] text-deep-teal font-semibold font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
               >
                 <span>
                   Read all {filtered.length} in the Solutions Atlas

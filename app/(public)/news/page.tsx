@@ -202,27 +202,14 @@ export default async function NewsPage({
                     href={getDeepSourceUrl(item)}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative overflow-hidden block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
-                    style={{
-                      boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${primaryTheme.colour}55`,
-                      backgroundImage:
-                        "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.30) 100%)",
-                    }}
+                    className="group relative block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-colors duration-200 hover:border-teal/40"
                   >
-                    <span
-                      aria-hidden
-                      className="absolute top-0 left-0 right-0 h-[2px]"
-                      style={{
-                        background: `linear-gradient(90deg, ${primaryTheme.colour} 0%, ${primaryTheme.colour}cc 60%, transparent 100%)`,
-                      }}
-                    />
-
                     <div className="relative flex items-center justify-between gap-3 mb-4 font-mono text-[10px] uppercase tracking-[0.14em]">
                       <span className="text-amber-deep font-semibold">{item.sourceName}</span>
                       <span className="text-muted tabular-nums">{fmtDateShort(item.publishedAt)}</span>
                     </div>
 
-                    <h2 className="relative font-sans text-[18px] sm:text-[19px] font-medium leading-[1.3] tracking-[-0.012em] text-[color:var(--navy-teal)] group-hover:text-teal transition-colors max-w-[34ch]">
+                    <h2 className="relative font-serif text-[19px] sm:text-[20px] font-medium leading-[1.25] tracking-[-0.012em] text-ink group-hover:text-teal transition-colors max-w-[34ch]">
                       {item.title}
                     </h2>
                     <p className="relative font-sans text-[14px] text-ink-soft leading-[1.6] mt-3 max-w-[44ch]">

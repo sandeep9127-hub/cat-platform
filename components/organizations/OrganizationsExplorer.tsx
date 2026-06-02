@@ -585,7 +585,7 @@ function Styles() {
       .og-title { font-family: var(--font-fraunces),Georgia,serif; font-size:40px; font-weight:600; letter-spacing:-.02em; margin:6px 0 4px; }
       .og-sub { font-size:14.5px; color:var(--muted); max-width:70ch; }
       .og-add { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
-        padding:11px 16px; border-radius:999px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--td),var(--t)); color:#fff; }
+        padding:11px 18px; border-radius:6px; border:0; cursor:pointer; background:var(--td); color:#fff; }
       .og-add:hover { opacity:.92; }
       .og-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; max-width:1280px; margin:0 auto; padding:10px 24px 16px; }
       .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); }
@@ -596,7 +596,7 @@ function Styles() {
         height: calc(100vh - 250px); min-height:520px; }
       .og-list { overflow-y:auto; padding-right:16px; display:flex; flex-direction:column; gap:10px; }
       .og-card { border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
-      .og-card:hover { border-color:rgba(45,117,116,.4); box-shadow:0 2px 10px -6px rgba(31,38,37,.2); }
+      .og-card:hover { border-color:rgba(45,117,116,.4); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
       .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.2; }
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
@@ -606,7 +606,7 @@ function Styles() {
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
       .og-card-actions { display:flex; gap:14px; margin-top:11px; align-items:center; }
-      .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+      .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; padding:6px 0; min-height:32px; display:inline-flex; align-items:center;
         background:none; border:0; cursor:pointer; padding:0; }
       .og-view { color:var(--td); font-weight:600; }
       .og-edit { color:var(--muted); }
@@ -652,7 +652,7 @@ function Styles() {
       .og-pii-label { font-size:11.5px; color:#b5793a; margin-bottom:8px; }
       .og-err { color:#b3261e; font-size:12.5px; margin:4px 0; }
       .og-submit { width:100%; margin-top:10px; font-family:var(--font-jetbrains),monospace; font-size:12px; text-transform:uppercase; letter-spacing:.08em;
-        padding:13px; border-radius:10px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--td),var(--t)); color:#fff; }
+        padding:14px; border-radius:6px; border:0; cursor:pointer; background:var(--td); color:#fff; }
       .og-submit:disabled { opacity:.6; }
       .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }
       .og-thanks { text-align:center; padding:20px 0; }

@@ -92,19 +92,13 @@ export function BrandBar() {
             </span>
           </span>
         </Link>
-        <nav className="ml-auto flex items-center gap-4 lg:gap-6">
-          {NAV_LINKS.map(({ href, label, Icon }) => (
+        <nav className="ml-auto flex items-center gap-4 lg:gap-[18px] xl:gap-6">
+          {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] text-ink-soft hover:text-teal transition-colors group relative py-1"
+              className="hidden lg:inline-flex items-center text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
             >
-              <Icon
-                size={14}
-                strokeWidth={1.6}
-                className="text-muted group-hover:text-teal transition-colors"
-                aria-hidden
-              />
               <span className="relative">
                 {label}
                 {/* Animated underline — grows from left on hover */}
@@ -121,7 +115,7 @@ export function BrandBar() {
           ))}
           <Link
             href="/contribute"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-3.5 py-2 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_1px_0_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.10)] hover:from-teal hover:to-deep-teal transition-all duration-300 whitespace-nowrap shrink-0"
+            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-[4px] bg-deep-teal text-paper hover:bg-teal transition-colors duration-200 whitespace-nowrap shrink-0"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M12 5v14M5 12h14" />

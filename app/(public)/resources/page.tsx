@@ -198,33 +198,12 @@ export default async function ResourcesPage({
                     href={getDeepSourceUrl(item)}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative overflow-hidden block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
-                    style={{
-                      boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${meta.tint}55`,
-                      backgroundImage:
-                        "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.30) 100%)",
-                    }}
+                    className="group relative block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-colors duration-200 hover:border-teal/40"
                   >
-                    <span
-                      aria-hidden
-                      className="absolute top-0 right-0 w-9 h-9 pointer-events-none"
-                      style={{
-                        background: `linear-gradient(225deg, ${meta.tint}33 50%, transparent 50%)`,
-                        borderTopRightRadius: 8,
-                      }}
-                    />
-                    <span
-                      aria-hidden
-                      className="absolute top-0 left-0 right-9 h-[2px]"
-                      style={{
-                        background: `linear-gradient(90deg, ${meta.tint} 0%, ${meta.tint}cc 60%, transparent 100%)`,
-                      }}
-                    />
-
                     <div className="relative flex items-start gap-3 mb-4">
                       <span
                         className="shrink-0 w-9 h-9 rounded-[6px] inline-flex items-center justify-center"
-                        style={{ background: `${meta.tint}1f`, color: meta.tint }}
+                        style={{ background: `${meta.tint}1a`, color: meta.tint }}
                         aria-hidden
                       >
                         <Icon size={16} strokeWidth={1.7} />
@@ -236,7 +215,7 @@ export default async function ResourcesPage({
                         >
                           {meta.label} · {yearOf(item.publishedAt)}
                         </span>
-                        <h2 className="font-sans text-[16px] sm:text-[17px] font-medium leading-[1.3] tracking-[-0.012em] text-[color:var(--navy-teal)] mt-1.5 max-w-[28ch]">
+                        <h2 className="font-serif text-[17px] sm:text-[18px] font-medium leading-[1.25] tracking-[-0.012em] text-ink mt-1.5 max-w-[28ch]">
                           {item.title}
                         </h2>
                       </div>

@@ -321,12 +321,13 @@ export default async function LandingPage() {
               <h3 className="font-serif text-[21px] font-medium tracking-[-0.012em] text-paper leading-[1.16] max-w-[20ch]">
                 {t.name}
               </h3>
-              {/* metadata as a bare mono label */}
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/45 mt-auto">
-                <strong className="text-paper/85 text-[13px] font-semibold">{t.entryCount}</strong> programmes
+              {/* metadata as a bare mono label — contrast lifted to clear WCAG AA */}
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/75 mt-auto">
+                <strong className="text-paper text-[13px] font-semibold">{t.entryCount}</strong>{" "}
+                {t.entryCount === 1 ? "programme" : "programmes"}
               </span>
               <span
-                className="absolute top-6 right-6 font-serif text-[18px] text-paper/35 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
+                className="absolute top-6 right-6 font-serif text-[18px] text-paper/55 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
                 aria-hidden
               >
                 →
