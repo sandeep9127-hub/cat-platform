@@ -151,12 +151,12 @@ export default async function LandingPage() {
               className="flex items-center gap-3 sm:gap-4 mb-6 flex-wrap reveal-stagger"
               style={{ animationDelay: "0ms" }}
             >
-              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#fbf8f2d9] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
                 <Sparkles size={11} strokeWidth={1.8} className="text-amber" aria-hidden />
                 Vol. 01 · Edition 2026
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-amber" />
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-paper/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#fbf8f2cc] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
                 Updated{" "}
                 {lastUpdate.toLocaleDateString("en-GB", {
                   day: "numeric",
@@ -180,7 +180,7 @@ export default async function LandingPage() {
               food systems.
             </h1>
             <p
-              className="font-serif italic text-[17px] sm:text-[19px] text-paper/85 leading-[1.5] max-w-[44ch] mt-6 sm:mt-7 font-light drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] reveal-stagger"
+              className="font-serif italic text-[17px] sm:text-[19px] text-[#fbf8f2d9] leading-[1.5] max-w-[44ch] mt-6 sm:mt-7 font-light drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] reveal-stagger"
               style={{ animationDelay: "300ms" }}
             >
               Credible food systems work from across India, edited by people who actually
@@ -201,7 +201,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/agent"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] border border-paper/50 text-paper hover:border-amber hover:text-amber transition-colors"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] border border-[#fbf8f280] text-paper hover:border-amber hover:text-amber transition-colors"
               >
                 Ask the assistant
               </Link>
@@ -330,12 +330,12 @@ export default async function LandingPage() {
                 {t.name}
               </h3>
               {/* metadata as a bare mono label — contrast lifted to clear WCAG AA */}
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/75 mt-auto">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#fbf8f2bf] mt-auto">
                 <strong className="text-paper text-[13px] font-semibold">{t.entryCount}</strong>{" "}
                 {t.entryCount === 1 ? "programme" : "programmes"}
               </span>
               <span
-                className="absolute top-6 right-6 font-serif text-[18px] text-paper/55 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
+                className="absolute top-6 right-6 font-serif text-[18px] text-[#fbf8f28c] transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
                 aria-hidden
               >
                 →
