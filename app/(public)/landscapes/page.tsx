@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "CAT Landscapes",
   description:
-    "CAT works at the scale of landscapes — block-level administrative units selected for ecological, social, and institutional reasons. Eleven landscapes across India.",
+    "CAT works at the scale of landscapes, block-level administrative units selected for ecological, social, and institutional reasons. Eleven landscapes across India.",
 };
 
 export default async function LandscapesPage() {
@@ -79,7 +79,7 @@ export default async function LandscapesPage() {
           <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
             Eleven landscapes across India where the Consortium is working with partners on
             seven-year investment plans. A landscape is an economically viable, contiguous
-            unit of land, adapted to local need — usually an administrative block or a
+            unit of land, adapted to local need, usually an administrative block or a
             cluster of villages within one, chosen because the geography, communities and
             institutions there make focused work possible.
           </p>
@@ -95,7 +95,7 @@ export default async function LandscapesPage() {
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
           <span className="eyebrow">Investment plans</span>
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
-            Each landscape has a Landscape Investment Plan — a place-based costing and
+            Each landscape has a Landscape Investment Plan, a place-based costing and
             implementation roadmap. <strong className="text-deep-teal">{publishedCount}</strong>{" "}
             published, <strong className="text-deep-teal">{11 - publishedCount}</strong>{" "}
             in preparation.
@@ -118,8 +118,8 @@ export default async function LandscapesPage() {
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
             const published = p?.lipStatus === "published";
-            // Published landscapes get the warm amber accent — they're ready to deep-dive.
-            // In-preparation landscapes get periwinkle — visible signal they're coming.
+            // Published landscapes get the warm amber accent, they're ready to deep-dive.
+            // In-preparation landscapes get periwinkle, visible signal they're coming.
             const tone = published
               ? {
                   bar: "#C68C2E",

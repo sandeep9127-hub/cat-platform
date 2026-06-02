@@ -61,7 +61,7 @@ export default function AboutPage() {
             programmes from across India, not just CAT&apos;s own portfolio: government missions,
             NGO programmes, farmer federations, market infrastructure, research-led
             interventions. Whether it&apos;s in here depends on whether it stands up to a serious
-            read — not on who runs it.
+            read, not on who runs it.
           </Block>
 
           <Block label="The editorial bar">
@@ -119,8 +119,8 @@ export default function AboutPage() {
           </span>
         </div>
         <p className="font-serif italic text-[17px] text-ink-soft leading-[1.5] max-w-[58ch] mb-7 font-light">
-          CAT enables agroecological transformation by aligning three levers — policy, markets,
-          and finance — to support community-led adoption and long-term transitions.
+          CAT enables agroecological transformation by aligning three levers, policy, markets,
+          and finance, to support community-led adoption and long-term transitions.
         </p>
         <ThreeLevers />
       </section>
@@ -140,7 +140,7 @@ export default function AboutPage() {
           <p className="font-serif text-[16.5px] text-ink-soft leading-[1.6] mt-4 max-w-[48ch]">
             CAT&apos;s work contributes to multiple Sustainable Development Goals related to
             food security, climate action, biodiversity, and livelihoods. The Platform is one
-            way we make that contribution legible — to funders, to peers, and to the public.
+            way we make that contribution legible, to funders, to peers, and to the public.
           </p>
           <div className="mt-5 flex gap-3.5">
             <Link

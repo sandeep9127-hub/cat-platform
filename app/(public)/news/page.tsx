@@ -187,37 +187,30 @@ export default async function NewsPage({
             </Link>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0 mt-4">
-            {news.map((item, i) => {
-              const primaryTheme = item.themes[0]
-                ? themeLabel(item.themes[0])
-                : { name: "General", colour: "#5C6796" };
-              return (
-                <li
-                  key={item.id}
-                  className="reveal-stagger"
-                  style={{ animationDelay: `${(i % 9) * 50}ms` }}
+          {/* dated editorial list (not a card grid) — fits chronological news */}
+          <ul className="list-none p-0 m-0 mt-2 border-t border-line">
+            {news.map((item) => (
+              <li key={item.id} className="border-b border-line">
+                <a
+                  href={getDeepSourceUrl(item)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-x-8 gap-y-2 -mx-4 px-4 py-6 transition-colors duration-200 hover:bg-cream/50"
                 >
-                  <a
-                    href={getDeepSourceUrl(item)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative block rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-colors duration-200 hover:border-teal/40"
-                  >
-                    <div className="relative flex items-center justify-between gap-3 mb-4 font-mono text-[10px] uppercase tracking-[0.14em]">
-                      <span className="text-amber-deep font-semibold">{item.sourceName}</span>
-                      <span className="text-muted tabular-nums">{fmtDateShort(item.publishedAt)}</span>
-                    </div>
-
-                    <h2 className="relative font-serif text-[19px] sm:text-[20px] font-medium leading-[1.25] tracking-[-0.012em] text-ink group-hover:text-teal transition-colors max-w-[34ch]">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.14em] sm:pt-1.5">
+                    <div className="text-muted tabular-nums">{fmtDateShort(item.publishedAt)}</div>
+                    <div className="text-amber-deep font-semibold mt-1">{item.sourceName}</div>
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-serif text-[20px] sm:text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-ink group-hover:text-teal transition-colors max-w-[46ch]">
                       {item.title}
+                      <ArrowUpRight size={15} strokeWidth={1.8} className="inline-block ml-1.5 -translate-y-0.5 text-muted group-hover:text-teal transition-colors" aria-hidden />
                     </h2>
-                    <p className="relative font-sans text-[14px] text-ink-soft leading-[1.6] mt-3 max-w-[44ch]">
+                    <p className="font-sans text-[14.5px] text-ink-soft leading-[1.6] mt-2 max-w-[60ch]">
                       {item.summary}
                     </p>
-
-                    <div className="relative mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                      {item.themes.slice(0, 2).map((slug) => {
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                      {item.themes.slice(0, 3).map((slug) => {
                         const t = themeLabel(slug);
                         return (
                           <span
@@ -225,27 +218,16 @@ export default async function NewsPage({
                             className="inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em]"
                             style={{ color: t.colour }}
                           >
-                            <span
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{ background: t.colour }}
-                            />
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.colour }} />
                             {t.name}
                           </span>
                         );
                       })}
                     </div>
-
-                    <span className="absolute top-5 right-5 text-muted transition-all duration-300 group-hover:text-teal group-hover:translate-x-0.5">
-                      <ArrowUpRight size={16} strokeWidth={1.6} />
-                    </span>
-
-                    <span className="relative inline-block mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-teal">
-                      Open at source ↗
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
+                  </div>
+                </a>
+              </li>
+            ))}
           </ul>
         )}
 

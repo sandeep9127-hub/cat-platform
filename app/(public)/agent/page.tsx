@@ -18,7 +18,7 @@ export default async function AgentPage({
 }) {
   const sp = await searchParams;
   const enabled = !!process.env.NVIDIA_API_KEY;
-  // Validate scope — must be 'all' or a known landscape slug
+  // Validate scope, must be 'all' or a known landscape slug
   const rawScope = sp.scope ?? "all";
   const scope =
     rawScope === "all" || LANDSCAPES[rawScope] ? rawScope : "all";
@@ -43,7 +43,7 @@ export default async function AgentPage({
         {enabled ? (
           <>
             <AgentChat initialScope={scope} />
-            {/* Custom brief builder — sits at the bottom of the assistant page */}
+            {/* Custom brief builder, sits at the bottom of the assistant page */}
             <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10">
               <div
                 className="relative overflow-hidden rounded-[10px] border border-line p-5 sm:p-6"
@@ -76,7 +76,7 @@ export default async function AgentPage({
                       </h2>
                       <p className="font-sans text-[13.5px] text-ink-soft leading-[1.55] mt-1.5 max-w-[60ch]">
                         Pick a landscape and the sections you want. The brief is built live from
-                        the curated data — finance, photos, context, whatever applies.
+                        the curated data, finance, photos, context, whatever applies.
                       </p>
                     </div>
                   </div>

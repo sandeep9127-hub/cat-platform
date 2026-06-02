@@ -108,21 +108,13 @@ export default async function EntryDetailPage({ params }: Props) {
           <NarrativeBlock label="What worked">{entry.whatWorked}</NarrativeBlock>
           {entry.whatDidNotWork && (
             <div
-              className="relative overflow-hidden rounded-[8px] border border-line p-6 my-10"
-              style={{
-                boxShadow:
-                  "0 1px 2px rgba(26,38,37,0.04), 0 8px 22px -14px rgba(184,80,66,0.28)",
-                backgroundImage:
-                  "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(184,80,66,0.06) 100%)",
-              }}
+              className="relative rounded-[8px] border border-line p-6 my-10"
+              style={{ background: "rgba(184,80,66,0.05)" }}
             >
               <span
                 aria-hidden
                 className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #B85042 0%, rgba(184,80,66,0.6) 60%, transparent 100%)",
-                }}
+                style={{ background: "#B85042" }}
               />
               <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-red-alert font-semibold flex gap-2 items-center mb-3">
                 <span className="w-3.5 h-px bg-red-alert" />

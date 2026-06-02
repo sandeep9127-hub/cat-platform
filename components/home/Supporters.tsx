@@ -52,7 +52,7 @@ export function Supporters() {
           return (
             <li
               key={s.slug}
-              className="group relative overflow-hidden rounded-[6px] bg-paper/85 backdrop-blur-[2px] border border-line/70 p-5 lg:p-6 min-h-[118px] flex flex-col items-center justify-center text-center gap-1 transition-all duration-300 ease-out hover:bg-paper hover:border-line"
+              className="group relative overflow-hidden rounded-[6px] bg-paper border border-line/70 p-5 lg:p-6 min-h-[118px] flex flex-col items-center justify-center text-center gap-1 transition-colors duration-200 hover:border-line"
               style={{
                 boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset",
               }}

@@ -106,13 +106,7 @@ export default async function AtlasRecordPage({ params }: Props) {
   return (
     <article className="relative z-10">
       {/* Provenance banner — explains what this page is */}
-      <div
-        className="border-y border-line"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(248,202,124,0.18) 0%, rgba(251,248,242,0.85) 50%, rgba(248,202,124,0.10) 100%)",
-        }}
-      >
+      <div className="border-y border-line bg-cream">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-deep" aria-hidden />
           <span className="font-semibold">CAT-sourced atlas record</span>
@@ -167,13 +161,7 @@ export default async function AtlasRecordPage({ params }: Props) {
               href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-full font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-all hover:-translate-y-0.5"
-              style={{
-                background:
-                  "linear-gradient(135deg, #F8CA7C 0%, #E0A65A 100%)",
-                boxShadow:
-                  "0 10px 26px -12px rgba(198,140,46,0.55), inset 0 1px 0 rgba(255,255,255,0.30)",
-              }}
+              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
             >
               <span>{sourceCtaLabel}</span>
               <span className="font-normal normal-case tracking-normal text-amber-deep/80">
@@ -261,23 +249,7 @@ export default async function AtlasRecordPage({ params }: Props) {
 
       {/* Editorial note — what this kind of page is, why CAT routes it */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
-        <div
-          className="relative overflow-hidden rounded-[10px] border border-line p-6 sm:p-8 max-w-[68ch]"
-          style={{
-            boxShadow:
-              "0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -20px rgba(46,117,115,0.18)",
-            backgroundImage:
-              "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.55) 100%)",
-          }}
-        >
-          <span
-            aria-hidden
-            className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{
-              background:
-                "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)",
-            }}
-          />
+        <div className="rounded-[8px] border border-line bg-paper p-6 sm:p-8 max-w-[68ch]">
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
             Why this is on the Hub
           </span>
