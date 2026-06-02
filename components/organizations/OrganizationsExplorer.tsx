@@ -133,11 +133,29 @@ export function OrganizationsExplorer() {
     let cancelled = false;
     loadLeaflet().then((L) => {
       if (cancelled || mapRef.current) return;
-      const map = L.map(mapEl.current, { scrollWheelZoom: true, attributionControl: true }).setView([22.5, 80], 5);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "© OpenStreetMap",
-      }).addTo(map);
+      const map = L.map(mapEl.current, {
+        scrollWheelZoom: true,
+        attributionControl: true,
+        minZoom: 4,
+        maxZoom: 12,
+        zoomControl: true,
+      }).setView([22.5, 80], 5);
+      // India outline from our own border-correct GeoJSON (the same geometry
+      // the Solutions Atlas uses — 36 states/UTs incl. J&K, Ladakh, Arunachal),
+      // instead of OpenStreetMap tiles which draw disputed international borders.
+      fetch("/geo/india-states.json")
+        .then((r) => r.json())
+        .then((gj) => {
+          const india = L.geoJSON(gj, {
+            style: { color: "#2D7574", weight: 0.8, opacity: 0.45, fillColor: "#e7efe6", fillOpacity: 1 },
+          }).addTo(map);
+          india.bringToBack();
+          try {
+            map.fitBounds(india.getBounds(), { padding: [12, 12] });
+            map.setMaxBounds(india.getBounds().pad(0.3));
+          } catch {}
+        })
+        .catch(() => {});
       const cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 });
       map.addLayer(cluster);
       // a separate, non-clustered layer for the highlighted org's pins so they
@@ -607,7 +625,7 @@ function Styles() {
       .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
       .og-pager button:disabled { opacity:.4; cursor:default; }
       .og-map { border:1px solid var(--line); border-radius:12px; overflow:hidden; height:100%; min-height:520px; z-index:0; }
-      .og-map .leaflet-container { height:100%; width:100%; background:#eef1ee; }
+      .og-map .leaflet-container { height:100%; width:100%; background:#dfe7ea; }
       .og-pin { background:transparent !important; border:0 !important; }
       .og-pin svg { filter: drop-shadow(0 3px 4px rgba(31,38,37,.35)); animation: og-drop .35s cubic-bezier(.2,.8,.2,1); transform-origin: 50% 100%; }
       @keyframes og-drop { 0% { transform: translateY(-12px) scale(.7); opacity:0; } 100% { transform: none; opacity:1; } }
