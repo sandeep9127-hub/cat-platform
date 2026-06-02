@@ -33,12 +33,12 @@ async function main() {
     const batch = orgs.slice(i, i + OB);
     const params = [];
     const tuples = batch.map((o, j) => {
-      const b = j * 6;
-      params.push(o.name, o.org_type, o.org_type, JSON.stringify(o.domains || []), o.contact_person, o.contact_email);
-      return `($${b+1},$${b+2},$${b+3},$${b+4}::jsonb,$${b+5},$${b+6})`;
+      const b = j * 7;
+      params.push(o.name, o.org_type, o.org_type, JSON.stringify(o.domains || []), o.contact, o.email, o.desig);
+      return `($${b+1},$${b+2},$${b+3},$${b+4}::jsonb,$${b+5},$${b+6},$${b+7})`;
     });
     const r = await pool.query(
-      `INSERT INTO "cat".directory_orgs (name, org_type, org_type_raw, domains, contact_person, contact_email)
+      `INSERT INTO "cat".directory_orgs (name, org_type, org_type_raw, domains, contact_person, contact_email, designation)
        VALUES ${tuples.join(",")} RETURNING id`,
       params
     );

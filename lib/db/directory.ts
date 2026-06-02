@@ -14,6 +14,11 @@ export type DirectoryOrg = {
   domains: string[];
   locationCount: number;
   states: string[];
+  // Contact is public for this directory: organisations registered themselves
+  // to be found and contacted by peers and partners.
+  contactPerson: string | null;
+  designation: string | null;
+  email: string | null;
 };
 
 export type DirectoryLocation = {
@@ -34,6 +39,7 @@ export async function getDirectory(): Promise<{
 }> {
   const orgR = await db.execute(sql`
     SELECT o.id, o.name, o.org_type AS "orgType", o.domains,
+           o.contact_person AS "contactPerson", o.designation, o.contact_email AS "email",
            count(l.id)::int AS "locationCount",
            coalesce(array_agg(DISTINCT l.state) FILTER (WHERE l.state IS NOT NULL), '{}') AS states
     FROM "cat".directory_orgs o
@@ -50,6 +56,7 @@ export async function getDirectory(): Promise<{
 
   const orgs = rowsOf<{
     id: string; name: string; orgType: string; domains: unknown; locationCount: number; states: string[];
+    contactPerson: string | null; designation: string | null; email: string | null;
   }>(orgR).map((o) => ({
     id: o.id,
     name: o.name,
@@ -57,6 +64,9 @@ export async function getDirectory(): Promise<{
     domains: Array.isArray(o.domains) ? (o.domains as string[]) : [],
     locationCount: o.locationCount,
     states: (o.states || []).filter(Boolean),
+    contactPerson: o.contactPerson,
+    designation: o.designation,
+    email: o.email,
   }));
 
   const locations = rowsOf<DirectoryLocation>(locR).map((l) => ({

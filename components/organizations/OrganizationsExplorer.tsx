@@ -10,6 +10,9 @@ type Org = {
   domains: string[];
   locationCount: number;
   states: string[];
+  contactPerson: string | null;
+  designation: string | null;
+  email: string | null;
 };
 type Loc = { orgId: string; lat: number; lng: number; state: string | null; district: string | null };
 
@@ -68,6 +71,7 @@ export function OrganizationsExplorer() {
   const [page, setPage] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Org | null>(null);
+  const [detailOrg, setDetailOrg] = useState<Org | null>(null);
 
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -166,7 +170,9 @@ export function OrganizationsExplorer() {
       m.bindPopup(
         `<strong>${o ? esc(o.name) : "Organisation"}</strong><br/>${esc(l.district || "")}${
           l.district && l.state ? ", " : ""
-        }${esc(l.state || "")}<br/><span style="color:#6B7280;font-size:11px">${o ? esc(o.orgType) : ""}</span>`
+        }${esc(l.state || "")}<br/><span style="color:#6B7280;font-size:11px">${o ? esc(o.orgType) : ""}</span>` +
+          (o?.contactPerson ? `<br/><span style="font-size:11px">${esc(o.contactPerson)}</span>` : "") +
+          (o?.email ? `<br/><a href="mailto:${esc(o.email)}" style="font-size:11px;color:#2D7574">${esc(o.email)}</a>` : "")
       );
       return m;
     });
@@ -240,13 +246,14 @@ export function OrganizationsExplorer() {
       <div className="og-split">
         <div className="og-list">
           {shown.map((o) => (
-            <article key={o.id} className="og-card" onClick={() => focusOrg(o)}>
+            <article key={o.id} className="og-card" onClick={() => setDetailOrg(o)}>
               <div className="og-card-top">
                 <h3 className="og-card-name">{o.name}</h3>
                 <span className="og-type">{o.orgType}</span>
               </div>
               <div className="og-card-meta">
                 {o.locationCount} location{o.locationCount === 1 ? "" : "s"} · {o.states.length} state{o.states.length === 1 ? "" : "s"}
+                {o.contactPerson ? ` · ${o.contactPerson}` : ""}
               </div>
               {o.domains.length > 0 && (
                 <div className="og-domains">
@@ -256,12 +263,14 @@ export function OrganizationsExplorer() {
                   {o.domains.length > 4 && <span className="og-domain-more">+{o.domains.length - 4}</span>}
                 </div>
               )}
-              <button
-                className="og-edit"
-                onClick={(e) => { e.stopPropagation(); setEditTarget(o); setFormOpen(true); }}
-              >
-                Suggest an edit →
-              </button>
+              <div className="og-card-actions">
+                <button className="og-view" onClick={(e) => { e.stopPropagation(); setDetailOrg(o); }}>
+                  View details →
+                </button>
+                <button className="og-edit" onClick={(e) => { e.stopPropagation(); setEditTarget(o); setFormOpen(true); }}>
+                  Suggest an edit
+                </button>
+              </div>
             </article>
           ))}
           {!loading && shown.length === 0 && <p className="og-empty">No organisations match these filters.</p>}
@@ -275,6 +284,16 @@ export function OrganizationsExplorer() {
         </div>
         <div className="og-map" ref={mapEl} />
       </div>
+
+      {detailOrg && (
+        <OrgDetail
+          org={detailOrg}
+          locations={locs.filter((l) => l.orgId === detailOrg.id)}
+          onClose={() => setDetailOrg(null)}
+          onLocate={() => { focusOrg(detailOrg); setDetailOrg(null); }}
+          onEdit={() => { setEditTarget(detailOrg); setDetailOrg(null); setFormOpen(true); }}
+        />
+      )}
 
       {formOpen && (
         <SubmitForm
@@ -291,6 +310,75 @@ export function OrganizationsExplorer() {
 
 function esc(s: string) {
   return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+}
+
+// ----- org detail panel ------------------------------------------------
+function OrgDetail({
+  org, locations, onClose, onLocate, onEdit,
+}: {
+  org: Org; locations: Loc[]; onClose: () => void; onLocate: () => void; onEdit: () => void;
+}) {
+  // group locations by state for a tidy "where they work" list
+  const byState = new Map<string, string[]>();
+  for (const l of locations) {
+    const st = l.state || "—";
+    const arr = byState.get(st) || [];
+    if (l.district && !arr.includes(l.district)) arr.push(l.district);
+    byState.set(st, arr);
+  }
+  const states = Array.from(byState.keys()).sort();
+
+  return (
+    <div className="og-modal" onClick={onClose}>
+      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+        <button className="og-close" onClick={onClose} aria-label="Close">×</button>
+        <span className="og-type" style={{ display: "inline-block", marginBottom: 8 }}>{org.orgType}</span>
+        <h2 className="og-sheet-title">{org.name}</h2>
+
+        <div className="og-detail-contact">
+          <div className="og-dc-label">Contact</div>
+          {org.contactPerson ? (
+            <div className="og-dc-row">
+              <strong>{org.contactPerson}</strong>
+              {org.designation ? <span className="og-dc-desig"> · {org.designation}</span> : null}
+            </div>
+          ) : <div className="og-dc-row og-muted">Contact person not listed</div>}
+          {org.email ? (
+            <a className="og-dc-email" href={`mailto:${org.email}`}>{org.email}</a>
+          ) : <div className="og-muted" style={{ fontSize: 12.5 }}>Email not listed</div>}
+        </div>
+
+        {org.domains.length > 0 && (
+          <div className="og-detail-block">
+            <div className="og-dc-label">Works on</div>
+            <div className="og-domains">
+              {org.domains.map((d) => <span key={d} className="og-domain">{d}</span>)}
+            </div>
+          </div>
+        )}
+
+        <div className="og-detail-block">
+          <div className="og-dc-label">
+            Where they work · {locations.length} location{locations.length === 1 ? "" : "s"} across {states.length} state{states.length === 1 ? "" : "s"}
+          </div>
+          <ul className="og-where">
+            {states.map((st) => (
+              <li key={st}>
+                <strong>{st}</strong>
+                {byState.get(st)!.length ? <span className="og-muted"> — {byState.get(st)!.slice(0, 8).join(", ")}{byState.get(st)!.length > 8 ? "…" : ""}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="og-detail-actions">
+          <button className="og-submit" style={{ flex: 1 }} onClick={onLocate}>Show on map</button>
+          <button className="og-detail-edit" onClick={onEdit}>Suggest an edit</button>
+        </div>
+        <p className="og-note">Listed from the NCNF · Core Stack survey (2021). Contact details are self-reported by the organisation.</p>
+      </div>
+    </div>
+  );
 }
 
 // ----- submission form -------------------------------------------------
@@ -454,9 +542,27 @@ function Styles() {
       .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
-      .og-edit { margin-top:10px; font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
-        color:var(--td); background:none; border:0; cursor:pointer; padding:0; }
-      .og-edit:hover { text-decoration:underline; }
+      .og-card-actions { display:flex; gap:14px; margin-top:11px; align-items:center; }
+      .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+        background:none; border:0; cursor:pointer; padding:0; }
+      .og-view { color:var(--td); font-weight:600; }
+      .og-edit { color:var(--muted); }
+      .og-view:hover, .og-edit:hover { text-decoration:underline; }
+      /* detail panel */
+      .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius:12px; padding:14px 16px; margin:6px 0 16px; }
+      .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
+      .og-dc-row { font-size:15px; }
+      .og-dc-desig { color:var(--muted); }
+      .og-dc-email { display:inline-block; margin-top:5px; font-size:14px; color:var(--td); text-decoration:none; }
+      .og-dc-email:hover { text-decoration:underline; }
+      .og-muted { color:var(--muted); }
+      .og-detail-block { margin-bottom:16px; }
+      .og-where { list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; }
+      .og-where li { font-size:13.5px; line-height:1.4; }
+      .og-detail-actions { display:flex; gap:10px; margin-top:6px; }
+      .og-detail-edit { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+        padding:0 16px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+      .og-detail-edit:hover { border-color:var(--td); color:var(--td); }
       .og-empty { color:var(--muted); padding:30px 0; }
       .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
       .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
