@@ -19,9 +19,11 @@ const ALLOWED_DOMAINS = [
   "gov.in", "nic.in", "icar.org.in", "nabard.org", "ifad.org", "icrisat.org",
   "wassan.org", "apcnf.in", "rythusadhikarasamstha.org", "fao.org", "cgiar.org",
   "azimpremjifoundation.org", "macfound.org", "rockefellerfoundation.org",
-  "giz.de", "tatatrusts.org", "downtoearth.org.in", "thehindu.com",
-  "scroll.in", "indianexpress.com", "thewire.in",
+  "giz.de", "tatatrusts.org", "downtoearth.org.in",
+  "scroll.in", "thewire.in",
 ];
+// NOTE: thehindu.com and indianexpress.com block Anthropic's web-crawler user
+// agent, so the web_search tool 400s if they're in allowed_domains. Keep them OUT.
 
 // State / UT centroids (approx) so a fact sheet can pin on the Atlas even when
 // the source doesn't give coordinates.

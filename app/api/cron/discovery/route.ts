@@ -74,10 +74,10 @@ Return only the JSON array of candidates per the instructions.`;
             "ifad.org",
             "icrisat.org",
             "downtoearth.org.in",
-            "thehindu.com",
             "scroll.in",
-            "indianexpress.com",
             "thewire.in",
+            // thehindu.com + indianexpress.com block Anthropic's crawler — the
+            // web_search tool 400s if they're listed, which was failing this cron.
           ],
         } as never,
       ],
