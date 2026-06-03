@@ -771,3 +771,23 @@ export type NewEntry = typeof entries.$inferInsert;
 export type Theme = typeof themes.$inferSelect;
 export type Geography = typeof geographies.$inferSelect;
 export type Organisation = typeof organisations.$inferSelect;
+
+/* ─── Admin: audit log ────────────────────────────────────────────────
+ * Append-only record of every consequential admin action (approvals,
+ * landscape edits, ingestion runs). Powers /admin/audit and accountability
+ * once the platform is handed to the wider team.
+ */
+export const auditLog = pgTable("audit_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  actorUserId: uuid("actor_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  actorEmail: text("actor_email"),
+  action: text("action").notNull(),
+  entityType: text("entity_type"),
+  entityId: text("entity_id"),
+  meta: jsonb("meta").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLog.$inferSelect;

@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { JetBrains_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
-import { BrandBar } from "@/components/layout/BrandBar";
-import { Footer } from "@/components/layout/Footer";
-import { FloatingAsk } from "@/components/global/FloatingAsk";
 import { Analytics } from "@vercel/analytics/react";
 
 /**
@@ -86,15 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       style={{ ["--font-fraunces" as string]: `var(--font-fraunces-real)` }}
     >
       <body className="min-h-dvh font-sans">
-        <a href="#main" className="skip-to-content">
-          Skip to content
-        </a>
-        <BrandBar />
-        <main id="main" className="relative z-10">
-          {children}
-        </main>
-        <Footer />
-        <FloatingAsk />
+        {/* Public chrome (BrandBar/Footer/FloatingAsk) lives in
+            app/(public)/layout.tsx so it doesn't wrap the /admin console. */}
+        {children}
         <Analytics />
       </body>
     </html>
