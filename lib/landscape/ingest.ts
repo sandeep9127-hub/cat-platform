@@ -99,6 +99,22 @@ async function extractDocx(buffer: Buffer): Promise<string> {
   return value;
 }
 
+/** Extract text from a (digital, text-based) PDF via unpdf — serverless-native,
+ *  no Python. Scanned/image PDFs would need OCR (a later MarkItDown upgrade). */
+async function extractPdf(buffer: Buffer): Promise<string> {
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { text } = await extractText(pdf, { mergePages: true });
+  return Array.isArray(text) ? text.join("\n\n") : text;
+}
+
+/** Pick the right extractor from the file name / mime. */
+async function extractText(buffer: Buffer, fileName: string): Promise<string> {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith(".pdf")) return extractPdf(buffer);
+  return extractDocx(buffer);
+}
+
 export type IngestResult = { documentId: string; chunkCount: number; title: string };
 
 /** Ingest one DOCX landscape report for a slug. Returns the new document + chunk count. */
@@ -106,12 +122,13 @@ export async function ingestLandscapeReport(opts: {
   slug: string;
   title: string;
   buffer: Buffer;
+  fileName: string;
   year?: number;
 }): Promise<IngestResult> {
-  const { slug, title, buffer } = opts;
+  const { slug, title, buffer, fileName } = opts;
   const year = opts.year ?? new Date().getFullYear();
 
-  const md = await extractDocx(buffer);
+  const md = await extractText(buffer, fileName);
   const chunks = chunkText(md);
   if (chunks.length === 0) throw new Error("No extractable text found in this document.");
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { upload } from "@vercel/blob/client";
 
 export function LandscapeUpload({ slug }: { slug: string }) {
   const router = useRouter();
@@ -13,14 +14,32 @@ export function LandscapeUpload({ slug }: { slug: string }) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const file = form.get("file");
+    const title = String(form.get("title") || "");
+    const year = String(form.get("year") || "");
     if (!(file instanceof File) || !file.name) {
-      setMsg({ kind: "err", text: "Choose a .docx report first." });
+      setMsg({ kind: "err", text: "Choose a .pdf or .docx report first." });
+      return;
+    }
+    if (!/\.(pdf|docx)$/i.test(file.name)) {
+      setMsg({ kind: "err", text: "Only .pdf or .docx reports are supported." });
       return;
     }
     setBusy(true);
-    setMsg({ kind: "ok", text: `Ingesting “${file.name}” — extracting, chunking and embedding. This can take a minute…` });
     try {
-      const res = await fetch(`/api/admin/landscapes/${slug}/ingest`, { method: "POST", body: form });
+      // 1) Upload straight to Vercel Blob (no size limit; bypasses the API cap).
+      setMsg({ kind: "ok", text: `Uploading “${file.name}”…` });
+      const blob = await upload(`landscape-reports/${slug}/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/blob-upload",
+        contentType: file.type || undefined,
+      });
+      // 2) Ingest from the blob URL: extract → chunk → embed.
+      setMsg({ kind: "ok", text: "Extracting, chunking and embedding — this can take a minute…" });
+      const res = await fetch(`/api/admin/landscapes/${slug}/ingest`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ blobUrl: blob.url, fileName: file.name, title, year }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ingestion failed");
       setMsg({ kind: "ok", text: `Done — added “${data.title}” (${data.chunkCount} chunks). The assistant can now use it.` });
@@ -41,7 +60,7 @@ export function LandscapeUpload({ slug }: { slug: string }) {
           ref={fileRef}
           type="file"
           name="file"
-          accept=".docx"
+          accept=".pdf,.docx"
           className="text-[13px] text-ink file:mr-3 file:py-2 file:px-3 file:rounded-[6px] file:border-0 file:bg-deep-teal file:text-paper file:font-mono file:text-[10px] file:uppercase file:tracking-[0.1em]"
         />
         <input
@@ -65,7 +84,7 @@ export function LandscapeUpload({ slug }: { slug: string }) {
         >
           {busy ? "Ingesting…" : "Upload & ingest"}
         </button>
-        <span className="text-[11px] text-muted">.docx · up to ~4 MB</span>
+        <span className="text-[11px] text-muted">.pdf or .docx · large files OK</span>
       </div>
       {msg && (
         <p className={`text-[12.5px] leading-[1.5] ${msg.kind === "err" ? "text-red-alert" : "text-ink-soft"}`}>
