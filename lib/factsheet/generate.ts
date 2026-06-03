@@ -222,6 +222,17 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
       verified=EXCLUDED.verified, status=EXCLUDED.status, updated_at=now()
   `);
 
+  // Embed into the RAG so Ask can answer from it under "All sources".
+  // Best-effort: a failed embed must not fail generation.
+  if (status === "published") {
+    try {
+      const { embedFactSheetIntoRag } = await import("@/lib/factsheet/rag");
+      await embedFactSheetIntoRag(sheet);
+    } catch (e) {
+      console.error("[factsheet] RAG embed failed for", sheet.slug, (e as Error).message);
+    }
+  }
+
   try {
     const u = res.usage as { input_tokens: number; output_tokens: number };
     void estimateCostUsd(u.input_tokens, u.output_tokens);

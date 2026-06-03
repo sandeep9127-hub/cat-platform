@@ -79,7 +79,7 @@ type ClientMessage = { role: "user" | "assistant"; content: string };
 
 type Citation = {
   index: number;
-  type: "entry" | "landscape";
+  type: "entry" | "landscape" | "factsheet";
   label: string;
   url: string;
   preview: string;
@@ -183,6 +183,17 @@ async function retrieve(
     chunks = chunkResults.flat();
   }
 
+  // Fact-sheet chunks — the Solutions Atlas knowledge. Searched under the
+  // general ("all") scope, not when a single landscape tab is selected.
+  type FsHit = { slug: string; title: string; chunkText: string; score: number };
+  let fsResults: FsHit[] = [];
+  if (embedding && !onlyThisLandscape) {
+    try {
+      const { searchFactsheetChunks } = await import("@/lib/factsheet/rag");
+      fsResults = await searchFactsheetChunks(embedding, MAX_CONTEXT_HITS_PER_SOURCE);
+    } catch {}
+  }
+
   // ── Normalise scores so the two sources can be compared
   // Entries: ts_rank is non-normalised; we squash with x/(x+1) into 0..1
   type Hit = {
@@ -190,7 +201,7 @@ async function retrieve(
     url: string;
     preview: string;
     score: number;
-    type: "entry" | "landscape";
+    type: "entry" | "landscape" | "factsheet";
     raw: unknown;
   };
 
@@ -242,8 +253,17 @@ async function retrieve(
     };
   });
 
+  const factsheetHits: Hit[] = fsResults.map((f) => ({
+    label: f.title,
+    url: `/factsheet/${f.slug}`,
+    preview: f.chunkText.slice(0, 240) + (f.chunkText.length > 240 ? "…" : ""),
+    score: f.score, // cosine 0..1
+    type: "factsheet",
+    raw: f,
+  }));
+
   // Combine and rank
-  const combined = [...entryHits, ...chunkHits]
+  const combined = [...entryHits, ...chunkHits, ...factsheetHits]
     .filter((h) => h.score >= SCORE_FLOOR)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
@@ -265,7 +285,7 @@ async function retrieve(
       combined
         .map((h, i) => {
           const fullText =
-            h.type === "landscape"
+            h.type === "landscape" || h.type === "factsheet"
               ? (h.raw as { chunkText?: string }).chunkText?.slice(0, 1200) ?? h.preview
               : h.preview;
           return `[${i + 1}] ${h.label}\n${fullText}`;
