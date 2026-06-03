@@ -1,7 +1,8 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 type Org = {
   id: string;
@@ -401,6 +402,13 @@ function esc(s: string) {
   return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 }
 
+// Render a modal at the document root so it escapes any ancestor stacking
+// context (the sticky header was otherwise painting over the sheet's top).
+function portal(node: ReactNode) {
+  if (typeof document === "undefined") return null;
+  return createPortal(node, document.body);
+}
+
 // ----- org detail panel ------------------------------------------------
 function OrgDetail({
   org, locations, onClose, onLocate, onEdit,
@@ -417,7 +425,7 @@ function OrgDetail({
   }
   const states = Array.from(byState.keys()).sort();
 
-  return (
+  return portal(
     <div className="og-modal" onClick={onClose}>
       <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
@@ -524,7 +532,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
     }
   }
 
-  return (
+  return portal(
     <div className="og-modal" onClick={onClose}>
       <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
