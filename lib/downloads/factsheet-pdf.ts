@@ -91,9 +91,45 @@ export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
     para(meta, font, 9, MUTED);
   }
 
+  // Headline metrics row
+  if (Array.isArray(s.metrics) && s.metrics.length) {
+    y -= 8;
+    ensure(34);
+    const cols = Math.min(s.metrics.length, 4);
+    const colW = (W - MX * 2) / cols;
+    const rowY = y;
+    s.metrics.slice(0, 4).forEach((m, i) => {
+      const x = MX + i * colW;
+      page.drawText(String(m.value).slice(0, 14), { x, y: rowY, size: 17, font: bold, color: INK });
+      for (const ln of wrap(m.label, font, 6.5, colW - 6).slice(0, 2)) {
+        page.drawText(ln.toUpperCase(), { x, y: rowY - 12 - 0, size: 6.5, font, color: MUTED });
+      }
+    });
+    y = rowY - 26;
+  }
+
   if (s.summary) {
     heading("What it is");
     para(s.summary, font, 10.5);
+  }
+
+  const insight = s.insight || {};
+  const cards: [string, string | null | undefined][] = [
+    ["What's working", insight.whats_working],
+    ["What's hard", insight.whats_hard],
+    ["Why it matters", insight.why_it_matters],
+    ["What's next", insight.whats_next],
+  ];
+  if (cards.some(([, v]) => v)) {
+    heading("At a glance");
+    for (const [k, v] of cards) {
+      if (!v) continue;
+      ensure(20);
+      page.drawText(k.toUpperCase(), { x: MX, y, size: 7.5, font: bold, color: TEAL });
+      y -= 11;
+      para(v, font, 9.5, INK, 1.4);
+      y -= 4;
+    }
   }
 
   if (Array.isArray(s.outcomes) && s.outcomes.length) {

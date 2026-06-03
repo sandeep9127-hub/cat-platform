@@ -53,6 +53,16 @@ export type FactSheet = {
   implementers: string[];
   funders: string[];
   principle_alignment: string[];
+  start_year: number | null;
+  // Headline metric stat-blocks (cited). value is a short display string e.g. "6L+".
+  metrics: { label: string; value: string; source_url: string }[];
+  // The four-part insight frame — each grounded or null ("only the applicable parts").
+  insight: {
+    whats_working: string | null;
+    whats_hard: string | null;
+    why_it_matters: string | null;
+    whats_next: string | null;
+  };
   outcomes: { claim: string; figure: string | null; source_url: string }[];
   citations: { url: string; passage: string }[];
   source_name: string | null;
@@ -64,21 +74,31 @@ const SYSTEM = `You build a verified fact sheet for ONE Indian food-systems / ag
 
 Use the web_search tool (restricted to the allow-listed domains) to find authoritative sources. Then output a SINGLE JSON object — no markdown, no preamble.
 
+INCLUSION TEST: include the programme if it relates to the agroecology principles
+(recycling, input reduction, soil health, animal health, biodiversity, synergy,
+economic diversification, co-creation of knowledge, social values & diets, fairness,
+connectivity, land & natural-resource governance, participation) OR anything remotely
+close (natural / organic / regenerative farming, FPOs, watershed, seed sovereignty,
+millets, agroforestry, NRM). When in doubt, include.
+
 HARD RULES (non-negotiable):
 - Ground every field in what the sources actually say. If a field is not supported by a source, set it to null (or [] for lists). Never guess, never infer numbers.
-- Every entry in "outcomes" must carry the source_url it came from, and the figure must appear in that source.
+- Every "metrics" and "outcomes" entry must carry the source_url it came from, and the number/figure must appear in that source.
+- "insight" fields: fill ONLY the parts the sources support; set the others to null. Two short sentences max each. No invention.
 - "citations" must list the URLs you actually used, each with a short verbatim passage.
-- Plain language. No marketing words. No em dashes.
+- Plain language. No marketing words. No em dashes. Never the word "agroecology" in user-facing prose.
 - India, programme-level only (named, geographically defined, identifiable lead org).
 - If you cannot verify the programme from the allow-listed sources, output {"refused": true, "reason": "..."}.
 
 JSON keys:
   title, one_liner, summary (2-4 sentences),
-  state_name, state_code (2-letter), district,
+  state_name, state_code (2-letter), district, start_year (integer or null),
   themes (array of slugs from: soil-land, water, seeds-biodiversity, climate-resilience, women-collectives, markets-value-chains, policy-governance, knowledge-capacity),
   scale_band (one of: pilot, block, district, multi_district, state, multi_state, national),
   lead_organisation, implementers (array), funders (array),
   principle_alignment (array of short principle names this programme touches),
+  metrics (array of up to 4 {label, value, source_url} — headline figures; value is a short display string e.g. "6L+", "9 lakh acres", "38%", "9 yrs"),
+  insight ({whats_working, whats_hard, why_it_matters, whats_next} — each a short string or null),
   outcomes (array of {claim, figure, source_url}),
   citations (array of {url, passage}),
   source_name, source_url (the single best canonical source),
@@ -131,6 +151,16 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
   const outcomes = Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [];
   const citations = Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [];
   const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
+  const metrics = (Array.isArray(raw.metrics) ? (raw.metrics as FactSheet["metrics"]) : [])
+    .filter((m) => m && m.value && m.label)
+    .slice(0, 4);
+  const rawInsight = (raw.insight ?? {}) as Record<string, unknown>;
+  const insight = {
+    whats_working: rawInsight.whats_working ? String(rawInsight.whats_working) : null,
+    whats_hard: rawInsight.whats_hard ? String(rawInsight.whats_hard) : null,
+    why_it_matters: rawInsight.why_it_matters ? String(rawInsight.why_it_matters) : null,
+    whats_next: rawInsight.whats_next ? String(rawInsight.whats_next) : null,
+  };
 
   const sheet: FactSheet = {
     slug: slugify(String(raw.title || query)),
@@ -147,6 +177,9 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
     implementers: Array.isArray(raw.implementers) ? (raw.implementers as string[]) : [],
     funders: Array.isArray(raw.funders) ? (raw.funders as string[]) : [],
     principle_alignment: Array.isArray(raw.principle_alignment) ? (raw.principle_alignment as string[]) : [],
+    start_year: typeof raw.start_year === "number" ? raw.start_year : null,
+    metrics,
+    insight,
     outcomes,
     citations,
     source_name: raw.source_name ? String(raw.source_name) : null,
@@ -164,12 +197,15 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
     INSERT INTO "cat".solution_factsheets
       (slug, title, one_liner, summary, state_code, district, latitude, longitude,
        themes, scale_band, lead_organisation, implementers, funders, principle_alignment,
+       start_year, metrics, insight,
        fields, outcomes, citations, source_name, source_url, confidence, verified, status, provenance, updated_at)
     VALUES (${sheet.slug}, ${sheet.title}, ${sheet.one_liner}, ${sheet.summary},
             ${sheet.state_code}, ${sheet.district}, ${sheet.latitude}, ${sheet.longitude},
             ${JSON.stringify(sheet.themes)}::jsonb, ${sheet.scale_band}, ${sheet.lead_organisation},
             ${JSON.stringify(sheet.implementers)}::jsonb, ${JSON.stringify(sheet.funders)}::jsonb,
-            ${JSON.stringify(sheet.principle_alignment)}::jsonb, '{}'::jsonb,
+            ${JSON.stringify(sheet.principle_alignment)}::jsonb,
+            ${sheet.start_year}, ${JSON.stringify(sheet.metrics)}::jsonb, ${JSON.stringify(sheet.insight)}::jsonb,
+            '{}'::jsonb,
             ${JSON.stringify(sheet.outcomes)}::jsonb, ${JSON.stringify(sheet.citations)}::jsonb,
             ${sheet.source_name}, ${sheet.source_url}, ${sheet.confidence},
             ${wellSourced}, ${status}, 'auto_discovered', now())
@@ -180,6 +216,7 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
       scale_band=EXCLUDED.scale_band, lead_organisation=EXCLUDED.lead_organisation,
       implementers=EXCLUDED.implementers, funders=EXCLUDED.funders,
       principle_alignment=EXCLUDED.principle_alignment, outcomes=EXCLUDED.outcomes,
+      start_year=EXCLUDED.start_year, metrics=EXCLUDED.metrics, insight=EXCLUDED.insight,
       citations=EXCLUDED.citations, source_name=EXCLUDED.source_name,
       source_url=EXCLUDED.source_url, confidence=EXCLUDED.confidence,
       verified=EXCLUDED.verified, status=EXCLUDED.status, updated_at=now()
