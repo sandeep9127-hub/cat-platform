@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { getPublishedEntries, getOverviewCounts } from "@/lib/db/queries";
 import { DISCOVERED_RECORDS } from "@/lib/data/discovered-records";
+import { listFactSheets } from "@/lib/factsheet/generate";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,15 @@ const STATE_NAMES: Record<string, string> = {
 };
 
 export default async function MapPage() {
-  const [entries, counts] = await Promise.all([getPublishedEntries(), getOverviewCounts()]);
+  const [entries, counts, allFactsheets] = await Promise.all([
+    getPublishedEntries(),
+    getOverviewCounts(),
+    listFactSheets(),
+  ]);
+  // Published, geocoded fact sheets auto-pin onto the Atlas (decoupled engine).
+  const factsheets = allFactsheets.filter(
+    (f) => f.status === "published" && f.latitude != null && f.longitude != null
+  );
 
   const dbMapEntries = entries
     .filter((e) => e.primaryGeography.latitude && e.primaryGeography.longitude)
@@ -82,7 +91,7 @@ export default async function MapPage() {
 
   // ─── Phase 12 · Pull atlas-destination records and merge as pins + list rows
   const atlasRecords = DISCOVERED_RECORDS.filter((r) => r.destination === "atlas");
-  const combinedTotal = entries.length + atlasRecords.length;
+  const combinedTotal = entries.length + atlasRecords.length + factsheets.length;
 
   const dbListEntries = entries.map((e, i) => ({
     id: e.id,
@@ -144,9 +153,42 @@ export default async function MapPage() {
     };
   });
 
+  const factsheetMapEntries = factsheets.map((f) => ({
+    id: f.slug,
+    slug: f.slug,
+    title: f.title,
+    scaleBand: f.scale_band ?? "multi_district",
+    provenance: "sourced" as const,
+    stateCode: f.state_code ?? "",
+    latitude: f.latitude!,
+    longitude: f.longitude!,
+    internalHref: `/factsheet/${f.slug}`,
+  }));
+
+  const factsheetListEntries = factsheets.map((f, i) => ({
+    id: f.slug,
+    slug: f.slug,
+    index: dbListEntries.length + atlasListEntries.length + i + 1,
+    total: combinedTotal,
+    title: f.title,
+    tagline: f.one_liner ?? f.summary ?? "",
+    stateName: STATE_NAMES[f.state_code ?? ""] ?? f.district ?? f.state_code ?? "—",
+    startYear: new Date(f.updated_at).getFullYear(),
+    endYear: null,
+    scaleBand: f.scale_band ?? "multi_district",
+    catEndorsement: "cat_listed" as const,
+    themes: (f.themes ?? []).slice(0, 2).map((t) => ({
+      slug: t,
+      name: prettyTheme(t),
+      colourHex: THEME_COLOURS[t] ?? "#334B4A",
+    })),
+    internalHref: `/factsheet/${f.slug}`,
+    sourceName: f.source_name ?? "Fact sheet",
+  }));
+
   // Merge
-  const mapEntries = [...dbMapEntries, ...atlasMapEntries];
-  const listEntries = [...dbListEntries, ...atlasListEntries];
+  const mapEntries = [...dbMapEntries, ...atlasMapEntries, ...factsheetMapEntries];
+  const listEntries = [...dbListEntries, ...atlasListEntries, ...factsheetListEntries];
 
   const stateCount = new Set([
     ...dbMapEntries.map((e) => e.stateCode).filter(Boolean),
