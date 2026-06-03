@@ -1,15 +1,16 @@
 import type { NextAuthConfig } from "next-auth";
-import Resend from "next-auth/providers/resend";
 
 /**
- * Edge-safe Auth.js config: providers + callbacks that never touch the
- * database. Shared by `middleware.ts` (runs on the edge) and the full
- * server config in `auth.ts` (which adds the Drizzle adapter).
+ * Edge-safe Auth.js config: callbacks only, NO providers. Shared by
+ * `middleware.ts` (edge) and the full server config in `auth.ts`.
  *
- * Session strategy is JWT so the middleware can authorise requests from the
- * cookie without a database round-trip (our pg pool is not edge-compatible).
- * The Drizzle adapter is still used by `auth.ts` to persist users and the
- * magic-link verification tokens.
+ * The Resend email provider is deliberately NOT here: email providers require
+ * a database adapter, which the edge middleware can't load (our pg pool is not
+ * edge-compatible). Including it made `auth()` throw `MissingAdapter` on every
+ * /admin request. Providers + adapter live only in `auth.ts` (Node runtime).
+ *
+ * Session strategy is JWT so middleware can authorise from the cookie without
+ * a database round-trip.
  */
 export const authConfig = {
   trustHost: true,
@@ -19,12 +20,7 @@ export const authConfig = {
     verifyRequest: "/signin?sent=1",
     error: "/signin",
   },
-  providers: [
-    Resend({
-      apiKey: process.env.RESEND_API_KEY,
-      from: process.env.RESEND_FROM_EMAIL,
-    }),
-  ],
+  providers: [],
   callbacks: {
     // Gate /admin in middleware. Only editor/admin roles may enter; the login
     // page itself is always reachable so unauthenticated users can sign in.

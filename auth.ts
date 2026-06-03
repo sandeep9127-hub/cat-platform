@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import Resend from "next-auth/providers/resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -13,6 +14,14 @@ import { authConfig } from "@/auth.config";
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  // The email provider + adapter live only here (Node runtime), not in the
+  // edge middleware config — see the note in auth.config.ts.
+  providers: [
+    Resend({
+      apiKey: process.env.RESEND_API_KEY,
+      from: process.env.RESEND_FROM_EMAIL,
+    }),
+  ],
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
