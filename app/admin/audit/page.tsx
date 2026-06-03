@@ -24,17 +24,24 @@ export default async function AuditPage() {
   }
 
   return (
-    <div>
-      <h1 className="font-[var(--font-fraunces)] text-[30px] font-semibold tracking-[-0.02em]">Audit log</h1>
-      <p className="text-[14.5px] text-[var(--ink-soft)] mt-1 mb-6">Every consequential admin action, newest first.</p>
+    <div className="space-y-6">
+      <header>
+        <span className="mono-label">Accountability</span>
+        <h1 className="font-serif text-[36px] sm:text-[44px] font-normal tracking-[-0.02em] text-ink mt-2">
+          Audit log
+        </h1>
+        <p className="font-serif italic text-[16px] text-ink-soft mt-2 max-w-[60ch] font-light">
+          Every consequential admin action, newest first.
+        </p>
+      </header>
 
       {rows.length === 0 ? (
-        <p className="text-[14px] text-[var(--muted)] py-10">No actions recorded yet.</p>
+        <p className="text-[14px] text-muted py-10">No actions recorded yet.</p>
       ) : (
-        <div className="rounded-[10px] border border-[var(--line)] overflow-hidden">
+        <div className="rounded-[10px] border border-line overflow-hidden">
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="bg-[var(--cream)] text-left font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--muted)]">
+              <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
                 <th className="px-4 py-3 font-medium">When</th>
                 <th className="px-4 py-3 font-medium">Who</th>
                 <th className="px-4 py-3 font-medium">Action</th>
@@ -43,13 +50,13 @@ export default async function AuditPage() {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={i} className="border-t border-[var(--line)]">
-                  <td className="px-4 py-2.5 text-[var(--muted)] whitespace-nowrap tabular-nums">
+                <tr key={i} className="border-t border-line">
+                  <td className="px-4 py-2.5 text-muted whitespace-nowrap tabular-nums">
                     {new Date(r.created_at).toLocaleString("en-GB")}
                   </td>
-                  <td className="px-4 py-2.5">{r.actor_email ?? "—"}</td>
-                  <td className="px-4 py-2.5 font-mono text-[12px] text-[var(--teal)]">{r.action}</td>
-                  <td className="px-4 py-2.5 text-[var(--ink-soft)]">
+                  <td className="px-4 py-2.5 text-ink">{r.actor_email ?? "—"}</td>
+                  <td className="px-4 py-2.5 font-mono text-[12px] text-teal">{r.action}</td>
+                  <td className="px-4 py-2.5 text-ink-soft">
                     {r.entity_type ? `${r.entity_type}${r.entity_id ? ` · ${r.entity_id.slice(0, 8)}` : ""}` : "—"}
                   </td>
                 </tr>

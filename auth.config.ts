@@ -15,9 +15,9 @@ export const authConfig = {
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/admin/login",
-    verifyRequest: "/admin/login?sent=1",
-    error: "/admin/login",
+    signIn: "/signin",
+    verifyRequest: "/signin?sent=1",
+    error: "/signin",
   },
   providers: [
     Resend({
@@ -30,8 +30,8 @@ export const authConfig = {
     // page itself is always reachable so unauthenticated users can sign in.
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
-      if (!pathname.startsWith("/admin")) return true;
-      if (pathname === "/admin/login") return true;
+      // Gate the admin desk and its API routes; everything else is public.
+      if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) return true;
       const role = (auth?.user as { role?: string } | undefined)?.role;
       return role === "admin" || role === "editor";
     },
