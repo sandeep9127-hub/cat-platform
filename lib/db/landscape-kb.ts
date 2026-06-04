@@ -155,6 +155,20 @@ export async function budgetSummary(slug: string): Promise<BudgetSummary> {
   };
 }
 
+/**
+ * Which landscape slugs currently have ingested (embedded) chunks. This is what
+ * lets the Ask scope filter light up automatically: upload a landscape plan,
+ * its chunks land in this table, and it becomes a selectable, searchable scope
+ * with no code change. (The pseudo-slug "hlpe" — the principles report — is a
+ * knowledge base, not a landscape, and is filtered out by callers via LANDSCAPES.)
+ */
+export async function getIngestedLandscapeSlugs(): Promise<string[]> {
+  const r = await db.execute<{ slug: string }>(
+    sql`SELECT DISTINCT landscape_slug AS slug FROM "cat".landscape_document_chunks`
+  );
+  return rowsOf<{ slug: string }>(r).map((x) => x.slug);
+}
+
 /** Vector search across chunks scoped to a landscape. */
 export async function searchLandscapeChunks(
   slug: string,

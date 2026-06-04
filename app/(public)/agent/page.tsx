@@ -1,7 +1,10 @@
 import { AgentChat } from "@/components/agent/AgentChat";
 import { CustomBriefBuilder } from "@/components/agent/CustomBriefBuilder";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { getIngestedLandscapeSlugs } from "@/lib/db/landscape-kb";
 import { ShieldCheck, FileDown } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Ask the Hub",
@@ -18,10 +21,20 @@ export default async function AgentPage({
 }) {
   const sp = await searchParams;
   const enabled = !!process.env.NVIDIA_API_KEY;
-  // Validate scope, must be 'all' or a known landscape slug
+
+  // The full landscape roster, each flagged with whether it has ingested
+  // content yet. Filters render for ALL eleven; the ones without a plan show as
+  // disabled placeholders. Upload a plan → its chunks land in the DB → it lights
+  // up here automatically, no code change. (Sorted: ready first, then A–Z.)
+  const ingested = new Set(await getIngestedLandscapeSlugs().catch(() => []));
+  const landscapes = Object.values(LANDSCAPES)
+    .map((l) => ({ slug: l.slug, label: l.name, ready: ingested.has(l.slug) }))
+    .sort((a, b) => Number(b.ready) - Number(a.ready) || a.label.localeCompare(b.label));
+
+  // Validate scope: must be 'all' or a landscape that is actually ingested.
   const rawScope = sp.scope ?? "all";
   const scope =
-    rawScope === "all" || LANDSCAPES[rawScope] ? rawScope : "all";
+    rawScope === "all" || ingested.has(rawScope) ? rawScope : "all";
 
   return (
     <article className="pt-8 sm:pt-12 lg:pt-16 pb-24">
@@ -42,7 +55,7 @@ export default async function AgentPage({
       <section className="pt-2">
         {enabled ? (
           <>
-            <AgentChat initialScope={scope} />
+            <AgentChat initialScope={scope} landscapes={landscapes} />
             {/* Custom brief builder, sits at the bottom of the assistant page */}
             <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10">
               <div

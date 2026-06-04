@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { gte, sql } from "drizzle-orm";
 import { searchEntries } from "@/lib/db/search";
-import { searchLandscapeChunks } from "@/lib/db/landscape-kb";
+import { searchLandscapeChunks, getIngestedLandscapeSlugs } from "@/lib/db/landscape-kb";
 import {
   kimiChatStream,
   kimiEnabled,
@@ -155,9 +155,8 @@ async function retrieve(
     embedQuery(trimmed),
   ]);
 
-  // Landscape chunk search per landscape slug. If a single scope, just that one.
-  // Otherwise, search the Patratu landscape (the only one with chunks today).
-  // Easy to extend to all ingested landscapes once more are loaded.
+  // Landscape chunk search per landscape slug. A single scope searches just
+  // that landscape; "all" searches every ingested landscape (from the DB).
   // Each result is tagged with the slug it came from so citations can be
   // labelled correctly when more than one knowledge base is searched.
   let chunks: (Awaited<ReturnType<typeof searchLandscapeChunks>>[number] & {
@@ -165,11 +164,17 @@ async function retrieve(
   })[] = [];
   if (embedding && wantsLandscape) {
     // A specific landscape scope searches only that landscape. The general
-    // ("all") scope searches the ingested landscapes plus the HLPE Report 14
-    // knowledge base, so principle questions resolve against the source.
-    const slugsToSearch = onlyThisLandscape
-      ? [onlyThisLandscape]
-      : ["patratu", "hlpe"];
+    // ("all") scope searches EVERY ingested landscape plus the HLPE Report 14
+    // knowledge base — driven by the DB, so newly uploaded landscape plans are
+    // searched automatically with no code change here.
+    let slugsToSearch: string[];
+    if (onlyThisLandscape) {
+      slugsToSearch = [onlyThisLandscape];
+    } else {
+      const ingested = await getIngestedLandscapeSlugs().catch(() => []);
+      // Always include the principles ("hlpe") knowledge base under "all".
+      slugsToSearch = Array.from(new Set([...ingested, "hlpe"]));
+    }
     const chunkResults = await Promise.all(
       slugsToSearch.map(async (slug) => {
         const r = await searchLandscapeChunks(

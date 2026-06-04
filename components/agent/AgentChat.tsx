@@ -141,13 +141,12 @@ const PROMPT_POOL: Array<{
 ];
 
 // Scope is a single dropdown: "All sources" (the whole knowledge base — every
-// Solutions-Atlas fact sheet, the 13 principles, and the ingested landscapes)
-// OR a specific landscape. Only landscapes with ingested content are offered;
-// today that's Patratu. As more landscape plans are ingested, add them here.
-const LANDSCAPE_SCOPES = [
-  { slug: "all", label: "All sources" },
-  { slug: "patratu", label: "Patratu landscape" },
-];
+// Solutions-Atlas fact sheet, the 13 principles, and every ingested landscape)
+// OR a specific landscape. The landscape roster is passed in from the server
+// (driven by the DB), so a landscape becomes selectable the moment its plan is
+// ingested — no code change here.
+type ScopeOption = { slug: string; label: string; ready: boolean };
+const ALL_SCOPE: ScopeOption = { slug: "all", label: "All sources", ready: true };
 
 function getSessionToken(): string {
   if (typeof window === "undefined") return "ssr";
@@ -170,12 +169,22 @@ function sampleFour(): typeof PROMPT_POOL {
   return out;
 }
 
-export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
+export function AgentChat({
+  initialScope = "all",
+  landscapes = [],
+}: {
+  initialScope?: string;
+  landscapes?: ScopeOption[];
+}) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scope, setScope] = useState<string>(initialScope);
+  const scopeOptions = useMemo<ScopeOption[]>(
+    () => [ALL_SCOPE, ...landscapes],
+    [landscapes]
+  );
   const [cards, setCards] = useState(() => sampleFour());
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -318,8 +327,8 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
   const charCount = input.length;
   const remaining = Math.max(0, 1000 - charCount);
   const scopeLabel = useMemo(
-    () => LANDSCAPE_SCOPES.find((s) => s.slug === scope)?.label ?? "All sources",
-    [scope]
+    () => scopeOptions.find((s) => s.slug === scope)?.label ?? "All sources",
+    [scope, scopeOptions]
   );
   // Placeholder reflects the active scope so it's clear what the answer draws on.
   const scopePlaceholder = useMemo(
@@ -450,6 +459,7 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
         scope={scope}
         setScope={setScope}
         scopeLabel={scopeLabel}
+        scopeOptions={scopeOptions}
         placeholder={scopePlaceholder}
         inputRef={inputRef}
       />
@@ -473,6 +483,7 @@ function Composer({
   scope,
   setScope,
   scopeLabel,
+  scopeOptions,
   placeholder,
   inputRef,
 }: {
@@ -485,6 +496,7 @@ function Composer({
   scope: string;
   setScope: (s: string) => void;
   scopeLabel: string;
+  scopeOptions: ScopeOption[];
   placeholder: string;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
@@ -517,40 +529,74 @@ function Composer({
           </button>
           {scopeOpen && (
             <div
-              className="absolute top-full right-0 mt-2 min-w-[180px] rounded-[6px] border border-line bg-paper p-1.5 z-20"
+              className="absolute top-full right-0 mt-2 min-w-[210px] max-h-[340px] overflow-y-auto rounded-[6px] border border-line bg-paper p-1.5 z-20"
               style={{
                 boxShadow:
                   "0 1px 2px rgba(26,38,37,0.04), 0 12px 28px -12px rgba(26,38,37,0.30)",
               }}
             >
-              {LANDSCAPE_SCOPES.map((s, i) => (
-                <div key={s.slug}>
-                  {i === 1 && (
-                    <div className="px-3 pt-2 pb-1 font-mono text-[8.5px] uppercase tracking-[0.16em] text-muted">
-                      Focus on a landscape
+              {/* All sources */}
+              <button
+                type="button"
+                onClick={() => {
+                  setScope("all");
+                  setScopeOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${
+                  scope === "all"
+                    ? "bg-cream/80 text-deep-teal font-semibold"
+                    : "text-ink-soft hover:bg-cream/60"
+                }`}
+              >
+                All sources
+              </button>
+              <p className="px-3 pt-1 pb-1.5 font-sans normal-case tracking-normal text-[10.5px] leading-snug text-muted">
+                Every solution, principle and landscape.
+              </p>
+
+              {/* Landscape filters — built from the DB. Ready ones are
+                  selectable; the rest are placeholders awaiting their plan. */}
+              <div className="px-3 pt-2 pb-1 font-mono text-[8.5px] uppercase tracking-[0.16em] text-muted border-t border-line-soft mt-1">
+                Focus on a landscape
+              </div>
+              {scopeOptions
+                .filter((s) => s.slug !== "all")
+                .map((s) =>
+                  s.ready ? (
+                    <button
+                      key={s.slug}
+                      type="button"
+                      onClick={() => {
+                        setScope(s.slug);
+                        setScopeOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors flex items-center justify-between gap-2 ${
+                        scope === s.slug
+                          ? "bg-cream/80 text-deep-teal font-semibold"
+                          : "text-ink-soft hover:bg-cream/60"
+                      }`}
+                    >
+                      <span>{s.label}</span>
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: "#5C8C2E" }}
+                        aria-hidden
+                      />
+                    </button>
+                  ) : (
+                    <div
+                      key={s.slug}
+                      aria-disabled="true"
+                      title="Plan not uploaded yet"
+                      className="w-full px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted/70 flex items-center justify-between gap-2 cursor-not-allowed"
+                    >
+                      <span>{s.label}</span>
+                      <span className="font-sans normal-case tracking-normal text-[9px] text-muted/60 italic shrink-0">
+                        soon
+                      </span>
                     </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setScope(s.slug);
-                      setScopeOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${
-                      scope === s.slug
-                        ? "bg-cream/80 text-deep-teal font-semibold"
-                        : "text-ink-soft hover:bg-cream/60"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                  {i === 0 && (
-                    <p className="px-3 pt-1 pb-1.5 font-sans normal-case tracking-normal text-[10.5px] leading-snug text-muted">
-                      Every solution, principle and landscape.
-                    </p>
-                  )}
-                </div>
-              ))}
+                  )
+                )}
             </div>
           )}
         </div>
