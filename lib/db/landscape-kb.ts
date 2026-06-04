@@ -169,6 +169,114 @@ export async function getIngestedLandscapeSlugs(): Promise<string[]> {
   return rowsOf<{ slug: string }>(r).map((x) => x.slug);
 }
 
+/**
+ * Everything the /insights window needs for one landscape, in a single trip.
+ * Pure structured budget data (high accuracy, hand-controlled) — no scraped
+ * magnitudes. Note: per-line impact_* sums are CUMULATIVE across interventions
+ * (a household appears in several lines), so callers must label them as
+ * "engagements", never as unique reach (use the landscape profile for that).
+ */
+export type LandscapeInsights = {
+  totals: {
+    total: number;
+    govt: number;
+    community: number;
+    investment: number;
+    grants: number;
+    returnable: number;
+    outcome: number;
+    debt: number;
+    householdEngagements: number;
+    hectares: number;
+    animals: number;
+    lineCount: number;
+  };
+  byCategory: {
+    category: string;
+    total: number;
+    investment: number;
+    householdEngagements: number;
+    hectares: number;
+    lines: number;
+  }[];
+  byPackage: { package: string; total: number }[];
+  lines: {
+    category: string | null;
+    intervention: string | null;
+    package: string | null;
+    total: number;
+    investment: number;
+    households: number;
+    hectares: number;
+  }[];
+};
+
+export async function landscapeInsights(slug: string): Promise<LandscapeInsights> {
+  const num = (v: unknown) => Number(v ?? 0);
+  const totR = await db.execute(
+    sql`SELECT
+          coalesce(SUM(total_intervention_cost_inr),0) total,
+          coalesce(SUM(govt_inr),0) govt,
+          coalesce(SUM(community_inr),0) community,
+          coalesce(SUM(investment_required_inr),0) investment,
+          coalesce(SUM(grants_inr),0) grants,
+          coalesce(SUM(returnable_grant_inr),0) returnable,
+          coalesce(SUM(outcome_finance_inr),0) outcome,
+          coalesce(SUM(debt_inr),0) debt,
+          coalesce(SUM(impact_households),0) hh,
+          coalesce(SUM(impact_hectares),0) ha,
+          coalesce(SUM(impact_animals),0) animals,
+          count(*) lines
+        FROM "cat".landscape_budget_lines WHERE landscape_slug = ${slug}`
+  );
+  const t = rowsOf<Record<string, string>>(totR)[0] ?? {};
+  const catR = await db.execute(
+    sql`SELECT coalesce(category,'Uncategorised') category, count(*) lines,
+          coalesce(SUM(total_intervention_cost_inr),0) total,
+          coalesce(SUM(investment_required_inr),0) investment,
+          coalesce(SUM(impact_households),0) hh,
+          coalesce(SUM(impact_hectares),0) ha
+        FROM "cat".landscape_budget_lines WHERE landscape_slug = ${slug}
+        GROUP BY category ORDER BY SUM(total_intervention_cost_inr) DESC NULLS LAST`
+  );
+  const pkgR = await db.execute(
+    sql`SELECT coalesce(package,'Unassigned') package,
+          coalesce(SUM(total_intervention_cost_inr),0) total
+        FROM "cat".landscape_budget_lines WHERE landscape_slug = ${slug}
+        GROUP BY package ORDER BY SUM(total_intervention_cost_inr) DESC NULLS LAST`
+  );
+  const lineR = await db.execute(
+    sql`SELECT category, intervention, package,
+          coalesce(total_intervention_cost_inr,0) total,
+          coalesce(investment_required_inr,0) investment,
+          coalesce(impact_households,0) households,
+          coalesce(impact_hectares,0) hectares
+        FROM "cat".landscape_budget_lines WHERE landscape_slug = ${slug}
+        ORDER BY category_no, row_index`
+  );
+  return {
+    totals: {
+      total: num(t.total), govt: num(t.govt), community: num(t.community),
+      investment: num(t.investment), grants: num(t.grants), returnable: num(t.returnable),
+      outcome: num(t.outcome), debt: num(t.debt),
+      householdEngagements: num(t.hh), hectares: num(t.ha), animals: num(t.animals),
+      lineCount: num(t.lines),
+    },
+    byCategory: rowsOf<Record<string, string>>(catR).map((r) => ({
+      category: r.category, total: num(r.total), investment: num(r.investment),
+      householdEngagements: num(r.hh), hectares: num(r.ha), lines: num(r.lines),
+    })),
+    byPackage: rowsOf<Record<string, string>>(pkgR).map((r) => ({
+      package: r.package, total: num(r.total),
+    })),
+    lines: rowsOf<Record<string, string>>(lineR).map((r) => ({
+      category: r.category ?? null, intervention: r.intervention ?? null, package: r.package ?? null,
+      total: num(r.total), investment: num(r.investment),
+      households: num(r.households), hectares: num(r.hectares),
+    })),
+  };
+}
+
 /** Vector search across chunks scoped to a landscape. */
 export async function searchLandscapeChunks(
   slug: string,

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { INSIGHTS_ENABLED } from "@/lib/flags";
 
 /**
  * Footer.
@@ -75,6 +76,7 @@ export function Footer() {
             { href: "/landscapes", label: "Landscapes" },
             { href: "/map", label: "Solutions Atlas" },
             { href: "/organizations", label: "Organizations Atlas" },
+            ...(INSIGHTS_ENABLED ? [{ href: "/insights", label: "Insights" }] : []),
             { href: "/agent", label: "Ask the Hub" },
           ]}
         />
