@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getFactSheet } from "@/lib/factsheet/generate";
-import { PrintButton } from "@/components/factsheet/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -57,12 +56,9 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
       <div className="max-w-[1080px] mx-auto px-6 py-8">
         <div className="no-print flex items-center justify-between gap-3 mb-8 flex-wrap">
           <a href="/map" className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted hover:text-teal no-underline">← Solutions Atlas</a>
-          <div className="flex items-center gap-3">
-            <a href={`/factsheet/${slug}/download`} className="font-mono text-[10px] uppercase tracking-[0.12em] px-4 py-2 rounded-[6px] bg-deep-teal text-paper hover:bg-teal transition-colors no-underline">
-              ↓ Download fact sheet (PDF)
-            </a>
-            <PrintButton />
-          </div>
+          <a href={`/factsheet/${slug}/download`} className="font-mono text-[10px] uppercase tracking-[0.12em] px-4 py-2 rounded-[6px] bg-deep-teal text-paper hover:bg-teal transition-colors no-underline">
+            ↓ Download fact sheet (PDF)
+          </a>
         </div>
 
         {s.status !== "published" && (

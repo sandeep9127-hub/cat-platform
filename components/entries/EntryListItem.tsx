@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
 import { ThemeChip } from "@/components/ui/ThemeChip";
 
 export type EntryListItemData = {
@@ -13,7 +12,7 @@ export type EntryListItemData = {
   startYear: number;
   endYear: number | null;
   scaleBand: string;
-  catEndorsement: "cat_authored" | "cat_endorsed" | "cat_listed";
+  catEndorsement?: "cat_authored" | "cat_endorsed" | "cat_listed" | "none";
   themes: { slug: string; name: string; colourHex: string }[];
   /**
    * Optional internal route to use instead of the default `/entry/{slug}`.
@@ -67,12 +66,6 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
               · {humaniseScale(data.scaleBand)}
             </span>
           </div>
-          <div className="sm:hidden mt-3">
-            <EndorsementBadge tier={data.catEndorsement} />
-          </div>
-        </div>
-        <div className="hidden sm:block">
-          <EndorsementBadge tier={data.catEndorsement} />
         </div>
       </article>
   );

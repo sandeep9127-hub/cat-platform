@@ -182,12 +182,8 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         }}
       >
         <div className="flex gap-2 items-center">
-          <span className="w-2.5 h-2.5 rounded-full bg-teal shadow-[0_0_0_3px_rgba(46,117,115,0.18)]" />
-          Self-submitted
-        </div>
-        <div className="flex gap-2 items-center">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-deep shadow-[0_0_0_3px_rgba(217,166,85,0.22)]" />
-          CAT-sourced
+          Solution
         </div>
       </div>
 
@@ -309,8 +305,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
           </div>
           <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-amber mt-2 flex items-center gap-1.5">
             <span className="inline-block w-2.5 h-px bg-amber/70" />
-            {stateNameFor(tooltip.entry.stateCode)} · {humaniseScale(tooltip.entry.scaleBand)} ·{" "}
-            {tooltip.entry.provenance === "sourced" ? "CAT-sourced" : "Self-submitted"}
+            {stateNameFor(tooltip.entry.stateCode)} · {humaniseScale(tooltip.entry.scaleBand)}
           </div>
         </div>
       )}
