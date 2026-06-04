@@ -37,6 +37,33 @@ const STATE_CENTROIDS: Record<string, [number, number]> = {
   WB: [22.9, 87.9], DL: [28.6, 77.2], AN: [11.7, 92.7], PY: [11.9, 79.8],
 };
 
+// Common 2-letter state-code variants the model emits that don't match the
+// census codes above (e.g. it writes CT for Chhattisgarh, TS for Telangana).
+const STATE_ALIASES: Record<string, string> = {
+  CT: "CG", TS: "TG", OR: "OD", UT: "UK", UA: "UK", PO: "PY", DD: "DL",
+};
+
+// Geographic centre of India — a deterministic-jitter fallback so national /
+// multi-state / unknown-location programmes STILL pin on the Atlas (otherwise
+// they'd be counted in the category tiles but invisible on the map).
+const INDIA_CENTROID: [number, number] = [22.6, 79.2];
+
+function geocodeState(
+  stateCode: string | null,
+  slug: string,
+): { lat: number; lon: number } {
+  const code = stateCode ? STATE_ALIASES[stateCode] ?? stateCode : null;
+  const c = code ? STATE_CENTROIDS[code] : undefined;
+  if (c) return { lat: c[0], lon: c[1] };
+  // National / unknown → cluster gently around the centre of India, spread by a
+  // deterministic per-slug offset so multiple national schemes don't stack.
+  const h = [...slug].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return {
+    lat: INDIA_CENTROID[0] + (((h % 9) - 4) * 0.7),
+    lon: INDIA_CENTROID[1] + ((((h >> 3) % 9) - 4) * 0.7),
+  };
+}
+
 export type FactSheet = {
   slug: string;
   title: string;
@@ -177,8 +204,11 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
   }
   if (raw.refused) return { ok: false, reason: String(raw.reason || "Could not verify from sources") };
 
-  const stateCode = raw.state_code ? String(raw.state_code).toUpperCase().slice(0, 2) : null;
-  const centroid = stateCode ? STATE_CENTROIDS[stateCode] : undefined;
+  const rawStateCode = raw.state_code ? String(raw.state_code).toUpperCase().slice(0, 2) : null;
+  // Normalise common code variants so the centroid lookup (and the Atlas state
+  // label) line up with the census codes.
+  const stateCode = rawStateCode ? STATE_ALIASES[rawStateCode] ?? rawStateCode : null;
+  const geo = geocodeState(stateCode, slugify(String(raw.title || query)));
   const outcomes = Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [];
   const citations = Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [];
   const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
@@ -200,8 +230,8 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
     summary: raw.summary ? String(raw.summary) : null,
     state_code: stateCode,
     district: raw.district ? String(raw.district) : null,
-    latitude: centroid ? centroid[0] : null,
-    longitude: centroid ? centroid[1] : null,
+    latitude: geo.lat,
+    longitude: geo.lon,
     themes: Array.isArray(raw.themes) ? (raw.themes as string[]) : [],
     scale_band: raw.scale_band ? String(raw.scale_band) : null,
     lead_organisation: raw.lead_organisation ? String(raw.lead_organisation) : null,
