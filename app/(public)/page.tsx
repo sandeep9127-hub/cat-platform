@@ -1,14 +1,29 @@
 import {
   getOverviewCounts,
   getPublishedEntries,
-  getThemesWithCounts,
 } from "@/lib/db/queries";
 import { AtlasSection } from "@/components/entries/AtlasSection";
-import { listFactSheets } from "@/lib/factsheet/generate";
+import { listFactSheets, getCategoryCounts } from "@/lib/factsheet/generate";
+import { CATEGORIES } from "@/lib/data/categories";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
-import { ThemeIcon } from "@/components/ui/ThemeIcon";
-import { Sparkles, ArrowUpRight, Feather, BookMarked } from "lucide-react";
+import {
+  Sparkles,
+  ArrowUpRight,
+  Feather,
+  BookMarked,
+  Sprout,
+  Trees,
+  Beef,
+  Fish,
+  Droplets,
+  Flower2,
+  Apple,
+  Store,
+  Zap,
+  GraduationCap,
+  type LucideIcon,
+} from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { ParallaxBanner } from "@/components/home/ParallaxBanner";
@@ -20,11 +35,32 @@ export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export default async function LandingPage() {
-  const [entries, themes, counts] = await Promise.all([
+  const [entries, categoryCounts, counts] = await Promise.all([
     getPublishedEntries(),
-    getThemesWithCounts(),
+    getCategoryCounts(),
     getOverviewCounts(),
   ]);
+
+  // The 10 intervention categories, each carrying its live Atlas count. Both
+  // these tiles and the Atlas filter read from the same fact-sheet themes, so
+  // the numbers always tally with /map. Sorted by populated-first.
+  const CATEGORY_ICON: Record<string, LucideIcon> = {
+    "agri-horti-agroforestry": Sprout,
+    "forestry-ntfp": Trees,
+    livestock: Beef,
+    fisheries: Fish,
+    nrm: Droplets,
+    biodiversity: Flower2,
+    nutrition: Apple,
+    market: Store,
+    energy: Zap,
+    "technical-assistance": GraduationCap,
+  };
+  const categoryTiles = CATEGORIES.map((c) => ({
+    ...c,
+    count: categoryCounts[c.slug] ?? 0,
+    Icon: CATEGORY_ICON[c.slug] ?? Sprout,
+  })).sort((a, b) => b.count - a.count);
 
   // ─── Merge DB entries with atlas-routed discovery records so the landing
   // page reflects the same library shape as /map. The right-rail list is
@@ -246,61 +282,61 @@ export default async function LandingPage() {
         />
       </Reveal>
 
-      {/* THEMES — dark editorial feature band (Research-Journal direction) */}
+      {/* CATEGORIES — dark editorial feature band. The 10 CAT intervention
+          categories; each count is pulled live from the Atlas fact sheets and
+          each tile deep-links into the filtered Solutions Atlas. */}
       <Reveal as="section" className="mt-8 py-16 lg:py-24 bg-ink">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber mb-3">
-            Eight working areas
+            Ten intervention areas
           </div>
           <h2 className="font-serif text-[34px] sm:text-[42px] leading-[1.04] tracking-[-0.02em] text-paper">
-            Read by <span className="italic font-normal text-amber">theme</span>.
+            Explore by <span className="italic font-normal text-amber">what it does</span>.
           </h2>
+          <p className="mt-3 max-w-[58ch] text-[14.5px] leading-[1.6] text-[#fbf8f2bf]">
+            Every solution in the Atlas is tagged to one or more of these ten
+            categories. The counts update as the Atlas grows.
+          </p>
         </div>
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {[...themes]
-            .sort(
-              (a, b) =>
-                // Populated themes first (count desc); curated displayOrder
-                // breaks ties so empty working areas sink to the end.
-                b.entryCount - a.entryCount ||
-                (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-            )
-            .map((t, i) => (
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
+          {categoryTiles.map((t, i) => (
             <Link
               key={t.slug}
-              href={`/theme/${t.slug}`}
-              className="group relative flex flex-col gap-3.5 min-h-[190px] p-6 rounded-[8px] reveal-stagger transition-colors duration-200"
+              href={`/map?category=${t.slug}`}
+              className="group relative flex flex-col gap-3.5 min-h-[176px] p-5 rounded-[10px] reveal-stagger transition-all duration-200 hover:-translate-y-0.5"
               style={{
                 ["--c" as string]: t.colourHex,
-                animationDelay: `${i * 60}ms`,
+                animationDelay: `${i * 50}ms`,
                 background: "var(--ink-2)",
                 border: "1px solid rgba(255,255,255,0.08)",
               } as React.CSSProperties}
             >
-              {/* flat square icon tile — single theme colour, no gradient/glow */}
+              {/* gradient icon chip in the category colour */}
               <span
-                className="w-[40px] h-[40px] rounded-[6px] flex items-center justify-center text-paper"
-                style={{ background: t.colourHex }}
+                className="w-[42px] h-[42px] rounded-[9px] flex items-center justify-center text-paper shadow-[0_6px_16px_-8px_var(--c)]"
+                style={{
+                  background:
+                    "linear-gradient(140deg, color-mix(in oklch, var(--c) 92%, white) 0%, var(--c) 55%, color-mix(in oklch, var(--c) 78%, black) 100%)",
+                }}
                 aria-hidden
               >
-                <ThemeIcon slug={t.slug} size={22} />
+                <t.Icon size={21} strokeWidth={1.75} />
               </span>
-              <h3 className="font-serif text-[21px] font-medium tracking-[-0.012em] text-paper leading-[1.16] max-w-[20ch]">
-                {t.name}
+              <h3 className="font-serif text-[18.5px] font-medium tracking-[-0.012em] text-paper leading-[1.18] max-w-[18ch]">
+                {t.short}
               </h3>
-              {/* metadata as a bare mono label — contrast lifted to clear WCAG AA */}
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#fbf8f2bf] mt-auto">
-                <strong className="text-paper text-[13px] font-semibold">{t.entryCount}</strong>{" "}
-                {t.entryCount === 1 ? "programme" : "programmes"}
+                <strong className="text-paper text-[13px] font-semibold">{t.count}</strong>{" "}
+                {t.count === 1 ? "solution" : "solutions"}
               </span>
               <span
-                className="absolute top-6 right-6 font-serif text-[18px] text-[#fbf8f28c] transition-all duration-200 group-hover:translate-x-1 group-hover:text-[color:var(--c)]"
+                className="absolute top-5 right-5 transition-all duration-200 text-[#fbf8f28c] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
                 aria-hidden
               >
-                →
+                <ArrowUpRight size={17} strokeWidth={2} />
               </span>
             </Link>
-            ))}
+          ))}
         </div>
       </Reveal>
 

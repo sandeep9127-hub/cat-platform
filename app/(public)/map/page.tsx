@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets } from "@/lib/factsheet/generate";
+import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -11,24 +12,12 @@ export const metadata = {
     "Every food-systems programme on the Hub, plotted on India. The open library, complementary to CAT's eleven focus landscapes.",
 };
 
-const THEME_COLOURS: Record<string, string> = {
-  "soil-and-land": "#8C7A5C",
-  water: "#2C7BD0",
-  "seeds-and-biodiversity": "#5C8C2E",
-  "farmer-livelihoods": "#C68C2E",
-  nutrition: "#C24A2E",
-  "climate-resilience": "#2E7573",
-  "markets-and-value-chains": "#2EA37A",
-  "policy-and-finance": "#334B4A",
-  "knowledge-and-capacity": "#5C6796",
-  "women-and-collectives": "#929CC5",
-};
+function themeColour(slug: string): string {
+  return CATEGORY_BY_SLUG[slug]?.colourHex ?? "#334B4A";
+}
 
 function prettyTheme(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => w[0]?.toUpperCase() + w.slice(1))
-    .join(" ");
+  return CATEGORY_BY_SLUG[slug]?.short ?? categoryName(slug);
 }
 
 const STATE_NAMES: Record<string, string> = {
@@ -63,12 +52,31 @@ const STATE_NAMES: Record<string, string> = {
   WB: "West Bengal",
 };
 
-export default async function MapPage() {
+export default async function MapPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const sp = await searchParams;
+  const activeCategory =
+    sp.category && CATEGORY_BY_SLUG[sp.category] ? sp.category : null;
+
   const allFactsheets = await listFactSheets();
   // Published, geocoded fact sheets are the Atlas (decoupled engine).
-  const factsheets = allFactsheets.filter(
+  const publishedFactsheets = allFactsheets.filter(
     (f) => f.status === "published" && f.latitude != null && f.longitude != null
   );
+
+  // Live per-category counts over the full published set (so chip counts are
+  // stable regardless of the active filter), then apply the active filter.
+  const categoryCounts: Record<string, number> = {};
+  for (const f of publishedFactsheets)
+    for (const t of f.themes ?? [])
+      categoryCounts[t] = (categoryCounts[t] ?? 0) + 1;
+
+  const factsheets = activeCategory
+    ? publishedFactsheets.filter((f) => (f.themes ?? []).includes(activeCategory))
+    : publishedFactsheets;
 
   // The Solutions Atlas is now the fact-sheet engine ONLY. Old hardcoded
   // records and CAT-authored DB entries are retired for uniformity — every
@@ -102,7 +110,7 @@ export default async function MapPage() {
     themes: (f.themes ?? []).slice(0, 2).map((t) => ({
       slug: t,
       name: prettyTheme(t),
-      colourHex: THEME_COLOURS[t] ?? "#334B4A",
+      colourHex: themeColour(t),
     })),
     internalHref: `/factsheet/${f.slug}`,
     sourceName: f.source_name ?? "",
@@ -157,6 +165,73 @@ export default async function MapPage() {
           </p>
         </aside>
       </section>
+
+      {/* Category filter — deep-linkable (?category=slug), live counts from the
+          same fact-sheet themes that drive the landing tiles. */}
+      <nav
+        aria-label="Filter the Atlas by intervention category"
+        className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mr-1">
+            Filter
+          </span>
+          <Link
+            href="/map"
+            aria-current={!activeCategory ? "true" : undefined}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
+              (!activeCategory
+                ? "bg-deep-teal text-paper border-deep-teal"
+                : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
+            }
+          >
+            All
+            <span className="font-mono text-[10px] tabular-nums opacity-70">
+              {publishedFactsheets.length}
+            </span>
+          </Link>
+          {CATEGORIES.map((c) => {
+            const active = activeCategory === c.slug;
+            const n = categoryCounts[c.slug] ?? 0;
+            return (
+              <Link
+                key={c.slug}
+                href={active ? "/map" : `/map?category=${c.slug}`}
+                aria-current={active ? "true" : undefined}
+                className={
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
+                  (active
+                    ? "text-paper"
+                    : n === 0
+                      ? "text-muted border-line/70 opacity-60 hover:opacity-100"
+                      : "text-ink-soft border-line hover:text-ink")
+                }
+                style={
+                  active
+                    ? { background: c.colourHex, borderColor: c.colourHex }
+                    : { ["--c" as string]: c.colourHex } as React.CSSProperties
+                }
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: active ? "rgba(255,255,255,0.85)" : c.colourHex }}
+                  aria-hidden
+                />
+                {c.short}
+                <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
+              </Link>
+            );
+          })}
+        </div>
+        {activeCategory && (
+          <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted">
+            Showing {factsheets.length}{" "}
+            {factsheets.length === 1 ? "solution" : "solutions"} in{" "}
+            <span className="text-ink-soft">{categoryName(activeCategory)}</span>
+          </p>
+        )}
+      </nav>
 
       <AtlasSection
         mapEntries={mapEntries}

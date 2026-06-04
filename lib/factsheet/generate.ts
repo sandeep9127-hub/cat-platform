@@ -92,7 +92,7 @@ HARD RULES (non-negotiable):
 JSON keys:
   title, one_liner, summary (2-4 sentences),
   state_name, state_code (2-letter), district, start_year (integer or null),
-  themes (array of slugs from: soil-land, water, seeds-biodiversity, climate-resilience, women-collectives, markets-value-chains, policy-governance, knowledge-capacity),
+  themes (array of 1-3 intervention-category slugs that best describe what this programme actually does, chosen ONLY from: agri-horti-agroforestry (crops, horticulture, agroforestry, natural/organic farming), forestry-ntfp (forests, non-timber forest produce, plantations), livestock (dairy, poultry, fodder, animal husbandry), fisheries (aquaculture, inland/marine fishing), nrm (soil, water, watershed, land & natural-resource management), biodiversity (seeds, native breeds, ecosystem & species conservation), nutrition (kitchen gardens, dietary diversity, food security), market (value chains, FPOs, processing, market linkage, price), energy (solar, biogas, energy-efficient pumps/equipment), technical-assistance (training, extension, advisory, capacity building, knowledge). Pick the categories the sources actually support — do not over-tag),
   scale_band (one of: pilot, block, district, multi_district, state, multi_state, national),
   lead_organisation, implementers (array), funders (array),
   principle_alignment (array of short principle names this programme touches),
@@ -277,4 +277,22 @@ export async function listFactSheets(): Promise<FactSheetRow[]> {
 export async function getFactSheet(slug: string): Promise<FactSheetRow | null> {
   const r = await db.execute(sql`SELECT * FROM "cat".solution_factsheets WHERE slug = ${slug} LIMIT 1`);
   return (r as unknown as { rows: FactSheetRow[] }).rows[0] ?? null;
+}
+
+/**
+ * Count published fact sheets per intervention-category slug, by unnesting the
+ * `themes` array. This is what powers the landing-page category tiles AND the
+ * Atlas category filter, so the two always tally with the live Atlas.
+ */
+export async function getCategoryCounts(): Promise<Record<string, number>> {
+  const r = await db.execute(sql`
+    SELECT theme, COUNT(*)::int AS n
+    FROM "cat".solution_factsheets, jsonb_array_elements_text(themes) AS theme
+    WHERE status = 'published'
+    GROUP BY theme
+  `);
+  const rows = (r as unknown as { rows: { theme: string; n: number }[] }).rows;
+  const out: Record<string, number> = {};
+  for (const row of rows) out[row.theme] = Number(row.n);
+  return out;
 }
