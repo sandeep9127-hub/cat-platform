@@ -15,15 +15,14 @@ import { getClient, estimateCostUsd } from "@/lib/ai/anthropic";
 
 const MODEL = "claude-sonnet-4-6";
 
-const ALLOWED_DOMAINS = [
-  "gov.in", "nic.in", "icar.org.in", "nabard.org", "ifad.org", "icrisat.org",
-  "wassan.org", "apcnf.in", "rythusadhikarasamstha.org", "fao.org", "cgiar.org",
-  "azimpremjifoundation.org", "macfound.org", "rockefellerfoundation.org",
-  "giz.de", "tatatrusts.org", "downtoearth.org.in",
-  "scroll.in", "thewire.in",
+// Open web search for COMPREHENSIVE coverage (every programme in India), with
+// trust coming from the grounding guarantees (cite-or-omit + confidence gate +
+// refuse-if-unverifiable) rather than a narrow allow-list. We only BLOCK sites
+// that reject Anthropic's crawler (they 400 the tool) or are low-signal.
+const BLOCKED_DOMAINS = [
+  "thehindu.com", "indianexpress.com", "facebook.com", "twitter.com",
+  "x.com", "instagram.com", "linkedin.com", "youtube.com", "pinterest.com",
 ];
-// NOTE: thehindu.com and indianexpress.com block Anthropic's web-crawler user
-// agent, so the web_search tool 400s if they're in allowed_domains. Keep them OUT.
 
 // State / UT centroids (approx) so a fact sheet can pin on the Atlas even when
 // the source doesn't give coordinates.
@@ -122,8 +121,8 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
       {
         type: "web_search_20250305" as never,
         name: "web_search",
-        max_uses: 6,
-        allowed_domains: ALLOWED_DOMAINS,
+        max_uses: 8,
+        blocked_domains: BLOCKED_DOMAINS,
       } as never,
     ],
     messages: [
