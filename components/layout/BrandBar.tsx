@@ -5,8 +5,6 @@ import { useEffect, useState } from "react";
 import {
   Layers,
   Map as MapIcon,
-  BookOpen,
-  Newspaper,
   MessageCircle,
   Info,
   Compass,
@@ -19,8 +17,6 @@ const NAV_LINKS = [
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
   { href: "/organizations", label: "Organizations Atlas", Icon: Users },
-  { href: "/resources", label: "Resources", Icon: BookOpen },
-  { href: "/news", label: "News", Icon: Newspaper },
   { href: "/agent", label: "Ask", Icon: MessageCircle },
   { href: "/about", label: "About", Icon: Info },
 ];
@@ -113,15 +109,6 @@ export function BrandBar() {
               </span>
             </Link>
           ))}
-          <Link
-            href="/contribute"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-[4px] bg-deep-teal text-paper hover:bg-teal transition-colors duration-200 whitespace-nowrap shrink-0"
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Contribute
-          </Link>
           {/* Mobile + tablet hamburger */}
           <button
             type="button"
@@ -166,13 +153,6 @@ export function BrandBar() {
                 <span>{label}</span>
               </Link>
             ))}
-            <Link
-              href="/contribute"
-              onClick={() => setOpen(false)}
-              className="mt-3 inline-flex sm:hidden font-mono text-[11px] tracking-mono-mid uppercase px-4 py-2.5 rounded-full border border-deep-teal text-deep-teal hover:bg-deep-teal hover:text-paper transition-colors w-fit"
-            >
-              Contribute
-            </Link>
           </nav>
         </div>
       )}

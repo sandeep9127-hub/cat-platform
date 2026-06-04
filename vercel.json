@@ -1,16 +1,3 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/registry-crawl",
-      "schedule": "0 3 * * 1"
-    },
-    {
-      "path": "/api/cron/discovery",
-      "schedule": "0 3 * * 3"
-    },
-    {
-      "path": "/api/cron/freshness-sweep",
-      "schedule": "0 6 * * *"
-    }
-  ]
+  "crons": []
 }

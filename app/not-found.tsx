@@ -28,10 +28,10 @@ export default function NotFound() {
             Browse the Solutions Atlas
           </Link>
           <Link
-            href="/resources"
+            href="/agent"
             className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
           >
-            The library
+            Ask the Hub
           </Link>
         </div>
       </div>

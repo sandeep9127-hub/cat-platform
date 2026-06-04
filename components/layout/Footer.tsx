@@ -69,22 +69,13 @@ export function Footer() {
         </div>
 
         <FooterCol
-          title="Read"
+          title="Explore"
           links={[
+            { href: "/principles", label: "Principles" },
             { href: "/landscapes", label: "Landscapes" },
             { href: "/map", label: "Solutions Atlas" },
-            { href: "/news", label: "News" },
-            { href: "/resources", label: "Resources" },
+            { href: "/organizations", label: "Organizations Atlas" },
             { href: "/agent", label: "Ask the Hub" },
-          ]}
-        />
-        <FooterCol
-          title="Contribute"
-          links={[
-            { href: "/contribute", label: "Submit a programme" },
-            { href: "/contribute/resource", label: "Submit a resource" },
-            { href: "/editorial-process", label: "Editorial process" },
-            { href: "/style-guide", label: "Style guide" },
           ]}
         />
         <FooterCol
