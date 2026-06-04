@@ -64,37 +64,48 @@ const PROGRAMMES = [
   "Millet mission India Shree Anna",
 ];
 
-const CONCURRENCY = 3;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   const { generateFactSheet } = await import("../lib/factsheet/generate");
-  const queue = [...PROGRAMMES];
   const results = { published: 0, flagged: 0, refused: 0, error: 0 };
-  let n = 0;
-  const total = queue.length;
+  const total = PROGRAMMES.length;
 
-  async function worker(id: number) {
-    while (queue.length) {
-      const q = queue.shift();
-      if (!q) break;
-      const i = ++n;
-      try {
-        const r = await generateFactSheet(q);
-        if (r.ok) {
-          results[r.status === "published" ? "published" : "flagged"]++;
-          console.log(`[${i}/${total}] ${r.status.toUpperCase().padEnd(9)} ${r.sheet.title.slice(0, 60)}`);
-        } else {
-          results.refused++;
-          console.log(`[${i}/${total}] REFUSED   ${q.slice(0, 50)} — ${r.reason.slice(0, 60)}`);
-        }
-      } catch (e) {
-        results.error++;
-        console.log(`[${i}/${total}] ERROR     ${q.slice(0, 50)} — ${String((e as Error).message).slice(0, 80)}`);
+  // Sequential with exponential backoff on 429 — web search has a tight
+  // per-minute limit on this account, so we pace ourselves.
+  async function genWithRetry(q: string, attempt = 0): Promise<Awaited<ReturnType<typeof generateFactSheet>>> {
+    try {
+      return await generateFactSheet(q);
+    } catch (e) {
+      const msg = String((e as Error).message || "");
+      if ((msg.includes("429") || msg.includes("rate_limit") || msg.includes("overloaded")) && attempt < 8) {
+        const wait = 30000 * (attempt + 1); // 30s, 60s, 90s … up to 4 min
+        console.log(`  …rate-limited, waiting ${wait / 1000}s (attempt ${attempt + 1})`);
+        await sleep(wait);
+        return genWithRetry(q, attempt + 1);
       }
+      throw e;
     }
   }
 
-  await Promise.all(Array.from({ length: CONCURRENCY }, (_, i) => worker(i)));
+  for (let i = 0; i < total; i++) {
+    const q = PROGRAMMES[i];
+    try {
+      const r = await genWithRetry(q);
+      if (r.ok) {
+        results[r.status === "published" ? "published" : "flagged"]++;
+        console.log(`[${i + 1}/${total}] ${r.status.toUpperCase().padEnd(9)} ${r.sheet.title.slice(0, 60)}`);
+      } else {
+        results.refused++;
+        console.log(`[${i + 1}/${total}] REFUSED   ${q.slice(0, 48)} — ${r.reason.slice(0, 50)}`);
+      }
+    } catch (e) {
+      results.error++;
+      console.log(`[${i + 1}/${total}] ERROR     ${q.slice(0, 48)} — ${String((e as Error).message).slice(0, 70)}`);
+    }
+    await sleep(2000);
+  }
+
   console.log(`\nDONE. published=${results.published} flagged=${results.flagged} refused=${results.refused} error=${results.error}`);
   process.exit(0);
 }

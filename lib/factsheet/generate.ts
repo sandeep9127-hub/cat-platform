@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { getClient, estimateCostUsd } from "@/lib/ai/anthropic";
+import { getClient } from "@/lib/ai/anthropic";
 
 /**
  * Grounded fact-sheet generator for the Solutions Atlas.
@@ -109,31 +109,63 @@ function slugify(s: string): string {
 
 type GenResult = { ok: true; sheet: FactSheet; status: string } | { ok: false; reason: string };
 
-export async function generateFactSheet(query: string): Promise<GenResult> {
-  const anthropic = getClient();
-  if (!anthropic) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
+/** Provider-agnostic search + extraction. Prefers OpenRouter (cheap, no rate
+ *  wall) with web grounding via the :online plugin; falls back to Claude's
+ *  web_search tool. SAME system prompt + JSON contract for both, so the
+ *  fact-sheet format is identical regardless of provider. */
+async function searchAndExtract(query: string): Promise<string | null> {
+  const userPrompt = `Build the fact sheet for this programme: "${query}". Search the web for authoritative sources, then return ONLY the JSON object.`;
 
+  if (process.env.OPENROUTER_API_KEY) {
+    const model = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash:online";
+    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "content-type": "application/json",
+        "HTTP-Referer": "https://cat-platform-fawn.vercel.app",
+        "X-Title": "Transformation Hub",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 4096,
+        messages: [
+          { role: "system", content: SYSTEM },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+    });
+    if (!r.ok) throw new Error(`OpenRouter ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`);
+    const data = await r.json();
+    return (data.choices?.[0]?.message?.content as string) ?? "";
+  }
+
+  const anthropic = getClient();
+  if (!anthropic) return null;
   const res = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 4096,
     system: SYSTEM,
     tools: [
-      {
-        type: "web_search_20250305" as never,
-        name: "web_search",
-        max_uses: 8,
-        blocked_domains: BLOCKED_DOMAINS,
-      } as never,
+      { type: "web_search_20250305" as never, name: "web_search", max_uses: 8, blocked_domains: BLOCKED_DOMAINS } as never,
     ],
-    messages: [
-      { role: "user", content: `Build the fact sheet for this programme: "${query}". Search the allow-listed sources, then return the JSON object.` },
-    ],
+    messages: [{ role: "user", content: userPrompt }],
   });
-
-  const text = res.content
+  return res.content
     .filter((b) => b.type === "text")
     .map((b) => (b.type === "text" ? b.text : ""))
     .join("\n");
+}
+
+export async function generateFactSheet(query: string): Promise<GenResult> {
+  let text: string | null;
+  try {
+    text = await searchAndExtract(query);
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message.slice(0, 180) };
+  }
+  if (text === null) return { ok: false, reason: "No LLM provider configured" };
+
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) return { ok: false, reason: "No JSON returned" };
 
@@ -231,11 +263,6 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
       console.error("[factsheet] RAG embed failed for", sheet.slug, (e as Error).message);
     }
   }
-
-  try {
-    const u = res.usage as { input_tokens: number; output_tokens: number };
-    void estimateCostUsd(u.input_tokens, u.output_tokens);
-  } catch {}
 
   return { ok: true, sheet, status };
 }
