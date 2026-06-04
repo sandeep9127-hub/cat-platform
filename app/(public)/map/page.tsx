@@ -126,9 +126,9 @@ export default async function MapPage() {
             .
           </h1>
           <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
-            Every food-systems programme on the Hub, plotted on India. Each dot is a programme
-            at the scale we have published it. Teal is self-submitted; amber is CAT-sourced.
-            This is the open library, complementary to CAT&apos;s eleven{" "}
+            Every food-systems programme on the Hub, plotted on India. Each dot is an
+            auto-compiled, source-verified fact sheet. This is the open library,
+            complementary to CAT&apos;s eleven{" "}
             <Link href="/landscapes" className="text-teal hover:text-teal-soft underline-offset-2 hover:underline not-italic">
               focus landscapes
             </Link>

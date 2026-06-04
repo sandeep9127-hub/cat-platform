@@ -314,12 +314,6 @@ export default async function LandingPage() {
         <Sdgs />
       </Reveal>
 
-      {/* FEATURED ENTRY */}
-      {entries[0] && (
-        <Reveal>
-          <FeaturedEntry entry={entries[0]} />
-        </Reveal>
-      )}
     </>
   );
 }
