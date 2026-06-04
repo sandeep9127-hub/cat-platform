@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
+import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
 
 export const dynamic = "force-dynamic";
 
@@ -55,11 +56,13 @@ const STATE_NAMES: Record<string, string> = {
 export default async function MapPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; principle?: string }>;
 }) {
   const sp = await searchParams;
   const activeCategory =
     sp.category && CATEGORY_BY_SLUG[sp.category] ? sp.category : null;
+  const activePrinciple =
+    sp.principle && getPrincipleBySlug(sp.principle) ? sp.principle : null;
 
   const allFactsheets = await listFactSheets();
   // Published, geocoded fact sheets are the Atlas (decoupled engine).
@@ -67,16 +70,34 @@ export default async function MapPage({
     (f) => f.status === "published" && f.latitude != null && f.longitude != null
   );
 
-  // Live per-category counts over the full published set (so chip counts are
-  // stable regardless of the active filter), then apply the active filter.
+  // Live per-axis counts over the full published set (so chip counts stay
+  // stable regardless of the active filter), then apply the active filters.
   const categoryCounts: Record<string, number> = {};
-  for (const f of publishedFactsheets)
-    for (const t of f.themes ?? [])
-      categoryCounts[t] = (categoryCounts[t] ?? 0) + 1;
+  const principleCounts: Record<string, number> = {};
+  for (const f of publishedFactsheets) {
+    for (const t of f.themes ?? []) categoryCounts[t] = (categoryCounts[t] ?? 0) + 1;
+    for (const p of f.principle_alignment ?? [])
+      principleCounts[p] = (principleCounts[p] ?? 0) + 1;
+  }
 
-  const factsheets = activeCategory
-    ? publishedFactsheets.filter((f) => (f.themes ?? []).includes(activeCategory))
-    : publishedFactsheets;
+  // Two axes, intersected: category (what it does) AND principle (which
+  // agroecology principles it advances).
+  const factsheets = publishedFactsheets.filter(
+    (f) =>
+      (!activeCategory || (f.themes ?? []).includes(activeCategory)) &&
+      (!activePrinciple || (f.principle_alignment ?? []).includes(activePrinciple))
+  );
+
+  // Helper to build an href that preserves the *other* axis.
+  const hrefWith = (next: { category?: string | null; principle?: string | null }) => {
+    const cat = next.category !== undefined ? next.category : activeCategory;
+    const pri = next.principle !== undefined ? next.principle : activePrinciple;
+    const qs = new URLSearchParams();
+    if (cat) qs.set("category", cat);
+    if (pri) qs.set("principle", pri);
+    const s = qs.toString();
+    return s ? `/map?${s}` : "/map";
+  };
 
   // The Solutions Atlas is now the fact-sheet engine ONLY. Old hardcoded
   // records and CAT-authored DB entries are retired for uniformity — every
@@ -166,72 +187,126 @@ export default async function MapPage({
         </aside>
       </section>
 
-      {/* Category filter — deep-linkable (?category=slug), live counts from the
-          same fact-sheet themes that drive the landing tiles. */}
-      <nav
-        aria-label="Filter the Atlas by intervention category"
-        className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-6"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mr-1">
-            Filter
-          </span>
-          <Link
-            href="/map"
-            aria-current={!activeCategory ? "true" : undefined}
-            className={
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
-              (!activeCategory
-                ? "bg-deep-teal text-paper border-deep-teal"
-                : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
-            }
-          >
-            All
-            <span className="font-mono text-[10px] tabular-nums opacity-70">
-              {publishedFactsheets.length}
-            </span>
-          </Link>
-          {CATEGORIES.map((c) => {
-            const active = activeCategory === c.slug;
-            const n = categoryCounts[c.slug] ?? 0;
-            return (
-              <Link
-                key={c.slug}
-                href={active ? "/map" : `/map?category=${c.slug}`}
-                aria-current={active ? "true" : undefined}
-                className={
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
-                  (active
-                    ? "text-paper"
-                    : n === 0
-                      ? "text-muted border-line/70 opacity-60 hover:opacity-100"
-                      : "text-ink-soft border-line hover:text-ink")
-                }
-                style={
-                  active
-                    ? { background: c.colourHex, borderColor: c.colourHex }
-                    : { ["--c" as string]: c.colourHex } as React.CSSProperties
-                }
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ background: active ? "rgba(255,255,255,0.85)" : c.colourHex }}
-                  aria-hidden
-                />
-                {c.short}
-                <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
-              </Link>
-            );
-          })}
-        </div>
-        {activeCategory && (
-          <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted">
-            Showing {factsheets.length}{" "}
-            {factsheets.length === 1 ? "solution" : "solutions"} in{" "}
-            <span className="text-ink-soft">{categoryName(activeCategory)}</span>
+      {/* Two-axis filter — deep-linkable, with live counts. Axis 1: the 10
+          intervention categories (what it does). Axis 2: the 13 agroecology
+          principles (what it advances). The axes intersect. Both share the
+          fact-sheet data that drives the landing tiles, so numbers always tally. */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-7 space-y-4">
+        {/* Axis 1 — categories */}
+        <nav aria-label="Filter the Atlas by intervention category">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5">
+            By intervention
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={hrefWith({ category: null })}
+              aria-current={!activeCategory ? "true" : undefined}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
+                (!activeCategory
+                  ? "bg-deep-teal text-paper border-deep-teal"
+                  : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
+              }
+            >
+              All
+              <span className="font-mono text-[10px] tabular-nums opacity-70">
+                {publishedFactsheets.length}
+              </span>
+            </Link>
+            {CATEGORIES.map((c) => {
+              const active = activeCategory === c.slug;
+              const n = categoryCounts[c.slug] ?? 0;
+              return (
+                <Link
+                  key={c.slug}
+                  href={hrefWith({ category: active ? null : c.slug })}
+                  aria-current={active ? "true" : undefined}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
+                    (active
+                      ? "text-paper"
+                      : n === 0
+                        ? "text-muted border-line/70 opacity-60 hover:opacity-100"
+                        : "text-ink-soft border-line hover:text-ink")
+                  }
+                  style={
+                    active
+                      ? { background: c.colourHex, borderColor: c.colourHex }
+                      : ({ ["--c" as string]: c.colourHex } as React.CSSProperties)
+                  }
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ background: active ? "rgba(255,255,255,0.85)" : c.colourHex }}
+                    aria-hidden
+                  />
+                  {c.short}
+                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Axis 2 — agroecology principles */}
+        <nav aria-label="Filter the Atlas by agroecology principle">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5">
+            By agroecology principle
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {PRINCIPLES.map((p) => {
+              const active = activePrinciple === p.slug;
+              const n = principleCounts[p.slug] ?? 0;
+              const tint = p.level === "agro" ? "#5f8d3e" : "#b5793a";
+              return (
+                <Link
+                  key={p.slug}
+                  href={hrefWith({ principle: active ? null : p.slug })}
+                  aria-current={active ? "true" : undefined}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border transition-colors " +
+                    (active
+                      ? "text-paper"
+                      : n === 0
+                        ? "text-muted border-line/70 opacity-60 hover:opacity-100"
+                        : "text-ink-soft border-line hover:text-ink")
+                  }
+                  style={active ? { background: tint, borderColor: tint } : undefined}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ background: active ? "rgba(255,255,255,0.85)" : tint }}
+                    aria-hidden
+                  />
+                  {p.title}
+                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {(activeCategory || activePrinciple) && (
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted pt-1">
+            Showing {factsheets.length} {factsheets.length === 1 ? "solution" : "solutions"}
+            {activeCategory && (
+              <>
+                {" "}in <span className="text-ink-soft">{categoryName(activeCategory)}</span>
+              </>
+            )}
+            {activePrinciple && (
+              <>
+                {" "}advancing{" "}
+                <span className="text-ink-soft">{principleTitle(activePrinciple)}</span>
+              </>
+            )}
+            {" · "}
+            <Link href="/map" className="text-deep-teal hover:underline">
+              clear
+            </Link>
           </p>
         )}
-      </nav>
+      </div>
 
       <AtlasSection
         mapEntries={mapEntries}

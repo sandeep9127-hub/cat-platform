@@ -104,7 +104,7 @@ export default function OpengraphImage() {
             <span style={{ color: "#D9A655", marginRight: 12 }}>─</span>
             Edited by hand
           </span>
-          <span>cat-platform.org</span>
+          <span>agroecologyindia.org</span>
         </div>
       </div>
     ),

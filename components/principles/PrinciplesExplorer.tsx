@@ -304,8 +304,11 @@ function Detail({
         <Link href="/landscapes" className="ae-practice-btn ae-practice-btn--solid">
           Browse landscapes →
         </Link>
-        <Link href="/map" className="ae-practice-btn">
-          Solutions atlas →
+        <Link
+          href={principle ? `/map?principle=${principle.slug}` : "/map"}
+          className="ae-practice-btn"
+        >
+          {principle ? "Solutions for this principle →" : "Solutions atlas →"}
         </Link>
       </div>
     </div>

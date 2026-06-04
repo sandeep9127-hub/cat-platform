@@ -248,3 +248,51 @@ export const PRINCIPLES: Principle[] = [
 export function getPrincipleBySlug(slug: string): Principle | undefined {
   return PRINCIPLES.find((p) => p.slug === slug);
 }
+
+export const PRINCIPLE_SLUGS = PRINCIPLES.map((p) => p.slug);
+const PRINCIPLE_SLUG_SET = new Set(PRINCIPLE_SLUGS);
+
+export function principleTitle(slug: string): string {
+  return PRINCIPLES.find((p) => p.slug === slug)?.title ?? slug;
+}
+
+/**
+ * Normalise a free-text `principle_alignment` entry (the fact-sheet engine
+ * emits descriptive strings of mixed casing) to one of the 13 canonical
+ * principle slugs, or null if it isn't a principle. Order matters: more
+ * specific tests come first. This is what lets the Atlas filter by principle.
+ */
+export function toPrincipleSlug(raw: string): string | null {
+  if (!raw) return null;
+  const s = raw.toLowerCase().trim();
+  if (PRINCIPLE_SLUG_SET.has(s)) return s;
+  if (s.includes("co-creation") || s.includes("co creation") || (s.includes("knowledge") && !s.includes("governance")))
+    return "co-creation-of-knowledge";
+  if (s.includes("input reduction") || s.includes("input-reduction")) return "input-reduction";
+  if (s.includes("recycl")) return "recycling";
+  if (s.includes("soil health") || s.includes("soil-health") || s.startsWith("soil")) return "soil-health";
+  if (s.includes("animal health") || s.includes("animal integration") || s.includes("livestock integrat"))
+    return "animal-health";
+  if (s.includes("biodiversity") || s.includes("seed")) return "biodiversity";
+  if (s.includes("economic diversif") || s.includes("economic-diversif")) return "economic-diversification";
+  if (s.includes("synerg") || s.includes("integration") || s.includes("integrated")) return "synergy";
+  if (s.includes("social values") || s.includes("diet") || s.includes("nutrition")) return "social-values-and-diets";
+  if (s.includes("fairness") || s.includes("fair ")) return "fairness";
+  if (s.includes("participation") || s.includes("women") || s.includes("collective") || s.includes("gram sabha"))
+    return "participation";
+  if (s.includes("governance") || (s.includes("land") && s.includes("resource")) || s.includes("water"))
+    return "land-and-resource-governance";
+  if (s.includes("connectivity") || s.includes("market") || s.includes("value chain") || s.includes("value-chain"))
+    return "connectivity";
+  return null;
+}
+
+/** Map an array of free-text principle strings to a deduped set of canonical slugs. */
+export function canonicalPrinciples(raw: string[] | null | undefined): string[] {
+  const out = new Set<string>();
+  for (const r of raw ?? []) {
+    const slug = toPrincipleSlug(r);
+    if (slug) out.add(slug);
+  }
+  return [...out];
+}

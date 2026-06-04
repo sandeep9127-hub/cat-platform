@@ -95,7 +95,7 @@ JSON keys:
   themes (array of 1-3 intervention-category slugs that best describe what this programme actually does, chosen ONLY from: agri-horti-agroforestry (crops, horticulture, agroforestry, natural/organic farming), forestry-ntfp (forests, non-timber forest produce, plantations), livestock (dairy, poultry, fodder, animal husbandry), fisheries (aquaculture, inland/marine fishing), nrm (soil, water, watershed, land & natural-resource management), biodiversity (seeds, native breeds, ecosystem & species conservation), nutrition (kitchen gardens, dietary diversity, food security), market (value chains, FPOs, processing, market linkage, price), energy (solar, biogas, energy-efficient pumps/equipment), technical-assistance (training, extension, advisory, capacity building, knowledge). Pick the categories the sources actually support — do not over-tag),
   scale_band (one of: pilot, block, district, multi_district, state, multi_state, national),
   lead_organisation, implementers (array), funders (array),
-  principle_alignment (array of short principle names this programme touches),
+  principle_alignment (array of 1-6 agroecology-principle slugs this programme touches, chosen ONLY from: recycling, input-reduction, soil-health, animal-health, biodiversity, synergy, economic-diversification, co-creation-of-knowledge, social-values-and-diets, fairness, connectivity, land-and-resource-governance, participation),
   metrics (array of up to 4 {label, value, source_url} — headline figures; value is a short display string e.g. "6L+", "9 lakh acres", "38%", "9 yrs"),
   insight ({whats_working, whats_hard, why_it_matters, whats_next} — each a short string or null),
   outcomes (array of {claim, figure, source_url}),
@@ -294,5 +294,22 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
   const rows = (r as unknown as { rows: { theme: string; n: number }[] }).rows;
   const out: Record<string, number> = {};
   for (const row of rows) out[row.theme] = Number(row.n);
+  return out;
+}
+
+/**
+ * Count published fact sheets per agroecology-principle slug (the second Atlas
+ * axis), by unnesting the canonicalised `principle_alignment` array.
+ */
+export async function getPrincipleCounts(): Promise<Record<string, number>> {
+  const r = await db.execute(sql`
+    SELECT p, COUNT(*)::int AS n
+    FROM "cat".solution_factsheets, jsonb_array_elements_text(principle_alignment) AS p
+    WHERE status = 'published'
+    GROUP BY p
+  `);
+  const rows = (r as unknown as { rows: { p: string; n: number }[] }).rows;
+  const out: Record<string, number> = {};
+  for (const row of rows) out[row.p] = Number(row.n);
   return out;
 }
