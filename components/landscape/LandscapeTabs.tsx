@@ -8,13 +8,14 @@ export function LandscapeTabs({
   hasLip,
 }: {
   slug: string;
-  active: "profile" | "library" | "budget" | "ask";
+  active: "profile" | "library" | "budget" | "insights" | "ask";
   hasLip: boolean;
 }) {
   const tabs: Tab[] = [
     { href: `/landscape/${slug}`, label: "Profile", available: true },
     { href: `/landscape/${slug}/library`, label: "Library", available: hasLip },
     { href: `/landscape/${slug}/budget`, label: "Budget", available: hasLip },
+    { href: `/landscape/${slug}/insights`, label: "Insights", available: hasLip },
     { href: `/landscape/${slug}/ask`, label: "Ask", available: hasLip },
   ];
 

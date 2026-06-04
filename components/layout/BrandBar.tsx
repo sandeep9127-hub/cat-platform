@@ -10,10 +10,8 @@ import {
   Compass,
   Users,
   ExternalLink,
-  BarChart3,
 } from "lucide-react";
 import { CatLogo } from "./CatLogo";
-import { INSIGHTS_ENABLED } from "@/lib/flags";
 
 const PARENT_SITE = "https://www.agroecologyindia.org";
 
@@ -22,9 +20,6 @@ const NAV_LINKS = [
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
   { href: "/organizations", label: "Organizations Atlas", Icon: Users },
-  ...(INSIGHTS_ENABLED
-    ? [{ href: "/insights", label: "Insights", Icon: BarChart3 }]
-    : []),
   { href: "/about", label: "About", Icon: Info },
 ];
 
