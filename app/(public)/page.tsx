@@ -10,7 +10,8 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import {
   Sparkles,
   ArrowUpRight,
-  Feather,
+  ShieldCheck,
+  Globe2,
   BookMarked,
   Sprout,
   Trees,
@@ -209,7 +210,7 @@ export default async function LandingPage() {
         </div>
       </ParallaxBanner>
 
-      {/* EDITOR'S NOTE — sits on paper, below the hero, never over the video */}
+      {/* HOW IT WORKS — accurate to the auto-compiled model; sits on paper below the hero */}
       <section
         className="relative border-b border-line"
         style={{
@@ -225,32 +226,46 @@ export default async function LandingPage() {
               "linear-gradient(90deg, transparent 0%, rgba(46,117,115,0.45) 30%, rgba(248,202,124,0.55) 75%, transparent 100%)",
           }}
         />
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-x-8 gap-y-3 items-center">
-          <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold whitespace-nowrap">
-            <span
-              className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper"
-              aria-hidden
-              style={{
-                background:
-                  "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
-                boxShadow:
-                  "0 4px 12px -6px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
-              }}
-            >
-              <Feather size={13} strokeWidth={1.8} />
-            </span>
-            Editor&apos;s note
-          </span>
-          <p className="font-serif text-[14.5px] text-ink-soft leading-[1.55] max-w-[80ch]">
-            The Hub covers food systems work from across India, not just the Consortium&apos;s
-            own portfolio. Government missions, NGO programmes, farmer federations, market
-            infrastructure. Whatever&apos;s here is here because an editor read it and thought
-            it was worth other people reading too.
-          </p>
-          <span className="hidden lg:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep whitespace-nowrap">
-            <span className="w-5 h-px bg-gradient-to-r from-transparent via-amber-deep to-amber-deep" />
-            Edited by hand
-          </span>
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-7 grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+          {[
+            {
+              Icon: Sparkles,
+              title: "Auto-compiled",
+              body: "Each solution is built from public sources, then plotted on the map and made searchable.",
+            },
+            {
+              Icon: ShieldCheck,
+              title: "Source-verified",
+              body: "Every figure is cited to where it came from. Unverifiable claims are refused, never guessed.",
+            },
+            {
+              Icon: Globe2,
+              title: "The whole sector",
+              body: "Government missions, NGO programmes, farmer federations and markets across India, not just CAT's portfolio.",
+            },
+          ].map(({ Icon, title, body }) => (
+            <div key={title} className="flex items-start gap-3">
+              <span
+                className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
+                aria-hidden
+                style={{
+                  background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
+                  boxShadow:
+                    "0 4px 12px -6px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                <Icon size={13} strokeWidth={1.8} />
+              </span>
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+                  {title}
+                </div>
+                <p className="font-serif text-[13.5px] text-ink-soft leading-[1.5] mt-1.5 max-w-[42ch]">
+                  {body}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
