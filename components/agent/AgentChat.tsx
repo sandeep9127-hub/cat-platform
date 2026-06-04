@@ -55,7 +55,7 @@ const PROMPT_POOL: Array<{
     },
   },
   {
-    prompt: "Show me programmes that publish what didn't work",
+    prompt: "Show me solutions that are honest about what didn't work",
     label: "Honesty",
     Icon: AlertOctagon,
     tint: {
@@ -67,8 +67,8 @@ const PROMPT_POOL: Array<{
     },
   },
   {
-    prompt: "Which entries are CAT-authored versus self-submitted?",
-    label: "Provenance",
+    prompt: "How are the Atlas solutions sourced and verified?",
+    label: "Verified",
     Icon: ShieldCheck,
     tint: {
       bar: "#929CC5",
@@ -103,7 +103,7 @@ const PROMPT_POOL: Array<{
     },
   },
   {
-    prompt: "Which programmes work with women-led collectives?",
+    prompt: "Which solutions work through farmer collectives and FPOs?",
     label: "Collectives",
     Icon: Users,
     tint: {
@@ -115,7 +115,7 @@ const PROMPT_POOL: Array<{
     },
   },
   {
-    prompt: "What did not work in agroecology transitions, by entry?",
+    prompt: "What hasn't worked in natural-farming transitions?",
     label: "Limitations",
     Icon: ScrollText,
     tint: {
@@ -127,8 +127,8 @@ const PROMPT_POOL: Array<{
     },
   },
   {
-    prompt: "Compare soil-and-land programmes across states",
-    label: "Soil",
+    prompt: "Compare natural-farming programmes across states",
+    label: "Compare",
     Icon: Wrench,
     tint: {
       bar: "#8C7A5C",
@@ -140,9 +140,13 @@ const PROMPT_POOL: Array<{
   },
 ];
 
+// Scope is a single dropdown: "All sources" (the whole knowledge base — every
+// Solutions-Atlas fact sheet, the 13 principles, and the ingested landscapes)
+// OR a specific landscape. Only landscapes with ingested content are offered;
+// today that's Patratu. As more landscape plans are ingested, add them here.
 const LANDSCAPE_SCOPES = [
   { slug: "all", label: "All sources" },
-  { slug: "patratu", label: "Patratu only" },
+  { slug: "patratu", label: "Patratu landscape" },
 ];
 
 function getSessionToken(): string {
@@ -317,6 +321,14 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
     () => LANDSCAPE_SCOPES.find((s) => s.slug === scope)?.label ?? "All sources",
     [scope]
   );
+  // Placeholder reflects the active scope so it's clear what the answer draws on.
+  const scopePlaceholder = useMemo(
+    () =>
+      scope === "all"
+        ? "Ask about any solution, principle, or landscape…"
+        : `Ask about the ${scopeLabel.replace(/ landscape$/i, "")} landscape…`,
+    [scope, scopeLabel]
+  );
 
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
@@ -438,6 +450,7 @@ export function AgentChat({ initialScope = "all" }: { initialScope?: string }) {
         scope={scope}
         setScope={setScope}
         scopeLabel={scopeLabel}
+        placeholder={scopePlaceholder}
         inputRef={inputRef}
       />
 
@@ -460,6 +473,7 @@ function Composer({
   scope,
   setScope,
   scopeLabel,
+  placeholder,
   inputRef,
 }: {
   input: string;
@@ -471,6 +485,7 @@ function Composer({
   scope: string;
   setScope: (s: string) => void;
   scopeLabel: string;
+  placeholder: string;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [scopeOpen, setScopeOpen] = useState(false);
@@ -508,22 +523,33 @@ function Composer({
                   "0 1px 2px rgba(26,38,37,0.04), 0 12px 28px -12px rgba(26,38,37,0.30)",
               }}
             >
-              {LANDSCAPE_SCOPES.map((s) => (
-                <button
-                  key={s.slug}
-                  type="button"
-                  onClick={() => {
-                    setScope(s.slug);
-                    setScopeOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${
-                    scope === s.slug
-                      ? "bg-cream/80 text-deep-teal font-semibold"
-                      : "text-ink-soft hover:bg-cream/60"
-                  }`}
-                >
-                  {s.label}
-                </button>
+              {LANDSCAPE_SCOPES.map((s, i) => (
+                <div key={s.slug}>
+                  {i === 1 && (
+                    <div className="px-3 pt-2 pb-1 font-mono text-[8.5px] uppercase tracking-[0.16em] text-muted">
+                      Focus on a landscape
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScope(s.slug);
+                      setScopeOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-[4px] font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${
+                      scope === s.slug
+                        ? "bg-cream/80 text-deep-teal font-semibold"
+                        : "text-ink-soft hover:bg-cream/60"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                  {i === 0 && (
+                    <p className="px-3 pt-1 pb-1.5 font-sans normal-case tracking-normal text-[10.5px] leading-snug text-muted">
+                      Every solution, principle and landscape.
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -539,7 +565,7 @@ function Composer({
               send(input);
             }
           }}
-          placeholder="Ask whatever you want…"
+          placeholder={placeholder}
           rows={2}
           className="block w-full resize-none bg-transparent px-5 sm:px-6 pt-5 pr-32 pb-3 font-sans text-[16px] text-ink leading-[1.5] outline-none placeholder:text-muted placeholder:italic min-h-[112px]"
         />
