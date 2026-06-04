@@ -9,7 +9,10 @@ import {
   Info,
   Compass,
   Users,
+  ExternalLink,
 } from "lucide-react";
+
+const PARENT_SITE = "https://www.agroecologyindia.org";
 import { CatLogo } from "./CatLogo";
 
 const NAV_LINKS = [
@@ -108,6 +111,16 @@ export function BrandBar() {
               </span>
             </Link>
           ))}
+          {/* Parent organisation site */}
+          <a
+            href={PARENT_SITE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors py-1"
+          >
+            agroecologyindia.org
+            <ExternalLink size={12} strokeWidth={1.75} aria-hidden />
+          </a>
           {/* Ask — single highlighted entry point (replaces the old floating widget) */}
           <Link
             href="/agent"
@@ -160,6 +173,16 @@ export function BrandBar() {
                 <span>{label}</span>
               </Link>
             ))}
+            <a
+              href={PARENT_SITE}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft inline-flex items-center gap-3"
+            >
+              <ExternalLink size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
+              <span>agroecologyindia.org</span>
+            </a>
             <Link
               href="/agent"
               onClick={() => setOpen(false)}

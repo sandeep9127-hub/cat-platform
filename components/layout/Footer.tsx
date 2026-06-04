@@ -42,7 +42,7 @@ export function Footer() {
                 Agroecological Transformations
               </div>
               <a
-                href="https://agroecologyindia.org"
+                href="https://www.agroecologyindia.org"
                 target="_blank"
                 rel="noreferrer"
                 className="group mt-3 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber hover:text-cream transition-colors"
@@ -87,7 +87,7 @@ export function Footer() {
             { href: "/contact", label: "Contact" },
           ]}
           external={[
-            { href: "https://agroecologyindia.org", label: "agroecologyindia.org" },
+            { href: "https://www.agroecologyindia.org", label: "agroecologyindia.org" },
           ]}
         />
       </div>
