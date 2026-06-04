@@ -225,7 +225,7 @@ export default async function LandingPage() {
             { label: "Programmes listed", value: String(combinedTotal), sup: "↗", delta: "across the atlas" },
             { label: "States covered", value: String(combinedStateCount), delta: "of 28 + 8 UTs" },
             { label: "Organisations", value: String(counts.organisations), delta: "across the system" },
-            { label: "Resources", value: String(counts.resources), delta: "reports, briefs, datasets" },
+            { label: "Landscapes", value: "11", delta: "CAT focus geographies" },
           ]}
         />
       </Reveal>
