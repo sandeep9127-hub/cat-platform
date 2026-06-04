@@ -4,11 +4,10 @@ import {
   getThemesWithCounts,
 } from "@/lib/db/queries";
 import { AtlasSection } from "@/components/entries/AtlasSection";
-import { DISCOVERED_RECORDS } from "@/lib/data/discovered-records";
+import { listFactSheets } from "@/lib/factsheet/generate";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
-import { EndorsementLegend } from "@/components/ui/EndorsementBadge";
 import { Sparkles, ArrowUpRight, Feather, BookMarked } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
@@ -31,40 +30,23 @@ export default async function LandingPage() {
   // page reflects the same library shape as /map. The right-rail list is
   // capped at 5 by AtlasSection (cap prop below) with a "Read more" CTA
   // linking to /map; the map itself shows all pins.
-  const atlasRecords = DISCOVERED_RECORDS.filter((r) => r.destination === "atlas");
+  // The Atlas is the fact-sheet engine only (uniformity) — same as /map.
+  const factsheets = (await listFactSheets()).filter(
+    (f) => f.status === "published" && f.latitude != null && f.longitude != null
+  );
 
-  const dbMapEntries = entries
-    .filter((e) => e.primaryGeography.latitude && e.primaryGeography.longitude)
-    .map((e) => ({
-      id: e.id,
-      slug: e.slug,
-      title: e.title,
-      scaleBand: e.scaleBand,
-      provenance: e.provenance,
-      stateCode: e.primaryGeography.stateCode ?? "",
-      latitude: e.primaryGeography.latitude,
-      longitude: e.primaryGeography.longitude,
-    }));
-
-  const atlasMapEntries = atlasRecords
-    .filter((r) => r.latitude != null && r.longitude != null)
-    .map((r) => ({
-      id: r.id,
-      slug: r.id,
-      title: r.title,
-      scaleBand: r.scaleBand ?? "multi_district",
-      provenance: "sourced" as const,
-      stateCode: r.stateCode ?? "",
-      latitude: r.latitude!,
-      longitude: r.longitude!,
-      internalHref: `/atlas/${r.id}`,
-    }));
-
-  const mapEntries = [...dbMapEntries, ...atlasMapEntries];
-  const combinedTotal = entries.length + atlasRecords.length;
-  // Unique state count across the merged set — what the atlas top bar
-  // actually shows. The stat strip + AtlasSection both read from this so
-  // the numbers tally with /map.
+  const mapEntries = factsheets.map((f) => ({
+    id: f.slug,
+    slug: f.slug,
+    title: f.title,
+    scaleBand: f.scale_band ?? "multi_district",
+    provenance: "sourced" as const,
+    stateCode: f.state_code ?? "",
+    latitude: f.latitude!,
+    longitude: f.longitude!,
+    internalHref: `/factsheet/${f.slug}`,
+  }));
+  const combinedTotal = factsheets.length;
   const combinedStateCount = new Set(
     mapEntries.map((e) => e.stateCode).filter(Boolean)
   ).size;
@@ -84,45 +66,26 @@ export default async function LandingPage() {
   const prettyThemeHome = (slug: string): string =>
     slug.split("-").map((w) => (w[0]?.toUpperCase() ?? "") + w.slice(1)).join(" ");
 
-  const dbListEntries = entries.map((e, i) => ({
-    id: e.id,
-    slug: e.slug,
+  const listEntries = factsheets.map((f, i) => ({
+    id: f.slug,
+    slug: f.slug,
     index: i + 1,
     total: combinedTotal,
-    title: e.title,
-    tagline: e.tagline,
-    stateName: e.primaryGeography.name,
-    startYear: e.startYear,
-    endYear: e.endYear,
-    scaleBand: e.scaleBand,
-    catEndorsement: e.catEndorsement,
-    themes: e.themes,
-  }));
-
-  // Atlas records as list rows so the home right-rail reflects the full 35,
-  // capped at 5 + a "Read more" CTA linking to /map.
-  const atlasListEntries = atlasRecords.map((r, i) => ({
-    id: r.id,
-    slug: r.id,
-    index: dbListEntries.length + i + 1,
-    total: combinedTotal,
-    title: r.title,
-    tagline: r.summary,
-    stateName: r.district ?? r.stateCode ?? "—",
-    startYear: r.publishedAt ? Number(r.publishedAt.slice(0, 4)) : new Date().getFullYear(),
+    title: f.title,
+    tagline: f.one_liner ?? f.summary ?? "",
+    stateName: f.district ?? f.state_code ?? "—",
+    startYear: f.start_year ?? new Date(f.updated_at).getFullYear(),
     endYear: null,
-    scaleBand: r.scaleBand ?? "multi_district",
-    catEndorsement: "cat_listed" as const,
-    themes: r.themes.slice(0, 2).map((t) => ({
+    scaleBand: f.scale_band ?? "multi_district",
+    catEndorsement: "none" as const,
+    themes: (f.themes ?? []).slice(0, 2).map((t) => ({
       slug: t,
       name: prettyThemeHome(t),
       colourHex: THEME_COLOURS_HOME[t] ?? "#334B4A",
     })),
-    internalHref: `/atlas/${r.id}`,
-    sourceName: r.sourceName,
+    internalHref: `/factsheet/${f.slug}`,
+    sourceName: f.source_name ?? "",
   }));
-
-  const listEntries = [...dbListEntries, ...atlasListEntries];
 
   const lastUpdate =
     entries[0]?.lastReviewedAt ?? entries[0]?.publishedDate ?? new Date();
@@ -265,10 +228,6 @@ export default async function LandingPage() {
             { label: "Resources", value: String(counts.resources), delta: "reports, briefs, datasets" },
           ]}
         />
-      </Reveal>
-
-      <Reveal delay={80}>
-        <EndorsementLegend />
       </Reveal>
 
       {/* ATLAS */}
