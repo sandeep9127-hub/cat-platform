@@ -17,7 +17,6 @@ const NAV_LINKS = [
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
   { href: "/organizations", label: "Organizations Atlas", Icon: Users },
-  { href: "/agent", label: "Ask", Icon: MessageCircle },
   { href: "/about", label: "About", Icon: Info },
 ];
 
@@ -109,6 +108,14 @@ export function BrandBar() {
               </span>
             </Link>
           ))}
+          {/* Ask — single highlighted entry point (replaces the old floating widget) */}
+          <Link
+            href="/agent"
+            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-[4px] bg-deep-teal text-paper hover:bg-teal transition-colors duration-200 whitespace-nowrap shrink-0"
+          >
+            <MessageCircle size={12} strokeWidth={2} aria-hidden />
+            Ask the Hub
+          </Link>
           {/* Mobile + tablet hamburger */}
           <button
             type="button"
@@ -153,6 +160,14 @@ export function BrandBar() {
                 <span>{label}</span>
               </Link>
             ))}
+            <Link
+              href="/agent"
+              onClick={() => setOpen(false)}
+              className="mt-3 inline-flex font-mono text-[11px] tracking-mono-mid uppercase px-4 py-2.5 rounded-[6px] bg-deep-teal text-paper hover:bg-teal transition-colors w-fit items-center gap-2"
+            >
+              <MessageCircle size={14} strokeWidth={2} aria-hidden />
+              Ask the Hub
+            </Link>
           </nav>
         </div>
       )}

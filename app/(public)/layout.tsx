@@ -1,11 +1,11 @@
 import { BrandBar } from "@/components/layout/BrandBar";
 import { Footer } from "@/components/layout/Footer";
-import { FloatingAsk } from "@/components/global/FloatingAsk";
 
 /**
  * Chrome for the public site (everything in the (public) route group). The
- * /admin console lives outside this group and renders its own shell, so it
- * never inherits the marketing header, footer, or floating Ask widget.
+ * /admin console lives outside this group and renders its own shell.
+ * The floating Ask widget was removed — Ask is now a single highlighted
+ * button in the header (no duplicate entry points).
  */
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +18,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <Footer />
-      <FloatingAsk />
     </>
   );
 }
