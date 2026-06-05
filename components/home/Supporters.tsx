@@ -1,6 +1,22 @@
-import { SUPPORTERS } from "@/lib/data/supporters";
 import { Sprig } from "@/components/ui/Sprig";
 import { SectionOpener } from "@/components/ui/SectionOpener";
+
+const LOGOS: { file: string; name: string }[] = [
+  { file: "rockefeller.png", name: "The Rockefeller Foundation" },
+  { file: "ciff.png", name: "Children's Investment Fund Foundation" },
+  { file: "ikea.png", name: "IKEA Foundation" },
+  { file: "climateworks.png", name: "ClimateWorks Foundation" },
+  { file: "gaff.png", name: "Global Alliance for the Future of Food" },
+  { file: "shakti.png", name: "Shakti Sustainable Energy Foundation" },
+  { file: "german-cooperation.png", name: "German Cooperation" },
+  { file: "rohini-nilekani.png", name: "Rohini Nilekani Philanthropies" },
+  { file: "india-climate-collaborative.png", name: "India Climate Collaborative" },
+  { file: "rainmatter.png", name: "Rainmatter Foundation" },
+  { file: "baf.png", name: "Bharat Agroecology Fund" },
+  { file: "earthon.png", name: "EarthON Foundation" },
+  { file: "chanda-foundation.png", name: "Chanda Foundation" },
+  { file: "sustainable-agriculture.png", name: "Centre for Sustainable Agriculture" },
+];
 
 export function Supporters() {
   return (
@@ -47,33 +63,22 @@ export function Supporters() {
       </div>
 
       <ul className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 list-none p-0">
-        {SUPPORTERS.map((s) => {
-          const tint = s.tint ?? "#373F5A";
-          return (
-            <li
-              key={s.slug}
-              className="group relative overflow-hidden rounded-[6px] bg-paper border border-line/70 p-5 lg:p-6 min-h-[118px] flex flex-col items-center justify-center text-center gap-1 transition-colors duration-200 hover:border-line"
-              style={{
-                boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset",
-              }}
-            >
-              <span
-                className="relative font-mono text-[20px] sm:text-[22px] font-semibold leading-none tracking-[-0.02em] opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                style={{ color: tint }}
-              >
-                {s.monogram}
-              </span>
-              <span className="relative font-sans text-[12.5px] text-[color:var(--navy-teal)] leading-tight text-balance max-w-[16ch] mt-2">
-                {s.short ?? s.name}
-              </span>
-              {s.category && (
-                <span className="relative font-mono text-[8.5px] uppercase tracking-[0.14em] text-muted mt-1">
-                  {s.category}
-                </span>
-              )}
-            </li>
-          );
-        })}
+        {LOGOS.map((logo) => (
+          <li
+            key={logo.file}
+            className="group relative rounded-[8px] bg-paper border border-line/70 p-5 lg:p-6 min-h-[104px] flex items-center justify-center transition-colors duration-200 hover:border-line"
+            style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/supporters/${logo.file}`}
+              alt={logo.name}
+              title={logo.name}
+              loading="lazy"
+              className="max-h-[42px] w-auto max-w-[80%] object-contain opacity-85 transition-opacity duration-300 group-hover:opacity-100"
+            />
+          </li>
+        ))}
       </ul>
     </section>
   );
