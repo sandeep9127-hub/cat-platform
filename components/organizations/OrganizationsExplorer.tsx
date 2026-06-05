@@ -14,6 +14,7 @@ type Org = {
   contactPerson: string | null;
   designation: string | null;
   email: string | null;
+  website: string | null;
 };
 type Loc = { orgId: string; lat: number; lng: number; state: string | null; district: string | null };
 
@@ -340,6 +341,17 @@ export function OrganizationsExplorer() {
                 <button className="og-edit" onClick={(e) => { e.stopPropagation(); setEditTarget(o); setFormOpen(true); }}>
                   Suggest an edit
                 </button>
+                {o.website && (
+                  <a
+                    className="og-card-web"
+                    href={o.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Website ↗
+                  </a>
+                )}
               </div>
             </article>
           ))}
@@ -443,6 +455,16 @@ function OrgDetail({
           {org.email ? (
             <a className="og-dc-email" href={`mailto:${org.email}`}>{org.email}</a>
           ) : <div className="og-muted" style={{ fontSize: 12.5 }}>Email not listed</div>}
+          {org.website && (
+            <a
+              className="og-dc-web"
+              href={org.website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {org.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")} ↗
+            </a>
+          )}
         </div>
 
         {org.domains.length > 0 && (
@@ -485,26 +507,42 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
   const [f, setF] = useState({
     name: editTarget?.name ?? "",
     orgType: editTarget?.orgType ?? "",
-    state: "",
-    district: "",
-    block: "",
+    website: editTarget?.website ?? "",
     domains: editTarget?.domains.join(", ") ?? "",
     comments: "",
     contactPerson: "",
     contactEmail: "",
     submitterNote: "",
   });
+  // One organisation can work in many places — collect a list of locations.
+  type LocRow = { state: string; district: string; block: string };
+  const [locations, setLocations] = useState<LocRow[]>([
+    { state: "", district: "", block: "" },
+  ]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
 
   const up = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
+  const upLoc = (i: number, k: keyof LocRow, v: string) =>
+    setLocations((rows) => rows.map((r, idx) => (idx === i ? { ...r, [k]: v } : r)));
+  const addLoc = () =>
+    setLocations((rows) => [...rows, { state: "", district: "", block: "" }]);
+  const removeLoc = (i: number) =>
+    setLocations((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
 
   async function submit() {
     if (!f.name.trim()) { setErr("Organisation name is required."); return; }
     if (!f.contactEmail.trim()) { setErr("Your email is required so we can verify the entry."); return; }
     setBusy(true); setErr("");
     try {
+      const cleanLocations = locations
+        .map((l) => ({
+          state: l.state.trim(),
+          district: l.district.trim(),
+          block: l.block.trim(),
+        }))
+        .filter((l) => l.state || l.district || l.block);
       const res = await fetch("/api/organizations/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -513,10 +551,9 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
           targetOrgId: mode === "edit" ? targetId || null : null,
           name: f.name,
           orgType: f.orgType,
+          website: f.website,
           domains: f.domains.split(",").map((d) => d.trim()).filter(Boolean),
-          state: f.state,
-          district: f.district,
-          block: f.block,
+          locations: cleanLocations,
           comments: f.comments,
           contactPerson: f.contactPerson,
           contactEmail: f.contactEmail,
@@ -572,15 +609,34 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                   <option value="">Select…</option>
                   {TYPE_ORDER.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select></label>
-              <label className="og-field"><span>State</span>
-                <input value={f.state} onChange={(e) => up("state", e.target.value)} /></label>
+              <label className="og-field"><span>Website</span>
+                <input value={f.website} onChange={(e) => up("website", e.target.value)} placeholder="https://example.org" inputMode="url" /></label>
             </div>
-            <div className="og-row">
-              <label className="og-field"><span>District</span>
-                <input value={f.district} onChange={(e) => up("district", e.target.value)} /></label>
-              <label className="og-field"><span>Block</span>
-                <input value={f.block} onChange={(e) => up("block", e.target.value)} /></label>
+
+            {/* Work locations — one org can work in many places. */}
+            <div className="og-locations">
+              <div className="og-loc-head">
+                <span>Where they work</span>
+                <span className="og-loc-hint">Add a row for each location</span>
+              </div>
+              {locations.map((loc, i) => (
+                <div key={i} className="og-loc-row">
+                  <input className="og-loc-in" placeholder="State" value={loc.state} onChange={(e) => upLoc(i, "state", e.target.value)} />
+                  <input className="og-loc-in" placeholder="District" value={loc.district} onChange={(e) => upLoc(i, "district", e.target.value)} />
+                  <input className="og-loc-in" placeholder="Block" value={loc.block} onChange={(e) => upLoc(i, "block", e.target.value)} />
+                  <button
+                    type="button"
+                    className="og-loc-del"
+                    onClick={() => removeLoc(i)}
+                    disabled={locations.length === 1}
+                    aria-label="Remove this location"
+                    title={locations.length === 1 ? "At least one location" : "Remove location"}
+                  >×</button>
+                </div>
+              ))}
+              <button type="button" className="og-add-loc" onClick={addLoc}>+ Add another location</button>
             </div>
+
             <label className="og-field"><span>Domains (comma-separated)</span>
               <input value={f.domains} onChange={(e) => up("domains", e.target.value)} placeholder="Livelihoods, Soil conservation, Seed management" /></label>
             <label className="og-field"><span>Anything else</span>
@@ -644,7 +700,24 @@ function Styles() {
         background:none; border:0; cursor:pointer; padding:0; }
       .og-view { color:var(--td); font-weight:600; }
       .og-edit { color:var(--muted); }
-      .og-view:hover, .og-edit:hover { text-decoration:underline; }
+      .og-card-web { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--td); text-decoration:none; margin-left:auto; }
+      .og-view:hover, .og-edit:hover, .og-card-web:hover { text-decoration:underline; }
+      /* website in detail */
+      .og-dc-web { display:inline-block; margin-top:7px; font-size:13px; color:var(--td); text-decoration:none; font-family:var(--font-jetbrains),monospace; letter-spacing:.02em; }
+      .og-dc-web:hover { text-decoration:underline; }
+      /* multi-location repeater (submit form) */
+      .og-locations { margin:4px 0 2px; }
+      .og-loc-head { display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
+      .og-loc-head > span:first-child { font-size:12.5px; font-weight:600; color:var(--ink); }
+      .og-loc-hint { font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+      .og-loc-row { display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center; }
+      .og-loc-in { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; background:#fff; }
+      .og-loc-in:focus { outline:none; border-color:var(--td); box-shadow:0 0 0 3px rgba(45,117,116,.16); }
+      .og-loc-del { width:30px; height:30px; flex:0 0 auto; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
+      .og-loc-del:hover:not(:disabled) { color:#B85042; border-color:#B85042; }
+      .og-loc-del:disabled { opacity:.35; cursor:not-allowed; }
+      .og-add-loc { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--td); background:none; border:1px dashed rgba(45,117,116,.4); border-radius:8px; padding:7px 12px; cursor:pointer; transition:background .15s; }
+      .og-add-loc:hover { background:rgba(45,117,116,.06); }
       /* detail panel */
       .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius:12px; padding:14px 16px; margin:6px 0 16px; }
       .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }

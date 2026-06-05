@@ -19,6 +19,7 @@ export type DirectoryOrg = {
   contactPerson: string | null;
   designation: string | null;
   email: string | null;
+  website: string | null;
 };
 
 export type DirectoryLocation = {
@@ -38,7 +39,7 @@ export async function getDirectory(): Promise<{
   locations: DirectoryLocation[];
 }> {
   const orgR = await db.execute(sql`
-    SELECT o.id, o.name, o.org_type AS "orgType", o.domains,
+    SELECT o.id, o.name, o.org_type AS "orgType", o.domains, o.website,
            o.contact_person AS "contactPerson", o.designation, o.contact_email AS "email",
            count(l.id)::int AS "locationCount",
            coalesce(array_agg(DISTINCT l.state) FILTER (WHERE l.state IS NOT NULL), '{}') AS states
@@ -56,7 +57,7 @@ export async function getDirectory(): Promise<{
 
   const orgs = rowsOf<{
     id: string; name: string; orgType: string; domains: unknown; locationCount: number; states: string[];
-    contactPerson: string | null; designation: string | null; email: string | null;
+    contactPerson: string | null; designation: string | null; email: string | null; website: string | null;
   }>(orgR).map((o) => ({
     id: o.id,
     name: o.name,
@@ -67,6 +68,7 @@ export async function getDirectory(): Promise<{
     contactPerson: o.contactPerson,
     designation: o.designation,
     email: o.email,
+    website: o.website || null,
   }));
 
   const locations = rowsOf<DirectoryLocation>(locR).map((l) => ({
@@ -80,18 +82,24 @@ export async function getDirectory(): Promise<{
   return { orgs, locations };
 }
 
-export type Submission = {
-  submissionType: "new" | "edit";
-  targetOrgId?: string | null;
-  name?: string;
-  orgType?: string;
-  domains?: string[];
+export type SubmissionLocation = {
   state?: string;
   district?: string;
   subdistrict?: string;
   block?: string;
   latitude?: number | null;
   longitude?: number | null;
+};
+
+export type Submission = {
+  submissionType: "new" | "edit";
+  targetOrgId?: string | null;
+  name?: string;
+  orgType?: string;
+  domains?: string[];
+  website?: string;
+  /** One organisation can work in many places. */
+  locations?: SubmissionLocation[];
   comments?: string;
   contactPerson?: string;
   contactEmail?: string;
@@ -99,22 +107,30 @@ export type Submission = {
 };
 
 export async function insertSubmission(s: Submission): Promise<void> {
+  const locs = (s.locations ?? []).filter(
+    (l) => l && (l.state || l.district || l.block || l.subdistrict || l.latitude != null)
+  );
+  // The legacy single-location columns mirror the first location for backward
+  // compatibility with the review console; the full set lives in `locations`.
+  const first = locs[0] ?? {};
   await db.execute(sql`
     INSERT INTO "cat".org_submissions
-      (submission_type, target_org_id, name, org_type, domains, state, district,
-       subdistrict, block, latitude, longitude, comments, contact_person, contact_email, submitter_note)
+      (submission_type, target_org_id, name, org_type, domains, website, state, district,
+       subdistrict, block, latitude, longitude, locations, comments, contact_person, contact_email, submitter_note)
     VALUES (
       ${s.submissionType},
       ${s.targetOrgId ?? null},
       ${s.name ?? null},
       ${s.orgType ?? null},
       ${JSON.stringify(s.domains ?? [])}::jsonb,
-      ${s.state ?? null},
-      ${s.district ?? null},
-      ${s.subdistrict ?? null},
-      ${s.block ?? null},
-      ${s.latitude ?? null},
-      ${s.longitude ?? null},
+      ${s.website ?? null},
+      ${first.state ?? null},
+      ${first.district ?? null},
+      ${first.subdistrict ?? null},
+      ${first.block ?? null},
+      ${first.latitude ?? null},
+      ${first.longitude ?? null},
+      ${JSON.stringify(locs)}::jsonb,
       ${s.comments ?? null},
       ${s.contactPerson ?? null},
       ${s.contactEmail ?? null},

@@ -36,12 +36,28 @@ export async function POST(req: NextRequest) {
     domains: Array.isArray(body.domains)
       ? (body.domains as unknown[]).map((d) => String(d).slice(0, 120)).slice(0, 30)
       : [],
-    state: str(body.state, 120),
-    district: str(body.district, 120),
-    subdistrict: str(body.subdistrict, 120),
-    block: str(body.block, 120),
-    latitude: numOrNull(body.latitude),
-    longitude: numOrNull(body.longitude),
+    website: str(body.website, 300),
+    // One org, many work locations. Accept a `locations` array; fall back to the
+    // legacy flat fields if an older client posts a single location.
+    locations: Array.isArray(body.locations)
+      ? (body.locations as Record<string, unknown>[]).slice(0, 25).map((l) => ({
+          state: str(l.state, 120),
+          district: str(l.district, 120),
+          subdistrict: str(l.subdistrict, 120),
+          block: str(l.block, 120),
+          latitude: numOrNull(l.latitude),
+          longitude: numOrNull(l.longitude),
+        }))
+      : [
+          {
+            state: str(body.state, 120),
+            district: str(body.district, 120),
+            subdistrict: str(body.subdistrict, 120),
+            block: str(body.block, 120),
+            latitude: numOrNull(body.latitude),
+            longitude: numOrNull(body.longitude),
+          },
+        ],
     comments: str(body.comments, 2000),
     contactPerson: str(body.contactPerson, 200),
     contactEmail,
