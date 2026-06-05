@@ -271,7 +271,7 @@ export function OrganizationsExplorer() {
           <p className="og-sub">
             {loading
               ? "Loading the directory…"
-              : `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations. Source: NCNF · Core Stack survey (2021).`}
+              : `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations.`}
           </p>
         </div>
         <button className="og-add" onClick={() => { setEditTarget(null); setFormOpen(true); }}>
@@ -494,7 +494,7 @@ function OrgDetail({
           <button className="og-submit" style={{ flex: 1 }} onClick={onLocate}>Show on map</button>
           <button className="og-detail-edit" onClick={onEdit}>Suggest an edit</button>
         </div>
-        <p className="og-note">Listed from the NCNF · Core Stack survey (2021). Contact details are self-reported by the organisation.</p>
+        <p className="og-note">Contact details are self-reported by the organisation.</p>
       </div>
     </div>
   );
