@@ -85,7 +85,7 @@ export function Scatter({
         const rr = sr(p.size);
         return (
           <g key={i} className="group">
-            <circle cx={cx} cy={cy} r={rr} fill={p.color} fillOpacity={0.22} stroke={p.color} strokeWidth={1.5} className="transition-all duration-200 group-hover:fill-opacity-40" />
+            <circle cx={cx} cy={cy} r={rr} fill={p.color} fillOpacity={0.22} stroke={p.color} strokeWidth={1.5} className="transition-[fill-opacity] duration-200 ease-out-expo group-hover:[fill-opacity:0.4]" />
             <circle cx={cx} cy={cy} r={2.5} fill={p.color} />
             <text x={cx} y={cy - rr - 5} textAnchor="middle" className="font-sans" style={{ fontSize: 10.5, fontWeight: 600, fill: "#3a4544" }}>
               {p.label.length > 22 ? p.label.slice(0, 21) + "…" : p.label}

@@ -80,7 +80,7 @@ export function CustomBriefBuilder() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.16em] shadow-[0_8px_24px_-8px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal transition-all"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-br from-deep-teal to-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.16em] shadow-[0_8px_24px_-8px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal active:scale-[0.97] transition-transform duration-150 ease-out-expo"
       >
         <Settings2 size={13} strokeWidth={1.8} />
         Build a custom brief
@@ -144,7 +144,7 @@ export function CustomBriefBuilder() {
               <select
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="mt-2 w-full px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-sans text-[14px] text-ink shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-all"
+                className="mt-2 w-full px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-sans text-[14px] text-ink shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[border-color,box-shadow] duration-150 ease-out-expo"
               >
                 {LANDSCAPE_LIST.map((l) => (
                   <option key={l.slug} value={l.slug}>
@@ -189,7 +189,7 @@ export function CustomBriefBuilder() {
                         type="button"
                         onClick={() => !requirementMissing && toggle(s.key)}
                         disabled={requirementMissing}
-                        className={`group relative w-full text-left rounded-[6px] border p-3.5 transition-all ${
+                        className={`group relative w-full text-left rounded-[6px] border p-3.5 transition-[transform,background-color,border-color] duration-150 ease-out-expo active:scale-[0.99] ${
                           requirementMissing
                             ? "border-line bg-cream/40 opacity-60 cursor-not-allowed"
                             : checked
@@ -266,7 +266,7 @@ export function CustomBriefBuilder() {
                   else setTimeout(() => setOpen(false), 400);
                 }}
                 download
-                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold text-paper transition-all ${
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold text-paper transition-[transform,background-color,opacity] duration-150 ease-out-expo active:scale-[0.97] ${
                   canDownload
                     ? "bg-gradient-to-br from-deep-teal to-teal hover:from-teal hover:to-deep-teal shadow-[0_8px_22px_-8px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)]"
                     : "bg-line cursor-not-allowed opacity-60"

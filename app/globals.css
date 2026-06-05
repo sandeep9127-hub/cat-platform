@@ -404,6 +404,26 @@ body::before {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Origin-aware popover entrance (scales in from its trigger corner). */
+@keyframes scope-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scope-pop {
+  animation: scope-pop 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-scope-pop {
+    animation: fade-in 0.12s ease both;
+  }
+}
+
 /* On the map, dots fade-pop in on first paint, then halos breathe gently. */
 .dot-group .dot-halo {
   transform-origin: center;

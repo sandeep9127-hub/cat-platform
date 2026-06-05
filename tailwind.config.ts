@@ -6,6 +6,9 @@ const config: Config = {
     "./components/**/*.{ts,tsx}",
     "./lib/**/*.{ts,tsx}",
   ],
+  // Gate every `hover:` utility behind a real hover-capable pointer, so touch
+  // taps don't get stuck in a hover state (lifts, scale, colour holds).
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
       colors: {

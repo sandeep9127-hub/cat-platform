@@ -70,8 +70,12 @@ export function Supporters() {
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-8 sm:gap-y-10 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
-          {LOGOS.map((logo) => (
-            <li key={logo.file} className="group flex items-center justify-center">
+          {LOGOS.map((logo, i) => (
+            <li
+              key={logo.file}
+              className="group flex items-center justify-center reveal-stagger"
+              style={{ animationDelay: `${i * 35}ms` }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/supporters/${logo.file}`}

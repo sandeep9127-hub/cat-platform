@@ -36,10 +36,14 @@ export function Sdgs() {
       </div>
 
       <ul className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 list-none p-0">
-        {SDGS.map((g) => (
-          <li key={g.number} className="group">
+        {SDGS.map((g, i) => (
+          <li
+            key={g.number}
+            className="group reveal-stagger"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
             <span
-              className="block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)]"
+              className="block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)]"
               style={{ ["--c" as string]: g.colour } as React.CSSProperties}
             >
               {/* Official UN inverted SDG icon (colour art on white). */}

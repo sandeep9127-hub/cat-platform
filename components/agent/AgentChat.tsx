@@ -375,7 +375,7 @@ export function AgentChat({
                     setInput(c.prompt);
                     void send(c.prompt);
                   }}
-                  className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-5 sm:p-6 text-left transition-all duration-300 ease-out hover:-translate-y-0.5"
+                  className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-5 sm:p-6 text-left transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]"
                   style={{
                     boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${c.tint.glow}`,
                     backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${c.tint.soft} 100%)`,
@@ -518,7 +518,7 @@ function Composer({
           <button
             type="button"
             onClick={() => setScopeOpen((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-paper hover:bg-cream/60 transition-colors font-mono text-[10px] uppercase tracking-[0.14em] text-deep-teal"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-paper hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo font-mono text-[10px] uppercase tracking-[0.14em] text-deep-teal"
           >
             <span
               className="w-1.5 h-1.5 rounded-full"
@@ -529,7 +529,7 @@ function Composer({
           </button>
           {scopeOpen && (
             <div
-              className="absolute top-full right-0 mt-2 min-w-[210px] max-h-[340px] overflow-y-auto rounded-[6px] border border-line bg-paper p-1.5 z-20"
+              className="absolute top-full right-0 mt-2 min-w-[210px] max-h-[340px] overflow-y-auto rounded-[6px] border border-line bg-paper p-1.5 z-20 origin-top-right animate-scope-pop"
               style={{
                 boxShadow:
                   "0 1px 2px rgba(26,38,37,0.04), 0 12px 28px -12px rgba(26,38,37,0.30)",
@@ -624,7 +624,7 @@ function Composer({
             type="submit"
             disabled={!input.trim() || busy}
             aria-label="Send"
-            className="group inline-flex items-center justify-center w-10 h-10 rounded-[8px] bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_6px_16px_-6px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="group inline-flex items-center justify-center w-10 h-10 rounded-[8px] bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_6px_16px_-6px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed transition-transform duration-150 ease-out-expo"
           >
             <ArrowUp size={14} strokeWidth={2} className="group-hover:translate-y-[-1px] transition-transform" />
           </button>
@@ -727,7 +727,7 @@ function CitationTray({ citations }: { citations: Citation[] }) {
               const linkProps = isExternal
                 ? { href: c.url, target: "_blank" as const, rel: "noreferrer" }
                 : null;
-              const sharedClass = "group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-all duration-300 ease-out hover:-translate-y-0.5";
+              const sharedClass = "group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]";
               const sharedStyle = {
                 boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -12px ${tint.bar}55`,
               } as const;

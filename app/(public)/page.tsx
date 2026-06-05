@@ -318,7 +318,7 @@ export default async function LandingPage() {
             <Link
               key={t.slug}
               href={`/map?category=${t.slug}`}
-              className="group relative flex flex-col gap-3.5 min-h-[176px] p-5 rounded-[10px] reveal-stagger transition-all duration-200 hover:-translate-y-0.5"
+              className="group relative flex flex-col gap-3.5 min-h-[176px] p-5 rounded-[10px] reveal-stagger transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]"
               style={{
                 ["--c" as string]: t.colourHex,
                 animationDelay: `${i * 50}ms`,
@@ -345,7 +345,7 @@ export default async function LandingPage() {
                 {t.count === 1 ? "solution" : "solutions"}
               </span>
               <span
-                className="absolute top-5 right-5 transition-all duration-200 text-[#fbf8f28c] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
+                className="absolute top-5 right-5 transition-[transform,color] duration-200 ease-out-expo text-[#fbf8f28c] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
                 aria-hidden
               >
                 <ArrowUpRight size={17} strokeWidth={2} />

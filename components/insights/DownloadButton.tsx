@@ -43,7 +43,7 @@ export function DownloadButton({
     <button
       type="button"
       onClick={download}
-      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 transition-colors"
+      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
     >
       <Download size={13} strokeWidth={1.9} aria-hidden />
       {label}
