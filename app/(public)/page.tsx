@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
+import { ParallaxBanner } from "@/components/home/ParallaxBanner";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -128,80 +129,62 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* HERO — type-led broadsheet on cream (Equals direction). The decorative
-          video is gone; the 10 category colours float as flat "spreadsheet
-          cells" behind the headline. */}
-      <section className="relative overflow-hidden bg-paper border-b border-rule">
-        {/* Floating flat colour cells — the CAT category palette as raw data
-            cells. No radius, no border (the spreadsheet metaphor). */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[
-            { c: "#2E7573", t: "8%", l: "63%", w: 132, h: 56 },
-            { c: "#C68C2E", t: "20%", l: "82%", w: 92, h: 40 },
-            { c: "#5C8C2E", t: "44%", l: "71%", w: 116, h: 48 },
-            { c: "#2C7BD0", t: "62%", l: "86%", w: 72, h: 64 },
-            { c: "#C24A2E", t: "70%", l: "66%", w: 100, h: 36 },
-            { c: "#5C6796", t: "30%", l: "92%", w: 56, h: 56 },
-            { c: "#2EA37A", t: "86%", l: "78%", w: 120, h: 28 },
-          ].map((b, i) => (
-            <span
-              key={i}
-              className="absolute hidden lg:block reveal-stagger"
-              style={{
-                top: b.t,
-                left: b.l,
-                width: b.w,
-                height: b.h,
-                background: b.c,
-                opacity: 0.9,
-                animationDelay: `${200 + i * 70}ms`,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-24 lg:pt-28 pb-16 sm:pb-20">
-          <div className="flex items-center gap-3 mb-7 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
-            <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
-            Vol. 01 · Edition 2026
-            <span className="w-1 h-1 rounded-full bg-amber-deep" />
-            Updated{" "}
-            {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-          </div>
-
-          <h1
-            className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] reveal-stagger max-w-[16ch] text-[clamp(44px,7vw,104px)]"
-            style={{ animationDelay: "100ms" }}
-          >
-            What&apos;s actually working in India&apos;s food systems.
-          </h1>
-
-          <p
-            className="mt-7 max-w-[58ch] text-[17px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
-            style={{ animationDelay: "240ms" }}
-          >
-            A living atlas of credible programmes from across the country, each compiled
-            from public sources and checked before it goes up. What didn&apos;t work sits
-            next to what did. Run by the Consortium for Agroecological Transformations.
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
-            <Link
-              href="/map"
-              className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+      {/* HERO — Equals type-led layout over the looping video backdrop (kept
+          per request). Light text on the footage, with the broadsheet headline
+          treatment (oversized Inter, tight tracking) and a pill CTA. */}
+      <ParallaxBanner
+        videoSrc="/videos/hero-parallax.mp4"
+        poster="/videos/hero-poster.jpg"
+        alt="Looping illustration of Indian food systems and landscapes"
+        strength={0.06}
+        textStrength={0.05}
+      >
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-24 sm:pb-28 lg:pb-32 min-h-[520px] sm:min-h-[600px] lg:min-h-[640px] flex items-center">
+          <div className="max-w-[60ch]">
+            <div
+              className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#fbf8f2d9] drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] reveal-stagger"
             >
-              Explore the Solutions Atlas
-              <ArrowUpRight size={15} strokeWidth={2} aria-hidden />
-            </Link>
-            <Link
-              href="/landscapes"
-              className="text-[14px] text-ink underline underline-offset-4 decoration-line hover:decoration-ink transition-colors"
+              <Sparkles size={12} strokeWidth={1.8} className="text-amber" aria-hidden />
+              Vol. 01 · Edition 2026
+              <span className="w-1 h-1 rounded-full bg-amber" />
+              Updated{" "}
+              {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </div>
+
+            <h1
+              className="font-sans font-semibold text-paper tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(42px,6.4vw,92px)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.4)] reveal-stagger"
+              style={{ animationDelay: "100ms" }}
             >
-              The 11 landscapes
-            </Link>
+              What&apos;s actually working in India&apos;s food systems.
+            </h1>
+
+            <p
+              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-[#fbf8f2e6] tracking-[-0.01em] drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)] reveal-stagger"
+              style={{ animationDelay: "240ms" }}
+            >
+              A living atlas of credible programmes from across the country, each compiled
+              from public sources and checked before it goes up. What didn&apos;t work sits
+              next to what did.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
+              <Link
+                href="/map"
+                className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+              >
+                Explore the Solutions Atlas
+                <ArrowUpRight size={15} strokeWidth={2} aria-hidden />
+              </Link>
+              <Link
+                href="/landscapes"
+                className="text-[14px] text-paper underline underline-offset-4 decoration-[#fbf8f266] hover:decoration-paper transition-colors drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]"
+              >
+                The 11 landscapes
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
+      </ParallaxBanner>
 
       {/* HOW IT WORKS — flat cream, separated by the spreadsheet rule */}
       <section className="relative bg-paper border-b border-rule">
