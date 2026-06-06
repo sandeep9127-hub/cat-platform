@@ -129,10 +129,33 @@ export default async function LandingPage() {
     <>
       {/* HERO — split: broadsheet type on cream (left), illustration framed
           (right). Text sits on solid cream, so it's fully legible with no scrim. */}
-      <section className="bg-paper">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
-          {/* Left — type */}
-          <div className="order-2 lg:order-1">
+      <section className="relative overflow-hidden bg-cream">
+        {/* Full-bleed still illustration. The artwork has an empty cream zone on
+            the left — the text sits over it, so dark type stays legible. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/videos/hero-poster.jpg"
+          alt="Hand-illustrated map of India's food landscapes"
+          className="absolute inset-0 w-full h-full object-cover object-[58%_center] select-none pointer-events-none"
+        />
+        {/* Cream wash on the left for text legibility; fades to reveal the art. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--cream) 0%, rgba(243,241,234,0.94) 30%, rgba(243,241,234,0.6) 50%, rgba(243,241,234,0.0) 70%)",
+          }}
+        />
+        {/* Soft bottom blend into the next band. */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+          style={{ background: "linear-gradient(180deg, transparent, var(--cream))" }}
+        />
+
+        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 sm:py-20 lg:py-24 min-h-[540px] lg:min-h-[600px] flex items-center">
+          <div className="max-w-[54ch]">
             <div className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
               <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
               Vol. 01 · Edition 2026
@@ -149,7 +172,7 @@ export default async function LandingPage() {
             </h1>
 
             <p
-              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
+              className="mt-6 max-w-[48ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
               A living atlas of credible programmes from across the country, each compiled
@@ -173,35 +196,11 @@ export default async function LandingPage() {
               </Link>
             </div>
 
-            <div className="mt-9 pt-6 border-t border-line flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger" style={{ animationDelay: "480ms" }}>
+            <div className="mt-9 pt-6 border-t border-line/80 flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger max-w-[44ch]" style={{ animationDelay: "480ms" }}>
               <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
               <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
               <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
               <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
-            </div>
-          </div>
-
-          {/* Right — framed illustration (the video reads as contained art) */}
-          <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "180ms" }}>
-            <div className="relative rounded-[14px] overflow-hidden border border-line bg-cream aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] shadow-[0_1px_2px_rgba(26,38,37,0.04),0_24px_60px_-30px_rgba(26,38,37,0.35)]">
-              <video
-                src="/videos/hero-parallax.mp4"
-                poster="/videos/hero-poster.jpg"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                aria-label="Looping illustration of Indian food systems and landscapes"
-                className="absolute inset-0 w-full h-full object-cover object-[72%_44%] scale-[1.55]"
-              />
-              {/* Caption — grounds the frame, fills the base */}
-              <div className="absolute inset-x-0 bottom-0 px-4 pb-3.5 pt-10 bg-gradient-to-t from-ink/70 via-ink/30 to-transparent">
-                <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/95 inline-flex items-center gap-2">
-                  <span className="w-3.5 h-px bg-amber" />
-                  Hand-illustrated · India&apos;s food landscapes
-                </span>
-              </div>
             </div>
           </div>
         </div>
