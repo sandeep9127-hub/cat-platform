@@ -260,8 +260,10 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               const halo = scaleHaloRadius(entry.scaleBand);
               const core = scaleCoreRadius(entry.scaleBand);
               const dim = activeState && entry.stateCode !== activeState;
-              // Stagger halo pulse so pins breathe in a wave, not unison.
-              const haloDelay = `${(idx % 8) * 0.45}s`;
+              // Two independent staggers: a quick entrance wave (pins drop in),
+              // and a slower travelling breathe wave once they have landed.
+              const popDelay = `${(idx % 12) * 0.035}s`;
+              const haloDelay = `${0.4 + (idx % 7) * 0.3}s`;
               return (
                 <g
                   key={entry.id}
@@ -280,7 +282,13 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     }
                   }}
                   className="cursor-pointer dot-group"
-                  style={{ color: isAmber ? "var(--amber-deep)" : "var(--teal)" }}
+                  style={
+                    {
+                      color: isAmber ? "var(--amber-deep)" : "var(--teal)",
+                      "--pop-delay": popDelay,
+                      "--halo-delay": haloDelay,
+                    } as React.CSSProperties
+                  }
                 >
                   <circle
                     cx={x}
@@ -289,7 +297,6 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     className="dot-halo"
                     fill={isAmber ? "var(--amber-deep)" : "var(--teal)"}
                     opacity={isAmber ? 0.18 : 0.15}
-                    style={{ animationDelay: haloDelay }}
                   />
                   <circle
                     cx={x}

@@ -368,7 +368,7 @@ body::before {
 
 @keyframes dot-pulse {
   0%, 100% { transform: scale(1); opacity: var(--pulse-base, 0.15); }
-  50% { transform: scale(1.08); opacity: calc(var(--pulse-base, 0.15) * 1.4); }
+  50% { transform: scale(1.16); opacity: calc(var(--pulse-base, 0.15) * 1.6); }
 }
 
 @keyframes dot-pop {
@@ -428,20 +428,29 @@ body::before {
   }
 }
 
-/* On the map, dots fade-pop in on first paint, then halos breathe gently. */
+/* On the map, dots fade-pop in on first paint (quick entrance wave), then
+   halos breathe on a livelier ~2.1s cycle, staggered into a travelling wave.
+   --pop-delay drives the entrance only; --halo-delay drives the pulse only,
+   so the two never clobber each other (a single animation-delay would). */
 .dot-group .dot-halo {
   transform-origin: center;
   transform-box: fill-box;
-  animation: dot-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both, dot-pulse 4.2s ease-in-out infinite 0.8s;
+  animation:
+    dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both,
+    dot-pulse 2.1s ease-in-out var(--halo-delay, 0s) infinite;
 }
 .dot-group .dot-core {
   transform-origin: center;
   transform-box: fill-box;
-  animation: dot-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.05s;
+  animation: dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both;
 }
 .dot-group:hover .dot-halo {
   animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-group .dot-halo {
+    animation: dot-pop 0.4s ease both;
+  }
 }
 
 /* Hero word italic — subtle reveal */
