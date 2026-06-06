@@ -152,14 +152,14 @@ export default async function LandingPage() {
             </div>
 
             <h1
-              className="font-sans font-semibold text-paper tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(42px,6.4vw,92px)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.4)] reveal-stagger"
+              className="font-sans font-semibold text-paper tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(42px,6.4vw,92px)] [text-shadow:0_1px_2px_rgba(0,0,0,0.55),0_3px_20px_rgba(0,0,0,0.4)] reveal-stagger"
               style={{ animationDelay: "100ms" }}
             >
               What&apos;s actually working in India&apos;s food systems.
             </h1>
 
             <p
-              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-[#fbf8f2e6] tracking-[-0.01em] drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)] reveal-stagger"
+              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-[#fbf8f2f2] tracking-[-0.01em] [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_1px_10px_rgba(0,0,0,0.4)] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
               A living atlas of credible programmes from across the country, each compiled
