@@ -5,7 +5,6 @@ import {
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets, getCategoryCounts } from "@/lib/factsheet/generate";
 import { CATEGORIES } from "@/lib/data/categories";
-import { StatStrip } from "@/components/ui/StatStrip";
 import { SectionHead } from "@/components/ui/SectionHead";
 import {
   Sparkles,
@@ -173,6 +172,13 @@ export default async function LandingPage() {
                 The 11 landscapes
               </Link>
             </div>
+
+            <div className="mt-9 pt-6 border-t border-line flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger" style={{ animationDelay: "480ms" }}>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
+            </div>
           </div>
 
           {/* Right — framed illustration (the video reads as contained art) */}
@@ -187,8 +193,15 @@ export default async function LandingPage() {
                 playsInline
                 preload="auto"
                 aria-label="Looping illustration of Indian food systems and landscapes"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-[64%_42%] scale-[1.14]"
               />
+              {/* Caption — grounds the frame, fills the base */}
+              <div className="absolute inset-x-0 bottom-0 px-4 pb-3.5 pt-10 bg-gradient-to-t from-ink/70 via-ink/30 to-transparent">
+                <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/95 inline-flex items-center gap-2">
+                  <span className="w-3.5 h-px bg-amber" />
+                  Hand-illustrated · India&apos;s food landscapes
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -242,17 +255,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* STAT STRIP — uses the same merged counts the atlas top bar shows */}
-      <Reveal>
-        <StatStrip
-          stats={[
-            { label: "Programmes listed", value: String(combinedTotal), sup: "↗", delta: "across the atlas" },
-            { label: "States covered", value: String(combinedStateCount), delta: "of 28 + 8 UTs" },
-            { label: "Organisations", value: String(counts.organisations), delta: "across the system" },
-            { label: "Landscapes", value: "11", delta: "CAT focus geographies" },
-          ]}
-        />
-      </Reveal>
 
       {/* ATLAS */}
       <Reveal>
