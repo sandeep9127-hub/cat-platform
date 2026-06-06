@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
-import { ParallaxBanner } from "@/components/home/ParallaxBanner";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -129,37 +128,29 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* HERO — Equals type-led layout over the looping video backdrop (kept
-          per request). Light text on the footage, with the broadsheet headline
-          treatment (oversized Inter, tight tracking) and a pill CTA. */}
-      <ParallaxBanner
-        videoSrc="/videos/hero-parallax.mp4"
-        poster="/videos/hero-poster.jpg"
-        alt="Looping illustration of Indian food systems and landscapes"
-        strength={0.06}
-        textStrength={0.05}
-      >
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-24 sm:pb-28 lg:pb-32 min-h-[520px] sm:min-h-[600px] lg:min-h-[640px] flex items-center">
-          <div className="max-w-[60ch]">
-            <div
-              className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#fbf8f2d9] drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] reveal-stagger"
-            >
-              <Sparkles size={12} strokeWidth={1.8} className="text-amber" aria-hidden />
+      {/* HERO — split: broadsheet type on cream (left), illustration framed
+          (right). Text sits on solid cream, so it's fully legible with no scrim. */}
+      <section className="bg-paper">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
+          {/* Left — type */}
+          <div className="order-2 lg:order-1">
+            <div className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+              <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
               Vol. 01 · Edition 2026
-              <span className="w-1 h-1 rounded-full bg-amber" />
+              <span className="w-1 h-1 rounded-full bg-amber-deep" />
               Updated{" "}
               {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </div>
 
             <h1
-              className="font-sans font-semibold text-paper tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(42px,6.4vw,92px)] [text-shadow:0_1px_2px_rgba(0,0,0,0.55),0_3px_20px_rgba(0,0,0,0.4)] reveal-stagger"
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[15ch] text-[clamp(40px,5.6vw,84px)] reveal-stagger"
               style={{ animationDelay: "100ms" }}
             >
               What&apos;s actually working in India&apos;s food systems.
             </h1>
 
             <p
-              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-[#fbf8f2f2] tracking-[-0.01em] [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_1px_10px_rgba(0,0,0,0.4)] reveal-stagger"
+              className="mt-6 max-w-[52ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
               A living atlas of credible programmes from across the country, each compiled
@@ -177,14 +168,31 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/landscapes"
-                className="text-[14px] text-paper underline underline-offset-4 decoration-[#fbf8f266] hover:decoration-paper transition-colors drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]"
+                className="text-[14px] text-ink underline underline-offset-4 decoration-line hover:decoration-ink transition-colors"
               >
                 The 11 landscapes
               </Link>
             </div>
           </div>
+
+          {/* Right — framed illustration (the video reads as contained art) */}
+          <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "180ms" }}>
+            <div className="relative rounded-[14px] overflow-hidden border border-line bg-cream aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] shadow-[0_1px_2px_rgba(26,38,37,0.04),0_24px_60px_-30px_rgba(26,38,37,0.35)]">
+              <video
+                src="/videos/hero-parallax.mp4"
+                poster="/videos/hero-poster.jpg"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                aria-label="Looping illustration of Indian food systems and landscapes"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
         </div>
-      </ParallaxBanner>
+      </section>
 
       {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
       <section className="relative bg-cream">
