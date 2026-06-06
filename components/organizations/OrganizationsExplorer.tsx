@@ -624,7 +624,19 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                   {TYPE_ORDER.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select></label>
               <label className="og-field"><span>Website</span>
-                <input value={f.website} onChange={(e) => up("website", e.target.value)} placeholder="https://example.org" inputMode="url" /></label>
+                <div className="og-affix">
+                  <span className="og-affix-pre">https://</span>
+                  <input
+                    className="og-affix-in"
+                    value={f.website.replace(/^https?:\/\//i, "")}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/^https?:\/\//i, "");
+                      up("website", v ? `https://${v}` : "");
+                    }}
+                    placeholder="example.org"
+                    inputMode="url"
+                  />
+                </div></label>
             </div>
 
             {/* Work locations — one org can work in many places. */}
@@ -648,7 +660,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                   >×</button>
                 </div>
               ))}
-              <button type="button" className="og-add-loc" onClick={addLoc}>+ Add another location</button>
+              <button type="button" className="og-add-loc" onClick={addLoc}>Add another location</button>
             </div>
 
             <label className="og-field"><span>Domains (comma-separated)</span>
@@ -733,13 +745,14 @@ function Styles() {
       .og-loc-head > span:first-child { font-size:12.5px; font-weight:600; color:var(--ink); }
       .og-loc-hint { font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
       .og-loc-row { display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center; }
-      .og-loc-in { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; background:#fff; }
-      .og-loc-in:focus { outline:none; border-color:var(--td); box-shadow:0 0 0 3px rgba(45,117,116,.16); }
-      .og-loc-del { width:30px; height:30px; flex:0 0 auto; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
+      .og-loc-in { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--cream); transition:background .15s, border-color .15s; }
+      .og-loc-in:focus { outline:none; border-color:var(--td); background:#fff; }
+      .og-loc-del { width:34px; height:34px; flex:0 0 auto; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
       .og-loc-del:hover:not(:disabled) { color:#B85042; border-color:#B85042; }
       .og-loc-del:disabled { opacity:.35; cursor:not-allowed; }
-      .og-add-loc { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--td); background:none; border:1px dashed rgba(45,117,116,.4); border-radius:8px; padding:7px 12px; cursor:pointer; transition:background .15s; }
-      .og-add-loc:hover { background:rgba(45,117,116,.06); }
+      /* Quiet ghost action (Skiff "Skip for now" register). */
+      .og-add-loc { font-family:inherit; font-size:13px; color:var(--td); background:none; border:0; padding:6px 0; cursor:pointer; transition:color .15s; }
+      .og-add-loc:hover { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
       /* detail panel */
       .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius:12px; padding:14px 16px; margin:6px 0 16px; }
       .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
@@ -803,16 +816,26 @@ function Styles() {
       .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius:10px; padding:4px; margin-bottom:16px; }
       .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius:7px; background:none; cursor:pointer; color:var(--muted); }
       .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
-      .og-field { display:flex; flex-direction:column; gap:4px; margin-bottom:11px; }
+      .og-field { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
       .og-field > span { font-size:11.5px; color:var(--muted); }
-      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:13.5px; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+      /* Soft, calm form inputs (Skiff register) — distinct from the sharp data inputs. */
+      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius:11px; background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
+      .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:#fff; }
+      /* Inline affix input (https:// prefix). */
+      .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius:11px; background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
+      .og-affix:focus-within { border-color:var(--td); background:#fff; }
+      .og-affix-pre { display:inline-flex; align-items:center; padding:0 4px 0 13px; font-size:14px; color:var(--muted); }
+      .og-affix-in { flex:1; min-width:0; border:0; background:transparent; padding:11px 13px 11px 2px; font-family:inherit; font-size:14px; color:var(--ink); }
+      .og-affix-in:focus { outline:none; }
       .og-row { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
-      .og-pii { border-top:1px dashed var(--line); margin-top:8px; padding-top:14px; }
+      .og-pii { border-top:1px solid var(--line); margin-top:10px; padding-top:16px; }
       .og-pii-label { font-size:11.5px; color:#b5793a; margin-bottom:8px; }
-      .og-err { color:#b3261e; font-size:12.5px; margin:4px 0; }
-      .og-submit { width:100%; margin-top:10px; font-family:var(--font-jetbrains),monospace; font-size:12px; text-transform:uppercase; letter-spacing:.08em;
-        padding:14px; border-radius:6px; border:0; cursor:pointer; background:var(--td); color:#fff; }
-      .og-submit:disabled { opacity:.6; }
+      .og-err { color:#b3261e; font-size:13px; margin:4px 0; }
+      .og-submit { width:100%; margin-top:12px; font-family:inherit; font-size:14px; font-weight:500; letter-spacing:-.01em;
+        padding:13px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:background .15s, transform .15s; }
+      .og-submit:hover:not(:disabled) { background:#2e7573; }
+      .og-submit:active:not(:disabled) { transform:scale(.99); }
+      .og-submit:disabled { opacity:.5; }
       .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }
       .og-thanks { text-align:center; padding:20px 0; }
       .og-thanks h2 { font-family:var(--font-fraunces),Georgia,serif; font-size:26px; margin-bottom:8px; }
