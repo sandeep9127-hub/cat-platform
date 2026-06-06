@@ -291,7 +291,7 @@ function TopCategoriesBar({
   const top = topCategories.slice(0, 4);
   const max = Math.max(...top.map((c) => c.total), 1);
   return (
-    <div className="mt-7 border-l-2 border-amber-deep pl-5">
+    <div className="mt-7 pt-5 border-t border-line">
       <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold block mb-3">
         Top intervention categories by spend
       </span>

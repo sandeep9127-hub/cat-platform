@@ -131,7 +131,7 @@ export function LandscapeAsk({
                     {m.citations.map((c) => (
                       <li
                         key={c.index}
-                        className="border-l-2 border-line-soft pl-3 text-[13px] leading-[1.5]"
+                        className="border-l border-line-soft pl-3 text-[13px] leading-[1.5]"
                       >
                         <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-amber-deep">
                           [{c.index}] · {c.kind.replace(/_/g, " ")}
@@ -186,24 +186,24 @@ export function LandscapeAsk({
       </div>
 
       <aside className="flex flex-col gap-6">
-        <div className="border-l-2 border-amber-deep pl-4">
-          <span className="eyebrow block mb-2">This session</span>
+        <div className="rounded-[2px] border border-line bg-paper p-4">
+          <span className="eyebrow flex items-center gap-2 mb-2"><span className="w-2 h-2 bg-amber-deep shrink-0" aria-hidden />This session</span>
           <p className="text-[13.5px] text-ink-soft leading-[1.55]">
             {left > 0
               ? `${left} of ${MAX_TURNS} turns remaining.`
               : "Session capped. Refresh to start a new one."}
           </p>
         </div>
-        <div className="border-l-2 border-teal pl-4">
-          <span className="eyebrow block mb-2">What it knows</span>
+        <div className="rounded-[2px] border border-line bg-paper p-4">
+          <span className="eyebrow flex items-center gap-2 mb-2"><span className="w-2 h-2 bg-teal shrink-0" aria-hidden />What it knows</span>
           <ul className="list-none p-0 m-0 flex flex-col gap-1.5 text-[13.5px] text-ink-soft leading-[1.55]">
             <li>The {landscapeName} investment plan (narrative + interventions)</li>
             <li>Budget package summaries</li>
             <li>Citation by passage, never invented</li>
           </ul>
         </div>
-        <div className="border-l-2 border-line-soft pl-4">
-          <span className="eyebrow block mb-2">What it won&apos;t</span>
+        <div className="rounded-[2px] border border-line bg-paper p-4">
+          <span className="eyebrow flex items-center gap-2 mb-2"><span className="w-2 h-2 bg-muted shrink-0" aria-hidden />What it won&apos;t</span>
           <ul className="list-none p-0 m-0 flex flex-col gap-1.5 text-[13.5px] text-ink-soft leading-[1.55]">
             <li>Compare other landscapes</li>
             <li>Quote unindexed numbers</li>
