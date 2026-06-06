@@ -193,7 +193,7 @@ export default async function LandingPage() {
                 playsInline
                 preload="auto"
                 aria-label="Looping illustration of Indian food systems and landscapes"
-                className="absolute inset-0 w-full h-full object-cover object-[64%_42%] scale-[1.14]"
+                className="absolute inset-0 w-full h-full object-cover object-[72%_44%] scale-[1.55]"
               />
               {/* Caption — grounds the frame, fills the base */}
               <div className="absolute inset-x-0 bottom-0 px-4 pb-3.5 pt-10 bg-gradient-to-t from-ink/70 via-ink/30 to-transparent">
