@@ -207,22 +207,24 @@ export function ParallaxBanner({
       {hasMedia &&
         (isHero ? (
           <>
-            {/* Warm flare bloom upper-left — looks like sun catching the scene */}
+            {/* Warm flare bloom — kept over the illustration (right) and away
+                from the headline so it doesn't wash the text out. */}
             <div
               aria-hidden
               className="absolute inset-0 pointer-events-none mix-blend-screen"
               style={{
                 background:
-                  "radial-gradient(ellipse 60% 70% at 12% 18%, rgba(255,214,140,0.42), transparent 60%), radial-gradient(ellipse 50% 60% at 88% 24%, rgba(146,156,197,0.18), transparent 65%)",
+                  "radial-gradient(ellipse 55% 65% at 84% 22%, rgba(255,214,140,0.28), transparent 62%), radial-gradient(ellipse 48% 60% at 94% 32%, rgba(146,156,197,0.14), transparent 65%)",
               }}
             />
-            {/* Side and bottom darkening for text legibility, plus page blend */}
+            {/* Strong left scrim so the white headline reads on the light
+                illustration; fades to clear over the artwork, plus bottom blend. */}
             <div
               aria-hidden
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(26,38,37,0.0) 0%, rgba(26,38,37,0.20) 55%, rgba(26,38,37,0.78) 100%), linear-gradient(90deg, rgba(26,38,37,0.55) 0%, rgba(26,38,37,0.05) 45%, rgba(26,38,37,0.05) 70%, rgba(26,38,37,0.35) 100%)",
+                  "linear-gradient(180deg, rgba(26,38,37,0.0) 0%, rgba(26,38,37,0.16) 55%, rgba(26,38,37,0.72) 100%), linear-gradient(90deg, rgba(26,38,37,0.78) 0%, rgba(26,38,37,0.6) 26%, rgba(26,38,37,0.22) 50%, rgba(26,38,37,0.04) 70%, rgba(26,38,37,0.28) 100%)",
               }}
             />
             {/* Page blend at the very bottom: fades video into paper, so the section doesn't read as pasted-in */}
