@@ -75,8 +75,8 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
                 {eyebrow.map((e, i) => <span key={i}>{i > 0 && <span className="text-muted mr-2.5">/</span>}{e}</span>)}
               </div>
             )}
-            <h1 className="font-serif text-[40px] sm:text-[52px] font-normal tracking-[-0.025em] leading-[1.03] text-ink mt-4 max-w-[16ch]">{s.title}</h1>
-            {s.one_liner && <p className="font-serif italic text-[19px] text-ink-soft leading-[1.5] mt-5 max-w-[52ch] font-light">{s.one_liner}</p>}
+            <h1 className="font-sans font-semibold text-[clamp(34px,4.6vw,60px)] tracking-[-0.04em] leading-[1.0] text-ink mt-4 max-w-[18ch]">{s.title}</h1>
+            {s.one_liner && <p className="text-[18px] text-ink-soft leading-[1.5] mt-5 max-w-[54ch] tracking-[-0.01em]">{s.one_liner}</p>}
 
             {s.summary && (
               <Section title="What it is">

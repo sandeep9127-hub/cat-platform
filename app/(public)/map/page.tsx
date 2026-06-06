@@ -147,14 +147,10 @@ export default async function MapPage({
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">The open library</span>
-          <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-            Solutions{" "}
-            <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>
-              Atlas
-            </em>
-            .
+          <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4">
+            Solutions <span className="text-teal">Atlas</span>.
           </h1>
-          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
+          <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[54ch] mt-6">
             Every food-systems programme on the Hub, plotted on India. Each dot is an
             auto-compiled, source-verified fact sheet. This is the open library,
             complementary to CAT&apos;s eleven{" "}

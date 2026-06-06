@@ -124,7 +124,7 @@ export function BrandBar() {
           {/* Ask — single highlighted entry point (replaces the old floating widget) */}
           <Link
             href="/agent"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-[4px] bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
           >
             <MessageCircle size={12} strokeWidth={2} aria-hidden />
             Ask the Hub
@@ -186,7 +186,7 @@ export function BrandBar() {
             <Link
               href="/agent"
               onClick={() => setOpen(false)}
-              className="mt-3 inline-flex font-mono text-[11px] tracking-mono-mid uppercase px-4 py-2.5 rounded-[6px] bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo w-fit items-center gap-2"
+              className="mt-3 inline-flex font-mono text-[11px] tracking-mono-mid uppercase px-5 py-2.5 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo w-fit items-center gap-2"
             >
               <MessageCircle size={14} strokeWidth={2} aria-hidden />
               Ask the Hub

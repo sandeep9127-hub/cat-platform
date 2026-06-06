@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { CatLogo } from "./CatLogo";
 
 /**
  * Footer.
@@ -15,28 +16,14 @@ import { ArrowUpRight } from "lucide-react";
  */
 export function Footer() {
   return (
-    <footer className="relative text-cream pt-16 pb-8 mt-32 overflow-hidden bg-deep-teal">
-      {/* Layered editorial gradient: warm amber bloom top-left + cooler teal bottom-right */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-90"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 8% -10%, rgba(248,202,124,0.18), transparent 60%), radial-gradient(ellipse 70% 60% at 100% 110%, rgba(46,117,115,0.45), transparent 65%)",
-        }}
-      />
-      <div
-        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber to-transparent"
-        aria-hidden
-      />
-
+    <footer className="relative pt-16 pb-8 mt-32 bg-paper text-ink border-t border-rule">
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2.2fr_1fr_1fr_1fr] gap-10 lg:gap-12">
         <div>
-          {/* Light-variant CAT lockup */}
+          {/* CAT lockup */}
           <div className="flex items-start gap-4">
-            <CatLogoLight size={62} />
+            <CatLogo size={54} />
             <div className="pt-1">
-              <div className="font-sans font-semibold text-cream text-[15.5px] leading-[1.2] tracking-[-0.01em]">
+              <div className="font-sans font-semibold text-ink text-[15.5px] leading-[1.2] tracking-[-0.01em]">
                 Consortium for
                 <br />
                 Agroecological Transformations
@@ -45,7 +32,7 @@ export function Footer() {
                 href="https://www.agroecologyindia.org"
                 target="_blank"
                 rel="noreferrer"
-                className="group mt-3 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber hover:text-cream transition-colors"
+                className="group mt-3 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
               >
                 <span>agroecologyindia.org</span>
                 <ArrowUpRight
@@ -58,11 +45,10 @@ export function Footer() {
             </div>
           </div>
 
-          <h3 className="mt-9 font-sans text-[26px] sm:text-[30px] font-normal leading-[1.2] tracking-[-0.02em] max-w-[22ch]">
-            A quiet, <em className="text-amber not-italic font-medium italic">honest</em> record
-            of food systems work in India.
+          <h3 className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[20ch] text-ink">
+            A quiet, <span className="text-teal">honest</span> record of food systems work in India.
           </h3>
-          <p className="mt-4 text-[13px] leading-[1.6] text-cream/75 max-w-[40ch]">
+          <p className="mt-4 text-[13.5px] leading-[1.6] text-ink-soft max-w-[42ch]">
             Run by the Consortium for Agroecological Transformations. Open to contributions from
             credible food-systems organisations who can stand behind what they publish.
           </p>
@@ -93,11 +79,8 @@ export function Footer() {
       </div>
 
       <div className="relative max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
-        <div
-          className="h-px w-full bg-gradient-to-r from-transparent via-amber/50 to-transparent"
-          aria-hidden
-        />
-        <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-cream/50">
+        <div className="h-px w-full bg-line" aria-hidden />
+        <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-muted">
           <span>Transformation Hub · Vol. 01 · 2026</span>
           <span>Made in India · For food systems</span>
         </div>
@@ -117,8 +100,8 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber mb-3.5 font-semibold inline-flex items-center gap-2">
-        <span className="w-3 h-px bg-amber" />
+      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
+        <span className="w-3 h-px bg-amber-deep" />
         {title}
       </h4>
       <ul className="space-y-2.5 list-none p-0">
@@ -126,7 +109,7 @@ function FooterCol({
           <li key={l.href}>
             <Link
               href={l.href}
-              className="footer-link relative inline-block text-[13.5px] text-cream/85 hover:text-amber transition-colors"
+              className="footer-link relative inline-block text-[13.5px] text-ink-soft hover:text-teal transition-colors"
             >
               {l.label}
             </Link>
@@ -138,7 +121,7 @@ function FooterCol({
               href={l.href}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-1.5 text-[13.5px] text-cream/85 hover:text-amber transition-colors"
+              className="group inline-flex items-center gap-1.5 text-[13.5px] text-ink-soft hover:text-teal transition-colors"
             >
               <span>{l.label}</span>
               <ArrowUpRight

@@ -11,11 +11,11 @@ export function SectionHead({
 }) {
   return (
     <div className="max-w-page mx-auto mt-20 lg:mt-24 mb-7 px-5 sm:px-7 lg:px-10 flex items-baseline gap-4 sm:gap-7 flex-wrap">
-      <h2 className="font-serif text-[26px] sm:text-[30px] lg:text-[34px] font-normal tracking-[-0.015em] text-ink">
+      <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] tracking-[-0.035em] leading-[1.0] text-ink">
         {title}
-        {italic && <em className="not-italic italic text-teal font-normal"> {italic}</em>}
+        {italic && <span className="text-teal font-semibold"> {italic}</span>}
       </h2>
-      <span className="flex-1 h-px bg-line mt-[14px] sm:mt-[18px] hidden sm:block" />
+      <span className="flex-1 h-px bg-rule mt-[16px] sm:mt-[22px] hidden sm:block" />
       {meta && (
         <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-muted">{meta}</span>
       )}
