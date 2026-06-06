@@ -58,7 +58,7 @@ const config: Config = {
         "mono-wide": "0.18em",
       },
       maxWidth: {
-        page: "1280px",
+        page: "1200px",
         reading: "62ch",
       },
       transitionTimingFunction: {

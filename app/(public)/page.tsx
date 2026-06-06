@@ -186,9 +186,9 @@ export default async function LandingPage() {
         </div>
       </ParallaxBanner>
 
-      {/* HOW IT WORKS — flat cream, separated by the spreadsheet rule */}
-      <section className="relative bg-paper border-b border-rule">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-8 grid grid-cols-1 sm:grid-cols-3 gap-y-6">
+      {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
+      <section className="relative bg-cream">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-3 gap-y-8">
           {[
             {
               Icon: Sparkles,
@@ -249,7 +249,7 @@ export default async function LandingPage() {
       {/* ATLAS */}
       <Reveal>
         <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
-        <p className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 font-sans italic text-[16.5px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[58ch] font-light -mt-2 mb-4">
+        <p className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[60ch] tracking-[-0.01em] mt-3 mb-6">
           A national reading of credible food systems programmes. Each entry has been
           read against its sources before it lands here.
         </p>
@@ -265,7 +265,7 @@ export default async function LandingPage() {
       {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
           Each category's colour IS its icon (a flat block). Counts pulled live
           from the Atlas; each cell deep-links into the filtered Atlas. */}
-      <Reveal as="section" className="bg-paper border-b border-rule">
+      <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten intervention areas

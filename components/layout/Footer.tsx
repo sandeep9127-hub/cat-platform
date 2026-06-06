@@ -16,7 +16,7 @@ import { CatLogo } from "./CatLogo";
  */
 export function Footer() {
   return (
-    <footer className="relative pt-16 pb-8 mt-32 bg-paper text-ink border-t border-rule">
+    <footer className="relative pt-16 pb-8 mt-24 bg-cream text-ink border-t border-line">
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2.2fr_1fr_1fr_1fr] gap-10 lg:gap-12">
         <div>
           {/* CAT lockup */}

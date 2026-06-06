@@ -13,7 +13,7 @@ const TICK = ["#2E7573", "#C68C2E", "#5C6796", "#5C8C2E"];
 
 export function StatStrip({ stats }: { stats: Stat[] }) {
   return (
-    <section className="max-w-page mx-auto mt-14 mb-2 px-5 sm:px-7 lg:px-10">
+    <section className="max-w-page mx-auto pt-16 lg:pt-20 px-5 sm:px-7 lg:px-10">
       <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-4">
         The library at a glance
       </div>
