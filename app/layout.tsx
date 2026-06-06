@@ -1,28 +1,19 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { JetBrains_Mono, Fraunces } from "next/font/google";
+import { JetBrains_Mono, Fraunces, Schibsted_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
 /**
- * Inter variable (opsz, wght) served locally from /public/fonts/inter.
- * Open-source under the SIL Open Font License. Inter is now the sitewide
- * typeface: it is wired as BOTH the sans and the serif token so every
- * `font-serif` and `font-sans` Tailwind class resolves to Inter.
+ * Schibsted Grotesk — the sitewide sans / UI / body face. An editorial
+ * grotesque built for newsroom + interface use; it gives the broadsheet,
+ * research-journal authority we want and pairs cleanly under Fraunces.
+ * Kept on the existing `--font-inter` token so every `font-sans` resolves to it
+ * without touching markup across the app. (Replaces Inter.)
  */
-const inter = localFont({
-  src: [
-    {
-      path: "../public/fonts/inter/Inter-Variable.ttf",
-      style: "normal",
-      weight: "100 900",
-    },
-    {
-      path: "../public/fonts/inter/Inter-Italic-Variable.ttf",
-      style: "italic",
-      weight: "100 900",
-    },
-  ],
+const inter = Schibsted_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-inter",
   display: "swap",
 });
@@ -78,8 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${inter.variable} ${jetbrains.variable} ${fraunces.variable}`}
-      // Inter stays the sans/body face; Fraunces now drives every `font-serif`
-      // heading (the editorial "research journal" direction).
+      // Schibsted Grotesk is the sans/body face; Fraunces drives every
+      // `font-serif` heading (the editorial "research journal" direction).
       style={{ ["--font-fraunces" as string]: `var(--font-fraunces-real)` }}
     >
       <body className="min-h-dvh font-sans">
