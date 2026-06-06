@@ -110,7 +110,7 @@ export default async function LandingPage() {
               style={{ animationDelay: "100ms" }}
             >
               What&apos;s actually working in India&apos;s{" "}
-              <span className="text-amber-deep">food systems</span>.
+              <span className="text-teal">food systems</span>.
             </h1>
 
             <p

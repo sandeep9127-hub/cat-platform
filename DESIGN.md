@@ -43,9 +43,8 @@ OKLCH-minded, every neutral tinted warm. Never `#000` / `#fff`.
 | `--amber-deep` | `#946616` | **Amber text on light surfaces** (eyebrow labels, hero highlight) |
 
 **Strategy: restrained.** Tinted neutrals carry the page; teal is the single
-working accent (CTA, links); amber is the one highlight/alert colour. The hero
-headline highlights "food systems" in `--amber-deep` against ink — teal and
-amber complement, never compete.
+working accent (CTA, links, the hero "food systems" highlight) and ties directly
+to the parent brand teal; amber is held back as the one highlight/alert fill.
 
 ## Typography
 
