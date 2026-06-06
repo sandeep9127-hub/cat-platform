@@ -309,6 +309,32 @@ export async function getFactSheet(slug: string): Promise<FactSheetRow | null> {
   return (r as unknown as { rows: FactSheetRow[] }).rows[0] ?? null;
 }
 
+export type PrincipleSolution = { slug: string; title: string; state: string | null };
+
+/**
+ * Map each agroecology-principle slug → the published solutions that advance it,
+ * by unnesting principle_alignment. Powers the "solutions for this principle"
+ * list on the /principles page.
+ */
+export async function solutionsByPrinciple(): Promise<Record<string, PrincipleSolution[]>> {
+  const r = await db.execute(sql`
+    SELECT slug, title, state_code, principle_alignment
+    FROM "cat".solution_factsheets WHERE status = 'published'
+    ORDER BY title
+  `);
+  const rows = (r as unknown as {
+    rows: { slug: string; title: string; state_code: string | null; principle_alignment: unknown }[];
+  }).rows;
+  const out: Record<string, PrincipleSolution[]> = {};
+  for (const row of rows) {
+    const ps = Array.isArray(row.principle_alignment) ? (row.principle_alignment as string[]) : [];
+    for (const p of ps) {
+      (out[p] ??= []).push({ slug: row.slug, title: row.title, state: row.state_code });
+    }
+  }
+  return out;
+}
+
 /**
  * Count published fact sheets per intervention-category slug, by unnesting the
  * `themes` array. This is what powers the landing-page category tiles AND the

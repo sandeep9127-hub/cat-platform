@@ -35,7 +35,13 @@ const LEVEL_CHIP = {
   food: { dot: "#b5793a", text: "#9a6526" },
 };
 
-export function PrinciplesExplorer() {
+type SolLink = { slug: string; title: string; state: string | null };
+
+export function PrinciplesExplorer({
+  solutions = {},
+}: {
+  solutions?: Record<string, SolLink[]>;
+}) {
   const [selected, setSelected] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -173,6 +179,7 @@ export function PrinciplesExplorer() {
         <aside className="ae-detail-wrap">
           <Detail
             principle={selP}
+            linked={selP ? solutions[selP.slug] ?? [] : []}
             onPrev={() => go(-1)}
             onNext={() => go(1)}
             onClose={() => setSelected(null)}
@@ -187,11 +194,13 @@ export function PrinciplesExplorer() {
 
 function Detail({
   principle,
+  linked,
   onPrev,
   onNext,
   onClose,
 }: {
   principle: Principle | null;
+  linked: SolLink[];
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
@@ -290,6 +299,35 @@ function Detail({
 
       {/* Grounded "read more" — answers from the HLPE report on demand */}
       <PrincipleAsk principle={principle} />
+
+      {/* Solutions on the Atlas that advance this principle */}
+      {linked.length > 0 && (
+        <div className="ae-sol">
+          <div className="ae-sol-head">
+            <span className="ae-sol-title">Solutions advancing this principle</span>
+            <span className="ae-sol-count">{linked.length}</span>
+          </div>
+          <ul className="ae-sol-list">
+            {linked.slice(0, 6).map((s) => (
+              <li key={s.slug}>
+                <Link href={`/factsheet/${s.slug}`} className="ae-sol-item">
+                  <span className="ae-sol-name">{s.title}</span>
+                  {s.state ? <span className="ae-sol-state">{s.state}</span> : null}
+                  <span className="ae-sol-arrow" aria-hidden>→</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {linked.length > 6 && (
+            <Link
+              href={principle ? `/map?principle=${principle.slug}` : "/map"}
+              className="ae-sol-more"
+            >
+              See all {linked.length} on the Atlas →
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className="ae-detail-nav">
         <button onClick={onPrev} className="ae-navbtn">
@@ -546,6 +584,19 @@ function Styles() {
       .ae-ask-cite:hover { text-decoration: underline; }
       .ae-ask-again { margin-top: 12px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: rgba(31,38,31,.55); background: none; border: 0; cursor: pointer; padding: 0; }
       .ae-ask-again:hover { color: var(--ae-forest); }
+      /* solutions advancing this principle */
+      .ae-sol { margin: 4px 0 22px; padding-top: 18px; border-top: 1px solid rgba(31,38,31,.12); }
+      .ae-sol-head { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+      .ae-sol-title { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; color: rgba(31,38,31,.6); }
+      .ae-sol-count { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-cream); background: var(--ae-forest); border-radius: 999px; min-width: 20px; height: 18px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
+      .ae-sol-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+      .ae-sol-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px; border: 1px solid rgba(31,38,31,.12); text-decoration: none; color: var(--ae-ink); transition: border-color 150ms ease, transform 150ms ease, background 150ms ease; }
+      .ae-sol-item:hover { border-color: var(--ae-forest); background: rgba(95,141,62,.05); transform: translateX(2px); }
+      .ae-sol-name { font-size: 13.5px; line-height: 1.3; font-weight: 500; flex: 1 1 auto; }
+      .ae-sol-state { font-family: var(--font-jetbrains), monospace; font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: rgba(31,38,31,.5); flex: 0 0 auto; }
+      .ae-sol-arrow { color: var(--ae-forest); flex: 0 0 auto; font-size: 14px; }
+      .ae-sol-more { display: inline-block; margin-top: 10px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--ae-forest); text-decoration: none; }
+      .ae-sol-more:hover { text-decoration: underline; }
       .ae-detail-nav { display: flex; gap: 10px; margin-bottom: 22px; }
       .ae-navbtn { flex: 1; padding: 11px 14px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(31,38,31,.18); background: none; color: var(--ae-ink); font-family: inherit; font-size: 14px; font-weight: 500; transition: all 150ms; }
       .ae-navbtn:hover { background: var(--ae-forest); color: var(--ae-cream); border-color: var(--ae-forest); }
