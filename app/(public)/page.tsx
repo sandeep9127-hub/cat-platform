@@ -134,9 +134,9 @@ export default async function LandingPage() {
             the left — the text sits over it, so dark type stays legible. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/videos/hero-poster.jpg"
+          src="/hero-still.png"
           alt="Hand-illustrated map of India's food landscapes"
-          className="absolute inset-0 w-full h-full object-cover object-[58%_center] select-none pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover object-[62%_center] select-none pointer-events-none"
         />
         {/* Cream wash on the left for text legibility; fades to reveal the art. */}
         <div
