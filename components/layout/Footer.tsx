@@ -83,7 +83,7 @@ export function Footer() {
       <div className="relative max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
         <div className="h-px w-full bg-line" aria-hidden />
         <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-muted">
-          <span>Transformation Hub · Vol. 01 · 2026</span>
+          <span>Transformation Hub · 2026</span>
           <span>Made in India · For food systems</span>
         </div>
       </div>
