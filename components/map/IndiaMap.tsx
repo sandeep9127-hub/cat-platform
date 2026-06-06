@@ -39,11 +39,13 @@ type Props = {
   /** External source of truth for the active state (overrides internal lock). */
   activeState?: string | null;
   className?: string;
+  /** Hero mode: drop the card chrome so the map sits directly on the page. */
+  bare?: boolean;
 };
 
 type StateFeature = GeoJSON.Feature<GeoJSON.Geometry, { st_code?: string; ST_NM?: string; STNAME?: string; NAME_1?: string }>;
 
-export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className }: Props) {
+export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className, bare = false }: Props) {
   const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [lockedState, setLockedState] = useState<string | null>(null);
@@ -117,16 +119,28 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
   return (
     <div
       ref={wrapRef}
-      className={`relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[10px] overflow-hidden ${className ?? ""}`}
-      style={{
-        background:
-          "radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,0.65), transparent 70%), linear-gradient(180deg, rgba(248,243,232,1) 0%, rgba(244,237,221,0.85) 100%)",
-        boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 12px 32px -16px rgba(46,117,115,0.20)",
-      }}
+      className={
+        (bare
+          ? "relative p-0 aspect-[4/5] overflow-visible"
+          : "relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[10px] overflow-hidden") +
+        ` ${className ?? ""}`
+      }
+      style={
+        bare
+          ? undefined
+          : {
+              background:
+                "radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,0.65), transparent 70%), linear-gradient(180deg, rgba(248,243,232,1) 0%, rgba(244,237,221,0.85) 100%)",
+              boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 12px 32px -16px rgba(46,117,115,0.20)",
+            }
+      }
     >
-      <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none rounded-[6px]" />
+      {!bare && (
+        <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none rounded-[6px]" />
+      )}
 
       {/* Counter */}
+      {!bare && (
       <div
         className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-[8px] font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
         style={{
@@ -147,6 +161,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         <span className="text-teal-soft hidden lg:inline">·</span>
         <span className="hidden lg:inline">2026</span>
       </div>
+      )}
 
       {/* Filter chip */}
       {activeState && (
@@ -174,6 +189,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       )}
 
       {/* Legend */}
+      {!bare && (
       <div
         className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
         style={{
@@ -186,6 +202,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
           Solution
         </div>
       </div>
+      )}
 
       {/* SVG */}
       <svg

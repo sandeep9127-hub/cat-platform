@@ -2,7 +2,6 @@ import {
   getOverviewCounts,
   getPublishedEntries,
 } from "@/lib/db/queries";
-import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets, getCategoryCounts } from "@/lib/factsheet/generate";
 import { CATEGORIES } from "@/lib/data/categories";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -26,7 +25,8 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
-import { HeroFilm } from "@/components/home/HeroFilm";
+import { IndiaMap } from "@/components/map/IndiaMap";
+import { ApproachFilm } from "@/components/home/ApproachFilm";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -87,69 +87,34 @@ export default async function LandingPage() {
     mapEntries.map((e) => e.stateCode).filter(Boolean)
   ).size;
 
-  const THEME_COLOURS_HOME: Record<string, string> = {
-    "soil-and-land": "#8C7A5C",
-    water: "#2C7BD0",
-    "seeds-and-biodiversity": "#5C8C2E",
-    "farmer-livelihoods": "#C68C2E",
-    nutrition: "#C24A2E",
-    "climate-resilience": "#2E7573",
-    "markets-and-value-chains": "#2EA37A",
-    "policy-and-finance": "#334B4A",
-    "knowledge-and-capacity": "#5C6796",
-    "women-and-collectives": "#929CC5",
-  };
-  const prettyThemeHome = (slug: string): string =>
-    slug.split("-").map((w) => (w[0]?.toUpperCase() ?? "") + w.slice(1)).join(" ");
-
-  const listEntries = factsheets.map((f, i) => ({
-    id: f.slug,
-    slug: f.slug,
-    index: i + 1,
-    total: combinedTotal,
-    title: f.title,
-    tagline: f.one_liner ?? f.summary ?? "",
-    stateName: f.district ?? f.state_code ?? "—",
-    startYear: f.start_year ?? new Date(f.updated_at).getFullYear(),
-    endYear: null,
-    scaleBand: f.scale_band ?? "multi_district",
-    catEndorsement: "none" as const,
-    themes: (f.themes ?? []).slice(0, 2).map((t) => ({
-      slug: t,
-      name: prettyThemeHome(t),
-      colourHex: THEME_COLOURS_HOME[t] ?? "#334B4A",
-    })),
-    internalHref: `/factsheet/${f.slug}`,
-    sourceName: f.source_name ?? "",
-  }));
 
   const lastUpdate =
     entries[0]?.lastReviewedAt ?? entries[0]?.publishedDate ?? new Date();
 
   return (
     <>
-      {/* HERO — film stage: broadsheet type on cream, then the CAT film as a
-          large contained 16:9 player (YouTube facade, click-to-play). */}
+      {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
+          calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-16 lg:pb-20">
-          <div className="max-w-[60ch]">
-            <div className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-10 lg:gap-12 items-center">
+          {/* Left — headline panel */}
+          <div className="order-2 lg:order-1">
+            <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
               <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
-              Vol. 01 · Edition 2026
-              <span className="w-1 h-1 rounded-full bg-amber-deep" />
               Updated{" "}
               {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </div>
 
             <h1
-              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(38px,5vw,76px)] reveal-stagger"
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
               style={{ animationDelay: "100ms" }}
             >
-              What&apos;s actually working in India&apos;s food systems.
+              What&apos;s actually working in India&apos;s{" "}
+              <span className="text-amber-deep">food systems</span>.
             </h1>
 
             <p
-              className="mt-6 max-w-[56ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
+              className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
               A living atlas of credible programmes from across the country, each compiled
@@ -172,23 +137,23 @@ export default async function LandingPage() {
                 The 11 landscapes
               </Link>
             </div>
+
+            <div className="mt-9 pt-6 border-t border-line/80 flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger max-w-[44ch]" style={{ animationDelay: "480ms" }}>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
+              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
+            </div>
           </div>
 
-          {/* The film stage */}
-          <div className="mt-10 lg:mt-12 reveal-stagger" style={{ animationDelay: "440ms" }}>
-            <HeroFilm videoId="8XQ-Bv_mBAE" title="Cultivating Tomorrow — Scaling Agroecology for India" />
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-2">
-                <span className="w-3.5 h-px bg-amber-deep" />
-                Cultivating Tomorrow · A film by the Consortium for Agroecological Transformations
-              </span>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
-                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
-                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
-                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
-              </div>
-            </div>
+          {/* Right — the live Solutions Atlas (pins animate in on load) */}
+          <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "200ms" }}>
+            <IndiaMap
+              entries={mapEntries}
+              totalProgrammes={combinedTotal}
+              totalStates={combinedStateCount}
+              bare
+            />
           </div>
         </div>
       </section>
@@ -241,21 +206,33 @@ export default async function LandingPage() {
         </div>
       </section>
 
-
-      {/* ATLAS */}
-      <Reveal>
-        <SectionHead title="Solutions" italic="Atlas" meta="Hover or tap a state to filter" />
-        <p className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[60ch] tracking-[-0.01em] mt-3 mb-6">
-          A national reading of credible food systems programmes. Each entry has been
-          read against its sources before it lands here.
-        </p>
-        <AtlasSection
-          mapEntries={mapEntries}
-          listEntries={listEntries}
-          totalStates={combinedStateCount}
-          cap={4}
-          readMoreHref="/map"
-        />
+      {/* THE APPROACH — short film from the Consortium, lazy-loaded facade */}
+      <Reveal as="section" className="bg-paper border-t border-line">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-center">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
+              The approach
+            </div>
+            <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] leading-[1.04] tracking-[-0.03em] text-ink max-w-[16ch]">
+              Know more about the work behind the Atlas.
+            </h2>
+            <p className="mt-4 max-w-[46ch] text-[15px] leading-[1.6] text-ink-soft">
+              The Consortium for Agroecological Transformations works across India to put
+              farmers, soil, and food systems at the centre. Watch the short film on what
+              that looks like on the ground.
+            </p>
+            <a
+              href="https://www.agroecologyindia.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-[14px] text-ink underline underline-offset-4 decoration-line hover:decoration-ink transition-colors"
+            >
+              Visit agroecologyindia.org
+              <ArrowUpRight size={15} strokeWidth={2} aria-hidden />
+            </a>
+          </div>
+          <ApproachFilm />
+        </div>
       </Reveal>
 
       {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
@@ -264,13 +241,13 @@ export default async function LandingPage() {
       <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
-            Ten intervention areas
+            Ten themes
           </div>
           <h2 className="font-sans font-semibold text-[clamp(32px,4vw,52px)] leading-[1.0] tracking-[-0.035em] text-ink max-w-[18ch]">
-            Explore by what it does.
+            Explore solutions by theme.
           </h2>
           <p className="mt-4 max-w-[60ch] text-[15px] leading-[1.6] text-ink-soft">
-            Every solution in the Atlas is tagged to one or more of these ten categories.
+            Every solution in the Atlas is tagged to one or more of these ten themes.
             The counts update as the Atlas grows.
           </p>
         </div>

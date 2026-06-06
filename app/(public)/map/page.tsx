@@ -4,6 +4,7 @@ import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
 import { Layers, Compass } from "lucide-react";
+import { categoryIconFor } from "@/components/ui/CategoryIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -214,6 +215,7 @@ export default async function MapPage({
             {CATEGORIES.map((c) => {
               const active = activeCategory === c.slug;
               const n = categoryCounts[c.slug] ?? 0;
+              const Icon = categoryIconFor(c.slug);
               return (
                 <Link
                   key={c.slug}
@@ -233,9 +235,11 @@ export default async function MapPage({
                       : ({ ["--c" as string]: c.colourHex } as React.CSSProperties)
                   }
                 >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ background: active ? "rgba(255,255,255,0.85)" : c.colourHex }}
+                  <Icon
+                    size={13}
+                    strokeWidth={1.8}
+                    className="shrink-0"
+                    style={{ color: active ? "rgba(255,255,255,0.92)" : c.colourHex }}
                     aria-hidden
                   />
                   {c.short}
@@ -272,9 +276,16 @@ export default async function MapPage({
                   }
                   style={active ? { background: tint, borderColor: tint } : undefined}
                 >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ background: active ? "rgba(255,255,255,0.85)" : tint }}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/images/principle-icons/p${p.n}.png?v=4`}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className={
+                      "shrink-0 w-4 h-4 object-contain " +
+                      (active ? "rounded-full bg-paper/95 p-[1px]" : "")
+                    }
                     aria-hidden
                   />
                   {p.title}
