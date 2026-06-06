@@ -287,8 +287,8 @@ export default async function LandingPage() {
                 className="group bg-paper p-5 flex flex-col gap-3 min-h-[132px] hover:bg-cream transition-colors active:scale-[0.99]"
                 style={{ transition: "background-color 150ms, transform 150ms" }}
               >
-                {/* flat colour block = the category's icon (Equals data-cell) */}
-                <span className="block w-9 h-2.5" style={{ background: t.colourHex }} aria-hidden />
+                {/* category icon, in the category colour */}
+                <t.Icon size={24} strokeWidth={1.7} style={{ color: t.colourHex }} aria-hidden />
                 <h3 className="font-sans text-[16px] font-semibold tracking-[-0.02em] text-ink leading-[1.18]">
                   {t.short}
                 </h3>

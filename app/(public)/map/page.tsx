@@ -200,7 +200,7 @@ export default async function MapPage({
               href={hrefWith({ category: null })}
               aria-current={!activeCategory ? "true" : undefined}
               className={
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo" +
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
                 (!activeCategory
                   ? "bg-deep-teal text-paper border-deep-teal"
                   : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
@@ -220,7 +220,7 @@ export default async function MapPage({
                   href={hrefWith({ category: active ? null : c.slug })}
                   aria-current={active ? "true" : undefined}
                   className={
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo" +
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
                     (active
                       ? "text-paper"
                       : n === 0
@@ -263,7 +263,7 @@ export default async function MapPage({
                   href={hrefWith({ principle: active ? null : p.slug })}
                   aria-current={active ? "true" : undefined}
                   className={
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo" +
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
                     (active
                       ? "text-paper"
                       : n === 0
