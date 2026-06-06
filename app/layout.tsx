@@ -1,39 +1,20 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Fraunces, Schibsted_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
 /**
- * Schibsted Grotesk — the sitewide sans / UI / body face. An editorial
- * grotesque built for newsroom + interface use; it gives the broadsheet,
- * research-journal authority we want and pairs cleanly under Fraunces.
- * Kept on the existing `--font-inter` token so every `font-sans` resolves to it
- * without touching markup across the app. (Replaces Inter.)
+ * Inter variable (opsz, wght) served locally. Per request, Inter is the SINGLE
+ * sitewide typeface: the sans, serif, and mono tokens all resolve to it (see
+ * the html style block below), so every font-sans / font-serif / font-mono
+ * class renders in Inter without touching markup across the app.
  */
-const inter = Schibsted_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
+const inter = localFont({
+  src: [
+    { path: "../public/fonts/inter/Inter-Variable.ttf", style: "normal", weight: "100 900" },
+    { path: "../public/fonts/inter/Inter-Italic-Variable.ttf", style: "italic", weight: "100 900" },
+  ],
   variable: "--font-inter",
-  display: "swap",
-});
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
-});
-
-/**
- * Fraunces — a real display serif for the editorial "research journal" look.
- * Wired to the existing `--font-fraunces` token so every `font-serif` heading
- * across the site renders in Fraunces without touching markup.
- */
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces-real",
   display: "swap",
 });
 
@@ -68,10 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrains.variable} ${fraunces.variable}`}
-      // Schibsted Grotesk is the sans/body face; Fraunces drives every
-      // `font-serif` heading (the editorial "research journal" direction).
-      style={{ ["--font-fraunces" as string]: `var(--font-fraunces-real)` }}
+      className={inter.variable}
+      // Single typeface: point the serif and mono tokens at Inter too, so
+      // font-serif and font-mono both resolve to Inter sitewide.
+      style={{
+        ["--font-fraunces" as string]: `var(--font-inter)`,
+        ["--font-jetbrains" as string]: `var(--font-inter)`,
+      }}
     >
       <body className="min-h-dvh font-sans">
         {/* Public chrome (BrandBar/Footer/FloatingAsk) lives in
