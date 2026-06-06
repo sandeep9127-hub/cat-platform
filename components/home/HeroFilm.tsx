@@ -36,8 +36,17 @@ export function HeroFilm({ videoId, title }: { videoId: string; title?: string }
             src={thumb}
             alt=""
             onError={() => setThumb(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`)}
+            onLoad={(e) => {
+              // maxresdefault returns a 120x90 grey placeholder (HTTP 200) when
+              // the video has no HD thumbnail, so onError never fires. Detect it
+              // and fall back to hqdefault, which always exists.
+              const img = e.currentTarget;
+              if (img.naturalWidth <= 121 && thumb.includes("maxresdefault")) {
+                setThumb(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`);
+              }
+            }}
             className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
+            loading="eager"
           />
           <span
             aria-hidden

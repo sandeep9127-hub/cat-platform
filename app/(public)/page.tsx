@@ -176,11 +176,11 @@ export default async function LandingPage() {
 
           {/* The film stage */}
           <div className="mt-10 lg:mt-12 reveal-stagger" style={{ animationDelay: "440ms" }}>
-            <HeroFilm videoId="8XQ-Bv_mBAE" title="The Consortium for Agroecological Transformations" />
+            <HeroFilm videoId="8XQ-Bv_mBAE" title="Cultivating Tomorrow — Scaling Agroecology for India" />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
               <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-2">
                 <span className="w-3.5 h-px bg-amber-deep" />
-                A film by the Consortium for Agroecological Transformations
+                Cultivating Tomorrow · A film by the Consortium for Agroecological Transformations
               </span>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                 <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
