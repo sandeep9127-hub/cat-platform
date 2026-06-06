@@ -3,6 +3,7 @@ import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
+import { Layers, Compass } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -190,7 +191,8 @@ export default async function MapPage({
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-7 space-y-4">
         {/* Axis 1 — categories */}
         <nav aria-label="Filter the Atlas by intervention category">
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
+            <Layers size={11} strokeWidth={1.8} aria-hidden />
             By intervention
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -246,7 +248,8 @@ export default async function MapPage({
 
         {/* Axis 2 — agroecology principles */}
         <nav aria-label="Filter the Atlas by agroecology principle">
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
+            <Compass size={11} strokeWidth={1.8} aria-hidden />
             By agroecology principle
           </div>
           <div className="flex flex-wrap items-center gap-2">

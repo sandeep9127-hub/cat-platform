@@ -33,7 +33,7 @@ export type EntryListItemData = {
 export function EntryListItem({ data }: { data: EntryListItemData }) {
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
   const wrapperClass =
-    "block group border-b border-line-soft transition-colors hover:bg-teal-wash/40 focus-visible:bg-teal-wash/40 focus-visible:outline-none";
+    "block group border-b border-line transition-colors hover:bg-cream focus-visible:bg-cream focus-visible:outline-none";
   const body = (
     <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
         <div className="font-mono text-[10.5px] sm:text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
@@ -52,10 +52,10 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
             <span className="text-line">·</span>
             <span className="font-normal tracking-mono-mid">{yearRange}</span>
           </div>
-          <h3 className="font-serif text-[20px] sm:text-[22px] font-medium leading-[1.18] tracking-[-0.01em] text-ink mb-2 group-hover:text-teal transition-colors">
+          <h3 className="font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.14] tracking-[-0.025em] text-ink mb-2 group-hover:text-teal transition-colors">
             {data.title}
           </h3>
-          <p className="font-serif italic text-[15px] text-ink-soft leading-[1.45] max-w-[54ch] font-light">
+          <p className="text-[14.5px] text-ink-soft leading-[1.5] max-w-[58ch] tracking-[-0.01em]">
             {data.tagline}
           </p>
           <div className="flex gap-2 sm:gap-3.5 mt-3.5 items-center flex-wrap">
