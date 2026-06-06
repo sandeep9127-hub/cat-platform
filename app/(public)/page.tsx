@@ -226,7 +226,7 @@ export default async function LandingPage() {
               "linear-gradient(90deg, transparent 0%, rgba(46,117,115,0.45) 30%, rgba(248,202,124,0.55) 75%, transparent 100%)",
           }}
         />
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-7 grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-7 grid grid-cols-1 sm:grid-cols-3 gap-y-6">
           {[
             {
               Icon: Sparkles,
@@ -243,8 +243,11 @@ export default async function LandingPage() {
               title: "The whole sector",
               body: "Government missions, NGO programmes, farmer federations and markets across India, not just CAT's portfolio.",
             },
-          ].map(({ Icon, title, body }) => (
-            <div key={title} className="flex items-start gap-3">
+          ].map(({ Icon, title, body }, i) => (
+            <div
+              key={title}
+              className={`flex items-start gap-3 ${i > 0 ? "sm:border-l sm:border-line/60 sm:pl-8" : ""}`}
+            >
               <span
                 className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
                 aria-hidden
