@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { Mail, Globe, MapPin } from "lucide-react";
 
 type Org = {
   id: string;
@@ -323,6 +324,7 @@ export function OrganizationsExplorer() {
                 <span className="og-type">{o.orgType}</span>
               </div>
               <div className="og-card-meta">
+                <MapPin size={12} strokeWidth={1.8} aria-hidden className="og-meta-ic" />
                 {o.locationCount} location{o.locationCount === 1 ? "" : "s"} · {o.states.length} state{o.states.length === 1 ? "" : "s"}
                 {o.contactPerson ? ` · ${o.contactPerson}` : ""}
               </div>
@@ -349,7 +351,8 @@ export function OrganizationsExplorer() {
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Website ↗
+                    <Globe size={12} strokeWidth={1.9} aria-hidden />
+                    Website
                   </a>
                 )}
               </div>
@@ -452,19 +455,30 @@ function OrgDetail({
               {org.designation ? <span className="og-dc-desig"> · {org.designation}</span> : null}
             </div>
           ) : <div className="og-dc-row og-muted">Contact person not listed</div>}
-          {org.email ? (
-            <a className="og-dc-email" href={`mailto:${org.email}`}>{org.email}</a>
-          ) : <div className="og-muted" style={{ fontSize: 12.5 }}>Email not listed</div>}
-          {org.website && (
-            <a
-              className="og-dc-web"
-              href={org.website}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {org.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")} ↗
-            </a>
-          )}
+          <div className="og-dc-links">
+            {org.email ? (
+              <a className="og-dc-link og-dc-email" href={`mailto:${org.email}`}>
+                <Mail size={14} strokeWidth={1.8} aria-hidden />
+                <span>{org.email}</span>
+              </a>
+            ) : (
+              <div className="og-dc-link og-muted">
+                <Mail size={14} strokeWidth={1.8} aria-hidden />
+                <span>Email not listed</span>
+              </div>
+            )}
+            {org.website && (
+              <a
+                className="og-dc-link og-dc-web"
+                href={org.website}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Globe size={14} strokeWidth={1.8} aria-hidden />
+                <span>{org.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</span>
+              </a>
+            )}
+          </div>
         </div>
 
         {org.domains.length > 0 && (
@@ -691,7 +705,8 @@ function Styles() {
       .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.2; }
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
         color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
-      .og-card-meta { font-size:12.5px; color:var(--muted); margin-top:5px; }
+      .og-card-meta { font-size:12.5px; color:var(--muted); margin-top:5px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+      .og-meta-ic { color:var(--td); opacity:.7; flex:0 0 auto; }
       .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
@@ -700,11 +715,15 @@ function Styles() {
         background:none; border:0; cursor:pointer; padding:0; }
       .og-view { color:var(--td); font-weight:600; }
       .og-edit { color:var(--muted); }
-      .og-card-web { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--td); text-decoration:none; margin-left:auto; }
+      .og-card-web { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--td); text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
       .og-view:hover, .og-edit:hover, .og-card-web:hover { text-decoration:underline; }
       /* website in detail */
-      .og-dc-web { display:inline-block; margin-top:7px; font-size:13px; color:var(--td); text-decoration:none; font-family:var(--font-jetbrains),monospace; letter-spacing:.02em; }
-      .og-dc-web:hover { text-decoration:underline; }
+      /* contact links — stacked with breathing room, icon-led */
+      .og-dc-links { display:flex; flex-direction:column; gap:9px; margin-top:10px; }
+      .og-dc-link { display:inline-flex; align-items:center; gap:8px; font-size:13.5px; color:var(--td); text-decoration:none; width:fit-content; }
+      .og-dc-link > svg { flex:0 0 auto; opacity:.75; }
+      .og-dc-link.og-muted { color:var(--muted); }
+      a.og-dc-link:hover { text-decoration:underline; }
       /* multi-location repeater (submit form) */
       .og-locations { margin:4px 0 2px; }
       .og-loc-head { display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
@@ -723,8 +742,6 @@ function Styles() {
       .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
       .og-dc-row { font-size:15px; }
       .og-dc-desig { color:var(--muted); }
-      .og-dc-email { display:inline-block; margin-top:5px; font-size:14px; color:var(--td); text-decoration:none; }
-      .og-dc-email:hover { text-decoration:underline; }
       .og-muted { color:var(--muted); }
       .og-detail-block { margin-bottom:16px; }
       .og-where { list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; }
