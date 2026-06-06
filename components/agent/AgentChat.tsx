@@ -18,11 +18,14 @@ import {
   FileText,
   ExternalLink,
   X,
+  MapPin,
+  Compass,
+  Sprout,
 } from "lucide-react";
 
 type Citation = {
   index: number;
-  type: "entry" | "landscape";
+  type: "entry" | "landscape" | "factsheet" | "principle";
   label: string;
   url: string;
   preview: string;
@@ -39,7 +42,7 @@ type Msg = {
 const PROMPT_POOL: Array<{
   prompt: string;
   label: string;
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; style?: React.CSSProperties; className?: string }>;
   tint: { bar: string; soft: string; glow: string; chipBg: string; chipFg: string };
 }> = [
   {
@@ -349,22 +352,17 @@ export function AgentChat({
               <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" />
               The assistant
             </span>
-            <h1 className="font-sans font-light text-[clamp(40px,5.4vw,72px)] tracking-[-0.025em] leading-[1.05] text-[color:var(--navy-teal)] mt-4 max-w-[20ch]">
-              Hello there.
-              <br />
-              What would you like to{" "}
-              <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>
-                know?
-              </em>
+            <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[18ch]">
+              What would you like to <span className="text-teal">know?</span>
             </h1>
-            <p className="font-sans italic text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[52ch] mt-5 font-light">
-              Use one of the prompts below or write your own. Answers come from the curated
-              library — published entries plus ingested investment plans. Nothing else.
+            <p className="text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[54ch] mt-5 tracking-[-0.01em]">
+              Use a prompt below or write your own. Answers come only from the curated
+              library — published solutions plus ingested landscape plans — each with its sources.
             </p>
           </div>
 
-          {/* Prompt cards · 2×2 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+          {/* Prompt cells · hairline grid (Equals) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line mt-8">
             {cards.map((c) => {
               const Icon = c.Icon;
               return (
@@ -375,34 +373,17 @@ export function AgentChat({
                     setInput(c.prompt);
                     void send(c.prompt);
                   }}
-                  className="group relative overflow-hidden rounded-[10px] border border-line bg-paper p-5 sm:p-6 text-left transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]"
-                  style={{
-                    boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${c.tint.glow}`,
-                    backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${c.tint.soft} 100%)`,
-                  }}
+                  className="group bg-paper p-5 sm:p-6 text-left hover:bg-cream transition-colors active:scale-[0.99]"
                 >
-                  <span
-                    aria-hidden
-                    className="absolute top-0 left-0 right-0 h-[2px]"
-                    style={{
-                      background: `linear-gradient(90deg, ${c.tint.bar} 0%, ${c.tint.bar}cc 60%, transparent 100%)`,
-                    }}
-                  />
                   <span
                     className="inline-flex items-center gap-2 mb-3 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold"
                     style={{ color: c.tint.chipFg }}
                   >
-                    <span
-                      className="w-8 h-8 rounded-[6px] inline-flex items-center justify-center"
-                      style={{ background: c.tint.chipBg, color: c.tint.chipFg }}
-                      aria-hidden
-                    >
-                      <Icon size={15} strokeWidth={1.7} />
-                    </span>
+                    <Icon size={16} strokeWidth={1.8} style={{ color: c.tint.bar }} aria-hidden />
                     {c.label}
                   </span>
-                  <span className="block font-sans italic text-[16px] leading-[1.5] text-[color:var(--navy-teal)] max-w-[34ch]">
-                    &ldquo;{c.prompt}&rdquo;
+                  <span className="block font-sans text-[15.5px] leading-[1.45] text-ink tracking-[-0.01em] max-w-[34ch]">
+                    {c.prompt}
                   </span>
                 </button>
               );
@@ -624,7 +605,7 @@ function Composer({
             type="submit"
             disabled={!input.trim() || busy}
             aria-label="Send"
-            className="group inline-flex items-center justify-center w-10 h-10 rounded-[8px] bg-gradient-to-br from-deep-teal to-teal text-paper shadow-[0_6px_16px_-6px_rgba(46,117,115,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed transition-transform duration-150 ease-out-expo"
+            className="group inline-flex items-center justify-center w-10 h-10 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed transition-[transform,background-color] duration-150 ease-out-expo"
           >
             <ArrowUp size={14} strokeWidth={2} className="group-hover:translate-y-[-1px] transition-transform" />
           </button>
@@ -642,45 +623,30 @@ function Composer({
 function MessageBubble({ msg }: { msg: Msg }) {
   if (msg.role === "user") {
     return (
-      <div className="flex justify-end mb-3 reveal-stagger">
-        <div
-          className="max-w-[78%] px-4 py-2.5 rounded-[12px] rounded-br-[4px] font-mono text-[13px] leading-[1.55] text-paper"
-          style={{
-            background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
-            boxShadow:
-              "0 1px 2px rgba(26,38,37,0.06), 0 6px 16px -8px rgba(46,117,115,0.30)",
-          }}
-        >
+      <div className="flex justify-end mb-4 reveal-stagger">
+        <div className="max-w-[80%] px-4 py-2.5 rounded-[12px] rounded-br-[3px] bg-deep-teal text-paper text-[14px] leading-[1.5]">
           {msg.content}
         </div>
       </div>
     );
   }
-  // Assistant
+  // Assistant — answer flows on the page (no bubble), broadsheet-style.
   return (
-    <div className="mb-5 reveal-stagger">
-      <div
-        className="relative overflow-hidden rounded-[10px] border border-line bg-paper p-4 sm:p-5"
-        style={{
-          boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 22px -14px rgba(46,117,115,0.18)",
-          backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,243,232,0.4) 100%)",
-        }}
+    <div className="mb-8 reveal-stagger">
+      <span
+        className={`font-mono text-[9.5px] uppercase tracking-[0.16em] font-semibold inline-flex items-center gap-1.5 ${
+          msg.refused ? "text-[#B85042]" : "text-teal"
+        }`}
       >
-        <span
-          aria-hidden
-          className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{
-            background:
-              "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)",
-          }}
-        />
-        <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-1.5">
-          <Sparkles size={10} strokeWidth={1.8} className="text-amber-deep" />
-          {msg.refused ? "Refusal · honest answer" : "From the library"}
-        </span>
-        <p className="font-sans text-[15px] text-ink leading-[1.65] mt-3 whitespace-pre-wrap">
-          {renderInlineMarkdown(msg.content)}
-        </p>
+        {msg.refused ? (
+          <AlertOctagon size={11} strokeWidth={1.9} />
+        ) : (
+          <Sparkles size={11} strokeWidth={1.9} className="text-amber-deep" />
+        )}
+        {msg.refused ? "Honest answer — not in the library" : "Answered from the library"}
+      </span>
+      <div className="font-sans text-[16px] text-ink leading-[1.7] mt-2.5 whitespace-pre-wrap max-w-[68ch]">
+        {renderInlineMarkdown(msg.content)}
       </div>
 
       {msg.citations && msg.citations.length > 0 && (
@@ -690,18 +656,26 @@ function MessageBubble({ msg }: { msg: Msg }) {
   );
 }
 
+const CITE_META: Record<
+  string,
+  { Icon: typeof FileText; tag: string; fg: string }
+> = {
+  landscape: { Icon: MapPin, tag: "Landscape", fg: "#5C6796" },
+  principle: { Icon: Compass, tag: "Principle", fg: "#5f8d3e" },
+  factsheet: { Icon: Sprout, tag: "Solution", fg: "#2E7573" },
+  entry: { Icon: FileText, tag: "Source", fg: "#946616" },
+};
+
 function CitationTray({ citations }: { citations: Citation[] }) {
-  // Show top 3 by default. When there are more, render a "Show all" toggle
-  // so the input doesn't get pushed off the fold by a long citation list.
   const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? citations : citations.slice(0, 3);
-  const hidden = Math.max(0, citations.length - 3);
+  const visible = expanded ? citations : citations.slice(0, 4);
+  const hidden = Math.max(0, citations.length - 4);
   return (
-    <div className="mt-3 ml-1">
-      <div className="flex items-center justify-between gap-3 mb-2">
+    <div className="mt-5 max-w-[68ch]">
+      <div className="flex items-center justify-between gap-3 mb-2.5">
         <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-1.5">
-          <span className="w-3 h-px bg-amber-deep" />
-          Sources <span className="text-amber-deep">{citations.length}</span>
+          <FileText size={11} strokeWidth={1.8} className="text-amber-deep" />
+          Sources <span className="text-ink font-semibold">{citations.length}</span>
         </span>
         {hidden > 0 && (
           <button
@@ -709,76 +683,56 @@ function CitationTray({ citations }: { citations: Citation[] }) {
             onClick={() => setExpanded((v) => !v)}
             className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
           >
-            {expanded ? "Show top 3 ←" : `Show all ${citations.length} →`}
+            {expanded ? "Show fewer ←" : `Show all ${citations.length} →`}
           </button>
         )}
       </div>
-      <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line">
         {visible.map((c) => {
-              const isLandscape = c.type === "landscape";
-              const tint = isLandscape
-                ? { bg: "rgba(146,156,197,0.10)", fg: "#5C6796", bar: "#929CC5" }
-                : { bg: "rgba(248,202,124,0.16)", fg: "#C68C2E", bar: "#C68C2E" };
-              const Icon = isLandscape ? Trees : FileText;
-              // Citations resolve to either a real publisher URL (PDF, gazette,
-              // partner programme page) or, when unavailable, the internal Hub
-              // entry page. External URLs open in a new tab.
-              const isExternal = /^https?:\/\//i.test(c.url);
-              const linkProps = isExternal
-                ? { href: c.url, target: "_blank" as const, rel: "noreferrer" }
-                : null;
-              const sharedClass = "group relative overflow-hidden block rounded-[6px] border border-line bg-paper p-3 transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]";
-              const sharedStyle = {
-                boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -12px ${tint.bar}55`,
-              } as const;
-              const inner = (
-                <>
-                  <span
-                    aria-hidden
-                    className="absolute top-0 left-0 bottom-0 w-[2px]"
-                    style={{ background: tint.bar }}
-                  />
-                  <div className="flex items-start gap-2.5 pl-1">
-                    <span
-                      className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-[3px] mt-0.5"
-                      style={{ background: tint.bg, color: tint.fg }}
-                      aria-hidden
-                    >
-                      <Icon size={11} strokeWidth={1.8} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[9px] uppercase tracking-[0.14em] font-semibold" style={{ color: tint.fg }}>
-                          [{c.index}] {c.label}
-                        </span>
-                        <span className="font-mono text-[8.5px] tabular-nums text-muted">
-                          {c.score.toFixed(2)}
-                        </span>
-                      </div>
-                      <p className="font-sans text-[12px] text-ink-soft leading-snug mt-1 max-w-[40ch]">
-                        {c.preview.length > 140 ? c.preview.slice(0, 138) + "…" : c.preview}
-                      </p>
-                      <span className="inline-flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.14em] text-teal mt-1.5">
-                        {isExternal ? "Open source" : "Open entry"} <ExternalLink size={9} strokeWidth={1.8} />
-                      </span>
-                    </div>
-                  </div>
-                </>
-              );
-              return (
-                <li key={c.index}>
-                  {isExternal && linkProps ? (
-                    <a {...linkProps} className={sharedClass} style={sharedStyle}>
-                      {inner}
-                    </a>
-                  ) : (
-                    <Link href={c.url} className={sharedClass} style={sharedStyle}>
-                      {inner}
-                    </Link>
-                  )}
-                </li>
-              );
-            })}
+          const meta = CITE_META[c.type] ?? CITE_META.entry;
+          const Icon = meta.Icon;
+          const isExternal = /^https?:\/\//i.test(c.url);
+          const linkProps = isExternal
+            ? { href: c.url, target: "_blank" as const, rel: "noreferrer" }
+            : null;
+          const sharedClass =
+            "group block bg-paper p-3.5 h-full hover:bg-cream transition-colors active:scale-[0.99]";
+          const inner = (
+            <>
+              <div className="flex items-center gap-2 mb-1.5">
+                <Icon size={13} strokeWidth={1.9} style={{ color: meta.fg }} aria-hidden />
+                <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] font-semibold" style={{ color: meta.fg }}>
+                  {meta.tag}
+                </span>
+                <span className="font-mono text-[8.5px] tabular-nums text-muted ml-auto">
+                  {c.score.toFixed(2)}
+                </span>
+              </div>
+              <div className="font-sans text-[13px] font-semibold text-ink leading-snug tracking-[-0.01em]">
+                <span className="text-muted font-normal">[{c.index}]</span> {c.label}
+              </div>
+              <p className="font-sans text-[12px] text-ink-soft leading-snug mt-1">
+                {c.preview.length > 130 ? c.preview.slice(0, 128) + "…" : c.preview}
+              </p>
+              <span className="inline-flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.14em] text-teal mt-2 group-hover:text-deep-teal transition-colors">
+                {isExternal ? "Open source" : "Open"} <ExternalLink size={9} strokeWidth={1.9} />
+              </span>
+            </>
+          );
+          return (
+            <li key={c.index}>
+              {isExternal && linkProps ? (
+                <a {...linkProps} className={sharedClass}>
+                  {inner}
+                </a>
+              ) : (
+                <Link href={c.url} className={sharedClass}>
+                  {inner}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
