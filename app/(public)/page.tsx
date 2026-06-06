@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
+import { HeroFilm } from "@/components/home/HeroFilm";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -127,35 +128,11 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* HERO — split: broadsheet type on cream (left), illustration framed
-          (right). Text sits on solid cream, so it's fully legible with no scrim. */}
-      <section className="relative overflow-hidden bg-cream">
-        {/* Full-bleed still illustration. The artwork has an empty cream zone on
-            the left — the text sits over it, so dark type stays legible. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-still.png"
-          alt="Hand-illustrated map of India's food landscapes"
-          className="absolute inset-0 w-full h-full object-cover object-[62%_center] select-none pointer-events-none"
-        />
-        {/* Cream wash on the left for text legibility; fades to reveal the art. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(90deg, var(--cream) 0%, rgba(243,241,234,0.94) 30%, rgba(243,241,234,0.6) 50%, rgba(243,241,234,0.0) 70%)",
-          }}
-        />
-        {/* Soft bottom blend into the next band. */}
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
-          style={{ background: "linear-gradient(180deg, transparent, var(--cream))" }}
-        />
-
-        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 sm:py-20 lg:py-24 min-h-[540px] lg:min-h-[600px] flex items-center">
-          <div className="max-w-[54ch]">
+      {/* HERO — film stage: broadsheet type on cream, then the CAT film as a
+          large contained 16:9 player (YouTube facade, click-to-play). */}
+      <section className="relative bg-cream">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-16 lg:pb-20">
+          <div className="max-w-[60ch]">
             <div className="flex items-center gap-3 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
               <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
               Vol. 01 · Edition 2026
@@ -165,14 +142,14 @@ export default async function LandingPage() {
             </div>
 
             <h1
-              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[15ch] text-[clamp(40px,5.6vw,84px)] reveal-stagger"
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[16ch] text-[clamp(38px,5vw,76px)] reveal-stagger"
               style={{ animationDelay: "100ms" }}
             >
               What&apos;s actually working in India&apos;s food systems.
             </h1>
 
             <p
-              className="mt-6 max-w-[48ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
+              className="mt-6 max-w-[56ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
               A living atlas of credible programmes from across the country, each compiled
@@ -195,12 +172,22 @@ export default async function LandingPage() {
                 The 11 landscapes
               </Link>
             </div>
+          </div>
 
-            <div className="mt-9 pt-6 border-t border-line/80 flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger max-w-[44ch]" style={{ animationDelay: "480ms" }}>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
+          {/* The film stage */}
+          <div className="mt-10 lg:mt-12 reveal-stagger" style={{ animationDelay: "440ms" }}>
+            <HeroFilm videoId="8XQ-Bv_mBAE" title="The Consortium for Agroecological Transformations" />
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted inline-flex items-center gap-2">
+                <span className="w-3.5 h-px bg-amber-deep" />
+                A film by the Consortium for Agroecological Transformations
+              </span>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
+                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
+                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
+                <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
+              </div>
             </div>
           </div>
         </div>
