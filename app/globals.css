@@ -36,17 +36,21 @@
      Bright --amber is still used for amber text on the dark band and for fills. */
   --amber-deep: #946616;
 
-  /* Surfaces and ink */
-  --cream: #f8f4ed;
-  --paper: #fbf8f2;
-  --ink: #1a2625;
-  --ink-soft: #3d4e4d;
+  /* Surfaces and ink — Equals-style "broadsheet on warm cream".
+     Canvas is a true warm cream; text is near-black for old-media contrast. */
+  --cream: #f3f1ea;
+  --paper: #faf9f5;
+  --ink: #16130d;
+  --ink-soft: #57544c;
   /* --ink-2: raised surface used for the tiles inside the dark "Read by theme"
      band. Tokenised so the band isn't carrying a bare hex in component JSX. */
   --ink-2: #22302e;
-  --muted: #6b7b7a;
-  --line: #dde0da;
-  --line-soft: #e8e5dd;
+  --muted: #807c72;
+  /* --line: subtle warm-grey hairline (Equals "fog border").
+     --rule: the strong near-black section divider (the spreadsheet grid line). */
+  --line: #d7d4cc;
+  --line-soft: #e6e3db;
+  --rule: #18150f;
   --red-alert: #b85042;
   /* Translucent wash of --red-alert for the "what did not work" callout. */
   --red-alert-wash: rgba(184, 80, 66, 0.05);

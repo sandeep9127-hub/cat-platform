@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
-import { ParallaxBanner } from "@/components/home/ParallaxBanner";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -129,104 +128,84 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* HERO — looping video backdrop sits static-composed inside the
-          frame so the full illustration reads. A tiny 0.06 strength
-          gives just enough drift on scroll to feel alive without
-          cropping the image. */}
-      <ParallaxBanner
-        videoSrc="/videos/hero-parallax.mp4"
-        // Poster is critical: Chrome's autoplay policy pauses
-        // "video-only background media" (muted with no audio track) to
-        // save power, leaving the section blank. The poster guarantees
-        // a frame of the illustration is always visible, regardless of
-        // whether the browser allows autoplay.
-        poster="/videos/hero-poster.jpg"
-        alt="Looping illustration of Indian food systems and landscapes"
-        strength={0.06}
-        textStrength={0.05}
-      >
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-28 sm:pb-32 lg:pb-40 min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] flex">
-          <div className="max-w-[60ch] lg:max-w-[62ch]">
-            <div
-              className="flex items-center gap-3 sm:gap-4 mb-6 flex-wrap reveal-stagger"
-              style={{ animationDelay: "0ms" }}
+      {/* HERO — type-led broadsheet on cream (Equals direction). The decorative
+          video is gone; the 10 category colours float as flat "spreadsheet
+          cells" behind the headline. */}
+      <section className="relative overflow-hidden bg-paper border-b border-rule">
+        {/* Floating flat colour cells — the CAT category palette as raw data
+            cells. No radius, no border (the spreadsheet metaphor). */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[
+            { c: "#2E7573", t: "8%", l: "63%", w: 132, h: 56 },
+            { c: "#C68C2E", t: "20%", l: "82%", w: 92, h: 40 },
+            { c: "#5C8C2E", t: "44%", l: "71%", w: 116, h: 48 },
+            { c: "#2C7BD0", t: "62%", l: "86%", w: 72, h: 64 },
+            { c: "#C24A2E", t: "70%", l: "66%", w: 100, h: 36 },
+            { c: "#5C6796", t: "30%", l: "92%", w: 56, h: 56 },
+            { c: "#2EA37A", t: "86%", l: "78%", w: 120, h: 28 },
+          ].map((b, i) => (
+            <span
+              key={i}
+              className="absolute hidden lg:block reveal-stagger"
+              style={{
+                top: b.t,
+                left: b.l,
+                width: b.w,
+                height: b.h,
+                background: b.c,
+                opacity: 0.9,
+                animationDelay: `${200 + i * 70}ms`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-20 sm:pt-24 lg:pt-28 pb-16 sm:pb-20">
+          <div className="flex items-center gap-3 mb-7 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+            <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
+            Vol. 01 · Edition 2026
+            <span className="w-1 h-1 rounded-full bg-amber-deep" />
+            Updated{" "}
+            {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+          </div>
+
+          <h1
+            className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] reveal-stagger max-w-[16ch] text-[clamp(44px,7vw,104px)]"
+            style={{ animationDelay: "100ms" }}
+          >
+            What&apos;s actually working in India&apos;s food systems.
+          </h1>
+
+          <p
+            className="mt-7 max-w-[58ch] text-[17px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
+            style={{ animationDelay: "240ms" }}
+          >
+            A living atlas of credible programmes from across the country, each compiled
+            from public sources and checked before it goes up. What didn&apos;t work sits
+            next to what did. Run by the Consortium for Agroecological Transformations.
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
+            <Link
+              href="/map"
+              className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
             >
-              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#fbf8f2d9] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
-                <Sparkles size={11} strokeWidth={1.8} className="text-amber" aria-hidden />
-                Vol. 01 · Edition 2026
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber" />
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#fbf8f2cc] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
-                Updated{" "}
-                {lastUpdate.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-            <h1
-              className="font-serif font-normal text-hero-xl text-paper drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)] reveal-stagger"
-              style={{ animationDelay: "120ms" }}
+              Explore the Solutions Atlas
+              <ArrowUpRight size={15} strokeWidth={2} aria-hidden />
+            </Link>
+            <Link
+              href="/landscapes"
+              className="text-[14px] text-ink underline underline-offset-4 decoration-line hover:decoration-ink transition-colors"
             >
-              A dashboard for{" "}
-              <em
-                className="hero-italic italic text-amber not-italic"
-                style={{ fontStyle: "italic" }}
-              >
-                sustainable
-              </em>
-              <br />
-              food systems.
-            </h1>
-            <p
-              className="font-serif italic text-[17px] sm:text-[19px] text-[#fbf8f2d9] leading-[1.5] max-w-[44ch] mt-6 sm:mt-7 font-light drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] reveal-stagger"
-              style={{ animationDelay: "300ms" }}
-            >
-              Credible food systems work from across India, edited by people who actually
-              read it. Every entry has been checked against its sources before it goes up,
-              and what didn&apos;t work shows up next to what did. Run by the Consortium for
-              Agroecological Transformations.
-            </p>
-            <div
-              className="mt-8 flex flex-wrap gap-3 reveal-stagger"
-              style={{ animationDelay: "440ms" }}
-            >
-              <Link
-                href="/landscapes"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] bg-amber text-deep-teal font-semibold hover:bg-amber-deep hover:text-paper transition-colors"
-              >
-                Browse the 11 landscapes
-                <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
-              </Link>
-              <Link
-                href="/agent"
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] px-5 py-3 rounded-[4px] border border-[#fbf8f280] text-paper hover:border-amber hover:text-amber transition-colors"
-              >
-                Ask the assistant
-              </Link>
-            </div>
+              The 11 landscapes
+            </Link>
           </div>
         </div>
-      </ParallaxBanner>
+      </section>
 
-      {/* HOW IT WORKS — accurate to the auto-compiled model; sits on paper below the hero */}
-      <section
-        className="relative border-b border-line"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(232,240,234,0.65) 0%, rgba(251,248,242,0.85) 45%, rgba(248,202,124,0.10) 100%)",
-        }}
-      >
-        <span
-          aria-hidden
-          className="absolute top-0 left-0 right-0 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, rgba(46,117,115,0.45) 30%, rgba(248,202,124,0.55) 75%, transparent 100%)",
-          }}
-        />
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-7 grid grid-cols-1 sm:grid-cols-3 gap-y-6">
+      {/* HOW IT WORKS — flat cream, separated by the spreadsheet rule */}
+      <section className="relative bg-paper border-b border-rule">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-8 grid grid-cols-1 sm:grid-cols-3 gap-y-6">
           {[
             {
               Icon: Sparkles,
@@ -300,61 +279,43 @@ export default async function LandingPage() {
         />
       </Reveal>
 
-      {/* CATEGORIES — dark editorial feature band. The 10 CAT intervention
-          categories; each count is pulled live from the Atlas fact sheets and
-          each tile deep-links into the filtered Solutions Atlas. */}
-      <Reveal as="section" className="mt-8 py-16 lg:py-24 bg-ink">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-9">
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber mb-3">
+      {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
+          Each category's colour IS its icon (a flat block). Counts pulled live
+          from the Atlas; each cell deep-links into the filtered Atlas. */}
+      <Reveal as="section" className="bg-paper border-b border-rule">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten intervention areas
           </div>
-          <h2 className="font-serif text-[34px] sm:text-[42px] leading-[1.04] tracking-[-0.02em] text-paper">
-            Explore by <span className="italic font-normal text-amber">what it does</span>.
+          <h2 className="font-sans font-semibold text-[clamp(32px,4vw,52px)] leading-[1.0] tracking-[-0.035em] text-ink max-w-[18ch]">
+            Explore by what it does.
           </h2>
-          <p className="mt-3 max-w-[58ch] text-[14.5px] leading-[1.6] text-[#fbf8f2bf]">
-            Every solution in the Atlas is tagged to one or more of these ten
-            categories. The counts update as the Atlas grows.
+          <p className="mt-4 max-w-[60ch] text-[15px] leading-[1.6] text-ink-soft">
+            Every solution in the Atlas is tagged to one or more of these ten categories.
+            The counts update as the Atlas grows.
           </p>
         </div>
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-          {categoryTiles.map((t, i) => (
-            <Link
-              key={t.slug}
-              href={`/map?category=${t.slug}`}
-              className="group relative flex flex-col gap-3.5 min-h-[176px] p-5 rounded-[10px] reveal-stagger transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-[0.99]"
-              style={{
-                ["--c" as string]: t.colourHex,
-                animationDelay: `${i * 50}ms`,
-                background: "var(--ink-2)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              } as React.CSSProperties}
-            >
-              {/* gradient icon chip in the category colour */}
-              <span
-                className="w-[42px] h-[42px] rounded-[9px] flex items-center justify-center text-paper shadow-[0_6px_16px_-8px_var(--c)]"
-                style={{
-                  background:
-                    "linear-gradient(140deg, color-mix(in oklch, var(--c) 92%, white) 0%, var(--c) 55%, color-mix(in oklch, var(--c) 78%, black) 100%)",
-                }}
-                aria-hidden
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line border border-line">
+            {categoryTiles.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/map?category=${t.slug}`}
+                className="group bg-paper p-5 flex flex-col gap-3 min-h-[132px] hover:bg-cream transition-colors active:scale-[0.99]"
+                style={{ transition: "background-color 150ms, transform 150ms" }}
               >
-                <t.Icon size={21} strokeWidth={1.75} />
-              </span>
-              <h3 className="font-serif text-[18.5px] font-medium tracking-[-0.012em] text-paper leading-[1.18] max-w-[18ch]">
-                {t.short}
-              </h3>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#fbf8f2bf] mt-auto">
-                <strong className="text-paper text-[13px] font-semibold">{t.count}</strong>{" "}
-                {t.count === 1 ? "solution" : "solutions"}
-              </span>
-              <span
-                className="absolute top-5 right-5 transition-[transform,color] duration-200 ease-out-expo text-[#fbf8f28c] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--c)]"
-                aria-hidden
-              >
-                <ArrowUpRight size={17} strokeWidth={2} />
-              </span>
-            </Link>
-          ))}
+                {/* flat colour block = the category's icon (Equals data-cell) */}
+                <span className="block w-9 h-2.5" style={{ background: t.colourHex }} aria-hidden />
+                <h3 className="font-sans text-[16px] font-semibold tracking-[-0.02em] text-ink leading-[1.18]">
+                  {t.short}
+                </h3>
+                <span className="mt-auto font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <strong className="text-ink text-[13px] font-semibold tabular-nums">{t.count}</strong>{" "}
+                  {t.count === 1 ? "solution" : "solutions"}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </Reveal>
 

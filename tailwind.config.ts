@@ -38,6 +38,7 @@ const config: Config = {
         muted: "var(--muted)",
         line: "var(--line)",
         "line-soft": "var(--line-soft)",
+        rule: "var(--rule)",
         "red-alert": "var(--red-alert)",
       },
       fontFamily: {
