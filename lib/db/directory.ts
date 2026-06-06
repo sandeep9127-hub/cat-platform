@@ -106,6 +106,32 @@ export type Submission = {
   submitterNote?: string;
 };
 
+/** Admin: every published org with its (possibly auto-sourced) website. */
+export async function listOrgsAdmin(): Promise<
+  { id: string; name: string; website: string | null; states: string[] }[]
+> {
+  const r = await db.execute(sql`
+    SELECT o.id, o.name, o.website,
+           coalesce(array_agg(DISTINCT l.state) FILTER (WHERE l.state IS NOT NULL), '{}') AS states
+    FROM "cat".directory_orgs o
+    LEFT JOIN "cat".directory_locations l ON l.org_id = o.id
+    WHERE o.is_published
+    GROUP BY o.id ORDER BY o.name
+  `);
+  return rowsOf<{ id: string; name: string; website: string | null; states: string[] }>(r).map((o) => ({
+    id: o.id,
+    name: o.name,
+    website: o.website || null,
+    states: (o.states || []).filter(Boolean),
+  }));
+}
+
+export async function updateOrgWebsite(id: string, website: string | null): Promise<void> {
+  await db.execute(
+    sql`UPDATE "cat".directory_orgs SET website = ${website} WHERE id = ${id}`
+  );
+}
+
 export async function insertSubmission(s: Submission): Promise<void> {
   const locs = (s.locations ?? []).filter(
     (l) => l && (l.state || l.district || l.block || l.subdistrict || l.latitude != null)
