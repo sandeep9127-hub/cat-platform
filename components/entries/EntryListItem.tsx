@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ThemeChip } from "@/components/ui/ThemeChip";
 
 export type EntryListItemData = {
   id: string;
@@ -58,14 +57,21 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <p className="text-[14.5px] text-ink-soft leading-[1.5] max-w-[58ch] tracking-[-0.01em]">
             {data.tagline}
           </p>
-          <div className="flex gap-2 sm:gap-3.5 mt-3.5 items-center flex-wrap">
+          <div className="flex gap-2 sm:gap-3 mt-3.5 items-center flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
             {data.themes.slice(0, 2).map((t) => (
-              <ThemeChip key={t.slug} slug={t.slug} name={t.name} colourHex={t.colourHex} asLink={false} />
+              <span key={t.slug} className="inline-flex items-center gap-1.5">
+                <span className="w-3 h-3 shrink-0" style={{ background: t.colourHex }} aria-hidden />
+                {t.name}
+              </span>
             ))}
-            <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
-              · {humaniseScale(data.scaleBand)}
-            </span>
+            <span>· {humaniseScale(data.scaleBand)}</span>
           </div>
+        </div>
+        {/* Category colour tile(s) — the Equals data-cell, flush right. */}
+        <div className="hidden sm:flex flex-col gap-1.5 items-end pt-1.5">
+          {data.themes.slice(0, 3).map((t) => (
+            <span key={t.slug} className="w-7 h-3.5 block" style={{ background: t.colourHex }} title={t.name} aria-hidden />
+          ))}
         </div>
       </article>
   );

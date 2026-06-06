@@ -91,12 +91,13 @@ export function BrandBar() {
           </span>
         </Link>
         <nav className="ml-auto flex items-center gap-4 lg:gap-[18px] xl:gap-6">
-          {NAV_LINKS.map(({ href, label }) => (
+          {NAV_LINKS.map(({ href, label, Icon }) => (
             <Link
               key={href}
               href={href}
-              className="hidden lg:inline-flex items-center text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
+              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
             >
+              <Icon size={13} strokeWidth={1.7} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
               <span className="relative">
                 {label}
                 {/* Animated underline — grows from left on hover */}

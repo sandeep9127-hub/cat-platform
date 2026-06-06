@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
 /**
@@ -56,6 +56,7 @@ export function Footer() {
 
         <FooterCol
           title="Explore"
+          Icon={Compass}
           links={[
             { href: "/principles", label: "Principles" },
             { href: "/landscapes", label: "Landscapes" },
@@ -66,6 +67,7 @@ export function Footer() {
         />
         <FooterCol
           title="About"
+          Icon={Info}
           links={[
             { href: "/about", label: "About CAT" },
             { href: "/editors", label: "Editors" },
@@ -91,17 +93,19 @@ export function Footer() {
 
 function FooterCol({
   title,
+  Icon,
   links,
   external,
 }: {
   title: string;
+  Icon?: LucideIcon;
   links: { href: string; label: string }[];
   external?: { href: string; label: string }[];
 }) {
   return (
     <div>
       <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
-        <span className="w-3 h-px bg-amber-deep" />
+        {Icon ? <Icon size={12} strokeWidth={1.8} aria-hidden /> : <span className="w-3 h-px bg-amber-deep" />}
         {title}
       </h4>
       <ul className="space-y-2.5 list-none p-0">
