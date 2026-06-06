@@ -63,7 +63,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
 
         {s.status !== "published" && (
           <div className="no-print mb-6 rounded-[8px] border border-amber-deep/40 bg-amber/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-deep-teal">
-            Draft preview — flagged (sources too weak, confidence {Math.round((s.confidence ?? 0) * 100)}%)
+            Draft preview: flagged (sources too weak, confidence {Math.round((s.confidence ?? 0) * 100)}%)
           </div>
         )}
 

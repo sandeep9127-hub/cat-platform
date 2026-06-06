@@ -498,7 +498,7 @@ function OrgDetail({
             {states.map((st) => (
               <li key={st}>
                 <strong>{st}</strong>
-                {byState.get(st)!.length ? <span className="og-muted"> — {byState.get(st)!.slice(0, 8).join(", ")}{byState.get(st)!.length > 8 ? "…" : ""}</span> : null}
+                {byState.get(st)!.length ? <span className="og-muted">: {byState.get(st)!.slice(0, 8).join(", ")}{byState.get(st)!.length > 8 ? "…" : ""}</span> : null}
               </li>
             ))}
           </ul>
@@ -657,7 +657,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               <textarea rows={2} value={f.comments} onChange={(e) => up("comments", e.target.value)} /></label>
 
             <div className="og-pii">
-              <div className="og-pii-label">Your details (not published — used only to verify the entry)</div>
+              <div className="og-pii-label">Your details (not published, used only to verify the entry)</div>
               <div className="og-row">
                 <label className="og-field"><span>Your name</span>
                   <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} /></label>
