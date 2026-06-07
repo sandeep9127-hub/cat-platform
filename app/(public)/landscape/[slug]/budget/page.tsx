@@ -27,13 +27,13 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
             <span className="text-line">/</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
           </div>
-          <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink">
-            {p.name} · <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>Budget</em>
+          <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] tracking-[-0.035em] leading-[1.02] text-ink">
+            {p.name} · <span className="text-teal">Budget</span>
           </h1>
         </header>
         <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} />
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
-          <p className="font-serif italic text-ink-soft text-[18px] max-w-[44ch]">
+          <p className="text-ink-soft text-[18px] max-w-[44ch] leading-[1.55] tracking-[-0.01em]">
             The {p.name} Landscape Investment Plan is in preparation. The interactive
             budget explorer will land here once the investment plan is published and uploaded.
           </p>
@@ -52,10 +52,10 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
         </div>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink">
-          {p.name} · <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>Budget</em>
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] tracking-[-0.035em] leading-[1.02] text-ink">
+          {p.name} · <span className="text-teal">Budget</span>
         </h1>
-        <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
           Every intervention costed in the {p.name} investment plan. Filter by package, category, or
           funding mechanism. Numbers are 7-year totals across {lines.length} intervention
           lines unless filtered.

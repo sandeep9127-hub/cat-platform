@@ -27,10 +27,10 @@ export default async function InsightsPage({ params }: { params: Promise<{ slug:
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
         </div>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink">
-          {p.name} · <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>Insights</em>
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[1.02] tracking-[-0.035em] text-ink">
+          {p.name} · <span className="text-teal">Insights</span>
         </h1>
-        <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
           The {p.name} investment plan, visualised. Every figure is read straight from the
           costed plan, structured and reviewed by hand.
         </p>
@@ -42,7 +42,7 @@ export default async function InsightsPage({ params }: { params: Promise<{ slug:
         <LandscapeInsightsView slug={slug} profile={p} data={await landscapeInsights(slug)} />
       ) : (
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
-          <p className="font-serif italic text-ink-soft text-[18px] max-w-[46ch]">
+          <p className="text-ink-soft leading-[1.55] tracking-[-0.01em] text-[18px] max-w-[46ch]">
             The {p.name} Landscape Investment Plan is in preparation. Its insights dashboard
             will appear here once the plan is published and uploaded.
           </p>

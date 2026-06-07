@@ -70,10 +70,10 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
         </div>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink">
-          {p.name} · <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>Library</em>
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] tracking-[-0.035em] leading-[1.02] text-ink">
+          {p.name} · <span className="text-teal">Library</span>
         </h1>
-        <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.5] mt-5 max-w-[56ch] font-light">
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[56ch]">
           Every document attached to {p.name}: the Landscape Investment Plan, budget workbook,
           fact sheets, and supporting evaluations. The source material the platform draws
           from when you ask a question or build a budget view.
@@ -84,7 +84,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-10">
         {docs.length === 0 ? (
-          <p className="font-sans italic text-ink-soft text-[18px] max-w-[44ch] mt-6 leading-[1.6]">
+          <p className="text-ink-soft text-[18px] max-w-[44ch] mt-6 leading-[1.6]">
             No documents attached yet. The investment plan for {p.name} will appear here once CAT
             uploads it.
           </p>
@@ -151,7 +151,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                           >
                             {TYPE_LABELS[d.type] ?? d.type}
                           </span>
-                          <h3 className="font-sans text-[17px] font-medium leading-[1.25] tracking-[-0.01em] text-[color:var(--navy-teal)] mt-1.5 max-w-[28ch]">
+                          <h3 className="font-sans text-[17px] font-semibold leading-[1.25] tracking-[-0.02em] text-[color:var(--navy-teal)] mt-1.5 max-w-[28ch]">
                             {d.title}
                           </h3>
                         </div>

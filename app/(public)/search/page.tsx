@@ -86,10 +86,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     <>
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 reveal-stagger">
         <span className="eyebrow">Search the library</span>
-        <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-          Ask the <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>library</em>.
+        <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
+          Ask the <span className="text-teal">library</span>.
         </h1>
-        <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[44ch] mt-5 font-light">
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[44ch] mt-5">
           Full-text search across every published entry. Filters narrow by theme, scale, and
           endorsement. The agent preview is on its own page.
         </p>
@@ -103,7 +103,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             name="q"
             defaultValue={q}
             placeholder="Try: millet procurement, soil organic carbon, FPO federation, what didn't work…"
-            className="w-full px-5 py-4 bg-paper border border-line rounded-full font-serif italic text-[17px] text-ink placeholder:text-muted placeholder:not-italic placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors shadow-[0_1px_2px_rgba(26,38,37,0.04),inset_0_1px_0_rgba(255,255,255,0.5)]"
+            className="w-full px-5 py-4 bg-paper border border-line rounded-full font-sans text-[17px] text-ink placeholder:text-muted placeholder:font-sans placeholder:text-[14px] focus:outline-2 focus:outline-teal focus:bg-paper transition-colors shadow-[0_1px_2px_rgba(26,38,37,0.04),inset_0_1px_0_rgba(255,255,255,0.5)]"
             aria-label="Search entries"
             autoFocus
           />
@@ -189,7 +189,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         </div>
 
         {hits.length === 0 ? (
-          <p className="font-serif italic text-ink-soft text-[18px] max-w-[44ch] mt-8">
+          <p className="text-ink-soft leading-[1.55] tracking-[-0.01em] text-[18px] max-w-[44ch] mt-8">
             {q
               ? `No entries match "${q}" with the current filters. Try broader terms, or clear the filters.`
               : "No entries match the current filters."}
@@ -235,15 +235,15 @@ function SearchResult({ hit, index }: { hit: SearchHit; index: number }) {
                 {hit.endYear ? `${hit.startYear} → ${hit.endYear}` : `${hit.startYear} → ongoing`}
               </span>
             </div>
-            <h3 className="font-serif text-[20px] sm:text-[22px] font-medium leading-[1.18] tracking-[-0.01em] text-ink mb-2 group-hover:text-teal transition-colors">
+            <h3 className="font-sans font-semibold text-[20px] sm:text-[22px] leading-[1.18] tracking-[-0.02em] text-ink mb-2 group-hover:text-teal transition-colors">
               {hit.title}
             </h3>
             {hit.highlight ? (
-              <p className="font-serif text-[15px] text-ink-soft leading-[1.5] max-w-[68ch]">
+              <p className="text-[15px] text-ink-soft leading-[1.5] max-w-[68ch]">
                 {renderHighlight(hit.highlight)}…
               </p>
             ) : (
-              <p className="font-serif italic text-[15px] text-ink-soft leading-[1.45] max-w-[64ch] font-light">
+              <p className="text-[15px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[64ch]">
                 {hit.tagline}
               </p>
             )}

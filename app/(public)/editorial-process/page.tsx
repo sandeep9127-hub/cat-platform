@@ -9,10 +9,10 @@ export default function EditorialProcessPage() {
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
       <header className="reveal-stagger" style={{ animationDelay: "0ms" }}>
         <span className="eyebrow">Editorial process</span>
-        <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-          How an entry <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>gets published</em>.
+        <h1 className="font-sans font-semibold text-hero-xl tracking-[-0.035em] leading-[0.98] text-ink mt-4">
+          How an entry <span className="text-teal">gets published</span>.
         </h1>
-        <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[50ch] mt-6 font-light">
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[50ch] mt-6">
           AI scales the production work. Editors decide what publishes. This page explains the
           loop in full, in plain language.
         </p>
@@ -109,10 +109,10 @@ function Step({ n, title, children }: { n: string; title: string; children: Reac
         {n}
       </span>
       <div>
-        <h2 className="font-serif text-[22px] font-medium tracking-[-0.01em] text-ink mb-2">
+        <h2 className="font-sans font-semibold text-[22px] tracking-[-0.02em] text-ink mb-2">
           {title}
         </h2>
-        <div className="font-serif text-[16.5px] leading-[1.65] text-ink-soft">{children}</div>
+        <div className="text-[16.5px] leading-[1.65] text-ink-soft">{children}</div>
       </div>
     </section>
   );

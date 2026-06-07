@@ -9,10 +9,10 @@ export default function FundersPage() {
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
       <header>
         <span className="eyebrow">Funders</span>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink mt-4">
-          Who <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>funds</em> this Platform.
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[0.98] tracking-[-0.04em] text-ink mt-4">
+          Who <span className="text-teal">funds</span> this Platform.
         </h1>
-        <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
+        <p className="text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
           CAT is a multi-funder consortium. The Platform sits inside CAT&apos;s programme
           budget. Funders see entries the same time you do, after editors sign off.
         </p>
@@ -110,7 +110,7 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>
-      <div className="font-serif text-[16.5px] leading-[1.65] text-ink-soft">{children}</div>
+      <div className="text-[16.5px] leading-[1.65] text-ink-soft">{children}</div>
     </section>
   );
 }

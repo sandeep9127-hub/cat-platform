@@ -69,14 +69,10 @@ export default async function LandscapesPage() {
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">Curated by CAT · the closed set</span>
-          <h1 className="font-serif font-normal text-hero-xl text-ink mt-4">
-            CAT{" "}
-            <em className="hero-italic italic text-teal not-italic" style={{ fontStyle: "italic" }}>
-              Landscapes
-            </em>
-            .
+          <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
+            CAT <span className="text-teal">Landscapes</span>.
           </h1>
-          <p className="font-serif italic text-[17px] sm:text-[19px] text-ink-soft leading-[1.45] max-w-[52ch] mt-6 font-light">
+          <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[52ch] mt-6">
             Eleven landscapes across India where the Consortium is working with partners on
             seven-year investment plans. A landscape is an economically viable, contiguous
             unit of land, adapted to local need, usually an administrative block or a
@@ -176,7 +172,7 @@ export default async function LandscapesPage() {
                     </span>
                   </div>
 
-                  <h2 className="relative font-serif text-[24px] sm:text-[26px] font-medium leading-[1.15] tracking-[-0.015em] text-ink group-hover:text-teal transition-colors">
+                  <h2 className="relative font-sans text-[24px] sm:text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink group-hover:text-teal transition-colors">
                     {p?.name ?? g.name}
                   </h2>
                   {p && (

@@ -32,16 +32,16 @@ export default function EditorsPage() {
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
       <header>
         <span className="eyebrow">Editors</span>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink mt-4">
-          The people who <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>read everything</em>.
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[0.98] tracking-[-0.04em] text-ink mt-4">
+          The people who <span className="text-teal">read everything</span>.
         </h1>
-        <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
+        <p className="text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
           Every entry on the Platform is read by a person before it goes live. These are
           the editors who carry that work.
         </p>
       </header>
 
-      <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-line border border-line">
         {EDITORS.map((editor, i) => {
           const initials = editor.name
             .split(" ")
@@ -59,12 +59,7 @@ export default function EditorsPage() {
           return (
             <article
               key={editor.name}
-              className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-6 sm:p-7 flex gap-5"
-              style={{
-                boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 28px -16px ${tone.glow}`,
-                backgroundImage:
-                  "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.30) 100%)",
-              }}
+              className="relative overflow-hidden bg-paper p-6 sm:p-8 flex gap-5"
             >
               <span
                 aria-hidden
@@ -78,7 +73,7 @@ export default function EditorsPage() {
                 {initials}
               </span>
               <div className="min-w-0">
-                <h2 className="font-sans text-[20px] sm:text-[22px] tracking-[-0.015em] text-[color:var(--navy-teal)] leading-[1.2] font-medium">
+                <h2 className="font-sans font-semibold text-[20px] sm:text-[22px] tracking-[-0.02em] text-[color:var(--navy-teal)] leading-[1.2]">
                   {editor.name}
                 </h2>
                 <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal block mt-1.5">
@@ -95,10 +90,10 @@ export default function EditorsPage() {
 
       <section className="mt-20 border-t border-line pt-12 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
         <div className="max-w-reading">
-          <h2 className="font-serif text-[28px] font-medium tracking-[-0.015em] text-ink">
+          <h2 className="font-sans font-semibold text-[28px] tracking-[-0.02em] text-ink">
             How editorial decisions get made
           </h2>
-          <p className="font-serif text-[16.5px] leading-[1.65] text-ink-soft mt-5">
+          <p className="text-[16.5px] leading-[1.65] text-ink-soft mt-5">
             Draft entries come in from contributors or are written by CAT editors. A
             second editor reads each draft against the{" "}
             <a className="text-teal underline-offset-2 hover:underline" href="/style-guide">
@@ -107,12 +102,12 @@ export default function EditorsPage() {
             . Factual claims with budgets, dates, or population numbers are cross-checked
             against the source document in the library.
           </p>
-          <p className="font-serif text-[16.5px] leading-[1.65] text-ink-soft mt-4">
+          <p className="text-[16.5px] leading-[1.65] text-ink-soft mt-4">
             The endorsement tier (Authored, Endorsed, Listed) is set by the second editor,
             not the writer. We do not vote on entries. If two editors disagree, the entry
             sits with a third editor and waits.
           </p>
-          <p className="font-serif text-[16.5px] leading-[1.65] text-ink-soft mt-4">
+          <p className="text-[16.5px] leading-[1.65] text-ink-soft mt-4">
             Corrections are versioned. The history of an entry is visible on its page,
             including who edited it and when.
           </p>

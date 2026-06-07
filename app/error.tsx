@@ -19,10 +19,10 @@ export default function GlobalError({
     <main className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 pb-24 min-h-[60vh]">
       <div className="max-w-[60ch]">
         <span className="eyebrow text-red-alert">Something broke</span>
-        <h1 className="font-serif font-normal text-[clamp(36px,4.6vw,56px)] leading-[1.05] tracking-[-0.022em] text-ink mt-5">
+        <h1 className="font-sans font-semibold text-[clamp(36px,4.6vw,56px)] leading-[1.0] tracking-[-0.04em] text-ink mt-5">
           We couldn&apos;t render this page.
         </h1>
-        <p className="font-serif italic text-[17px] text-ink-soft leading-[1.5] mt-5 font-light">
+        <p className="text-[17px] text-ink-soft leading-[1.55] mt-5">
           The error has been logged. Try again, or head back to the landing. If this keeps
           happening on the same page, please tell the editors.
         </p>

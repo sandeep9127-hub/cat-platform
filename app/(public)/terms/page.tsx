@@ -9,10 +9,10 @@ export default function TermsPage() {
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
       <header>
         <span className="eyebrow">Terms</span>
-        <h1 className="font-serif font-normal text-[clamp(38px,4.4vw,64px)] leading-[1.05] tracking-[-0.022em] text-ink mt-4">
-          The <em className="italic text-teal not-italic" style={{ fontStyle: "italic" }}>agreement</em>, in short.
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[1.02] tracking-[-0.035em] text-ink mt-4">
+          The <span className="text-teal">agreement</span>, in short.
         </h1>
-        <p className="font-serif italic text-[18px] text-ink-soft leading-[1.5] mt-5 max-w-[58ch] font-light">
+        <p className="text-[18px] text-ink-soft leading-[1.6] mt-5 max-w-[58ch]">
           You read. You may submit. We edit. Everyone benefits if we&apos;re honest about it.
         </p>
       </header>
@@ -112,11 +112,10 @@ export default function TermsPage() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
-        <span className="w-3.5 h-px bg-teal" />
+      <h2 className="font-sans font-semibold tracking-[-0.02em] text-[15px] text-ink mb-3">
         {label}
-      </span>
-      <div className="font-serif text-[16.5px] leading-[1.65] text-ink-soft">{children}</div>
+      </h2>
+      <div className="text-[16.5px] leading-[1.6] text-ink-soft">{children}</div>
     </section>
   );
 }
