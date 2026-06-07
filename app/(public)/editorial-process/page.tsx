@@ -25,13 +25,13 @@ export default function EditorialProcessPage() {
           <Step n="01" title="Sourcing">
             A registry of around 80 to 150 trusted sources is crawled weekly. State agriculture
             departments, NABARD and IFAD project pages, key research institutions, partner
-            annual reports. A separate discovery agent uses Claude to propose new programmes
+            annual reports. A separate discovery agent uses AI to propose new programmes
             from web search, allowlisted to <code>.gov.in</code>, <code>.org</code>, and major
             news domains. The output lands in a queue, not the public surface.
           </Step>
 
           <Step n="02" title="Drafting">
-            For new candidates or detected source updates, Claude reads the source content
+            For new candidates or detected source updates, AI reads the source content
             (HTML, PDFs at draft time) and drafts the five narrative blocks of an entry: context,
             attempted, achieved, what worked, what did not work. Every sentence carries
             citation anchors back to the source passages.
@@ -97,6 +97,10 @@ export default function EditorialProcessPage() {
               <li>The discovery agent is allowlisted, not the open web.</li>
               <li>Every public entry has been approved by a human.</li>
             </ul>
+            <p className="mt-3 pt-3 border-t border-line/70 text-[12px] text-muted leading-[1.5]">
+              AI can make mistakes. That is exactly why a human editor checks every entry
+              against its sources before it goes up.
+            </p>
           </div>
         </aside>
       </Reveal>

@@ -612,9 +612,10 @@ function Composer({
         </div>
       </form>
 
-      {/* Microcopy — exactly as specified */}
+      {/* Microcopy — AI disclaimer + source scope */}
       <p className="font-mono italic text-[10.5px] uppercase tracking-[0.14em] text-muted mt-3 text-center sm:text-left">
-        Powered by AI. This information is generated from curated content, not the web.
+        Powered by AI, which can make mistakes. Answers come from curated content, not the
+        web. Check the cited sources.
       </p>
     </div>
   );
