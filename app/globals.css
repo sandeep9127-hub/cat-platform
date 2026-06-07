@@ -300,9 +300,14 @@ body::before {
   stroke-width: 1.1;
   filter: drop-shadow(0 4px 10px rgba(198, 140, 46, 0.30));
 }
-/* Lift the whole country group with a soft drop-shadow */
+/* Lift the whole country group with a soft drop-shadow (card map only) */
 .map-country {
   filter: drop-shadow(0 6px 14px rgba(26, 38, 37, 0.10));
+}
+/* On the bare hero map the country's multi-polygon shadow smears into an
+   ugly ellipse, so drop it there and let the map sit flat on the cream. */
+.map-bare .map-country {
+  filter: none;
 }
 
 .dot-core {

@@ -121,7 +121,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       ref={wrapRef}
       className={
         (bare
-          ? "relative p-0 aspect-[4/5] overflow-visible"
+          ? "map-bare relative p-0 aspect-[4/5] overflow-visible"
           : "relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[10px] overflow-hidden") +
         ` ${className ?? ""}`
       }
