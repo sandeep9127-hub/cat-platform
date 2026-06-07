@@ -1,3 +1,6 @@
+import { Reveal } from "@/components/ui/Reveal";
+import { StaggerReveal } from "@/components/ui/StaggerReveal";
+
 export const metadata = {
   title: "Editors",
   description:
@@ -30,7 +33,7 @@ const EDITORS = [
 export default function EditorsPage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
-      <header>
+      <Reveal as="header" delay={0}>
         <span className="eyebrow">Editors</span>
         <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[0.98] tracking-[-0.04em] text-ink mt-4">
           The people who <span className="text-teal">read everything</span>.
@@ -39,9 +42,9 @@ export default function EditorsPage() {
           Every entry on the Platform is read by a person before it goes live. These are
           the editors who carry that work.
         </p>
-      </header>
+      </Reveal>
 
-      <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-line border border-line">
+      <StaggerReveal className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-line border border-line">
         {EDITORS.map((editor, i) => {
           const initials = editor.name
             .split(" ")
@@ -86,9 +89,9 @@ export default function EditorsPage() {
             </article>
           );
         })}
-      </section>
+      </StaggerReveal>
 
-      <section className="mt-20 border-t border-line pt-12 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+      <Reveal as="section" className="mt-20 border-t border-line pt-12 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12" delay={80}>
         <div className="max-w-reading">
           <h2 className="font-sans font-semibold text-[28px] tracking-[-0.02em] text-ink">
             How editorial decisions get made
@@ -134,7 +137,7 @@ export default function EditorsPage() {
             off-tone.
           </p>
         </aside>
-      </section>
+      </Reveal>
     </article>
   );
 }

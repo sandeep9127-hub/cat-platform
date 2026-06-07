@@ -1,3 +1,5 @@
+import { Reveal } from "@/components/ui/Reveal";
+
 export const metadata = {
   title: "Editorial process",
   description:
@@ -7,7 +9,7 @@ export const metadata = {
 export default function EditorialProcessPage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
-      <header className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+      <Reveal as="header" delay={0}>
         <span className="eyebrow">Editorial process</span>
         <h1 className="font-sans font-semibold text-hero-xl tracking-[-0.035em] leading-[0.98] text-ink mt-4">
           How an entry <span className="text-teal">gets published</span>.
@@ -16,9 +18,9 @@ export default function EditorialProcessPage() {
           AI scales the production work. Editors decide what publishes. This page explains the
           loop in full, in plain language.
         </p>
-      </header>
+      </Reveal>
 
-      <section className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+      <Reveal as="section" className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12" delay={80}>
         <div className="max-w-reading">
           <Step n="01" title="Sourcing">
             A registry of around 80 to 150 trusted sources is crawled weekly. State agriculture
@@ -97,7 +99,7 @@ export default function EditorialProcessPage() {
             </ul>
           </div>
         </aside>
-      </section>
+      </Reveal>
     </article>
   );
 }

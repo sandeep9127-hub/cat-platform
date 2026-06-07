@@ -1,3 +1,5 @@
+import { Reveal } from "@/components/ui/Reveal";
+
 export const metadata = {
   title: "Style guide",
   description:
@@ -7,7 +9,7 @@ export const metadata = {
 export default function StyleGuidePage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
-      <header>
+      <Reveal as="header" delay={0}>
         <span className="eyebrow">Style guide</span>
         <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[0.98] tracking-[-0.04em] text-ink mt-4">
           How we <span className="text-teal">write</span>, what we label.
@@ -16,9 +18,9 @@ export default function StyleGuidePage() {
           The Platform reads like a quiet editor wrote it, because one did. These are the
           standards every entry follows before it goes live.
         </p>
-      </header>
+      </Reveal>
 
-      <section className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+      <Reveal as="section" className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12" delay={80}>
         <div className="max-w-reading">
           <Block label="Voice">
             <p>
@@ -133,7 +135,7 @@ export default function StyleGuidePage() {
             </p>
           </div>
         </aside>
-      </section>
+      </Reveal>
 
       <footer className="mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
         Last updated · 20 May 2026

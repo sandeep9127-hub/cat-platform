@@ -319,7 +319,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute z-20 pointer-events-none text-cream px-3.5 py-3 min-w-[200px] rounded-[8px] border border-paper/10"
+          className="absolute z-20 pointer-events-none text-cream px-3.5 py-3 min-w-[200px] rounded-[8px] border border-paper/10 animate-scope-pop"
           style={{
             left: tooltip.x,
             top: tooltip.y,

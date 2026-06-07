@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { CatLandscapesMap } from "@/components/map/CatLandscapesMap";
+import { Reveal } from "@/components/ui/Reveal";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function LandscapesPage() {
 
   return (
     <>
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
+      <Reveal as="section" delay={0} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">Curated by CAT · the closed set</span>
           <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
@@ -103,11 +104,11 @@ export default async function LandscapesPage() {
             </span>
           </div>
         </aside>
-      </section>
+      </Reveal>
 
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-12">
+      <Reveal as="section" delay={80} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-12">
         <CatLandscapesMap pins={pins} />
-      </section>
+      </Reveal>
 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-8">
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0">

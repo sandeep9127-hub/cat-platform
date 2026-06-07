@@ -1,4 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
+import { Reveal } from "@/components/ui/Reveal";
+import { StaggerReveal } from "@/components/ui/StaggerReveal";
 
 export const metadata = {
   title: "Contact",
@@ -10,7 +12,7 @@ export default function ContactPage() {
   return (
     <article className="pb-24">
       {/* Header — broadsheet, all-Inter */}
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10">
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10" delay={0}>
         <span className="eyebrow">Contact</span>
         <h1 className="font-sans font-semibold text-[clamp(38px,5vw,72px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[16ch] reveal-stagger">
           Write to us, <span className="text-teal">say what you need</span>.
@@ -19,11 +21,11 @@ export default function ContactPage() {
           Plain emails, no contact forms, no chatbots. We read everything that lands in
           this inbox.
         </p>
-      </section>
+      </Reveal>
 
       {/* Channels — hairline-grid panel (no individual card borders) */}
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line">
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10" delay={80}>
+        <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line">
           <Channel
             label="Editorial"
             body="For submission questions, corrections, takedown requests, and anything about entries, resources, or news on the Hub."
@@ -52,11 +54,11 @@ export default function ContactPage() {
             cta="CAT on LinkedIn"
             external
           />
-        </div>
-      </section>
+        </StaggerReveal>
+      </Reveal>
 
       {/* Triage — soft cream band */}
-      <section className="bg-cream border-t border-line mt-16">
+      <Reveal as="section" className="bg-cream border-t border-line mt-16" delay={120}>
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-14">
           <div className="max-w-[60ch]">
             <h2 className="font-sans font-semibold text-[22px] sm:text-[26px] tracking-[-0.02em] text-ink">
@@ -87,7 +89,7 @@ export default function ContactPage() {
             </p>
           </aside>
         </div>
-      </section>
+      </Reveal>
     </article>
   );
 }
@@ -117,14 +119,14 @@ function Channel({
         href={href}
         {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
         className={
-          "mt-auto pt-6 inline-flex items-center gap-1.5 self-start font-mono text-[11px] uppercase tracking-[0.14em] pb-1 border-b-2 transition-colors " +
+          "group mt-auto pt-6 inline-flex items-center gap-1.5 self-start font-mono text-[11px] uppercase tracking-[0.14em] pb-1 border-b-2 transition-colors " +
           (accent === "amber"
             ? "text-deep-teal border-amber hover:border-amber-deep"
             : "text-teal border-line-soft hover:border-teal")
         }
       >
         {cta}
-        <ArrowUpRight size={12} strokeWidth={1.9} aria-hidden />
+        <ArrowUpRight size={12} strokeWidth={1.9} className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
       </a>
     </div>
   );

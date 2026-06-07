@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThreeLevers } from "@/components/ui/ThreeLevers";
+import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata = {
   title: "About",
@@ -10,7 +11,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
-      <header className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
+      <Reveal as="header" className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end" delay={0}>
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">About</span>
           <h1 className="font-sans font-semibold text-hero-xl text-ink mt-4 tracking-[-0.035em] leading-[0.98]">
@@ -31,10 +32,10 @@ export default function AboutPage() {
             across India.
           </p>
         </aside>
-      </header>
+      </Reveal>
 
       {/* CAT in their own words */}
-      <section className="mt-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+      <Reveal as="section" className="mt-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12" delay={80}>
         <div className="max-w-reading">
           <Block label="What CAT does">
             CAT (Consortium for Agroecological Transformations) supports India&apos;s 40 million
@@ -104,10 +105,10 @@ export default function AboutPage() {
             </p>
           </div>
         </aside>
-      </section>
+      </Reveal>
 
       {/* Three Levers */}
-      <section className="mt-24">
+      <Reveal as="section" className="mt-24" delay={120}>
         <div className="flex items-baseline gap-4 sm:gap-7 mb-7 flex-wrap">
           <h2 className="font-sans font-semibold text-[26px] sm:text-[30px] lg:text-[34px] tracking-[-0.02em] text-ink">
             Three{" "}
@@ -123,10 +124,10 @@ export default function AboutPage() {
           and finance, to support community-led adoption and long-term transitions.
         </p>
         <ThreeLevers />
-      </section>
+      </Reveal>
 
       {/* SDGs + collaboration */}
-      <section className="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+      <Reveal as="section" className="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16" delay={160}>
         <div className="reveal-stagger">
           <span className="eyebrow">Our vision</span>
           <p className="text-[20px] sm:text-[22px] text-ink leading-[1.45] mt-4 max-w-[44ch]">
@@ -157,7 +158,7 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
-      </section>
+      </Reveal>
     </article>
   );
 }

@@ -1,3 +1,5 @@
+import { Reveal } from "@/components/ui/Reveal";
+
 export const metadata = {
   title: "Privacy",
   description:
@@ -7,7 +9,7 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
-      <header>
+      <Reveal as="header" delay={0}>
         <span className="eyebrow">Privacy</span>
         <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] leading-[1.02] tracking-[-0.035em] text-ink mt-4">
           What we <span className="text-teal">store</span>, what we don&apos;t.
@@ -15,9 +17,9 @@ export default function PrivacyPage() {
         <p className="text-[18px] text-ink-soft leading-[1.6] mt-5 max-w-[58ch]">
           Plain language. No dark patterns. Short.
         </p>
-      </header>
+      </Reveal>
 
-      <section className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+      <Reveal as="section" className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12" delay={80}>
         <div className="max-w-reading">
           <Block label="What we store">
             <p>
@@ -99,7 +101,7 @@ export default function PrivacyPage() {
             </p>
           </div>
         </aside>
-      </section>
+      </Reveal>
 
       <footer className="mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
         Last updated · 20 May 2026

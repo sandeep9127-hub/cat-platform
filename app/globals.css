@@ -413,6 +413,36 @@ body::before {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* StaggerReveal — direct children cascade in once the container enters view.
+   .sg hides them; .sg-in runs the rise+fade with an nth-child delay ramp. */
+.sg > * {
+  opacity: 0;
+}
+.sg-in > * {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.sg-in > *:nth-child(1) { animation-delay: 0ms; }
+.sg-in > *:nth-child(2) { animation-delay: 45ms; }
+.sg-in > *:nth-child(3) { animation-delay: 90ms; }
+.sg-in > *:nth-child(4) { animation-delay: 135ms; }
+.sg-in > *:nth-child(5) { animation-delay: 180ms; }
+.sg-in > *:nth-child(6) { animation-delay: 225ms; }
+.sg-in > *:nth-child(7) { animation-delay: 270ms; }
+.sg-in > *:nth-child(8) { animation-delay: 315ms; }
+.sg-in > *:nth-child(9) { animation-delay: 360ms; }
+.sg-in > *:nth-child(10) { animation-delay: 405ms; }
+.sg-in > *:nth-child(n+11) { animation-delay: 450ms; }
+@media (prefers-reduced-motion: reduce) {
+  .sg > *, .sg-in > * { opacity: 1; animation: none; }
+}
+
+/* Route transition — a quick opacity fade on navigation (App Router template).
+   Opacity only, so it stays gentle and is safe under reduced motion. */
+.route-fade {
+  animation: fade-in 0.22s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+
 /* Origin-aware popover entrance (scales in from its trigger corner). */
 @keyframes scope-pop {
   from {

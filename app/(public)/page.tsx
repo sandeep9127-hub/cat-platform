@@ -27,6 +27,8 @@ import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { ApproachFilm } from "@/components/home/ApproachFilm";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { StaggerReveal } from "@/components/ui/StaggerReveal";
 import { Reveal } from "@/components/ui/Reveal";
 import Link from "next/link";
 
@@ -125,10 +127,15 @@ export default async function LandingPage() {
             <div className="mt-8 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
               <Link
                 href="/map"
-                className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+                className="group inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
               >
                 Explore the Solutions Atlas
-                <ArrowUpRight size={15} strokeWidth={2} aria-hidden />
+                <ArrowUpRight
+                  size={15}
+                  strokeWidth={2}
+                  className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  aria-hidden
+                />
               </Link>
               <Link
                 href="/landscapes"
@@ -157,7 +164,7 @@ export default async function LandingPage() {
               ].map((s) => (
                 <div key={s.label}>
                   <dt className="font-sans text-[23px] sm:text-[26px] font-semibold text-ink tabular-nums tracking-[-0.025em] leading-none">
-                    {s.n}
+                    <AnimatedNumber value={String(s.n)} />
                   </dt>
                   <dd className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
                     {s.label}
@@ -263,7 +270,7 @@ export default async function LandingPage() {
           </p>
         </div>
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line border border-line">
+          <StaggerReveal className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line border border-line">
             {categoryTiles.map((t) => (
               <Link
                 key={t.slug}
@@ -272,7 +279,13 @@ export default async function LandingPage() {
                 style={{ transition: "background-color 150ms, transform 150ms" }}
               >
                 {/* category icon, in the category colour */}
-                <t.Icon size={24} strokeWidth={1.7} style={{ color: t.colourHex }} aria-hidden />
+                <t.Icon
+                  size={24}
+                  strokeWidth={1.7}
+                  style={{ color: t.colourHex }}
+                  className="transition-transform duration-200 ease-out-expo group-hover:-translate-y-0.5 group-hover:scale-110"
+                  aria-hidden
+                />
                 <h3 className="font-sans text-[16px] font-semibold tracking-[-0.02em] text-ink leading-[1.18]">
                   {t.short}
                 </h3>
@@ -282,7 +295,7 @@ export default async function LandingPage() {
                 </span>
               </Link>
             ))}
-          </div>
+          </StaggerReveal>
         </div>
       </Reveal>
 

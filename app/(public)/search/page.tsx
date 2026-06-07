@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { searchEntries, type SearchHit } from "@/lib/db/search";
 import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
+import { Reveal } from "@/components/ui/Reveal";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   return (
     <>
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 reveal-stagger">
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 reveal-stagger" delay={0}>
         <span className="eyebrow">Search the library</span>
         <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
           Ask the <span className="text-teal">library</span>.
@@ -176,9 +177,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             </FilterGroup>
           </div>
         </form>
-      </section>
+      </Reveal>
 
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-6">
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-6" delay={80}>
         <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
           <span>{totalLabel}</span>
           {hasAnyFilter && (
@@ -201,7 +202,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             ))}
           </ul>
         )}
-      </section>
+      </Reveal>
     </>
   );
 }
