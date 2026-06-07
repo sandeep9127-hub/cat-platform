@@ -211,13 +211,17 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         role="img"
         aria-label="Map of India showing food systems programmes by state"
       >
-        <ellipse
-          cx={PROJECTION_VIEWBOX.width / 2}
-          cy={PROJECTION_VIEWBOX.height - 35}
-          rx={140}
-          ry={6}
-          fill="rgba(44,69,68,0.12)"
-        />
+        {/* Ground-shadow ellipse: gives the card map a sense of lift. On the
+            bare hero map it reads as a floating grey bulb, so omit it there. */}
+        {!bare && (
+          <ellipse
+            cx={PROJECTION_VIEWBOX.width / 2}
+            cy={PROJECTION_VIEWBOX.height - 35}
+            rx={140}
+            ry={6}
+            fill="rgba(44,69,68,0.12)"
+          />
+        )}
 
         {paths.length === 0 ? (
           <text
