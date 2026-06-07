@@ -96,7 +96,7 @@ export default async function LandingPage() {
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-10 lg:gap-12 items-center">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
@@ -132,21 +132,15 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/landscapes"
-                className="text-[14px] text-ink underline underline-offset-4 decoration-line hover:decoration-ink transition-colors"
+                className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full border border-line text-ink hover:border-deep-teal hover:text-deep-teal active:scale-[0.97] transition-[transform,color,border-color] duration-150 ease-out-expo"
               >
                 The 11 landscapes
               </Link>
             </div>
-
-            <div className="mt-9 pt-6 border-t border-line/80 flex flex-wrap items-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted reveal-stagger max-w-[44ch]" style={{ animationDelay: "480ms" }}>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedTotal}</strong> solutions</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{combinedStateCount}</strong> states</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">11</strong> landscapes</span>
-              <span><strong className="text-ink text-[13px] font-semibold tabular-nums">{counts.organisations}</strong> organisations</span>
-            </div>
           </div>
 
-          {/* Right — the live Solutions Atlas (pins animate in on load) */}
+          {/* Right — the live Solutions Atlas (pins animate in on load), with
+              its stat ledger docked underneath so map + numbers read as one. */}
           <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "200ms" }}>
             <IndiaMap
               entries={mapEntries}
@@ -154,6 +148,23 @@ export default async function LandingPage() {
               totalStates={combinedStateCount}
               bare
             />
+            <dl className="mt-5 pt-5 border-t border-line/80 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
+              {[
+                { n: combinedTotal, label: "Solutions" },
+                { n: combinedStateCount, label: "States" },
+                { n: 11, label: "Landscapes" },
+                { n: counts.organisations, label: "Organisations" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <dt className="font-sans text-[23px] sm:text-[26px] font-semibold text-ink tabular-nums tracking-[-0.025em] leading-none">
+                    {s.n}
+                  </dt>
+                  <dd className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+                    {s.label}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </section>
