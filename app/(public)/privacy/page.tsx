@@ -60,8 +60,8 @@ export default function PrivacyPage() {
           <Block label="Removal">
             <p>
               Write to{" "}
-              <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
-                editors@cat.org.in
+              <a className="text-teal underline-offset-2 hover:underline" href="mailto:info@agroecologyindia.org">
+                info@agroecologyindia.org
               </a>{" "}
               and we will remove your account, your submissions (or convert them to
               anonymous if they have been edited and published by other contributors), and

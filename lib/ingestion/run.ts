@@ -77,7 +77,7 @@ export async function politeFetch(url: string, signal?: AbortSignal): Promise<st
   const res = await fetch(url, {
     headers: {
       "user-agent":
-        "CATPlatform/1.0 editorial-ingestion contact: editors@cat.org.in",
+        "CATPlatform/1.0 editorial-ingestion contact: info@agroecologyindia.org",
       accept: "text/html, text/plain, application/json, */*;q=0.5",
     },
     signal,

@@ -29,8 +29,8 @@ export default function ContactPage() {
           <Channel
             label="Editorial"
             body="For submission questions, corrections, takedown requests, and anything about entries, resources, or news on the Hub."
-            href="mailto:editors@cat.org.in"
-            cta="editors@cat.org.in"
+            href="mailto:info@agroecologyindia.org"
+            cta="info@agroecologyindia.org"
             accent="amber"
           />
           <Channel
@@ -43,7 +43,7 @@ export default function ContactPage() {
           <Channel
             label="Submit your work"
             body="If your organisation runs a credible food-systems programme that's missing from the library, send a one-paragraph pitch with a couple of source links."
-            href="mailto:editors@cat.org.in?subject=Programme%20submission"
+            href="mailto:info@agroecologyindia.org?subject=Programme%20submission"
             cta="Submit a programme"
             accent="amber"
           />

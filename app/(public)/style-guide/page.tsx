@@ -128,8 +128,8 @@ export default function StyleGuidePage() {
             <span className="eyebrow block mb-2">Questions</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               Write to{" "}
-              <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
-                editors@cat.org.in
+              <a className="text-teal underline-offset-2 hover:underline" href="mailto:info@agroecologyindia.org">
+                info@agroecologyindia.org
               </a>{" "}
               if a published entry reads off-tone or off-fact.
             </p>

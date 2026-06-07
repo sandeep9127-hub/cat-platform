@@ -67,8 +67,8 @@ export default function FundersPage() {
             </p>
             <p className="mt-3">
               Funder briefings come from{" "}
-              <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
-                editors@cat.org.in
+              <a className="text-teal underline-offset-2 hover:underline" href="mailto:info@agroecologyindia.org">
+                info@agroecologyindia.org
               </a>
               . They are not channelled through partner communications.
             </p>
@@ -93,8 +93,8 @@ export default function FundersPage() {
             <span className="eyebrow block mb-2">Briefings</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
               For a portfolio briefing or citation format, write to{" "}
-              <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
-                editors@cat.org.in
+              <a className="text-teal underline-offset-2 hover:underline" href="mailto:info@agroecologyindia.org">
+                info@agroecologyindia.org
               </a>
               .
             </p>

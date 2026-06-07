@@ -97,7 +97,7 @@ export default function TermsPage() {
           <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Disputes</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
-              First step: write to editors@cat.org.in. Most things can be resolved before
+              First step: write to info@agroecologyindia.org. Most things can be resolved before
               they become disputes.
             </p>
           </div>

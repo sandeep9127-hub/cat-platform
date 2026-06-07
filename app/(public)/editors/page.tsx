@@ -130,8 +130,8 @@ export default function EditorsPage() {
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">Editorial reach</span>
           <p className="text-[14px] text-ink-soft leading-[1.6] mt-3">
             Write to{" "}
-            <a className="text-teal underline-offset-2 hover:underline" href="mailto:editors@cat.org.in">
-              editors@cat.org.in
+            <a className="text-teal underline-offset-2 hover:underline" href="mailto:info@agroecologyindia.org">
+              info@agroecologyindia.org
             </a>{" "}
             for corrections, takedowns, or to flag a published entry that reads
             off-tone.
