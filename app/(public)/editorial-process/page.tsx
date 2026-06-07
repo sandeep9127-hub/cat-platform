@@ -56,9 +56,9 @@ export default function EditorialProcessPage() {
           </Step>
 
           <Step n="06" title="Submissions">
-            Organisations can submit their own programmes, resources, and news items through{" "}
-            <a href="/contribute" className="text-teal underline-offset-2 hover:underline">
-              /contribute
+            Organisations can pitch their own programmes to the editors at{" "}
+            <a href="/contact" className="text-teal underline-offset-2 hover:underline">
+              editors@cat.org.in
             </a>
             . Submissions enter the same review queue. Endorsement on the public surface
             indicates whether CAT vouches for the description.

@@ -214,7 +214,7 @@ export default async function LandingPage() {
               The approach
             </div>
             <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] leading-[1.04] tracking-[-0.03em] text-ink max-w-[16ch]">
-              Know more about the work behind the Atlas.
+              Know more about the Consortium behind the Hub.
             </h2>
             <p className="mt-4 max-w-[46ch] text-[15px] leading-[1.6] text-ink-soft">
               The Consortium for Agroecological Transformations works across India to put

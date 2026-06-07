@@ -53,7 +53,7 @@ export default function ContactPage() {
             from the library, send a one-paragraph pitch with a couple of source links.
           </p>
           <a
-            href="/contribute"
+            href="mailto:editors@cat.org.in?subject=Programme%20submission"
             className="mt-4 inline-block font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
           >
             Submit a programme →

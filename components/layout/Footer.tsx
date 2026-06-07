@@ -49,8 +49,12 @@ export function Footer() {
             A quiet, <span className="text-teal">honest</span> record of food systems work in India.
           </h3>
           <p className="mt-4 text-[13.5px] leading-[1.6] text-ink-soft max-w-[42ch]">
-            Run by the Consortium for Agroecological Transformations. Open to contributions from
-            credible food-systems organisations who can stand behind what they publish.
+            Run by the Consortium for Agroecological Transformations. Every entry is compiled
+            from public sources and checked before it goes up. Missing a programme?{" "}
+            <a href="/contact" className="text-teal hover:text-deep-teal underline-offset-2 hover:underline">
+              Tell the editors
+            </a>
+            .
           </p>
         </div>
 

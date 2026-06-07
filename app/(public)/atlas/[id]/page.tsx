@@ -271,7 +271,7 @@ export default async function AtlasRecordPage({ params }: Props) {
             </Link>
             <span className="text-line">·</span>
             <Link
-              href="/contribute"
+              href="/contact"
               className="inline-flex items-center gap-1.5 text-amber-deep border-b border-line-soft pb-0.5 hover:border-amber-deep transition-colors"
             >
               Submit a programme
