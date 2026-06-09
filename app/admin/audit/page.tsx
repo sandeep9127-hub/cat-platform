@@ -38,8 +38,8 @@ export default async function AuditPage() {
       {rows.length === 0 ? (
         <p className="text-[14px] text-muted py-10">No actions recorded yet.</p>
       ) : (
-        <div className="rounded-[10px] border border-line overflow-hidden">
-          <table className="w-full border-collapse text-[13px]">
+        <div className="rounded-[10px] border border-line overflow-x-auto">
+          <table className="w-full min-w-[560px] border-collapse text-[13px]">
             <thead>
               <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
                 <th className="px-4 py-3 font-medium">When</th>

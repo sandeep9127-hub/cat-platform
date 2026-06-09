@@ -59,7 +59,7 @@ export default async function AdminFactSheets() {
       ) : (
         <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
           {sheets.map((s) => (
-            <li key={s.slug} className="flex items-start gap-4 px-4 py-3.5">
+            <li key={s.slug} className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 px-4 py-3.5">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link href={`/factsheet/${s.slug}`} target="_blank" className="font-serif text-[16px] text-deep-teal hover:text-teal no-underline">

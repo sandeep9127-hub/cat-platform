@@ -19,18 +19,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-dvh grid grid-rows-[auto_1fr] bg-paper relative z-10">
       <header className="sticky top-0 z-40 bg-cream border-b border-line">
-        <div className="max-w-[1400px] mx-auto px-5 sm:px-7 lg:px-10 py-3 flex items-center gap-6">
-          <Link href="/admin" className="font-serif text-[18px] font-medium tracking-[-0.01em] text-deep-teal hover:text-teal">
+        <div className="max-w-[1400px] mx-auto px-5 sm:px-7 lg:px-10 py-3 flex flex-wrap items-center gap-x-5 gap-y-2.5">
+          <Link href="/admin" className="order-1 font-serif text-[18px] font-medium tracking-[-0.01em] text-deep-teal hover:text-teal">
             CAT <em className="text-teal italic font-normal">desk</em>
           </Link>
-          <nav className="flex items-center gap-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+          <nav className="order-3 md:order-2 w-full md:w-auto overflow-x-auto whitespace-nowrap flex items-center gap-5 font-mono text-[10.5px] uppercase tracking-[0.14em] -mx-1 px-1">
             <Link href="/admin/factsheets" className="text-ink-soft hover:text-teal">Fact sheets</Link>
             <Link href="/admin/submissions" className="text-ink-soft hover:text-teal">Submissions</Link>
             <Link href="/admin/organizations" className="text-ink-soft hover:text-teal">Organisations</Link>
             <Link href="/admin/landscapes" className="text-ink-soft hover:text-teal">Landscapes</Link>
             <Link href="/admin/audit" className="text-ink-soft hover:text-teal">Audit</Link>
           </nav>
-          <div className="ml-auto flex items-center gap-4">
+          <div className="order-2 md:order-3 ml-auto flex items-center gap-4">
             <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
               {email} · {role}
             </span>

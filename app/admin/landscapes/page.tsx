@@ -29,8 +29,8 @@ export default async function AdminLandscapesPage() {
         </p>
       </header>
 
-      <div className="rounded-[10px] border border-line overflow-hidden">
-        <table className="w-full border-collapse text-[13.5px]">
+      <div className="rounded-[10px] border border-line overflow-x-auto">
+        <table className="w-full min-w-[620px] border-collapse text-[13.5px]">
           <thead>
             <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
               <th className="px-4 py-3 font-medium">Landscape</th>
