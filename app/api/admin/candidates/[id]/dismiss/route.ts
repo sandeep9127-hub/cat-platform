@@ -17,5 +17,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .update(schema.discoveryCandidates)
     .set({ status: "dismissed", triagedAt: new Date() })
     .where(eq(schema.discoveryCandidates.id, id));
-  return NextResponse.redirect(new URL("/admin", req.url));
+  return NextResponse.redirect(new URL("/admin/candidates", req.url), 303);
 }
