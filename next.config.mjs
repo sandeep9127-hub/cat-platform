@@ -23,13 +23,19 @@ const nextConfig = {
   // domain (deep link preserved via ?from). /api stays live so Vercel cron and
   // the API keep working; /_next and /moved are excluded so the page renders.
   async rewrites() {
-    return [
-      {
-        source: "/:path((?!api/|_next/|moved).*)",
-        has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
-        destination: "/moved?from=/:path",
-      },
-    ];
+    return {
+      // beforeFiles so it intercepts real pages (/, /map, ...) on the old host
+      // before Next serves them. /api, /_next and /moved are excluded.
+      beforeFiles: [
+        {
+          source: "/:path((?!api/|_next/|moved).*)",
+          has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
+          destination: "/moved?from=/:path",
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
   async headers() {
     const csp =
