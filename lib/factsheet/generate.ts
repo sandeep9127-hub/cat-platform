@@ -297,7 +297,14 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
   return { ok: true, sheet, status };
 }
 
-export type FactSheetRow = FactSheet & { status: string; verified: boolean; updated_at: string };
+export type FactSheetRow = FactSheet & {
+  status: string;
+  verified: boolean;
+  updated_at: string;
+  edited_by_human?: boolean;
+  last_edited_at?: string | null;
+  last_edited_by?: string | null;
+};
 
 export async function listFactSheets(): Promise<FactSheetRow[]> {
   const r = await db.execute(sql`SELECT * FROM "cat".solution_factsheets ORDER BY updated_at DESC`);

@@ -1,3 +1,6 @@
 {
-  "crons": []
+  "crons": [
+    { "path": "/api/cron/discovery", "schedule": "0 6 * * 1" },
+    { "path": "/api/cron/freshness-sweep", "schedule": "0 8 * * 1" }
+  ]
 }

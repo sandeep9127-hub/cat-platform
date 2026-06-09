@@ -71,6 +71,11 @@ export default async function AdminFactSheets() {
                   <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">
                     conf {Math.round((s.confidence ?? 0) * 100)}%
                   </span>
+                  {s.edited_by_human ? (
+                    <span className="font-mono text-[8.5px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full bg-line text-ink-soft">
+                      human-edited
+                    </span>
+                  ) : null}
                 </div>
                 <div className="text-[12.5px] text-ink-soft mt-1">
                   {[s.lead_organisation, s.district, s.state_code].filter(Boolean).join(" · ") || "—"}
@@ -78,6 +83,9 @@ export default async function AdminFactSheets() {
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0 pt-0.5">
+                <Link href={`/admin/factsheets/${s.slug}/edit`} className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal no-underline">
+                  Edit
+                </Link>
                 {s.status !== "published" ? (
                   <form action={setStatus}><input type="hidden" name="slug" value={s.slug} /><input type="hidden" name="status" value="published" />
                     <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Publish</button>
