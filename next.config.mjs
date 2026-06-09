@@ -18,6 +18,20 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  // One official link only: bounce the old Vercel domain(s) to the custom
+  // domain with a permanent redirect, so funders only ever see hub.agroecologyindia.org.
+  async redirects() {
+    return [
+      {
+        // Every user-facing path EXCEPT /api/* (so Vercel cron + API still run
+        // on the platform host) bounces to the canonical domain.
+        source: "/:path((?!api/).*)",
+        has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
+        destination: "https://hub.agroecologyindia.org/:path",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const csp =
       "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:";
