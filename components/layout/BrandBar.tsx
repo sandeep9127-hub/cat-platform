@@ -9,7 +9,7 @@ import {
   Info,
   Compass,
   Users,
-  ExternalLink,
+  Home,
 } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
@@ -91,6 +91,21 @@ export function BrandBar() {
           </span>
         </Link>
         <nav className="ml-auto flex items-center gap-4 lg:gap-[18px] xl:gap-6">
+          {/* Home = the parent organisation site; the Hub lives inside it. */}
+          <a
+            href={PARENT_SITE}
+            className="hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
+          >
+            <Home size={13} strokeWidth={1.7} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
+            <span className="relative">
+              Home
+              <span
+                aria-hidden
+                className="absolute left-0 -bottom-1 h-[1.5px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+                style={{ background: "linear-gradient(90deg, #2E7573 0%, #C68C2E 100%)" }}
+              />
+            </span>
+          </a>
           {NAV_LINKS.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -112,16 +127,6 @@ export function BrandBar() {
               </span>
             </Link>
           ))}
-          {/* Parent organisation site */}
-          <a
-            href={PARENT_SITE}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors py-1"
-          >
-            agroecologyindia.org
-            <ExternalLink size={12} strokeWidth={1.75} aria-hidden />
-          </a>
           {/* Ask — single highlighted entry point (replaces the old floating widget) */}
           <Link
             href="/agent"
@@ -160,6 +165,14 @@ export function BrandBar() {
       {open && (
         <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
+            <a
+              href={PARENT_SITE}
+              onClick={() => setOpen(false)}
+              className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft inline-flex items-center gap-3"
+            >
+              <Home size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
+              <span>Home</span>
+            </a>
             {NAV_LINKS.map(({ href, label, Icon }) => (
               // No per-item stagger — the parent drawer already animates
               // in. The stagger had items at opacity 0 mid-flight which
@@ -174,16 +187,6 @@ export function BrandBar() {
                 <span>{label}</span>
               </Link>
             ))}
-            <a
-              href={PARENT_SITE}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setOpen(false)}
-              className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft inline-flex items-center gap-3"
-            >
-              <ExternalLink size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
-              <span>agroecologyindia.org</span>
-            </a>
             <Link
               href="/agent"
               onClick={() => setOpen(false)}
