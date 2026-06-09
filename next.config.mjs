@@ -18,17 +18,16 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
-  // One official link only: bounce the old Vercel domain(s) to the custom
-  // domain with a permanent redirect, so funders only ever see hub.agroecologyindia.org.
-  async redirects() {
+  // One official link only. Any user-facing page on a *.vercel.app host is
+  // rewritten to a branded "we have moved" notice that forwards to the custom
+  // domain (deep link preserved via ?from). /api stays live so Vercel cron and
+  // the API keep working; /_next and /moved are excluded so the page renders.
+  async rewrites() {
     return [
       {
-        // Every user-facing path EXCEPT /api/* (so Vercel cron + API still run
-        // on the platform host) bounces to the canonical domain.
-        source: "/:path((?!api/).*)",
+        source: "/:path((?!api/|_next/|moved).*)",
         has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
-        destination: "https://hub.agroecologyindia.org/:path",
-        permanent: true,
+        destination: "/moved?from=/:path",
       },
     ];
   },
