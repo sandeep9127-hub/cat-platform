@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 export const runtime = "nodejs";
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "admin" && role !== "editor") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   // Trigger the draft writer for this candidate.
   // In production, fire the cron handler with the candidate id.

@@ -3,6 +3,7 @@ import { del } from "@vercel/blob";
 import { auth } from "@/auth";
 import { ingestLandscapeReport } from "@/lib/landscape/ingest";
 import { writeAudit } from "@/lib/audit";
+import { assertSafeFetchUrl } from "@/lib/security/ssrf";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // embedding can take a while for long reports
@@ -46,6 +47,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
       if (!okType(body.fileName)) {
         return NextResponse.json({ error: "only .pdf or .docx reports are supported" }, { status: 400 });
       }
+      // SSRF guard: only fetch from Vercel Blob's own storage host. blobUrl is
+      // client-supplied, so without this an attacker could point us at an
+      // internal service or cloud metadata endpoint.
+      let blobHost: string;
+      try {
+        blobHost = assertSafeFetchUrl(body.blobUrl).hostname.toLowerCase();
+      } catch {
+        return NextResponse.json({ error: "invalid blobUrl" }, { status: 400 });
+      }
+      if (!body.blobUrl.startsWith("https://") || !blobHost.endsWith(".public.blob.vercel-storage.com")) {
+        return NextResponse.json({ error: "blobUrl must be a Vercel Blob URL" }, { status: 400 });
+      }
       blobUrl = body.blobUrl;
       fileName = body.fileName;
       title = (body.title || "").trim() || fileName.replace(/\.[^.]+$/, "");
@@ -85,7 +98,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
+    console.error("landscape ingest failed:", e);
     if (blobUrl) await del(blobUrl).catch(() => {});
-    return NextResponse.json({ error: (e as Error).message || "ingestion failed" }, { status: 500 });
+    return NextResponse.json({ error: "ingestion failed" }, { status: 500 });
   }
 }

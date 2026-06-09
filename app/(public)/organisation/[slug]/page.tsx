@@ -22,8 +22,20 @@ const ROLE_LABELS: Record<string, string> = {
 export default async function OrganisationPage({ params }: Props) {
   const { slug } = await params;
 
+  // Explicit public-safe column list — never select internal fields like
+  // catRelationshipNotes, verifiedContactPersonId, or any contact PII.
   const [org] = await db
-    .select()
+    .select({
+      id: schema.organisations.id,
+      name: schema.organisations.name,
+      slug: schema.organisations.slug,
+      shortName: schema.organisations.shortName,
+      type: schema.organisations.type,
+      description: schema.organisations.description,
+      foundedYear: schema.organisations.foundedYear,
+      website: schema.organisations.website,
+      logoUrl: schema.organisations.logoUrl,
+    })
     .from(schema.organisations)
     .where(eq(schema.organisations.slug, slug))
     .limit(1);

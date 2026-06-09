@@ -13,6 +13,7 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
     });
   } catch (e) {
-    return NextResponse.json({ error: "directory_unavailable", detail: (e as Error).message }, { status: 500 });
+    console.error("organizations directory fetch failed:", e);
+    return NextResponse.json({ error: "directory_unavailable" }, { status: 500 });
   }
 }

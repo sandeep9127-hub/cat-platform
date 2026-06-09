@@ -304,8 +304,18 @@ export async function listFactSheets(): Promise<FactSheetRow[]> {
   return (r as unknown as { rows: FactSheetRow[] }).rows;
 }
 
-export async function getFactSheet(slug: string): Promise<FactSheetRow | null> {
-  const r = await db.execute(sql`SELECT * FROM "cat".solution_factsheets WHERE slug = ${slug} LIMIT 1`);
+export async function getFactSheet(
+  slug: string,
+  opts?: { includeUnpublished?: boolean },
+): Promise<FactSheetRow | null> {
+  // Public callers get published sheets only. Sheets that failed the confidence
+  // gate (status 'flagged') must NOT be reachable by guessing a slug — they may
+  // contain unverified claims about real organisations. Admin/generation callers
+  // opt in to unpublished access via { includeUnpublished: true }.
+  const statusFilter = opts?.includeUnpublished ? sql`` : sql`AND status = 'published'`;
+  const r = await db.execute(
+    sql`SELECT * FROM "cat".solution_factsheets WHERE slug = ${slug} ${statusFilter} LIMIT 1`,
+  );
   return (r as unknown as { rows: FactSheetRow[] }).rows[0] ?? null;
 }
 

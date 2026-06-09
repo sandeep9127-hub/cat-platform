@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     await updateOrgWebsite(id, website || null);
     return NextResponse.json({ ok: true, website: website || null });
   } catch (e) {
-    return NextResponse.json({ error: "update_failed", detail: (e as Error).message }, { status: 500 });
+    console.error("admin/organizations update failed:", e);
+    return NextResponse.json({ error: "update_failed" }, { status: 500 });
   }
 }

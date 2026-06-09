@@ -4,6 +4,18 @@ import { db, schema } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+const ALLOWED_SCALE_BANDS = new Set([
+  "pilot",
+  "block",
+  "district",
+  "multi_district",
+  "state",
+  "multi_state",
+  "national",
+]);
+
+const TEXT_CAP = 8000;
+
 type Body = {
   email: string;
   organisation: string;
@@ -53,6 +65,22 @@ export async function POST(req: NextRequest) {
     !body.whatWorked
   ) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Validate scaleBand against the allowed enum set.
+  if (!ALLOWED_SCALE_BANDS.has(body.scaleBand)) {
+    return NextResponse.json({ error: "Invalid scaleBand" }, { status: 400 });
+  }
+
+  // Bound startYear to a sane integer range.
+  const startYear = Number(body.startYear);
+  const currentYear = new Date().getFullYear();
+  if (
+    !Number.isInteger(startYear) ||
+    startYear < 1900 ||
+    startYear > currentYear + 1
+  ) {
+    return NextResponse.json({ error: "Invalid startYear" }, { status: 400 });
   }
 
   // Find or create a contributor user record (lightweight; Auth.js full
@@ -109,13 +137,13 @@ export async function POST(req: NextRequest) {
       scaleBand: body.scaleBand as schema.Entry["scaleBand"],
       primaryThemeId: theme.id,
       primaryGeographyId: geo.id,
-      startYear: Number(body.startYear),
+      startYear,
       status: "ongoing",
-      context: body.context,
-      whatWasAttempted: body.whatWasAttempted,
-      whatWasAchieved: body.whatWasAchieved,
-      whatWorked: body.whatWorked,
-      whatDidNotWork: body.whatDidNotWork || null,
+      context: body.context.slice(0, TEXT_CAP),
+      whatWasAttempted: body.whatWasAttempted.slice(0, TEXT_CAP),
+      whatWasAchieved: body.whatWasAchieved.slice(0, TEXT_CAP),
+      whatWorked: body.whatWorked.slice(0, TEXT_CAP),
+      whatDidNotWork: body.whatDidNotWork ? body.whatDidNotWork.slice(0, TEXT_CAP) : null,
       externalLinks,
       submittedByUserId: user.id,
       editorialStatus: "submitted",

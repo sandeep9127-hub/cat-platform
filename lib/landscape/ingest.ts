@@ -108,8 +108,40 @@ async function extractPdf(buffer: Buffer): Promise<string> {
   return Array.isArray(text) ? text.join("\n\n") : text;
 }
 
+/**
+ * Verify the file's actual bytes match the type implied by its extension.
+ * The filename extension is only a first gate — this magic-byte check stops a
+ * mislabelled or malicious payload (e.g. an HTML/script file renamed .pdf) from
+ * reaching the parsers.
+ *   PDF  -> "%PDF-"        (25 50 44 46 2D)
+ *   DOCX -> ZIP "PK\x03\x04" (50 4B 03 04)
+ */
+function assertMagicBytes(buffer: Buffer, fileName: string): void {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith(".pdf")) {
+    const ok =
+      buffer.length >= 5 &&
+      buffer[0] === 0x25 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x44 &&
+      buffer[3] === 0x46 &&
+      buffer[4] === 0x2d;
+    if (!ok) throw new Error("File does not appear to be a valid PDF (bad magic bytes).");
+    return;
+  }
+  // .docx (and any other accepted extension routed to the DOCX path) is a ZIP.
+  const ok =
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 &&
+    buffer[1] === 0x4b &&
+    buffer[2] === 0x03 &&
+    buffer[3] === 0x04;
+  if (!ok) throw new Error("File does not appear to be a valid DOCX (bad magic bytes).");
+}
+
 /** Pick the right extractor from the file name / mime. */
 async function extractText(buffer: Buffer, fileName: string): Promise<string> {
+  assertMagicBytes(buffer, fileName);
   const lower = fileName.toLowerCase();
   if (lower.endsWith(".pdf")) return extractPdf(buffer);
   return extractDocx(buffer);

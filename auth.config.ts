@@ -14,7 +14,9 @@ import type { NextAuthConfig } from "next-auth";
  */
 export const authConfig = {
   trustHost: true,
-  session: { strategy: "jwt" },
+  // 7-day JWT sessions (down from the 30-day default) so a revoked or demoted
+  // admin's existing token expires sooner; admins simply re-request a link.
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
   pages: {
     signIn: "/signin",
     verifyRequest: "/signin?sent=1",

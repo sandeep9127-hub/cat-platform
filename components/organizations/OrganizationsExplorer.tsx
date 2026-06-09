@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Mail, Globe, MapPin } from "lucide-react";
+import { Globe, MapPin } from "lucide-react";
 
 type Org = {
   id: string;
@@ -12,9 +12,6 @@ type Org = {
   domains: string[];
   locationCount: number;
   states: string[];
-  contactPerson: string | null;
-  designation: string | null;
-  email: string | null;
   website: string | null;
 };
 type Loc = { orgId: string; lat: number; lng: number; state: string | null; district: string | null };
@@ -212,8 +209,7 @@ export function OrganizationsExplorer() {
         `<strong>${o ? esc(o.name) : "Organisation"}</strong><br/>${esc(l.district || "")}${
           l.district && l.state ? ", " : ""
         }${esc(l.state || "")}<br/><span style="color:#6B7280;font-size:11px">${o ? esc(o.orgType) : ""}</span>` +
-          (o?.contactPerson ? `<br/><span style="font-size:11px">${esc(o.contactPerson)}</span>` : "") +
-          (o?.email ? `<br/><a href="mailto:${esc(o.email)}" style="font-size:11px;color:#2D7574">${esc(o.email)}</a>` : "")
+          (o?.website ? `<br/><a href="${esc(o.website)}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#2D7574">${esc(o.website)}</a>` : "")
       );
       return m;
     });
@@ -244,8 +240,7 @@ export function OrganizationsExplorer() {
       const m = L.marker([l.lat, l.lng], { icon: pinIcon, zIndexOffset: 1000 }).addTo(hl);
       m.bindPopup(
         `<strong>${esc(o.name)}</strong><br/>${esc(l.district || "")}${l.district && l.state ? ", " : ""}${esc(l.state || "")}` +
-          (o.contactPerson ? `<br/><span style="font-size:11px">${esc(o.contactPerson)}</span>` : "") +
-          (o.email ? `<br/><a href="mailto:${esc(o.email)}" style="font-size:11px;color:#2D7574">${esc(o.email)}</a>` : "")
+          (o.website ? `<br/><a href="${esc(o.website)}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#2D7574">${esc(o.website)}</a>` : "")
       );
       if (i === 0) setTimeout(() => m.openPopup(), 380);
     });
@@ -326,7 +321,6 @@ export function OrganizationsExplorer() {
               <div className="og-card-meta">
                 <MapPin size={12} strokeWidth={1.8} aria-hidden className="og-meta-ic" />
                 {o.locationCount} location{o.locationCount === 1 ? "" : "s"} · {o.states.length} state{o.states.length === 1 ? "" : "s"}
-                {o.contactPerson ? ` · ${o.contactPerson}` : ""}
               </div>
               {o.domains.length > 0 && (
                 <div className="og-domains">
@@ -449,25 +443,8 @@ function OrgDetail({
 
         <div className="og-detail-contact">
           <div className="og-dc-label">Contact</div>
-          {org.contactPerson ? (
-            <div className="og-dc-row">
-              <strong>{org.contactPerson}</strong>
-              {org.designation ? <span className="og-dc-desig"> · {org.designation}</span> : null}
-            </div>
-          ) : <div className="og-dc-row og-muted">Contact person not listed</div>}
           <div className="og-dc-links">
-            {org.email ? (
-              <a className="og-dc-link og-dc-email" href={`mailto:${org.email}`}>
-                <Mail size={14} strokeWidth={1.8} aria-hidden />
-                <span>{org.email}</span>
-              </a>
-            ) : (
-              <div className="og-dc-link og-muted">
-                <Mail size={14} strokeWidth={1.8} aria-hidden />
-                <span>Email not listed</span>
-              </div>
-            )}
-            {org.website && (
+            {org.website ? (
               <a
                 className="og-dc-link og-dc-web"
                 href={org.website}
@@ -477,6 +454,11 @@ function OrgDetail({
                 <Globe size={14} strokeWidth={1.8} aria-hidden />
                 <span>{org.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</span>
               </a>
+            ) : (
+              <div className="og-dc-link og-muted">
+                <Globe size={14} strokeWidth={1.8} aria-hidden />
+                <span>Website not listed</span>
+              </div>
             )}
           </div>
         </div>

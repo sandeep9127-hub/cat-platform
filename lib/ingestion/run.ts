@@ -1,5 +1,6 @@
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
+import { assertSafeFetchUrl } from "@/lib/security/ssrf";
 
 export type RunType = "registry_crawl" | "discovery_agent" | "draft_writer" | "freshness_sweep";
 
@@ -74,19 +75,44 @@ export async function contentHash(text: string): Promise<string> {
  * curated allowlist of source URLs that already agreed to be crawled.
  */
 export async function politeFetch(url: string, signal?: AbortSignal): Promise<string> {
-  const res = await fetch(url, {
-    headers: {
-      "user-agent":
-        "CATPlatform/1.0 editorial-ingestion contact: info@agroecologyindia.org",
-      accept: "text/html, text/plain, application/json, */*;q=0.5",
-    },
-    signal,
-    redirect: "follow",
-  });
-  if (!res.ok) {
-    throw new Error(`Fetch ${url} failed: ${res.status} ${res.statusText}`);
+  const headers = {
+    "user-agent":
+      "CATPlatform/1.0 editorial-ingestion contact: info@agroecologyindia.org",
+    accept: "text/html, text/plain, application/json, */*;q=0.5",
+  };
+
+  // SSRF guard: validate the URL host before fetching. URLs here can originate
+  // from LLM proposals (discovery/draft-writer/registry crons), so a malicious
+  // proposal could otherwise reach internal services or cloud metadata.
+  // We use redirect: "manual" and re-validate the redirect target host, because
+  // a redirect to an internal host is the classic SSRF-guard bypass.
+  const MAX_HOPS = 2;
+  let current = url;
+  for (let hop = 0; hop <= MAX_HOPS; hop++) {
+    assertSafeFetchUrl(current);
+    const res = await fetch(current, { headers, signal, redirect: "manual" });
+
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get("location");
+      if (!location) {
+        throw new Error(`Fetch ${current} returned ${res.status} with no Location`);
+      }
+      if (hop === MAX_HOPS) {
+        throw new Error(`Fetch ${url} exceeded ${MAX_HOPS} redirect hops`);
+      }
+      // Resolve relative redirects against the current URL, then re-validate.
+      current = new URL(location, current).toString();
+      continue;
+    }
+
+    if (!res.ok) {
+      throw new Error(`Fetch ${current} failed: ${res.status} ${res.statusText}`);
+    }
+    return await res.text();
   }
-  return await res.text();
+
+  // Unreachable (loop either returns or throws), but satisfies the type checker.
+  throw new Error(`Fetch ${url} failed: too many redirects`);
 }
 
 /** Verify the request came from Vercel Cron (or a manual admin trigger). */

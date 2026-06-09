@@ -10,6 +10,7 @@ import {
   type ChatMessage,
 } from "@/lib/ai/kimi";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -309,6 +310,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Per-IP rate limit: stops a single anonymous client from driving unbounded
+  // (paid) LLM calls. 10 questions / minute is generous for a human reader.
+  const ip = getClientIp(req);
+  const limited = await rateLimit({ key: "agent", ip, limit: 10, windowSec: 60 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { refusal: "Too many questions in a short time. Please wait a minute and try again." },
+      { status: 429 }
+    );
+  }
+
   if (await dailyTurnCeilingExceeded()) {
     return NextResponse.json(
       {
@@ -433,10 +445,10 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (e) {
+        console.error("agent stream kimi call failed:", e);
         send({
           type: "error",
-          message: "The assistant service is unavailable right now.",
-          detail: (e as Error).message,
+          message: "The assistant is temporarily unavailable.",
         });
         controller.close();
         return;

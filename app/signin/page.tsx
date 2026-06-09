@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { CatLogo } from "@/components/layout/CatLogo";
+import { rateLimit } from "@/lib/security/ratelimit";
 
 export const metadata = { title: "Sign in · Admin" };
 export const dynamic = "force-dynamic";
@@ -10,6 +12,12 @@ async function login(formData: FormData) {
   "use server";
   const email = String(formData.get("email") || "").trim().toLowerCase();
   if (!email || !email.includes("@")) redirect("/signin?error=email");
+  // Throttle magic-link requests per IP so the endpoint can't be used to
+  // email-bomb a target or burn the Resend quota.
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = await rateLimit({ key: "signin", ip, limit: 5, windowSec: 600 });
+  if (!limited.ok) redirect("/signin?error=auth");
   try {
     await signIn("resend", { email, redirectTo: "/admin" });
   } catch (err) {

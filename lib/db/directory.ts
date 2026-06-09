@@ -14,11 +14,9 @@ export type DirectoryOrg = {
   domains: string[];
   locationCount: number;
   states: string[];
-  // Contact is public for this directory: organisations registered themselves
-  // to be found and contacted by peers and partners.
-  contactPerson: string | null;
-  designation: string | null;
-  email: string | null;
+  // Personal contact PII (contact_person, contact_email, designation) is NOT
+  // exposed here — the org's website is the public contact channel. The PII
+  // columns exist only for the moderated edit/verify flow and admin views.
   website: string | null;
 };
 
@@ -40,7 +38,6 @@ export async function getDirectory(): Promise<{
 }> {
   const orgR = await db.execute(sql`
     SELECT o.id, o.name, o.org_type AS "orgType", o.domains, o.website,
-           o.contact_person AS "contactPerson", o.designation, o.contact_email AS "email",
            count(l.id)::int AS "locationCount",
            coalesce(array_agg(DISTINCT l.state) FILTER (WHERE l.state IS NOT NULL), '{}') AS states
     FROM "cat".directory_orgs o
@@ -57,7 +54,7 @@ export async function getDirectory(): Promise<{
 
   const orgs = rowsOf<{
     id: string; name: string; orgType: string; domains: unknown; locationCount: number; states: string[];
-    contactPerson: string | null; designation: string | null; email: string | null; website: string | null;
+    website: string | null;
   }>(orgR).map((o) => ({
     id: o.id,
     name: o.name,
@@ -65,9 +62,6 @@ export async function getDirectory(): Promise<{
     domains: Array.isArray(o.domains) ? (o.domains as string[]) : [],
     locationCount: o.locationCount,
     states: (o.states || []).filter(Boolean),
-    contactPerson: o.contactPerson,
-    designation: o.designation,
-    email: o.email,
     website: o.website || null,
   }));
 

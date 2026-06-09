@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { kimiChat, kimiEnabled, kimiCostUsd, type ChatMessage } from "@/lib/ai/kimi";
 import { searchLandscapeChunks } from "@/lib/db/landscape-kb";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,6 +45,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     return NextResponse.json(
       { error: "Ask is not configured. Set NVIDIA_API_KEY." },
       { status: 503 }
+    );
+  }
+
+  const ip = getClientIp(req);
+  const limited = await rateLimit({ key: "landscape-ask", ip, limit: 10, windowSec: 60 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { refusal: "Too many questions in a short time. Please wait a minute and try again." },
+      { status: 429 }
     );
   }
 
@@ -108,8 +118,9 @@ You answer questions strictly from the investment plan passages provided in each
     inputTokens = res.inputTokens;
     outputTokens = res.outputTokens;
   } catch (e) {
+    console.error("landscape/ask kimi call failed:", e);
     return NextResponse.json(
-      { error: "The agent service is unavailable right now.", detail: (e as Error).message },
+      { error: "The agent service is unavailable right now." },
       { status: 502 }
     );
   }

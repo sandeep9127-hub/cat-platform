@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     await insertSubmission(submission);
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: "submit_failed", detail: (e as Error).message }, { status: 500 });
+    console.error("organizations/submit failed:", e);
+    return NextResponse.json({ error: "submit_failed" }, { status: 500 });
   }
 }
