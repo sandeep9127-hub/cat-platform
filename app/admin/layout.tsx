@@ -31,6 +31,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/landscapes" className="text-ink-soft hover:text-teal">Landscapes</Link>
             <Link href="/admin/sources" className="text-ink-soft hover:text-teal">Sources</Link>
             <Link href="/admin/audit" className="text-ink-soft hover:text-teal">Audit</Link>
+            {role === "admin" ? (
+              <Link href="/admin/team" className="text-ink-soft hover:text-teal">Team</Link>
+            ) : null}
+            <Link href="/admin/account" className="text-ink-soft hover:text-teal">Account</Link>
           </nav>
           <div className="order-2 md:order-3 ml-auto flex items-center gap-4">
             <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
