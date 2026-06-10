@@ -3,7 +3,7 @@ import { AtlasSection } from "@/components/entries/AtlasSection";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
-import { Layers, Compass } from "lucide-react";
+import { Layers, Compass, MapPin } from "lucide-react";
 import { categoryIconFor } from "@/components/ui/CategoryIcon";
 
 export const dynamic = "force-dynamic";
@@ -58,13 +58,22 @@ const STATE_NAMES: Record<string, string> = {
 export default async function MapPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; principle?: string }>;
+  searchParams: Promise<{ category?: string; principle?: string; state?: string }>;
 }) {
   const sp = await searchParams;
   const activeCategory =
     sp.category && CATEGORY_BY_SLUG[sp.category] ? sp.category : null;
   const activePrinciple =
     sp.principle && getPrincipleBySlug(sp.principle) ? sp.principle : null;
+  // Multi-select states (comma-separated codes), validated + de-duped.
+  const activeStates = [
+    ...new Set(
+      (sp.state ?? "")
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter((s) => s && STATE_NAMES[s]),
+    ),
+  ];
 
   const allFactsheets = await listFactSheets();
   // Published, geocoded fact sheets are the Atlas (decoupled engine).
@@ -76,27 +85,41 @@ export default async function MapPage({
   // stable regardless of the active filter), then apply the active filters.
   const categoryCounts: Record<string, number> = {};
   const principleCounts: Record<string, number> = {};
+  const stateCounts: Record<string, number> = {};
   for (const f of publishedFactsheets) {
     for (const t of f.themes ?? []) categoryCounts[t] = (categoryCounts[t] ?? 0) + 1;
     for (const p of f.principle_alignment ?? [])
       principleCounts[p] = (principleCounts[p] ?? 0) + 1;
+    const sc = f.state_code ?? "";
+    if (sc) stateCounts[sc] = (stateCounts[sc] ?? 0) + 1;
   }
+  // Only states that actually have fact sheets, named + alphabetised.
+  const statesWithCounts = Object.keys(stateCounts).sort((a, b) =>
+    (STATE_NAMES[a] ?? a).localeCompare(STATE_NAMES[b] ?? b),
+  );
 
   // Two axes, intersected: category (what it does) AND principle (which
   // agroecology principles it advances).
   const factsheets = publishedFactsheets.filter(
     (f) =>
       (!activeCategory || (f.themes ?? []).includes(activeCategory)) &&
-      (!activePrinciple || (f.principle_alignment ?? []).includes(activePrinciple))
+      (!activePrinciple || (f.principle_alignment ?? []).includes(activePrinciple)) &&
+      (activeStates.length === 0 || activeStates.includes(f.state_code ?? ""))
   );
 
-  // Helper to build an href that preserves the *other* axis.
-  const hrefWith = (next: { category?: string | null; principle?: string | null }) => {
+  // Helper to build an href that preserves the *other* axes.
+  const hrefWith = (next: {
+    category?: string | null;
+    principle?: string | null;
+    states?: string[];
+  }) => {
     const cat = next.category !== undefined ? next.category : activeCategory;
     const pri = next.principle !== undefined ? next.principle : activePrinciple;
+    const sts = next.states !== undefined ? next.states : activeStates;
     const qs = new URLSearchParams();
     if (cat) qs.set("category", cat);
     if (pri) qs.set("principle", pri);
+    if (sts && sts.length) qs.set("state", sts.join(","));
     const s = qs.toString();
     return s ? `/map?${s}` : "/map";
   };
@@ -296,7 +319,60 @@ export default async function MapPage({
           </div>
         </nav>
 
-        {(activeCategory || activePrinciple) && (
+        {/* Axis 3 — states (multi-select). Solves clicking overlapping map dots. */}
+        <nav aria-label="Filter the Atlas by state">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
+            <MapPin size={11} strokeWidth={1.8} aria-hidden />
+            By state
+            {activeStates.length > 0 ? (
+              <span className="text-deep-teal normal-case tracking-normal">
+                · {activeStates.length} selected
+              </span>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={hrefWith({ states: [] })}
+              aria-current={activeStates.length === 0 ? "true" : undefined}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
+                (activeStates.length === 0
+                  ? "bg-deep-teal text-paper border-deep-teal"
+                  : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
+              }
+            >
+              All states
+              <span className="font-mono text-[10px] tabular-nums opacity-70">
+                {statesWithCounts.length}
+              </span>
+            </Link>
+            {statesWithCounts.map((code) => {
+              const active = activeStates.includes(code);
+              const n = stateCounts[code] ?? 0;
+              const nextStates = active
+                ? activeStates.filter((c) => c !== code)
+                : [...activeStates, code];
+              return (
+                <Link
+                  key={code}
+                  href={hrefWith({ states: nextStates })}
+                  aria-current={active ? "true" : undefined}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
+                    (active
+                      ? "bg-deep-teal text-paper border-deep-teal"
+                      : "bg-transparent text-ink-soft border-line hover:text-ink hover:border-deep-teal")
+                  }
+                >
+                  {STATE_NAMES[code] ?? code}
+                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {(activeCategory || activePrinciple || activeStates.length > 0) && (
           <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted pt-1">
             Showing {factsheets.length} {factsheets.length === 1 ? "solution" : "solutions"}
             {activeCategory && (
@@ -308,6 +384,14 @@ export default async function MapPage({
               <>
                 {" "}advancing{" "}
                 <span className="text-ink-soft">{principleTitle(activePrinciple)}</span>
+              </>
+            )}
+            {activeStates.length > 0 && (
+              <>
+                {" "}across{" "}
+                <span className="text-ink-soft">
+                  {activeStates.map((c) => STATE_NAMES[c] ?? c).join(", ")}
+                </span>
               </>
             )}
             {" · "}
