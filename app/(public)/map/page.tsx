@@ -53,6 +53,14 @@ const STATE_NAMES: Record<string, string> = {
   UK: "Uttarakhand",
   UP: "Uttar Pradesh",
   WB: "West Bengal",
+  // Union Territories
+  AN: "Andaman & Nicobar",
+  CH: "Chandigarh",
+  DH: "Dadra & Nagar Haveli and Daman & Diu",
+  DL: "Delhi",
+  LA: "Ladakh",
+  LD: "Lakshadweep",
+  PY: "Puducherry",
 };
 
 export default async function MapPage({
@@ -65,15 +73,6 @@ export default async function MapPage({
     sp.category && CATEGORY_BY_SLUG[sp.category] ? sp.category : null;
   const activePrinciple =
     sp.principle && getPrincipleBySlug(sp.principle) ? sp.principle : null;
-  // Multi-select states (comma-separated codes), validated + de-duped.
-  const activeStates = [
-    ...new Set(
-      (sp.state ?? "")
-        .split(",")
-        .map((s) => s.trim().toUpperCase())
-        .filter((s) => s && STATE_NAMES[s]),
-    ),
-  ];
 
   const allFactsheets = await listFactSheets();
   // Published, geocoded fact sheets are the Atlas (decoupled engine).
@@ -93,10 +92,22 @@ export default async function MapPage({
     const sc = f.state_code ?? "";
     if (sc) stateCounts[sc] = (stateCounts[sc] ?? 0) + 1;
   }
-  // Only states that actually have fact sheets, named + alphabetised.
+  // Only states that actually have fact sheets, named + alphabetised. This is
+  // data-driven: a fact sheet in a brand-new state makes its chip appear here
+  // automatically, with a readable name (falling back to the code if unmapped).
   const statesWithCounts = Object.keys(stateCounts).sort((a, b) =>
     (STATE_NAMES[a] ?? a).localeCompare(STATE_NAMES[b] ?? b),
   );
+  // Multi-select states (comma-separated codes), validated against the codes
+  // that actually exist in the data (not the name map) + de-duped.
+  const activeStates = [
+    ...new Set(
+      (sp.state ?? "")
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter((s) => s && stateCounts[s] != null),
+    ),
+  ];
 
   // Two axes, intersected: category (what it does) AND principle (which
   // agroecology principles it advances).
