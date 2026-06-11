@@ -361,7 +361,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                   <p className="text-[15.5px] sm:text-[16.5px] text-ink-soft leading-[1.6] mt-4 max-w-[48ch]">
                     {profile?.context}
                   </p>
-                  <div className="mt-7 flex flex-wrap items-end gap-x-8 gap-y-5">
+                  <div className="mt-7 flex flex-wrap items-start gap-x-8 gap-y-5">
                     {anchor && (
                       <div>
                         <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
@@ -376,7 +376,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                     )}
                     <div>
                       <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
-                      <div className="mt-1.5 font-sans text-[14px]">
+                      <div className="mt-1.5 font-sans text-[14px] flex items-center min-h-12">
                         {pin.lipStatus === "published" ? (
                           <span className="text-deep-teal font-medium">Published</span>
                         ) : (
