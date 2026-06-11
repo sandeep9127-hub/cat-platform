@@ -169,7 +169,12 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
 
   const connectorEnd = active < 0 ? -1 : active >= N ? N - 1 : active;
   const connectorPts = points.slice(0, connectorEnd + 1).map((p) => `${p.x},${p.y}`).join(" ");
-  const activePoint = isLandscape(active) ? points[active] : { x: CX, y: CY };
+  // points[active] is undefined in the window between a soft-navigation (back
+  // button restores a deep scroll position, so IO reports a landscape active
+  // immediately) and the async geojson load finishing. Fall back to centre so
+  // the render never reads .x/.y off undefined.
+  const activePoint =
+    isLandscape(active) && points[active] ? points[active] : { x: CX, y: CY };
   const mapLabel = active < 0 ? "All of India" : active >= N ? "Eleven landscapes" : pins[active]?.name;
 
   function pinFill(i: number): { fill: string; opacity: number } {
