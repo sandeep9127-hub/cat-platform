@@ -373,7 +373,7 @@ body::before {
 
 @keyframes dot-pulse {
   0%, 100% { transform: scale(1); opacity: var(--pulse-base, 0.15); }
-  50% { transform: scale(1.16); opacity: calc(var(--pulse-base, 0.15) * 1.6); }
+  50% { transform: scale(1.07); opacity: calc(var(--pulse-base, 0.15) * 1.25); }
 }
 
 @keyframes dot-pop {

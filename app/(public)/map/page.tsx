@@ -184,7 +184,7 @@ export default async function MapPage({
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">The open library</span>
           <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4">
-            Solutions <span className="text-teal">Atlas</span>.
+            Solutions <span className="text-teal">Atlas</span>
           </h1>
           <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[54ch] mt-6">
             Every food-systems programme on the Hub, plotted on India. Each dot is an

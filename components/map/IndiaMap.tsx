@@ -198,7 +198,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         }}
       >
         <div className="flex gap-2 items-center">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-deep shadow-[0_0_0_3px_rgba(217,166,85,0.22)]" />
+          <span className="w-2.5 h-2.5 rounded-full shadow-[0_0_0_3px_rgba(94,103,144,0.22)]" style={{ background: "#5e6790" }} />
           Solution
         </div>
       </div>
@@ -288,7 +288,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   className="cursor-pointer dot-group"
                   style={
                     {
-                      color: isAmber ? "var(--amber-deep)" : "var(--teal)",
+                      color: isAmber ? "#5e6790" : "var(--teal)",
                       "--pop-delay": popDelay,
                       "--halo-delay": haloDelay,
                     } as React.CSSProperties
@@ -299,7 +299,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     cy={y}
                     r={halo}
                     className="dot-halo"
-                    fill={isAmber ? "var(--amber-deep)" : "var(--teal)"}
+                    fill={isAmber ? "#5e6790" : "var(--teal)"}
                     opacity={isAmber ? 0.18 : 0.15}
                   />
                   <circle
@@ -307,7 +307,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     cy={y}
                     r={core}
                     className="dot-core"
-                    fill={isAmber ? "var(--amber-deep)" : "var(--teal)"}
+                    fill={isAmber ? "#5e6790" : "var(--teal)"}
                   />
                 </g>
               );

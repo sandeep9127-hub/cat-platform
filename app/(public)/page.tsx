@@ -108,11 +108,11 @@ export default async function LandingPage() {
             </div>
 
             <h1
-              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[0.98] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
               style={{ animationDelay: "100ms" }}
             >
               What&apos;s actually working in India&apos;s{" "}
-              <span className="text-teal">food systems</span>.
+              <span className="text-teal">food systems</span>
             </h1>
 
             <p
@@ -232,7 +232,7 @@ export default async function LandingPage() {
               The approach
             </div>
             <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] leading-[1.04] tracking-[-0.03em] text-ink max-w-[16ch]">
-              Know more about the Consortium behind the Hub.
+              Know more about the Consortium behind the Hub
             </h2>
             <p className="mt-4 max-w-[46ch] text-[15px] leading-[1.6] text-ink-soft">
               The Consortium for Agroecological Transformations works across India to put
@@ -262,7 +262,7 @@ export default async function LandingPage() {
             Ten themes
           </div>
           <h2 className="font-sans font-semibold text-[clamp(32px,4vw,52px)] leading-[1.0] tracking-[-0.035em] text-ink max-w-[18ch]">
-            Explore solutions by theme.
+            Explore solutions by theme
           </h2>
           <p className="mt-4 max-w-[60ch] text-[15px] leading-[1.6] text-ink-soft">
             Every solution in the Atlas is tagged to one or more of these ten themes.
