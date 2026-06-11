@@ -695,9 +695,11 @@ function Styles() {
       .og-split { display:grid; grid-template-columns: 1fr 1fr; gap:0; max-width:1280px; margin:0 auto; padding:0 24px 40px;
         height: calc(100vh - 250px); min-height:520px; }
       .og-list { overflow-y:auto; padding-right:16px; display:flex; flex-direction:column; gap:0; }
-      .og-card { border:1px solid var(--line); border-top:0; border-radius:0; padding:16px; background:var(--paper); cursor:pointer; transition:background .15s; }
+      .og-card { position:relative; overflow:hidden; border:1px solid var(--line); border-top:0; border-radius:0; padding:16px; background:var(--paper); cursor:pointer; transition:background .2s; }
+      .og-card::before { content:""; position:absolute; top:0; left:0; right:0; height:2px; background:#2e7573; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.2,.8,.2,1); }
+      .og-card:hover::before { transform:scaleX(1); }
       .og-list > .og-card:first-child { border-top:1px solid var(--line); }
-      .og-card:hover { background:var(--cream); }
+      .og-card:hover { background:rgba(225,237,232,.45); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
       .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.2; }
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
