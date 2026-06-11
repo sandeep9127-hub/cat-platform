@@ -256,7 +256,7 @@ async function photoParagraph(
       spacing: { before: 0, after: 200 },
       children: [
         new TextRun({
-          text: `${photo.credit.toUpperCase()} · ${formatMonth(photo.date).toUpperCase()}`,
+          text: `${photo.credit.toUpperCase()}${photo.date ? ` · ${formatMonth(photo.date).toUpperCase()}` : ""}`,
           font: "Courier New",
           size: 15,
           color: MUTED,
@@ -371,7 +371,7 @@ export async function buildLandscapeBriefDocx(
           spacing: { before: 0, after: 280 },
           children: [
             new TextRun({
-              text: `${p.photos[0].credit.toUpperCase()} · ${formatMonth(p.photos[0].date).toUpperCase()}`,
+              text: `${p.photos[0].credit.toUpperCase()}${p.photos[0].date ? ` · ${formatMonth(p.photos[0].date).toUpperCase()}` : ""}`,
               font: "Courier New",
               size: 15,
               color: MUTED,

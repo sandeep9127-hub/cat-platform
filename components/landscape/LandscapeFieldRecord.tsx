@@ -84,7 +84,7 @@ export function LandscapeFieldRecord({ photos, landscapeName }: Props) {
                     </p>
                     <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mt-1.5 inline-flex items-center gap-1.5">
                       <span className="inline-block w-3 h-px bg-amber-deep" />
-                      {p.credit} · {formatDate(p.date)}
+                      {p.credit}{p.date ? ` · ${formatDate(p.date)}` : ""}
                     </p>
                   </figcaption>
                 </figure>

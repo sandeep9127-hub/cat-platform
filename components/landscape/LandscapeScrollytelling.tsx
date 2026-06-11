@@ -26,6 +26,13 @@ const CX = VB.width / 2;
 const CY = VB.height / 2;
 const INTRO = -1; // establishing wide shot
 
+// Teardrop location-pin marker, tip at the origin (0,0) pointing down, head a
+// circle of radius 5 centred at (0,-9). Drawn in map units, counter-scaled each
+// frame so it keeps a constant on-screen size at any zoom depth.
+const PIN_PATH = "M0 0 C-1.9 -4.5 -5 -5.7 -5 -9 A5 5 0 1 1 5 -9 C5 -5.7 1.9 -4.5 0 0 Z";
+const BASE_K = 0.95; // resting pin scale
+const ACTIVE_K = 1.3; // active pin scale
+
 /**
  * Cartographic scrollytelling for the landscapes index, bookended by wide shots
  * so an international audience is always oriented:
@@ -44,7 +51,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
   const [reduced, setReduced] = useState(false);
 
   const mapGroupRef = useRef<SVGGElement | null>(null);
-  const pinRefs = useRef<Array<SVGCircleElement | null>>([]);
+  const pinRefs = useRef<Array<SVGGElement | null>>([]);
   const haloRef = useRef<SVGCircleElement | null>(null);
   const camRef = useRef({ s: 1, tx: 0, ty: 0 });
   const activeRef = useRef<number>(INTRO);
@@ -93,10 +100,12 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
       mapGroupRef.current.setAttribute("transform", `translate(${tx} ${ty}) scale(${s})`);
     }
     const ai = activeRef.current;
-    pinRefs.current.forEach((c, i) => {
-      if (!c) return;
-      const base = isLandscape(ai) && i === ai ? 3.6 : 2.1;
-      c.setAttribute("r", String(base / s));
+    pinRefs.current.forEach((g, i) => {
+      if (!g) return;
+      const p = points[i];
+      if (!p) return;
+      const k = (isLandscape(ai) && i === ai ? ACTIVE_K : BASE_K) / s;
+      g.setAttribute("transform", `translate(${p.x} ${p.y}) scale(${k})`);
     });
     if (haloRef.current) haloRef.current.setAttribute("r", String(8 / s));
   }
@@ -152,8 +161,8 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
     applyCamera(1, 0, 0);
     if (!reduced && !introDone.current) {
       introDone.current = true;
-      const circles = pinRefs.current.filter(Boolean) as SVGCircleElement[];
-      gsap.from(circles, { attr: { opacity: 0 }, duration: 0.6, stagger: 0.05, ease: "power2.out", delay: 0.25 });
+      const pinEls = pinRefs.current.filter(Boolean) as SVGGElement[];
+      gsap.from(pinEls, { attr: { opacity: 0 }, duration: 0.6, stagger: 0.05, ease: "power2.out", delay: 0.25 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points.length, reduced]);
@@ -164,11 +173,11 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
   const mapLabel = active < 0 ? "All of India" : active >= N ? "Eleven landscapes" : pins[active]?.name;
 
   function pinFill(i: number): { fill: string; opacity: number } {
-    if (active >= N) return { fill: TEAL, opacity: 0.85 }; // outro: all complete
-    if (active < 0) return { fill: SLATE, opacity: 0.5 }; // intro: none yet
+    if (active >= N) return { fill: TEAL, opacity: 0.92 }; // outro: all complete
+    if (active < 0) return { fill: SLATE, opacity: 0.78 }; // intro: none yet
     if (i === active) return { fill: AMBER, opacity: 1 };
-    if (i < active) return { fill: TEAL, opacity: 0.9 };
-    return { fill: SLATE, opacity: 0.42 };
+    if (i < active) return { fill: TEAL, opacity: 0.92 };
+    return { fill: SLATE, opacity: 0.55 };
   }
 
   return (
@@ -208,21 +217,27 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 )}
                 {points.map((p, i) => {
                   const { fill, opacity } = pinFill(i);
+                  const k = isLandscape(active) && i === active ? ACTIVE_K : BASE_K;
                   return (
-                    <circle
+                    <g
                       key={i}
                       ref={(el) => {
                         pinRefs.current[i] = el;
                       }}
-                      cx={p.x}
-                      cy={p.y}
-                      r={isLandscape(active) && i === active ? 3.6 : 2.1}
-                      fill={fill}
+                      transform={`translate(${p.x} ${p.y}) scale(${k})`}
                       opacity={opacity}
-                      stroke="#faf9f5"
-                      strokeWidth={0.7}
-                      vectorEffect="non-scaling-stroke"
-                    />
+                      style={{ transition: "opacity 400ms ease" }}
+                    >
+                      <path
+                        d={PIN_PATH}
+                        fill={fill}
+                        stroke="#faf9f5"
+                        strokeWidth={1.1}
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <circle cx={0} cy={-9} r={2} fill="#faf9f5" opacity={0.92} />
+                    </g>
                   );
                 })}
               </g>
@@ -296,6 +311,40 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 className="lg:min-h-[82vh] flex flex-col justify-center py-12 lg:py-0"
               >
                 <div className={"transition-opacity duration-500 " + (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")}>
+                  {profile?.photos?.[0] && (
+                    <figure
+                      className="relative mb-6 overflow-hidden rounded-[11px] border border-line"
+                      style={{
+                        aspectRatio: "16 / 10",
+                        boxShadow:
+                          "0 1px 2px rgba(26,38,37,0.05), 0 24px 50px -30px rgba(26,38,37,0.45)",
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={profile.photos[0].src}
+                        alt={profile.photos[0].alt ?? profile.photos[0].caption}
+                        loading="lazy"
+                        className={
+                          "absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out " +
+                          (isActive ? "scale-100" : "scale-[1.04]")
+                        }
+                      />
+                      <div
+                        aria-hidden
+                        className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+                        style={{ background: "linear-gradient(0deg, rgba(26,38,37,0.6) 0%, transparent 100%)" }}
+                      />
+                      <div
+                        aria-hidden
+                        className="absolute inset-x-0 bottom-0 h-px"
+                        style={{ background: "linear-gradient(90deg, transparent 0%, rgba(248,202,124,0.7) 50%, transparent 100%)" }}
+                      />
+                      <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-[9px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        {profile.photos[0].caption}
+                      </figcaption>
+                    </figure>
+                  )}
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
                     <span className="text-amber-deep tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                     <span className="text-line">/</span>

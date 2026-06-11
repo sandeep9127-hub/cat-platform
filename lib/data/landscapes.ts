@@ -13,8 +13,8 @@ export type LandscapePhoto = {
   caption: string;
   /** Photographer or team credit. */
   credit: string;
-  /** ISO yyyy-mm-dd. */
-  date: string;
+  /** ISO yyyy-mm-dd. Optional — omitted when the capture date is unknown. */
+  date?: string;
   /** Source image pixel dimensions, for next/image and aspect math. */
   width: number;
   height: number;
@@ -75,6 +75,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Marginal landholdings, poverty, and limited access to technical services constrain household capacity to invest in resilient systems.",
     ],
     lipStatus: "published",
+    photos: [
+      {
+        src: "/images/landscapes/ahwa/01.jpg",
+        caption: "Ahwa · Western Ghats, Gujarat",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+      {
+        src: "/images/landscapes/ahwa/02.jpg",
+        caption: "Ahwa · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1200,
+      },
+    ],
   },
 
   chitrakonda: {
@@ -101,6 +117,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Marginal landholdings constrain food security; wildlife disturbances add occasional uncertainty to livelihoods.",
     ],
     lipStatus: "published",
+    photos: [
+      {
+        src: "/images/landscapes/chitrakonda/01.jpg",
+        caption: "Chitrakonda · Eastern Ghats, Odisha",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+      {
+        src: "/images/landscapes/chitrakonda/02.jpg",
+        caption: "Chitrakonda · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+    ],
   },
 
   dantewada: {
@@ -128,6 +160,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Multi-Dimensional Poverty Index of 0.135 (nearly double the rural state average) signals deep socio-economic vulnerability.",
     ],
     lipStatus: "published",
+    photos: [
+      {
+        src: "/images/landscapes/dantewada/01.jpg",
+        caption: "Dantewada · Bastar Plateau, Chhattisgarh",
+        credit: "CAT field team",
+        width: 1800,
+        height: 829,
+      },
+      {
+        src: "/images/landscapes/dantewada/02.jpg",
+        caption: "Dantewada · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1201,
+      },
+    ],
   },
 
   dharashiv: {
@@ -154,6 +202,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Persistent poverty, fragmented holdings, nutrition insecurity, and uneven access to extension services — particularly for women and marginal farmers.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/dharashiv/01.jpg",
+        caption: "Dharashiv · Marathwada, Maharashtra",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1200,
+      },
+      {
+        src: "/images/landscapes/dharashiv/02.jpg",
+        caption: "Dharashiv · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+    ],
   },
 
   "khatarshnong-laitkroh": {
@@ -182,6 +246,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Stunting, anaemia, and 25-30% BPL reflect persistent livelihood and nutrition vulnerabilities.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/khatarshnong-laitkroh/01.jpg",
+        caption: "Khatarshnong–Laitkroh · Meghalaya Plateau",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1008,
+      },
+      {
+        src: "/images/landscapes/khatarshnong-laitkroh/02.jpg",
+        caption: "Khatarshnong–Laitkroh · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1200,
+      },
+    ],
   },
 
   mau: {
@@ -209,6 +289,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "High poverty, fragmented landholdings, divided society, migration, and reliance on low-value wage labour intensify vulnerability and limit diversification.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/mau/01.jpg",
+        caption: "Mau · Bundelkhand, Uttar Pradesh",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+      {
+        src: "/images/landscapes/mau/02.jpg",
+        caption: "Mau · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+    ],
   },
 
   pangi: {
@@ -237,6 +333,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Climate change heightens risks to snow-fed water systems.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/pangi/01.jpg",
+        caption: "Pangi · Pir Panjal-Zanskar, Himachal Pradesh",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1347,
+      },
+      {
+        src: "/images/landscapes/pangi/02.jpg",
+        caption: "Pangi · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1192,
+      },
+    ],
   },
 
   patharpratima: {
@@ -264,6 +376,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Persistent poverty, marginal landholdings, and gendered vulnerabilities constrain households' capacity to adapt and invest in resilient livelihoods.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/patharpratima/01.jpg",
+        caption: "Patharpratima · Sundarbans delta, West Bengal",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+      {
+        src: "/images/landscapes/patharpratima/02.jpg",
+        caption: "Patharpratima · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+    ],
   },
 
   patratu: {
@@ -297,24 +425,24 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
         caption: "Patratu landscape · Monsoon morning · Ramgarh district",
         credit: "CAT field team",
         date: "2024-08-09",
-        width: 4624,
-        height: 3468,
+        width: 1800,
+        height: 1350,
       },
       {
         src: "/images/landscapes/patratu/03.jpg",
         caption: "Patratu landscape · Late monsoon · Field documentation",
         credit: "CAT field team",
         date: "2024-09-21",
-        width: 4624,
-        height: 3468,
+        width: 1800,
+        height: 1350,
       },
       {
         src: "/images/landscapes/patratu/01.jpg",
         caption: "Patratu landscape · Winter season · Field documentation",
         credit: "CAT field team",
         date: "2023-02-17",
-        width: 3468,
-        height: 4624,
+        width: 1350,
+        height: 1800,
       },
     ],
   },
@@ -344,6 +472,22 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Uneven access to health services, credit, and markets constrains livelihood upgrading and enterprise growth.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/rajnagar/01.jpg",
+        caption: "Rajnagar · Bundelkhand, Madhya Pradesh",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1350,
+      },
+      {
+        src: "/images/landscapes/rajnagar/02.jpg",
+        caption: "Rajnagar · Field documentation",
+        credit: "CAT field team",
+        width: 1800,
+        height: 1200,
+      },
+    ],
   },
 
   vempalli: {

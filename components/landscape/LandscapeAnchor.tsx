@@ -84,7 +84,7 @@ export function LandscapeAnchor({ photo }: Props) {
             {photo.caption}
           </p>
           <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-paper/70 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
-            {photo.credit} · {formatDate(photo.date)}
+            {photo.credit}{photo.date ? ` · ${formatDate(photo.date)}` : ""}
           </p>
         </figcaption>
       </div>
