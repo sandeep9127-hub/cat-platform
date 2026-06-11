@@ -4,6 +4,7 @@ import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { CatLandscapesMap } from "@/components/map/CatLandscapesMap";
 import { Reveal } from "@/components/ui/Reveal";
+import { AnchorPartners } from "@/components/landscape/AnchorPartners";
 
 export const dynamic = "force-dynamic";
 
@@ -206,6 +207,7 @@ export default async function LandscapesPage() {
           })}
         </ul>
       </section>
+      <AnchorPartners />
     </>
   );
 }
