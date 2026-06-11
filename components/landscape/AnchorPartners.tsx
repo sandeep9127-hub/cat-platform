@@ -44,7 +44,7 @@ export function AnchorPartners() {
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-10 py-12 sm:py-16"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-10 sm:gap-x-12 lg:gap-x-16 gap-y-14 sm:gap-y-16 list-none p-0 rounded-[14px] bg-white border border-line/60 px-8 sm:px-12 lg:px-14 py-14 sm:py-16"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {items.map(({ slug, a, landscape }, i) => (
@@ -56,16 +56,21 @@ export function AnchorPartners() {
               <Link
                 href={`/landscape/${slug}`}
                 title={`${a.name} · ${landscape}`}
-                className="flex flex-col items-center gap-2.5 no-underline"
+                className="flex flex-col items-center gap-3.5 no-underline w-full"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={a.logo}
-                  alt={a.name}
-                  loading="lazy"
-                  className="max-h-[72px] sm:max-h-[80px] w-auto max-w-[90%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
-                />
-                <span className="font-mono text-[8.5px] uppercase tracking-[0.13em] text-muted group-hover:text-teal transition-colors text-center">
+                {/* Equal-height plate so every logo optically aligns and captions
+                    share a baseline per row. max-w caps the wide two-part lockups
+                    (Srijan, Pradan) so they can't bleed into the gutter. */}
+                <span className="flex h-[72px] sm:h-[80px] w-full items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={a.logo}
+                    alt={a.name}
+                    loading="lazy"
+                    className="max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                  />
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">
                   {landscape}
                 </span>
               </Link>
