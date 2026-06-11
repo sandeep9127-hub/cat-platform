@@ -22,8 +22,8 @@ import type { BudgetSummary } from "@/lib/db/landscape-kb";
 // CAT palette in hex (no leading #) — docx uses the bare form
 const NAVY = "373F5A";
 const DEEP_TEAL = "334B4A";
-const TEAL = "2D7574";
-const PERIWINKLE = "646D96";
+const TEAL = "2E7573";
+const PERIWINKLE = "5E6990";
 const INK = "1A2625";
 const INK_SOFT = "4D5757";
 const AMBER_DEEP = "C68C2E";
@@ -56,7 +56,7 @@ function eyebrow(number: string | undefined, label: string): Paragraph {
       text: label.toUpperCase(),
       font: "Arial",
       size: 17,
-      color: NAVY,
+      color: DEEP_TEAL,
       bold: true,
       characterSpacing: 30,
     })
@@ -76,7 +76,7 @@ function h1(text: string): Paragraph {
         text,
         font: "Arial",
         size: 56, // 28pt
-        color: NAVY,
+        color: DEEP_TEAL,
         bold: true,
       }),
     ],
@@ -249,7 +249,7 @@ async function photoParagraph(
     new Paragraph({
       spacing: { before: 0, after: 40 },
       children: [
-        new TextRun({ text: photo.caption, font: "Arial", size: 21, color: NAVY }),
+        new TextRun({ text: photo.caption, font: "Arial", size: 21, color: DEEP_TEAL }),
       ],
     }),
     new Paragraph({
@@ -320,7 +320,7 @@ export async function buildLandscapeBriefDocx(
           text: "Consortium for Agroecological Transformations",
           font: "Arial",
           size: 22,
-          color: NAVY,
+          color: DEEP_TEAL,
           bold: true,
         }),
       ],
@@ -363,7 +363,7 @@ export async function buildLandscapeBriefDocx(
               text: p.photos[0].caption,
               font: "Arial",
               size: 21,
-              color: NAVY,
+              color: DEEP_TEAL,
             }),
           ],
         }),
@@ -395,7 +395,7 @@ export async function buildLandscapeBriefDocx(
           text: p.name,
           font: "Arial",
           size: 80,
-          color: NAVY,
+          color: DEEP_TEAL,
           bold: true,
         }),
       ],
@@ -609,7 +609,7 @@ export async function buildLandscapeBriefDocx(
         spacing: { before: 240, after: 120 },
         children: [
           new TextRun({
-            text: `Drawn from the ${p.name} Landscape Investment Plan. Live explorer with line-level filters at cat-platform-fawn.vercel.app/landscape/${p.slug}/budget.`,
+            text: `Drawn from the ${p.name} Landscape Investment Plan. Live explorer with line-level filters at hub.agroecologyindia.org/landscape/${p.slug}/budget.`,
             font: "Georgia",
             size: 18,
             color: MUTED,
@@ -671,7 +671,7 @@ export async function buildLandscapeBriefDocx(
       spacing: { before: 80, after: 80, line: 320 },
       children: [
         new TextRun({
-          text: `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. cat-platform-fawn.vercel.app/landscape/${p.slug}`,
+          text: `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. hub.agroecologyindia.org/landscape/${p.slug}`,
           font: "Arial",
           size: 20,
           color: INK,

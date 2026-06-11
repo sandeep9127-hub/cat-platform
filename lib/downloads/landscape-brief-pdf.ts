@@ -31,14 +31,17 @@ const SAFE_BOTTOM = M.bottom + 26;
 // not professional).
 const C = {
   paper: rgb(1.0, 1.0, 1.0),
+  cream: rgb(0.98, 0.976, 0.961), // CAT paper #faf9f5 — reversed-band text
   ink: rgb(0.10, 0.13, 0.16),
   inkSoft: rgb(0.30, 0.34, 0.38),
   muted: rgb(0.52, 0.56, 0.60),
-  navy: rgb(0.16, 0.20, 0.30), // CAT wordmark navy
-  teal: rgb(0.176, 0.459, 0.455), // CAT symbol teal #2D7574
+  navy: rgb(0.16, 0.20, 0.30), // legacy CAT wordmark navy (retained, unused)
+  deepTeal: rgb(0.2, 0.294, 0.29), // CAT deep teal #334B4A — headings, numbers
+  teal: rgb(0.18, 0.459, 0.451), // CAT symbol teal #2E7573
   tealSoft: rgb(0.78, 0.86, 0.85), // 25% teal — bar background
-  periwinkle: rgb(0.392, 0.427, 0.588),
+  periwinkle: rgb(0.369, 0.412, 0.565), // CAT periwinkle #5E6990
   amber: rgb(0.776, 0.549, 0.180),
+  amberBright: rgb(0.973, 0.792, 0.486), // CAT amber #F8CA7C — on dark bands
   hairline: rgb(0.85, 0.87, 0.89),
   rowAlt: rgb(0.965, 0.970, 0.975),
 };
@@ -209,14 +212,14 @@ function drawCatLockup(
       y: y + sh - big - 1,
       size: big,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     ctx.page.drawText("Transformations", {
       x: tx,
       y: y + sh - big - 1 - (big * 1.2),
       size: big,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     // Acronym tag
     ctx.page.drawText("CAT  ·  India", {
@@ -239,7 +242,7 @@ function drawCatLockup(
       y: y + sh - labelSize - 2 - i * lineH,
       size: labelSize,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
   }
 }
@@ -266,7 +269,7 @@ function drawPageHeader(ctx: Ctx, title: string) {
     y: PAGE.h - M.top + 10,
     size: 9,
     font: ctx.sansBold,
-    color: C.navy,
+    color: C.deepTeal,
   });
   ctx.page.drawText("TRANSFORMATION HUB", {
     x: M.left + 22,
@@ -361,7 +364,7 @@ function drawExhibitHeader(ctx: Ctx, exhibitNumber: string, eyebrow: string, tit
     y: ctx.y - 18,
     size: 18,
     font: ctx.sansBold,
-    color: C.navy,
+    color: C.deepTeal,
   });
   ctx.y -= 28;
 }
@@ -424,14 +427,20 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
     font: ctx.sansBold,
     color: C.amber,
   });
-  // Teal rule
-  ctx.page.drawRectangle({
-    x: M.left + 70,
-    y: titleY + 84,
-    width: CONTENT_W - 70,
-    height: 0.6,
-    color: C.teal,
-  });
+  // CAT tri-colour signature rule (teal · periwinkle · amber) — brand mark
+  {
+    const segs = [C.teal, C.periwinkle, C.amber];
+    const segW = 20;
+    for (let s = 0; s < segs.length; s++) {
+      ctx.page.drawRectangle({
+        x: M.left + 70 + s * (segW + 4),
+        y: titleY + 83,
+        width: segW,
+        height: 2.4,
+        color: segs[s],
+      });
+    }
+  }
   // Big landscape name
   const nameSize = p.name.length > 16 ? 44 : 56;
   ctx.page.drawText(p.name, {
@@ -439,7 +448,7 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
     y: titleY,
     size: nameSize,
     font: ctx.sansBold,
-    color: C.navy,
+    color: C.deepTeal,
   });
   // Subtitle — district · state
   ctx.page.drawText(`${p.district}  ·  ${stateName}`, {
@@ -502,7 +511,7 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
       y: metricsY - 8,
       size: 20,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
   }
   ctx.page.drawRectangle({
@@ -513,42 +522,39 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
     color: C.hairline,
   });
 
-  // Bottom band — citation, date, URL
-  const bandY = M.bottom + 40;
-  ctx.page.drawRectangle({
-    x: M.left,
-    y: bandY + 18,
-    width: 36,
-    height: 1.4,
-    color: C.teal,
-  });
+  // Bottom band — a solid deep-teal CAT panel, full-bleed, with an amber hairline
+  // on its top edge. Reads as a branded, presentation-grade document anchor.
+  const bandH = 66;
+  ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: bandH, color: C.deepTeal });
+  ctx.page.drawRectangle({ x: 0, y: bandH - 2, width: PAGE.w, height: 2, color: C.amber });
+  const textY = bandH - 26;
   ctx.page.drawText("CONSORTIUM FOR AGROECOLOGICAL TRANSFORMATIONS", {
     x: M.left,
-    y: bandY,
+    y: textY,
     size: 8,
     font: ctx.sansBold,
-    color: C.navy,
+    color: C.cream,
   });
   const now = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  ctx.page.drawText(`Generated ${now}`, {
+  ctx.page.drawText(`Landscape Investment Brief  ·  Generated ${now}`, {
     x: M.left,
-    y: bandY - 12,
+    y: textY - 13,
     size: 8,
     font: ctx.sans,
-    color: C.muted,
+    color: C.tealSoft,
   });
-  const urlText = `cat-platform-fawn.vercel.app/landscape/${p.slug}`;
+  const urlText = `hub.agroecologyindia.org/landscape/${p.slug}`;
   const urlW = ctx.mono.widthOfTextAtSize(urlText, 8);
   ctx.page.drawText(urlText, {
     x: PAGE.w - M.right - urlW,
-    y: bandY,
+    y: textY,
     size: 8,
     font: ctx.mono,
-    color: C.muted,
+    color: C.amberBright,
   });
 }
 
@@ -584,7 +590,7 @@ function drawContents(
       y: ctx.y - 12,
       size: 12,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     // Trailing rule
     ctx.page.drawRectangle({
@@ -651,7 +657,7 @@ function drawAtAGlance(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit
       y: ty - 12 - valueSize - 4,
       size: valueSize,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     // Sub
     ctx.page.drawText(tiles[i].sub, {
@@ -825,7 +831,7 @@ function drawContext(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
       y: implTop - 16,
       size: 11,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     const lines = wrap(implies[i].body, ctx.sans, 10, implColW - 4);
     for (let k = 0; k < lines.length; k++) {
@@ -951,7 +957,7 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
       y: tileY - 30,
       size: 16,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     ctx.page.drawText(tiles[i].sub, {
       x: tx,
@@ -1033,7 +1039,7 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
       y: ctx.y - 11,
       size: 10,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     ctx.y -= 18;
   });
@@ -1103,7 +1109,7 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
       y: ctx.y - 11,
       size: 10,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     ctx.y -= 20;
   });
@@ -1111,7 +1117,7 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
   ctx.y -= 6;
   drawBody(
     ctx,
-    `Source: ${p.name} Landscape Investment Plan. Line-level detail at cat-platform-fawn.vercel.app/landscape/${p.slug}/budget.`,
+    `Source: ${p.name} Landscape Investment Plan. Line-level detail at hub.agroecologyindia.org/landscape/${p.slug}/budget.`,
     { size: 7.5, lineHeight: 11, color: C.muted }
   );
 }
@@ -1172,7 +1178,7 @@ function drawImplementationSnapshot(ctx: Ctx, p: LandscapeProfile, exhibit: stri
       y: colTop - 30,
       size: 11,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     const bodyLines = wrap(levers[i].body, ctx.sans, 9.5, colW - 6);
     for (let k = 0; k < bodyLines.length; k++) {
@@ -1240,7 +1246,7 @@ function drawImplementationSnapshot(ctx: Ctx, p: LandscapeProfile, exhibit: stri
       y: ctx.y - 11,
       size: 10.5,
       font: ctx.sansBold,
-      color: C.navy,
+      color: C.deepTeal,
     });
     const bodyText = shorten(ep.body, 110);
     ctx.page.drawText(bodyText, {
@@ -1291,7 +1297,7 @@ function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
   });
   ctx.y -= 20;
   const year = new Date().getFullYear();
-  const citation = `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. cat-platform-fawn.vercel.app/landscape/${p.slug}`;
+  const citation = `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. hub.agroecologyindia.org/landscape/${p.slug}`;
   drawBody(ctx, citation, { size: 10, lineHeight: 14, color: C.ink });
   ctx.y -= 8;
 
@@ -1299,7 +1305,7 @@ function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
 
   // Imprint block — full compact lockup with site URL as caption
   drawCatLockup(ctx, M.left, ctx.y - 36, { symbolHeight: 36, compact: true });
-  ctx.page.drawText("Transformation Hub  ·  cat-platform-fawn.vercel.app", {
+  ctx.page.drawText("Transformation Hub  ·  hub.agroecologyindia.org", {
     x: M.left,
     y: ctx.y - 50,
     size: 8,
@@ -1512,7 +1518,7 @@ export async function buildLandscapeBriefPdf(
   }
 
   // Footers (page n / N + citation), applied after page count is known
-  const citationUrl = `cat-platform-fawn.vercel.app/landscape/${p.slug}`;
+  const citationUrl = `hub.agroecologyindia.org/landscape/${p.slug}`;
   drawFooters(ctx, citationUrl);
 
   return await doc.save();
