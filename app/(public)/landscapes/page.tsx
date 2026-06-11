@@ -110,103 +110,117 @@ export default async function LandscapesPage() {
       <LandscapeScrollytelling pins={pins} />
 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-16 lg:pt-20">
-        <span className="eyebrow">Browse all</span>
-        <h2 className="font-sans font-semibold text-[clamp(26px,3vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3 mb-8">
-          The eleven landscapes
-        </h2>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0">
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 mb-8">
+          <div>
+            <span className="eyebrow">The index</span>
+            <h2 className="font-sans font-semibold text-[clamp(26px,3vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3">
+              All eleven, at a glance
+            </h2>
+          </div>
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted flex items-center gap-4 pb-1.5">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#2E7573" }} />
+              Plan published
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#929CC5" }} />
+              In preparation
+            </span>
+          </p>
+        </div>
+
+        {/* Compact atlas index. The rich, photo-led panels are above; this is the
+            quick-jump directory. Hairline-separated cells, toned by plan status
+            with the two CAT colour ramps. 12 cells (11 + Atlas) divide cleanly
+            across 2 / 3 / 4 columns so no row is ever left ragged. */}
+        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-line rounded-[14px] overflow-hidden border border-line list-none p-0 m-0">
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
             const published = p?.lipStatus === "published";
-            // Published landscapes get the warm amber accent, they're ready to deep-dive.
-            // In-preparation landscapes get periwinkle, visible signal they're coming.
-            const tone = published
-              ? {
-                  bar: "#C68C2E",
-                  soft: "rgba(248,202,124,0.14)",
-                  glow: "rgba(248,202,124,0.28)",
-                  chipBg: "rgba(248,202,124,0.22)",
-                  chipFg: "#C68C2E",
-                  statusFg: "#C68C2E",
-                }
-              : {
-                  bar: "#929CC5",
-                  soft: "rgba(146,156,197,0.10)",
-                  glow: "rgba(146,156,197,0.20)",
-                  chipBg: "rgba(146,156,197,0.14)",
-                  chipFg: "#5C6796",
-                  statusFg: "#767E7E",
-                };
+            const accent = published ? "#2E7573" : "#5E6990";
+            const dot = published ? "#2E7573" : "#929CC5";
+            const chipBg = published ? "#E1EDE8" : "#D0DAEF";
+            const chipFg = published ? "#2E7573" : "#5E6990";
+            const wash = published
+              ? "linear-gradient(180deg, rgba(225,237,232,0.9) 0%, rgba(225,237,232,0.28) 100%)"
+              : "linear-gradient(180deg, rgba(208,218,239,0.9) 0%, rgba(208,218,239,0.28) 100%)";
             return (
-              <li
-                key={g.id}
-                className="reveal-stagger"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
+              <li key={g.id} className="reveal-stagger" style={{ animationDelay: `${i * 40}ms` }}>
                 <Link
                   href={`/landscape/${g.slug}`}
-                  className="group relative overflow-hidden block rounded-[8px] border border-line bg-paper p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
-                  style={{
-                    boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 28px -14px ${tone.glow}`,
-                    backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,
-                  }}
+                  className="group relative flex flex-col h-full bg-paper px-5 py-5 sm:px-6 sm:py-7 min-h-[156px] overflow-hidden"
                 >
                   <span
                     aria-hidden
-                    className="absolute top-0 left-0 right-0 h-[3px]"
-                    style={{
-                      background: `linear-gradient(90deg, ${tone.bar} 0%, ${tone.bar}cc 60%, transparent 100%)`,
-                    }}
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
+                    style={{ background: wash }}
                   />
                   <span
                     aria-hidden
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(ellipse 90% 70% at 100% 100%, ${tone.glow}, transparent 65%)`,
-                    }}
+                    className="absolute top-0 left-0 right-0 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out pointer-events-none"
+                    style={{ background: accent }}
                   />
 
-                  <div className="relative flex items-center justify-between gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
-                    <span>No. {String(i + 1).padStart(2, "0")} / 11</span>
+                  <div className="relative flex items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                    <span className="tabular-nums">No. {String(i + 1).padStart(2, "0")}</span>
                     <span
-                      className="inline-flex items-center justify-center min-w-[28px] h-[22px] px-2 rounded-[3px] font-semibold tracking-[0.10em]"
-                      style={{ background: tone.chipBg, color: tone.chipFg }}
+                      className="inline-flex items-center justify-center min-w-[26px] h-[20px] px-1.5 rounded-[3px] font-semibold tracking-[0.10em]"
+                      style={{ background: chipBg, color: chipFg }}
                     >
                       {g.stateCode}
                     </span>
                   </div>
 
-                  <h2 className="relative font-sans text-[24px] sm:text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink group-hover:text-teal transition-colors">
+                  <h3 className="relative font-sans text-[21px] sm:text-[23px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink mt-4 group-hover:text-teal transition-colors">
                     {p?.name ?? g.name}
-                  </h2>
+                  </h3>
                   {p && (
-                    <div className="relative font-mono text-[10px] uppercase tracking-[0.12em] text-teal mt-1.5">
+                    <div className="relative font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal mt-1.5">
                       {p.district}
                     </div>
                   )}
-                  <p className="relative font-sans text-[14.5px] text-ink-soft leading-[1.55] mt-4 max-w-[42ch]">
-                    {p?.gloss ?? "A CAT focus landscape."}
-                  </p>
 
-                  <div className="relative mt-6 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.16em]">
-                    <span
-                      className="inline-flex items-center gap-1.5"
-                      style={{ color: tone.statusFg }}
-                    >
-                      <span
-                        className="inline-block w-1.5 h-1.5 rounded-full"
-                        style={{ background: tone.bar }}
-                      />
-                      {published ? "Investment plan published" : "Investment plan in preparation"}
+                  <div className="relative mt-auto pt-5 flex items-center justify-between gap-2 font-mono text-[9.5px] uppercase tracking-[0.14em]">
+                    <span className="inline-flex items-center gap-1.5" style={{ color: chipFg }}>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: dot }} />
+                      {published ? "Published" : "In preparation"}
                     </span>
-                    <span className="text-teal group-hover:text-amber-deep group-hover:translate-x-0.5 transition-all">
-                      Read →
+                    <span
+                      aria-hidden
+                      className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                      style={{ color: accent }}
+                    >
+                      &rarr;
                     </span>
                   </div>
                 </Link>
               </li>
             );
           })}
+
+          <li className="reveal-stagger" style={{ animationDelay: `${rows.length * 40}ms` }}>
+            <Link
+              href="/map"
+              className="group relative flex flex-col justify-between h-full px-5 py-5 sm:px-6 sm:py-7 min-h-[156px] overflow-hidden"
+              style={{ background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)" }}
+            >
+              <span className="relative font-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
+                Go wider
+              </span>
+              <span className="relative">
+                <span className="block font-sans text-[19px] sm:text-[21px] font-semibold leading-[1.12] tracking-[-0.02em] text-paper">
+                  The Solutions Atlas
+                </span>
+                <span
+                  className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] transition-colors group-hover:text-paper"
+                  style={{ color: "#B8CCCA" }}
+                >
+                  Every landscape, and beyond
+                  <span className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                </span>
+              </span>
+            </Link>
+          </li>
         </ul>
       </section>
       <AnchorPartners />
