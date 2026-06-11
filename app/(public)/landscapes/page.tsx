@@ -2,9 +2,9 @@ import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
-import { CatLandscapesMap } from "@/components/map/CatLandscapesMap";
 import { Reveal } from "@/components/ui/Reveal";
 import { AnchorPartners } from "@/components/landscape/AnchorPartners";
+import { LandscapeScrollytelling } from "@/components/landscape/LandscapeScrollytelling";
 
 export const dynamic = "force-dynamic";
 
@@ -107,11 +107,13 @@ export default async function LandscapesPage() {
         </aside>
       </Reveal>
 
-      <Reveal as="section" delay={80} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-12">
-        <CatLandscapesMap pins={pins} />
-      </Reveal>
+      <LandscapeScrollytelling pins={pins} />
 
-      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-8">
+      <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-16 lg:pt-20">
+        <span className="eyebrow">Browse all</span>
+        <h2 className="font-sans font-semibold text-[clamp(26px,3vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3 mb-8">
+          The eleven landscapes
+        </h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 list-none p-0 m-0">
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
