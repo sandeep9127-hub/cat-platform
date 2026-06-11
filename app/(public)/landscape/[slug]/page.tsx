@@ -9,6 +9,7 @@ import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashbo
 import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
+import { LandscapeAnchorPartner } from "@/components/landscape/LandscapeAnchorPartner";
 import { LandscapeFieldRecord } from "@/components/landscape/LandscapeFieldRecord";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
           </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 border-t border-line pt-5 lg:border-t-0 lg:pt-0 flex flex-col gap-4 lg:self-end lg:pb-2">
+          <LandscapeAnchorPartner slug={slug} />
           <FactRow label="Investment plan">
             {p.lipStatus === "published" ? (
               <span className="text-deep-teal">
