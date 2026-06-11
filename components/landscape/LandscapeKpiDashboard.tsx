@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Mountain,
   Users,
   Coins,
   type LucideIcon,
 } from "lucide-react";
+import { gsap } from "gsap";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 type Lens = "land" | "people" | "money";
@@ -209,7 +210,7 @@ function KpiTile({
   const tone =
     accent === "money"
       ? {
-          bar: "#C68C2E",
+          bar: "#946616",
           soft: "rgba(248,202,124,0.14)",
           glow: "rgba(248,202,124,0.28)",
         }
@@ -290,8 +291,37 @@ function TopCategoriesBar({
 }) {
   const top = topCategories.slice(0, 4);
   const max = Math.max(...top.map((c) => c.total), 1);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const barsRef = useRef<Array<HTMLDivElement | null>>([]);
+
+  // Bars grow from zero (scaleX, GPU-friendly) when the panel scrolls into
+  // view — the plan "allocating itself". Reduced-motion shows them full.
+  useEffect(() => {
+    const els = barsRef.current.filter(Boolean) as HTMLDivElement[];
+    if (!els.length || !wrapRef.current) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      els.forEach((e) => (e.style.transform = "scaleX(1)"));
+      return;
+    }
+    els.forEach((e) => (e.style.transform = "scaleX(0)"));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            io.disconnect();
+            gsap.to(els, { scaleX: 1, duration: 1.1, ease: "power3.out", stagger: 0.12 });
+          }
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(wrapRef.current);
+    return () => io.disconnect();
+  }, [top.length]);
+
   return (
-    <div className="mt-7 pt-5 border-t border-line">
+    <div ref={wrapRef} className="mt-7 pt-5 border-t border-line">
       <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold block mb-3">
         Top intervention categories by spend
       </span>
@@ -304,8 +334,11 @@ function TopCategoriesBar({
               </div>
               <div className="mt-1.5 h-[6px] bg-line-soft rounded-[1px] overflow-hidden">
                 <div
-                  className="h-full bg-deep-teal"
-                  style={{ width: `${(c.total / max) * 100}%` }}
+                  ref={(el) => {
+                    barsRef.current[i] = el;
+                  }}
+                  className="h-full bg-deep-teal origin-left"
+                  style={{ width: `${(c.total / max) * 100}%`, transform: "scaleX(0)" }}
                 />
               </div>
             </div>

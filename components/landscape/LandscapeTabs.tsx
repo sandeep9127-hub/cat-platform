@@ -20,10 +20,11 @@ export function LandscapeTabs({
   ];
 
   return (
-    <nav
-      aria-label="Landscape sections"
-      className="border-b border-line max-w-page mx-auto px-5 sm:px-7 lg:px-10"
-    >
+    <div className="sticky top-[57px] z-30 border-b border-line bg-paper/85 backdrop-blur-md">
+      <nav
+        aria-label="Landscape sections"
+        className="max-w-page mx-auto px-5 sm:px-7 lg:px-10"
+      >
       <ul className="flex gap-6 sm:gap-10 list-none p-0 m-0 overflow-x-auto">
         {tabs.map((t) => {
           const isActive = ((): boolean => {
@@ -53,6 +54,7 @@ export function LandscapeTabs({
           );
         })}
       </ul>
-    </nav>
+      </nav>
+    </div>
   );
 }

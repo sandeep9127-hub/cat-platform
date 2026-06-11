@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import type { LandscapePhoto } from "@/lib/data/landscapes";
 
 /**
@@ -34,20 +37,61 @@ function formatDate(iso: string): string {
 }
 
 export function LandscapeAnchor({ photo }: Props) {
+  const figRef = useRef<HTMLElement | null>(null);
+  const imgWrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Subtle scroll parallax: the (oversized) image drifts vertically as the
+  // hero passes through the viewport — depth without a heavy 3D cost.
+  useEffect(() => {
+    const fig = figRef.current;
+    const wrap = imgWrapRef.current;
+    if (!fig || !wrap) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const r = fig.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        // progress: -1 (just below viewport) → 1 (just above). 0 = centred.
+        const progress = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+        const shift = Math.max(-1, Math.min(1, progress)) * 7; // ±7%
+        wrap.style.transform = `translate3d(0, ${shift}%, 0)`;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
-    <figure className="relative overflow-hidden rounded-[10px] border border-line">
+    <figure ref={figRef} className="relative overflow-hidden rounded-[10px] border border-line">
       <div
-        className="relative w-full bg-deep-teal"
+        className="relative w-full bg-deep-teal overflow-hidden"
         style={{ aspectRatio: "5 / 2" }}
       >
-        <Image
-          src={photo.src}
-          alt={photo.alt ?? photo.caption}
-          fill
-          sizes="(min-width: 1024px) 1080px, 100vw"
-          className="object-cover"
-          priority
-        />
+        {/* Oversized parallax layer (116% tall, recentred) so the drift never
+            exposes an edge. */}
+        <div
+          ref={imgWrapRef}
+          className="absolute inset-x-0 will-change-transform"
+          style={{ top: "-8%", height: "116%" }}
+        >
+          <Image
+            src={photo.src}
+            alt={photo.alt ?? photo.caption}
+            fill
+            sizes="(min-width: 1024px) 1080px, 100vw"
+            className="object-cover"
+            priority
+          />
+        </div>
         {/* Soft top + bottom paper fade so the image dissolves into the page */}
         <div
           aria-hidden
