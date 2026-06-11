@@ -44,7 +44,7 @@ export function AnchorPartners() {
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-9 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-10 py-12 sm:py-16"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {items.map(({ slug, a, landscape }, i) => (
@@ -63,7 +63,7 @@ export function AnchorPartners() {
                   src={a.logo}
                   alt={a.name}
                   loading="lazy"
-                  className="max-h-[52px] w-auto max-w-[78%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                  className="max-h-[72px] sm:max-h-[80px] w-auto max-w-[90%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
                 />
                 <span className="font-mono text-[8.5px] uppercase tracking-[0.13em] text-muted group-hover:text-teal transition-colors text-center">
                   {landscape}

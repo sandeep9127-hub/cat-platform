@@ -21,19 +21,28 @@ export type Pin = {
 const TEAL = "#2e7573";
 const SLATE = "#5e6790";
 const AMBER = "#946616";
+const ZOOM = 3.6; // deep camera zoom into the active region
+const CX = VB.width / 2;
+const CY = VB.height / 2;
 
 /**
  * Cartographic scrollytelling for the landscapes index. The India map is the
- * spine: it stays in view while the 11 landscape chapters scroll past, and the
- * active landscape blooms on the map with a connector tracing the journey. The
- * map drifts gently toward each region (GSAP). Reduced motion and small screens
- * collapse to a static map with a clean stacked reading order.
+ * spine: it stays in view while the 11 landscape chapters scroll past. The
+ * camera (GSAP) flies deep into each region as its chapter arrives; pins are
+ * counter-scaled every frame so they stay crisp at high zoom, and an amber
+ * connector traces the journey. Reduced motion and small screens collapse to a
+ * static overview map with a clean stacked reading order.
  */
 export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
   const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(false);
-  const groupRef = useRef<SVGGElement | null>(null);
+
+  const mapGroupRef = useRef<SVGGElement | null>(null);
+  const pinRefs = useRef<Array<SVGCircleElement | null>>([]);
+  const haloRef = useRef<SVGCircleElement | null>(null);
+  const camRef = useRef({ s: 1, tx: 0, ty: 0 });
+  const activeRef = useRef(0);
   const chapterRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
@@ -60,10 +69,24 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
     const paths = (geojson.features as GeoJSON.Feature[]).map((f) => pathGen(f) || "");
     const points = pins.map((p) => {
       const xy = proj([p.longitude, p.latitude]);
-      return xy ? { x: xy[0], y: xy[1] } : { x: VB.width / 2, y: VB.height / 2 };
+      return xy ? { x: xy[0], y: xy[1] } : { x: CX, y: CY };
     });
     return { paths, points };
   }, [geojson, pins]);
+
+  // Apply the current camera to the map group + counter-scale every pin radius.
+  function applyCamera(s: number, tx: number, ty: number) {
+    if (mapGroupRef.current) {
+      mapGroupRef.current.setAttribute("transform", `translate(${tx} ${ty}) scale(${s})`);
+    }
+    const ai = activeRef.current;
+    pinRefs.current.forEach((c, i) => {
+      if (!c) return;
+      const base = i === ai ? 3.6 : 2.1;
+      c.setAttribute("r", String(base / s));
+    });
+    if (haloRef.current) haloRef.current.setAttribute("r", String(8 / s));
+  }
 
   // Active chapter = the one nearest the viewport centre.
   useEffect(() => {
@@ -81,35 +104,51 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
         }
         if (best >= 0) setActive(best);
       },
-      { rootMargin: "-42% 0px -42% 0px", threshold: [0, 0.5, 1] },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.5, 1] },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, [points.length]);
 
-  // GSAP: drift the map toward the active region (subtle; pins stay legible).
+  // Camera flight on active change.
   useEffect(() => {
-    if (!groupRef.current || !points.length) return;
-    const p = points[active] ?? { x: VB.width / 2, y: VB.height / 2 };
+    activeRef.current = active;
+    if (!points.length) return;
+    const p = points[active] ?? { x: CX, y: CY };
+
     if (reduced) {
-      gsap.set(groupRef.current, { x: 0, y: 0, scale: 1, transformOrigin: "0 0" });
+      camRef.current = { s: 1, tx: 0, ty: 0 };
+      applyCamera(1, 0, 0);
       return;
     }
-    const s = 1.18;
-    const tx = VB.width / 2 - p.x * s;
-    const ty = VB.height / 2 - p.y * s;
-    gsap.to(groupRef.current, {
-      x: tx,
-      y: ty,
-      scale: s,
-      transformOrigin: "0 0",
-      duration: 1.15,
+    const target = { s: ZOOM, tx: CX - p.x * ZOOM, ty: CY - p.y * ZOOM };
+    const tween = gsap.to(camRef.current, {
+      ...target,
+      duration: 1.5,
       ease: "power3.inOut",
       overwrite: true,
+      onUpdate: () => applyCamera(camRef.current.s, camRef.current.tx, camRef.current.ty),
     });
+    return () => {
+      tween.kill();
+    };
   }, [active, points, reduced]);
 
-  const connector = points.slice(0, active + 1).map((p) => `${p.x},${p.y}`).join(" ");
+  // Once geometry is ready, seat the camera on the first landscape.
+  useEffect(() => {
+    if (!points.length) return;
+    const p = points[0];
+    if (reduced) {
+      applyCamera(1, 0, 0);
+    } else {
+      camRef.current = { s: ZOOM, tx: CX - p.x * ZOOM, ty: CY - p.y * ZOOM };
+      applyCamera(camRef.current.s, camRef.current.tx, camRef.current.ty);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [points.length, reduced]);
+
+  const connectorPts = points.slice(0, active + 1).map((p) => `${p.x},${p.y}`).join(" ");
+  const activePoint = points[active] ?? { x: CX, y: CY };
 
   return (
     <section className="relative bg-cream border-t border-line">
@@ -122,7 +161,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
 
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-8 lg:gap-14">
         {/* Map spine — sticky on desktop */}
-        <div className="lg:sticky lg:top-[12vh] self-start order-1 lg:order-none mt-8 lg:mt-16">
+        <div className="lg:sticky lg:top-[10vh] self-start order-1 lg:order-none mt-8 lg:mt-16">
           <div
             className="relative rounded-[12px] border border-line overflow-hidden"
             style={{
@@ -131,42 +170,47 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
             }}
           >
             <svg viewBox={`0 0 ${VB.width} ${VB.height}`} className="w-full h-auto block" role="img" aria-label="Map of India with the eleven CAT landscapes">
-              <g ref={groupRef}>
+              <g ref={mapGroupRef}>
                 {paths.map((d, i) => (
-                  <path key={i} d={d} fill="rgba(94,103,144,0.07)" stroke="rgba(94,103,144,0.28)" strokeWidth={0.4} />
+                  <path key={i} d={d} fill="rgba(94,103,144,0.07)" stroke="rgba(94,103,144,0.30)" strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
                 ))}
-                {/* Journey connector */}
                 {!reduced && points.length > 1 && (
                   <polyline
-                    points={connector}
+                    points={connectorPts}
                     fill="none"
                     stroke={AMBER}
-                    strokeWidth={0.9}
+                    strokeWidth={1.4}
                     strokeLinecap="round"
-                    strokeDasharray="2 3"
-                    opacity={0.7}
+                    strokeLinejoin="round"
+                    strokeDasharray="3 4"
+                    opacity={0.75}
+                    vectorEffect="non-scaling-stroke"
                   />
+                )}
+                {/* Active bloom (counter-scaled radius, opacity pulse) */}
+                {!reduced && (
+                  <circle ref={haloRef} cx={activePoint.x} cy={activePoint.y} r={2.2} fill={AMBER} opacity={0.16}>
+                    <animate attributeName="opacity" values="0.08;0.22;0.08" dur="2.6s" repeatCount="indefinite" />
+                  </circle>
                 )}
                 {points.map((p, i) => {
                   const isActive = i === active;
                   const visited = i <= active;
                   return (
-                    <g key={i}>
-                      {isActive && (
-                        <circle cx={p.x} cy={p.y} r={6.5} fill={AMBER} opacity={0.16}>
-                          {!reduced && <animate attributeName="r" values="5;8;5" dur="2.4s" repeatCount="indefinite" />}
-                        </circle>
-                      )}
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r={isActive ? 3.4 : 2}
-                        fill={isActive ? AMBER : visited ? TEAL : SLATE}
-                        opacity={isActive ? 1 : visited ? 0.85 : 0.4}
-                        stroke="#faf9f5"
-                        strokeWidth={0.6}
-                      />
-                    </g>
+                    <circle
+                      key={i}
+                      ref={(el) => {
+                        pinRefs.current[i] = el;
+                      }}
+                      cx={p.x}
+                      cy={p.y}
+                      r={isActive ? 3.6 : 2.1}
+                      fill={isActive ? AMBER : visited ? TEAL : SLATE}
+                      opacity={isActive ? 1 : visited ? 0.9 : 0.42}
+                      stroke="#faf9f5"
+                      strokeWidth={0.7}
+                      vectorEffect="non-scaling-stroke"
+                    />
                   );
                 })}
               </g>
@@ -175,6 +219,9 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               <span className="text-amber-deep font-semibold tabular-nums">{String(active + 1).padStart(2, "0")}</span>
               <span className="text-line"> / </span>
               {String(pins.length).padStart(2, "0")}
+            </div>
+            <div className="absolute bottom-3 left-4 right-4 font-mono text-[9.5px] uppercase tracking-[0.14em] text-deep-teal font-semibold">
+              {pins[active]?.name}
             </div>
           </div>
         </div>
@@ -192,12 +239,12 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 ref={(el) => {
                   chapterRefs.current[i] = el;
                 }}
-                className="lg:min-h-[78vh] flex flex-col justify-center py-12 lg:py-0"
+                className="lg:min-h-[82vh] flex flex-col justify-center py-12 lg:py-0"
               >
                 <div
                   className={
                     "transition-opacity duration-500 " +
-                    (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-40")
+                    (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")
                   }
                 >
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
@@ -217,7 +264,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                       <div>
                         <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
                         <div className="mt-1.5 flex items-center gap-2.5">
-                          <span className="inline-flex items-center justify-center w-10 h-10 rounded-[7px] bg-paper border border-line p-1">
+                          <span className="inline-flex items-center justify-center w-12 h-12 rounded-[7px] bg-paper border border-line p-1">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={anchor.logo} alt={anchor.name} className="max-h-full max-w-full object-contain" />
                           </span>
@@ -227,7 +274,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                     )}
                     <div>
                       <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
-                      <div className="mt-1.5 font-sans text-[14px] text-ink">
+                      <div className="mt-1.5 font-sans text-[14px]">
                         {pin.lipStatus === "published" ? (
                           <span className="text-deep-teal font-medium">Published</span>
                         ) : (
