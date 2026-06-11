@@ -14,7 +14,7 @@
  */
 import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from "pdf-lib";
 import type { LandscapeProfile } from "@/lib/data/landscapes";
-import type { BudgetSummary } from "@/lib/db/landscape-kb";
+import type { BudgetSummary, LandscapeInsights } from "@/lib/db/landscape-kb";
 
 // ─── Geometry ────────────────────────────────────────────────────────────
 // A4 portrait. Margins tightened to consultancy norms (52pt outer, generous
@@ -605,131 +605,67 @@ function drawContents(
 }
 
 // ─── AT A GLANCE (Executive dashboard) ───────────────────────────────────
-function drawAtAGlance(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit: string) {
-  newPage(ctx, "At a glance");
-  drawExhibitHeader(ctx, exhibit, "Executive snapshot", "At a glance");
+// ─── CHAPTER 1 — WHY THIS LANDSCAPE IS SPECIAL ───────────────────────────
+// Folds the old "at a glance", "context" and "challenges" exhibits into one
+// opening chapter: the hook, the headline facts, the deeper context, the
+// setting, and what the landscape is up against.
+function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit: string) {
+  newPage(ctx, "Why this landscape is special");
+  drawExhibitHeader(ctx, exhibit, "The landscape", `Why ${p.name} matters`);
 
-  // Lede sentence
-  drawBody(ctx, p.gloss, { size: 11, lineHeight: 16, color: C.ink, maxW: CONTENT_W * 0.82 });
+  // The hook — gloss, set larger.
+  drawBody(ctx, p.gloss, { size: 12, lineHeight: 17, color: C.ink, maxW: CONTENT_W * 0.86 });
+  ctx.y -= 10;
+  hairline(ctx);
+
+  // Headline facts — four tiles.
+  const tileW = CONTENT_W / 4;
+  const facts = [
+    { label: "POPULATION", value: p.population },
+    { label: "HOUSEHOLDS", value: p.households },
+    { label: "VILLAGES", value: p.villages },
+    { label: "AREA", value: p.area },
+  ];
+  const ty = ctx.y;
+  ctx.page.drawRectangle({ x: M.left, y: ty, width: CONTENT_W, height: 0.6, color: C.hairline });
+  for (let i = 0; i < facts.length; i++) {
+    const tx = M.left + i * tileW;
+    ctx.page.drawText(facts[i].label, { x: tx, y: ty - 12, size: 7, font: ctx.sansBold, color: C.muted });
+    const v = facts[i].value;
+    const vs = v.length > 9 ? 18 : 22;
+    ctx.page.drawText(v, { x: tx, y: ty - 16 - vs, size: vs, font: ctx.sansBold, color: C.deepTeal });
+  }
+  ctx.y = ty - 64;
+  hairline(ctx);
+
+  // The deeper why — body context.
+  drawBody(ctx, p.bodyContext, { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 });
+  ctx.y -= 10;
+  hairline(ctx);
+
+  // Setting — region / agroclimatic zone / admin.
+  drawTwoColTable(ctx, [
+    { label: "Region", value: p.region },
+    { label: "Agroclimatic zone", value: shorten(p.agroclimaticZone, 160) },
+    { label: "State", value: stateName },
+    { label: "District", value: p.district },
+  ]);
   ctx.y -= 8;
   hairline(ctx);
 
-  // Six headline tiles — Population, Households, Villages, Area,
-  // Challenges identified, Plan status. Three columns × two rows.
-  const tileW = CONTENT_W / 3;
-  const tileH = 64;
-  const tiles = [
-    { label: "POPULATION", value: p.population, sub: "Persons" },
-    { label: "HOUSEHOLDS", value: p.households, sub: "Reached by plan" },
-    { label: "VILLAGES", value: p.villages, sub: "Inhabited" },
-    { label: "LANDSCAPE AREA", value: p.area, sub: "Geographical" },
-    {
-      label: "CHALLENGES",
-      value: String(p.keyChallenges.length),
-      sub: "Identified in plan",
-    },
-    {
-      label: "PLAN STATUS",
-      value: p.lipStatus === "published" ? "Published" : "In prep.",
-      sub: "Investment plan",
-    },
-  ];
-  for (let i = 0; i < tiles.length; i++) {
-    const col = i % 3;
-    const row = Math.floor(i / 3);
-    const tx = M.left + col * tileW;
-    const ty = ctx.y - row * tileH;
-    // Top hairline
-    ctx.page.drawRectangle({ x: tx, y: ty, width: tileW - 8, height: 0.6, color: C.hairline });
-    // Label
-    ctx.page.drawText(tiles[i].label, {
-      x: tx,
-      y: ty - 12,
-      size: 7,
-      font: ctx.sansBold,
-      color: C.muted,
-    });
-    // Value
-    const value = tiles[i].value;
-    const valueSize = value.length > 9 ? 18 : 22;
-    ctx.page.drawText(value, {
-      x: tx,
-      y: ty - 12 - valueSize - 4,
-      size: valueSize,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
-    // Sub
-    ctx.page.drawText(tiles[i].sub, {
-      x: tx,
-      y: ty - tileH + 6,
-      size: 7.5,
-      font: ctx.sans,
-      color: C.muted,
-    });
-  }
-  ctx.y -= tileH * 2 + 12;
-
-  hairline(ctx);
-
-  // Two-column metadata table
-  const metaRows: { label: string; value: string }[] = [
-    { label: "Region", value: p.region },
-    { label: "Agroclimatic zone", value: shorten(p.agroclimaticZone, 90) },
-    { label: "State", value: stateName },
-    { label: "District", value: p.district },
-  ];
-  drawTwoColTable(ctx, metaRows);
-
-  ctx.y -= 6;
-  hairline(ctx);
-
-  // Top challenges preview — first 3 from the full list, so the reader
-  // gets the gist before Exhibit 03 covers them in full.
-  ctx.page.drawText("TOP CHALLENGES IDENTIFIED", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
+  // What it is up against — the key challenges, folded in.
+  ensure(ctx, 40);
+  ctx.page.drawText("WHAT IT IS UP AGAINST", { x: M.left, y: ctx.y - 8, size: 7.5, font: ctx.sansBold, color: C.amber });
   ctx.y -= 20;
-  const preview = p.keyChallenges.slice(0, 3);
-  preview.forEach((c, i) => {
-    const text = shorten(c, 130);
-    const lines = wrap(text, ctx.sans, 10, CONTENT_W - 32);
-    ensure(ctx, lines.length * 14 + 8);
-    ctx.page.drawText(String(i + 1).padStart(2, "0"), {
-      x: M.left,
-      y: ctx.y - 11,
-      size: 10,
-      font: ctx.sansBold,
-      color: C.teal,
-    });
+  p.keyChallenges.forEach((c, i) => {
+    const lines = wrap(c, ctx.sans, 10, CONTENT_W - 30);
+    ensure(ctx, lines.length * 13 + 10);
+    ctx.page.drawText(String(i + 1).padStart(2, "0"), { x: M.left, y: ctx.y - 11, size: 10, font: ctx.sansBold, color: C.teal });
     for (let k = 0; k < lines.length; k++) {
-      ctx.page.drawText(lines[k], {
-        x: M.left + 24,
-        y: ctx.y - 11 - k * 13,
-        size: 10,
-        font: ctx.sans,
-        color: C.inkSoft,
-      });
+      ctx.page.drawText(lines[k], { x: M.left + 24, y: ctx.y - 11 - k * 13, size: 10, font: ctx.sans, color: C.inkSoft });
     }
-    ctx.y -= lines.length * 13 + 6;
+    ctx.y -= lines.length * 13 + 8;
   });
-  if (p.keyChallenges.length > 3) {
-    ctx.y -= 2;
-    ctx.page.drawText(
-      `+${p.keyChallenges.length - 3} more · see Exhibit on Key challenges`,
-      {
-        x: M.left + 24,
-        y: ctx.y - 9,
-        size: 8.5,
-        font: ctx.sans,
-        color: C.muted,
-      }
-    );
-  }
 }
 
 function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
@@ -769,135 +705,62 @@ function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
   });
 }
 
-// ─── CONTEXT ─────────────────────────────────────────────────────────────
-function drawContext(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
-  newPage(ctx, "Context");
-  drawExhibitHeader(ctx, exhibit, "Landscape context", "Context");
-  drawBody(ctx, p.bodyContext, { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 });
+// ─── CHAPTER 2 — SUMMARY OF INTERVENTIONS ────────────────────────────────
+// What the plan actually does, from the costed line items: delivery packages
+// sized by share of the programme, then the intervention categories.
+function drawInterventions(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights, exhibit: string) {
+  newPage(ctx, "Summary of interventions");
+  drawExhibitHeader(ctx, exhibit, "The plan", "Summary of interventions");
 
-  ctx.y -= 10;
-  hairline(ctx);
-
-  // Agroclimatic sub-heading
-  ctx.page.drawText("AGROCLIMATIC ZONE", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  ctx.y -= 18;
-  drawBody(ctx, p.agroclimaticZone, { size: 10.5, lineHeight: 15.5, color: C.inkSoft });
-
-  ctx.y -= 14;
-  hairline(ctx);
-
-  // "What this implies" — two-column commentary block so the bottom of the
-  // context page isn't empty. Pulls together what the landscape's geography
-  // means for the design of the investment plan.
-  ctx.page.drawText("WHAT THIS IMPLIES FOR THE PLAN", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  ctx.y -= 18;
-  const implies = [
-    {
-      heading: "Rainfed-first design",
-      body:
-        "Irrigation expansion is constrained by geology and rainfall variability. The plan is built around rainwater retention, soil cover and crop choices matched to single-season cropping windows.",
-    },
-    {
-      heading: "Multi-lever portfolio",
-      body:
-        "No single intervention closes the gap. Climate resilience, ecological adaptation and emissions mitigation run in parallel — each contributing to landscape outcomes rather than each fighting for share of voice.",
-    },
-  ];
-  const implColW = (CONTENT_W - 20) / 2;
-  const implTop = ctx.y;
-  for (let i = 0; i < implies.length; i++) {
-    const cx = M.left + i * (implColW + 20);
-    ctx.page.drawRectangle({
-      x: cx,
-      y: implTop,
-      width: 28,
-      height: 1.4,
-      color: C.teal,
-    });
-    ctx.page.drawText(implies[i].heading, {
-      x: cx,
-      y: implTop - 16,
-      size: 11,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
-    const lines = wrap(implies[i].body, ctx.sans, 10, implColW - 4);
-    for (let k = 0; k < lines.length; k++) {
-      ctx.page.drawText(lines[k], {
-        x: cx,
-        y: implTop - 32 - k * 14,
-        size: 10,
-        font: ctx.sans,
-        color: C.inkSoft,
-      });
-    }
-  }
-  ctx.y = implTop - 120;
-}
-
-// ─── KEY CHALLENGES ──────────────────────────────────────────────────────
-function drawChallenges(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
-  newPage(ctx, "Key challenges");
-  drawExhibitHeader(ctx, exhibit, "Findings", "Key landscape challenges");
+  const pkgs = ins.byPackage.filter((x) => x.total > 0);
+  const cats = ins.byCategory.filter((x) => x.total > 0);
   drawBody(
     ctx,
-    `${p.keyChallenges.length} systemic constraints identified across rainfall, terrain, livelihoods, market access and infrastructure.`,
-    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.82 }
+    `The plan organises ${ins.totals.lineCount} costed interventions into ${pkgs.length} delivery package${pkgs.length === 1 ? "" : "s"} across ${cats.length} intervention categor${cats.length === 1 ? "y" : "ies"}. Each package below is sized by its share of the total programme.`,
+    { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.9 }
   );
   ctx.y -= 12;
   hairline(ctx);
 
-  p.keyChallenges.forEach((c, i) => {
-    const num = String(i + 1).padStart(2, "0");
-    const lines = wrap(c, ctx.sans, 10.5, CONTENT_W - 56);
-    const rowH = Math.max(28, lines.length * 15 + 12);
-    ensure(ctx, rowH);
-    // Numeric chip
-    ctx.page.drawText(num, {
-      x: M.left,
-      y: ctx.y - 12,
-      size: 16,
-      font: ctx.sansBold,
-      color: C.teal,
+  // Delivery packages as horizontal share bars.
+  ctx.page.drawText("DELIVERY PACKAGES BY SHARE OF PLAN", { x: M.left, y: ctx.y - 8, size: 8, font: ctx.sansBold, color: C.amber });
+  ctx.y -= 22;
+  const maxPkg = Math.max(...pkgs.map((x) => x.total), 1);
+  const labelColW = 168;
+  const maxBarW = CONTENT_W - labelColW - 78;
+  const barX = M.left + labelColW;
+  pkgs.slice(0, 10).forEach((pk) => {
+    ensure(ctx, 22);
+    const name = truncateToWidth(pk.package, ctx.sans, 9.5, labelColW - 8);
+    ctx.page.drawText(name, { x: M.left, y: ctx.y - 10, size: 9.5, font: ctx.sans, color: C.ink });
+    const w = (pk.total / maxPkg) * maxBarW;
+    ctx.page.drawRectangle({ x: barX, y: ctx.y - 11, width: maxBarW, height: 5, color: C.tealSoft });
+    ctx.page.drawRectangle({ x: barX, y: ctx.y - 11, width: Math.max(1, w), height: 5, color: C.teal });
+    ctx.page.drawText(`${inrShort(pk.total)} · ${pctStr(pk.total, ins.totals.total)}`, {
+      x: barX + maxBarW + 8, y: ctx.y - 10, size: 8.5, font: ctx.sansBold, color: C.deepTeal,
     });
-    // Body
-    for (let k = 0; k < lines.length; k++) {
-      ctx.page.drawText(lines[k], {
-        x: M.left + 38,
-        y: ctx.y - 12 - k * 15,
-        size: 10.5,
-        font: ctx.sans,
-        color: C.ink,
-      });
-    }
-    // Trailing hairline
-    ctx.page.drawRectangle({
-      x: M.left + 38,
-      y: ctx.y - rowH + 4,
-      width: CONTENT_W - 38,
-      height: 0.3,
-      color: C.hairline,
-    });
-    ctx.y -= rowH;
+    ctx.y -= 20;
   });
+
+  ctx.y -= 6;
+  hairline(ctx);
+
+  // Intervention categories — what each covers, with line counts.
+  ctx.page.drawText("BY INTERVENTION CATEGORY", { x: M.left, y: ctx.y - 8, size: 8, font: ctx.sansBold, color: C.amber });
+  ctx.y -= 18;
+  drawTwoColTable(
+    ctx,
+    cats.slice(0, 8).map((c) => ({
+      label: c.category,
+      value: `${inrShort(c.total)}  ·  ${pctStr(c.total, ins.totals.total)} of plan  ·  ${c.lines} line${c.lines === 1 ? "" : "s"}`,
+    }))
+  );
 }
 
 // ─── FINANCE ─────────────────────────────────────────────────────────────
-function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhibit: string) {
-  newPage(ctx, "Financials");
-  drawExhibitHeader(ctx, exhibit, "Financials", "Investment plan");
+function drawCosting(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhibit: string) {
+  newPage(ctx, "Costing");
+  drawExhibitHeader(ctx, exhibit, "The money", "Costing the plan");
 
   // Headline + caption
   ctx.page.drawText("TOTAL PLAN SIZE  ·  7-YEAR HORIZON", {
@@ -1123,149 +986,69 @@ function drawFinance(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
 }
 
 // ─── IMPLEMENTATION SNAPSHOT (replaces field_record; text only) ──────────
-function drawImplementationSnapshot(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
-  newPage(ctx, "Implementation snapshot");
-  drawExhibitHeader(ctx, exhibit, "Pathway", "Implementation snapshot");
+// ─── CHAPTER 4 — THE METRICS (LIP Chapter 6) ─────────────────────────────
+function drawMetrics(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights, exhibit: string) {
+  newPage(ctx, "The metrics");
+  drawExhibitHeader(ctx, exhibit, "Chapter 6 · Reach & targets", "The metrics");
   drawBody(
     ctx,
-    "How the landscape moves from plan to ground. The pathway is built around three levers — climate resilience, ecological adaptation, and mitigation — applied through the entry-points below.",
-    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.82 }
+    "What the plan sets out to move on the ground, in the landscape's own units. Reach figures are programme engagements summed across interventions (a household can appear in several lines), not unique counts. The denominators below give the unique base.",
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.86 }
   );
   ctx.y -= 12;
   hairline(ctx);
 
-  // Three-column "levers" panel
-  const levers = [
-    {
-      label: "CLIMATE RESILIENCE",
-      title: "Build resilience to shocks",
-      body:
-        "Rainwater retention structures, soil cover and crop diversification across rainfed plots to dampen the rainfall variability that drives single-season failure.",
-    },
-    {
-      label: "ECOLOGICAL ADAPTATION",
-      title: "Adapt to landscape ecology",
-      body:
-        "Crop and livelihood choices matched to the agroclimatic zone. Seeds, varieties and livestock systems are selected for the soil and rainfall profile.",
-    },
-    {
-      label: "MITIGATION",
-      title: "Mitigate emissions, restore land",
-      body:
-        "Tree cover, soil organic carbon, and reduced dependence on synthetic inputs across landscape commons and private parcels.",
-    },
+  // Reach tiles — engagements, hectares, livestock, costed lines.
+  const tileW = CONTENT_W / 4;
+  const tiles = [
+    { label: "HOUSEHOLD ENGAGEMENTS", value: compactNum(ins.totals.householdEngagements), sub: "Across interventions" },
+    { label: "HECTARES", value: compactNum(ins.totals.hectares), sub: "Area touched" },
+    { label: "LIVESTOCK", value: compactNum(ins.totals.animals), sub: "Animals supported" },
+    { label: "INTERVENTION LINES", value: String(ins.totals.lineCount), sub: "Costed activities" },
   ];
-  const colW = (CONTENT_W - 16) / 3;
-  const colTop = ctx.y;
-  for (let i = 0; i < 3; i++) {
-    const cx = M.left + i * (colW + 8);
-    ctx.page.drawRectangle({
-      x: cx,
-      y: colTop,
-      width: colW,
-      height: 0.8,
-      color: C.teal,
-    });
-    ctx.page.drawText(levers[i].label, {
-      x: cx,
-      y: colTop - 14,
-      size: 7.5,
-      font: ctx.sansBold,
-      color: C.amber,
-    });
-    ctx.page.drawText(levers[i].title, {
-      x: cx,
-      y: colTop - 30,
-      size: 11,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
-    const bodyLines = wrap(levers[i].body, ctx.sans, 9.5, colW - 6);
-    for (let k = 0; k < bodyLines.length; k++) {
-      ctx.page.drawText(bodyLines[k], {
-        x: cx,
-        y: colTop - 48 - k * 13,
-        size: 9.5,
-        font: ctx.sans,
-        color: C.inkSoft,
-      });
-    }
+  const ty = ctx.y;
+  ctx.page.drawRectangle({ x: M.left, y: ty, width: CONTENT_W, height: 0.6, color: C.hairline });
+  for (let i = 0; i < tiles.length; i++) {
+    const tx = M.left + i * tileW;
+    ctx.page.drawText(tiles[i].label, { x: tx, y: ty - 12, size: 6.5, font: ctx.sansBold, color: C.muted });
+    const vs = tiles[i].value.length > 8 ? 18 : 22;
+    ctx.page.drawText(tiles[i].value, { x: tx, y: ty - 16 - vs, size: vs, font: ctx.sansBold, color: C.deepTeal });
+    ctx.page.drawText(tiles[i].sub, { x: tx, y: ty - 64, size: 7, font: ctx.sans, color: C.muted });
   }
-  ctx.y = colTop - 140;
-
+  ctx.y = ty - 78;
   hairline(ctx);
 
-  // Entry-points list — concrete activities that operationalise the levers.
-  // Lifts the bottom half of the page from empty to useful.
-  ctx.page.drawText("ENTRY POINTS", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  ctx.y -= 20;
-  const entryPoints = [
-    {
-      label: "NRM",
-      title: "Natural resource management",
-      body: "Soil and water conservation structures, common-land restoration, watershed treatment.",
-    },
-    {
-      label: "AGRI",
-      title: "Agriculture & horticulture",
-      body: "Crop diversification, climate-resilient varieties, low-external-input cultivation.",
-    },
-    {
-      label: "LIVESTOCK",
-      title: "Livestock & fisheries",
-      body: "Breed improvement, fodder development, disease management, allied livelihoods.",
-    },
-    {
-      label: "MARKETS",
-      title: "Markets & value chains",
-      body: "Farmer producer organisations, aggregation infrastructure, post-harvest processing.",
-    },
-    {
-      label: "FINANCE",
-      title: "Finance & convergence",
-      body: "Government scheme convergence, returnable-grant deployment, outcome-based finance pilots.",
-    },
-  ];
-  entryPoints.forEach((ep) => {
-    ensure(ctx, 24);
-    ctx.page.drawText(ep.label, {
-      x: M.left,
-      y: ctx.y - 11,
-      size: 7.5,
-      font: ctx.sansBold,
-      color: C.amber,
-    });
-    ctx.page.drawText(ep.title, {
-      x: M.left + 78,
-      y: ctx.y - 11,
-      size: 10.5,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
-    const bodyText = shorten(ep.body, 110);
-    ctx.page.drawText(bodyText, {
-      x: M.left + 78,
-      y: ctx.y - 11 - 14,
-      size: 9.5,
-      font: ctx.sans,
-      color: C.inkSoft,
-    });
-    // trailing hairline
-    ctx.page.drawRectangle({
-      x: M.left + 78,
-      y: ctx.y - 34,
-      width: CONTENT_W - 78,
-      height: 0.3,
-      color: C.hairline,
-    });
-    ctx.y -= 38;
-  });
+  // Unique denominators from the landscape profile (true base, not engagements).
+  ctx.page.drawText("LANDSCAPE DENOMINATORS (UNIQUE)", { x: M.left, y: ctx.y - 8, size: 8, font: ctx.sansBold, color: C.amber });
+  ctx.y -= 18;
+  drawTwoColTable(ctx, [
+    { label: "Population", value: p.population },
+    { label: "Households", value: p.households },
+    { label: "Inhabited villages", value: p.villages },
+    { label: "Landscape area", value: p.area },
+    { label: "Programme horizon", value: "7 years" },
+  ]);
+  ctx.y -= 8;
+  hairline(ctx);
+
+  // Reach by intervention category.
+  const cats = ins.byCategory.filter((c) => c.householdEngagements > 0 || c.hectares > 0).slice(0, 8);
+  if (cats.length) {
+    ctx.page.drawText("REACH BY INTERVENTION CATEGORY", { x: M.left, y: ctx.y - 8, size: 8, font: ctx.sansBold, color: C.amber });
+    ctx.y -= 18;
+    drawTwoColTable(
+      ctx,
+      cats.map((c) => ({
+        label: c.category,
+        value: `${compactNum(c.householdEngagements)} hh engagements  ·  ${compactNum(c.hectares)} ha`,
+      }))
+    );
+  }
+}
+
+function compactNum(n: number): string {
+  if (!n || !isFinite(n) || n <= 0) return "-";
+  return Math.round(n).toLocaleString("en-IN");
 }
 
 // ─── COLOPHON (last page) ────────────────────────────────────────────────
@@ -1400,25 +1183,24 @@ function truncateToWidth(s: string, font: PDFFont, size: number, maxW: number): 
 // ─── Public API ──────────────────────────────────────────────────────────
 export type BriefSection =
   | "cover"
-  | "at_a_glance"
-  | "context"
-  | "challenges"
-  | "finance"
-  | "field_record"
+  | "why_special"
+  | "interventions"
+  | "costing"
+  | "metrics"
   | "colophon";
 
 export const ALL_BRIEF_SECTIONS: BriefSection[] = [
   "cover",
-  "at_a_glance",
-  "context",
-  "challenges",
-  "finance",
-  "field_record",
+  "why_special",
+  "interventions",
+  "costing",
+  "metrics",
   "colophon",
 ];
 
 export type BriefOpts = {
   budget?: BudgetSummary;
+  insights?: LandscapeInsights;
   sections?: BriefSection[];
 };
 
@@ -1468,16 +1250,20 @@ export async function buildLandscapeBriefPdf(
   // Cover
   if (want("cover")) drawCover(ctx, p, stateName);
 
-  // Compute exhibit numbering on the fly (only exhibits we'll render)
+  // Compute chapter numbering on the fly (only chapters we'll render). The
+  // report follows the LIP narrative: why it matters, what the plan does, what
+  // it costs, what it sets out to move.
+  const hasIns = Boolean(opts.insights);
   const planned: { key: BriefSection; title: string }[] = [];
-  if (want("at_a_glance")) planned.push({ key: "at_a_glance", title: "At a glance" });
-  if (want("context")) planned.push({ key: "context", title: "Context" });
-  if (want("challenges")) planned.push({ key: "challenges", title: "Key challenges" });
-  if (want("finance") && opts.budget && opts.budget.totalCostInr > 0) {
-    planned.push({ key: "finance", title: "Investment plan" });
+  if (want("why_special")) planned.push({ key: "why_special", title: "Why this landscape is special" });
+  if (want("interventions") && hasIns && opts.insights!.totals.lineCount > 0) {
+    planned.push({ key: "interventions", title: "Summary of interventions" });
   }
-  if (want("field_record")) {
-    planned.push({ key: "field_record", title: "Implementation snapshot" });
+  if (want("costing") && opts.budget && opts.budget.totalCostInr > 0) {
+    planned.push({ key: "costing", title: "Costing" });
+  }
+  if (want("metrics") && hasIns) {
+    planned.push({ key: "metrics", title: "The metrics" });
   }
   if (want("colophon")) planned.push({ key: "colophon", title: "About this brief" });
 
@@ -1496,20 +1282,17 @@ export async function buildLandscapeBriefPdf(
   for (let i = 0; i < planned.length; i++) {
     const exhibit = String(i + 1).padStart(2, "0");
     switch (planned[i].key) {
-      case "at_a_glance":
-        drawAtAGlance(ctx, p, stateName, exhibit);
+      case "why_special":
+        drawWhySpecial(ctx, p, stateName, exhibit);
         break;
-      case "context":
-        drawContext(ctx, p, exhibit);
+      case "interventions":
+        if (opts.insights) drawInterventions(ctx, p, opts.insights, exhibit);
         break;
-      case "challenges":
-        drawChallenges(ctx, p, exhibit);
+      case "costing":
+        if (opts.budget) drawCosting(ctx, p, opts.budget, exhibit);
         break;
-      case "finance":
-        if (opts.budget) drawFinance(ctx, p, opts.budget, exhibit);
-        break;
-      case "field_record":
-        drawImplementationSnapshot(ctx, p, exhibit);
+      case "metrics":
+        if (opts.insights) drawMetrics(ctx, p, opts.insights, exhibit);
         break;
       case "colophon":
         drawColophon(ctx, p, exhibit);

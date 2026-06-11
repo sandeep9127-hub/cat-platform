@@ -5,7 +5,7 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 import { FileDown, Layers, Settings2, X } from "lucide-react";
 
 type Section = {
-  key: "cover" | "at_a_glance" | "context" | "challenges" | "finance" | "field_record" | "colophon";
+  key: "cover" | "why_special" | "interventions" | "costing" | "metrics" | "colophon";
   label: string;
   description: string;
   /** When true, requires data on the landscape; greys out if missing. */
@@ -13,21 +13,25 @@ type Section = {
 };
 
 const SECTIONS: Section[] = [
-  { key: "cover", label: "Cover", description: "Brand + title + anchor photo (or signature)" },
-  { key: "at_a_glance", label: "At a glance", description: "Quick facts grid" },
-  { key: "context", label: "Context", description: "Body context + agroclimatic zone" },
-  { key: "challenges", label: "Key challenges", description: "Numbered list of landscape challenges" },
+  { key: "cover", label: "Cover", description: "CAT brand cover + headline facts" },
+  { key: "why_special", label: "Why it is special", description: "The hook, setting, and what it's up against" },
   {
-    key: "finance",
-    label: "Investment plan finance",
+    key: "interventions",
+    label: "Summary of interventions",
+    description: "Delivery packages + categories by share",
+    requires: "budget",
+  },
+  {
+    key: "costing",
+    label: "Costing",
     description: "Total plan, funding mix, top categories",
     requires: "budget",
   },
   {
-    key: "field_record",
-    label: "Field record",
-    description: "Captioned documentary photographs",
-    requires: "photos",
+    key: "metrics",
+    label: "The metrics",
+    description: "Reach (households, hectares) + denominators",
+    requires: "budget",
   },
   { key: "colophon", label: "Editorial note + citation", description: "How to cite + about" },
 ];
@@ -44,7 +48,7 @@ export function CustomBriefBuilder() {
   const [open, setOpen] = useState(false);
   const [slug, setSlug] = useState<string>(LANDSCAPE_LIST[0]?.slug ?? "patratu");
   const [selected, setSelected] = useState<Set<Section["key"]>>(
-    new Set(["cover", "at_a_glance", "context", "challenges", "colophon"])
+    new Set(["cover", "why_special", "interventions", "costing", "metrics", "colophon"])
   );
 
   const landscape = useMemo(

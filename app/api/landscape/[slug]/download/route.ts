@@ -4,7 +4,7 @@ import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { buildLandscapeBriefPdf, ALL_BRIEF_SECTIONS, type BriefSection } from "@/lib/downloads/landscape-brief-pdf";
 import { buildLandscapeBriefDocx } from "@/lib/downloads/landscape-brief-docx";
-import { budgetSummary, landscapeHasLip } from "@/lib/db/landscape-kb";
+import { budgetSummary, landscapeInsights, landscapeHasLip } from "@/lib/db/landscape-kb";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -54,12 +54,13 @@ export async function GET(
   // If the landscape has an ingested investment plan, pull the budget summary
   // so the finance page renders. Hides cleanly otherwise.
   let budget: Awaited<ReturnType<typeof budgetSummary>> | undefined;
+  let insights: Awaited<ReturnType<typeof landscapeInsights>> | undefined;
   try {
     if (await landscapeHasLip(slug)) {
-      budget = await budgetSummary(slug);
+      [budget, insights] = await Promise.all([budgetSummary(slug), landscapeInsights(slug)]);
     }
   } catch {
-    // Non-fatal — finance page just won't render.
+    // Non-fatal — costing/interventions/metrics pages just won't render.
   }
 
   if (format === "docx") {
@@ -77,7 +78,7 @@ export async function GET(
   }
 
   // Default: PDF
-  const bytes = await buildLandscapeBriefPdf(p, stateName, { budget, sections });
+  const bytes = await buildLandscapeBriefPdf(p, stateName, { budget, insights, sections });
   // Custom selections get a different filename so users can tell their
   // hand-picked briefs apart from the canonical one.
   const filename =
