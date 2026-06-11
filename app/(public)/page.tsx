@@ -275,23 +275,44 @@ export default async function LandingPage() {
               <Link
                 key={t.slug}
                 href={`/map?category=${t.slug}`}
-                className="group bg-paper p-5 flex flex-col gap-3 min-h-[132px] hover:bg-cream transition-colors active:scale-[0.99]"
-                style={{ transition: "background-color 150ms, transform 150ms" }}
+                className="group relative overflow-hidden bg-paper p-5 flex flex-col gap-3 min-h-[132px] active:scale-[0.99]"
+                style={{ transition: "transform 150ms" }}
               >
+                {/* hover wash + top hairline in the theme's own colour */}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
+                  style={{ background: `linear-gradient(180deg, ${t.colourHex}1f 0%, ${t.colourHex}08 100%)` }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute top-0 left-0 right-0 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out pointer-events-none"
+                  style={{ background: t.colourHex }}
+                />
+
                 {/* category icon, in the category colour */}
                 <t.Icon
                   size={24}
                   strokeWidth={1.7}
                   style={{ color: t.colourHex }}
-                  className="transition-transform duration-200 ease-out-expo group-hover:-translate-y-0.5 group-hover:scale-110"
+                  className="relative transition-transform duration-200 ease-out-expo group-hover:-translate-y-0.5 group-hover:scale-110"
                   aria-hidden
                 />
-                <h3 className="font-sans text-[16px] font-semibold tracking-[-0.02em] text-ink leading-[1.18]">
+                <h3 className="relative font-sans text-[16px] font-semibold tracking-[-0.02em] text-ink leading-[1.18] group-hover:text-teal transition-colors">
                   {t.short}
                 </h3>
-                <span className="mt-auto font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-                  <strong className="text-ink text-[13px] font-semibold tabular-nums">{t.count}</strong>{" "}
-                  {t.count === 1 ? "solution" : "solutions"}
+                <span className="relative mt-auto flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                    <strong className="text-ink text-[13px] font-semibold tabular-nums">{t.count}</strong>{" "}
+                    {t.count === 1 ? "solution" : "solutions"}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="font-mono opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                    style={{ color: t.colourHex }}
+                  >
+                    &rarr;
+                  </span>
                 </span>
               </Link>
             ))}
