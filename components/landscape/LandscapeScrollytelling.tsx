@@ -361,7 +361,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                   <p className="text-[15.5px] sm:text-[16.5px] text-ink-soft leading-[1.6] mt-4 max-w-[48ch]">
                     {profile?.context}
                   </p>
-                  <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+                  <div className="mt-7 flex flex-wrap items-end gap-x-8 gap-y-5">
                     {anchor && (
                       <div>
                         <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
@@ -384,14 +384,14 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                         )}
                       </div>
                     </div>
+                    <Link
+                      href={`/landscape/${pin.slug}`}
+                      className="group inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-6 py-3 text-[14px] font-medium hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo sm:ml-auto self-end"
+                    >
+                      Open {pin.name}
+                      <span className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5">&rarr;</span>
+                    </Link>
                   </div>
-                  <Link
-                    href={`/landscape/${pin.slug}`}
-                    className="group mt-7 inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-6 py-3 text-[14px] font-medium hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
-                  >
-                    Open {pin.name}
-                    <span className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5">&rarr;</span>
-                  </Link>
                 </div>
               </div>
             );
