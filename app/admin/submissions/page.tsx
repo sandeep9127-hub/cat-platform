@@ -122,7 +122,7 @@ export default async function SubmissionsPage() {
           Organisation submissions
         </h1>
         <p className="font-serif italic text-[16px] text-ink-soft mt-2 max-w-[64ch] font-light">
-          New organisations and edit suggestions from the public Organizations Atlas. Approving
+          New organisations and edit suggestions from the public Organisations Atlas. Approving
           publishes straight into the live directory.
         </p>
         <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
@@ -134,7 +134,7 @@ export default async function SubmissionsPage() {
         <div className="rounded-[10px] border border-line bg-cream p-8 text-center">
           <p className="font-serif italic text-[17px] text-ink-soft">Nothing waiting for review.</p>
           <p className="text-[13px] text-muted mt-1">
-            Submissions from the Organizations Atlas “Add or update an organisation” form land here.
+            Submissions from the Organisations Atlas “Add or update an organisation” form land here.
           </p>
         </div>
       ) : (

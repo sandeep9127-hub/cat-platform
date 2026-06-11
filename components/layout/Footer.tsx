@@ -65,7 +65,7 @@ export function Footer() {
             { href: "/principles", label: "Principles" },
             { href: "/landscapes", label: "Landscapes" },
             { href: "/map", label: "Solutions Atlas" },
-            { href: "/organizations", label: "Organizations Atlas" },
+            { href: "/organizations", label: "Organisations Atlas" },
             { href: "/agent", label: "Ask the Hub" },
           ]}
         />

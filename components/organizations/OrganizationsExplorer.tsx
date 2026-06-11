@@ -263,7 +263,7 @@ export function OrganizationsExplorer() {
       <header className="og-head">
         <div>
           <div className="og-eyebrow">Who’s working where</div>
-          <h1 className="og-title">Organizations Atlas</h1>
+          <h1 className="og-title">Organisations Atlas</h1>
           <p className="og-sub">
             {loading
               ? "Loading the directory…"

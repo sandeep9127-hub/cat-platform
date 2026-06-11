@@ -19,7 +19,7 @@ const NAV_LINKS = [
   { href: "/principles", label: "Principles", Icon: Compass },
   { href: "/landscapes", label: "Landscapes", Icon: Layers },
   { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
-  { href: "/organizations", label: "Organizations Atlas", Icon: Users },
+  { href: "/organizations", label: "Organisations Atlas", Icon: Users },
   { href: "/about", label: "About", Icon: Info },
 ];
 

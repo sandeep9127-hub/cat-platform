@@ -113,6 +113,7 @@ HARD RULES (non-negotiable):
 - "insight" fields: fill ONLY the parts the sources support; set the others to null. Two short sentences max each. No invention.
 - "citations" must list the URLs you actually used, each with a short verbatim passage.
 - Plain language. No marketing words. No em dashes. Never the word "agroecology" in user-facing prose.
+- Use British / Indian English spelling throughout (organisation, programme, colour, centre, -ise endings).
 - India, programme-level only (named, geographically defined, identifiable lead org).
 - If you cannot verify the programme from the allow-listed sources, output {"refused": true, "reason": "..."}.
 
