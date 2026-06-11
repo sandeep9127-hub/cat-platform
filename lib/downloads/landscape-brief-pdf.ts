@@ -669,7 +669,7 @@ function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibi
 }
 
 function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
-  const labelW = 130;
+  const labelW = 178;
   const valueW = CONTENT_W - labelW - 12;
   rows.forEach((r, i) => {
     const valueLines = wrap(r.value, ctx.sans, 10, valueW);
@@ -685,7 +685,8 @@ function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
         color: C.rowAlt,
       });
     }
-    ctx.page.drawText(r.label.toUpperCase(), {
+    // Truncate the label so long category names never collide with the value.
+    ctx.page.drawText(truncateToWidth(r.label.toUpperCase(), ctx.sansBold, 7.5, labelW - 14), {
       x: M.left + 4,
       y: ctx.y - 12,
       size: 7.5,
