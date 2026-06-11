@@ -101,6 +101,38 @@ export function PrincipleWheel({
     setRot(next);
   }, [selected, step]);
 
+  // Idle drift — when nothing is selected or hovered, the ring turns slowly
+  // (~one revolution every 3 minutes) so the wheel reads as a living instrument
+  // rather than a static diagram. The numbers and emblems counter-rotate each
+  // frame, so they stay upright. Disabled for reduced-motion; paused the moment
+  // a sector is hovered or chosen.
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(m.matches);
+    sync();
+    m.addEventListener?.("change", sync);
+    return () => m.removeEventListener?.("change", sync);
+  }, []);
+  const spinning = selected == null && hovered == null && !reduced;
+  useEffect(() => {
+    if (!spinning) return;
+    let raf = 0;
+    let last = 0;
+    let lastRender = 0;
+    const tick = (t: number) => {
+      if (last) rotRef.current += (t - last) * 0.002; // ~2°/s
+      last = t;
+      if (t - lastRender > 33) {
+        setRot(rotRef.current); // throttle re-renders to ~30fps
+        lastRender = t;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [spinning]);
+
   const active = hovered ?? selected;
   const activeP = active ? principles.find((p) => p.n === active) : null;
   const lv = palette.levels;
@@ -121,7 +153,7 @@ export function PrincipleWheel({
       {/* ROTATING RING — sectors + bands rotate so the active sits at top */}
       <g
         style={{
-          transition: "transform 620ms cubic-bezier(.22,.61,.36,1)",
+          transition: spinning ? "none" : "transform 620ms cubic-bezier(.22,.61,.36,1)",
           transform: `rotate(${rot}deg)`,
           transformOrigin: `${C}px ${C}px`,
         }}
@@ -221,11 +253,11 @@ export function PrincipleWheel({
         })}
       </g>
 
-      {/* FIXED TOP POINTER — marks the active slot */}
+      {/* FIXED TOP POINTER — marks the active slot, in CAT amber */}
       <g style={{ pointerEvents: "none" }}>
         <path
           d={`M ${C - 13} ${C - R_BAND - 16} L ${C + 13} ${C - R_BAND - 16} L ${C} ${C - R_BAND + 2} Z`}
-          fill={palette.hub}
+          fill="#f8ca7c"
         />
       </g>
 

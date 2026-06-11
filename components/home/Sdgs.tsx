@@ -43,9 +43,15 @@ export function Sdgs() {
             style={{ animationDelay: `${i * 40}ms` }}
           >
             <span
-              className="block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)]"
+              className="relative block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow,border-color] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)] group-hover:border-[color:var(--c)]"
               style={{ ["--c" as string]: g.colour } as React.CSSProperties}
             >
+              {/* Goal-colour hairline grows in on hover */}
+              <span
+                aria-hidden
+                className="absolute top-0 left-0 right-0 h-[2px] z-10 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out"
+                style={{ background: "var(--c)" }}
+              />
               {/* Official UN inverted SDG icon (colour art on white). */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

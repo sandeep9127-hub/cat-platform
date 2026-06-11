@@ -5,6 +5,7 @@ import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categorie
 import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
 import { Layers, Compass, MapPin } from "lucide-react";
 import { categoryIconFor } from "@/components/ui/CategoryIcon";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 export const dynamic = "force-dynamic";
 
@@ -202,13 +203,13 @@ export default async function MapPage({
             <div>
               <dt>Programmes</dt>
               <dd className="font-serif text-[26px] text-deep-teal mt-1 leading-none tracking-[-0.02em] tabular-nums">
-                {mapEntries.length}
+                <AnimatedNumber value={String(mapEntries.length)} />
               </dd>
             </div>
             <div>
               <dt>States</dt>
               <dd className="font-serif text-[26px] text-deep-teal mt-1 leading-none tracking-[-0.02em] tabular-nums">
-                {stateCount}
+                <AnimatedNumber value={String(stateCount)} />
               </dd>
             </div>
           </dl>

@@ -99,12 +99,16 @@ export default async function LandscapeDetailPage({ params }: Props) {
           <LandscapeAnchorPartner slug={slug} />
           <FactRow label="Investment plan">
             {p.lipStatus === "published" ? (
-              <span className="text-deep-teal">
-                <strong className="text-amber-deep">Published</strong>
-                <span className="text-amber-deep">·</span> See report
+              <span className="inline-flex items-center gap-1.5 text-ink-soft">
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#2e7573" }} />
+                <strong className="text-deep-teal">Published</strong>
+                <span className="text-muted">· See report</span>
               </span>
             ) : (
-              <span className="text-muted italic">In preparation</span>
+              <span className="inline-flex items-center gap-1.5" style={{ color: "#5e6990" }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#929cc5" }} />
+                In preparation
+              </span>
             )}
           </FactRow>
           <FactRow label="State">{state?.name ?? g.stateCode}</FactRow>

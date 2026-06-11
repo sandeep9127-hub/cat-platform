@@ -19,7 +19,7 @@ export type Pin = {
 };
 
 const TEAL = "#2e7573";
-const SLATE = "#5e6790";
+const SLATE = "#5e6990";
 const AMBER = "#946616";
 const ZOOM = 3.6;
 const CX = VB.width / 2;

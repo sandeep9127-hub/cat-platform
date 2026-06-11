@@ -10,29 +10,28 @@ import {
 } from "@/lib/data/principles";
 import { PrincipleWheel, type WheelPalette } from "./PrincipleWheel";
 
-// Cream palette — warm off-white surface with a teal accent (Hub brand).
-// Two semantic level colours (agro = green, food = amber) independent of the
-// accent: light-green sectors for the agroecosystem half, warm-tan for the
-// food-system half, meeting at a forest-green hub.
+// Official CAT palette. The two transformation scales map to the two CAT
+// ramps: agroecosystem (1–7) in teal, food-system (8–13) in periwinkle, meeting
+// at a deep-teal hub. The active wedge stays a light teal-pale so the dark
+// line-art emblem reads (a saturated fill ghosts the emblem edge); amber marks
+// the active slot via the top pointer instead.
 const PALETTE: WheelPalette = {
-  bg: "#fbf8f2",
-  // Light teal so the dark line-art emblem stays legible on the active
-  // wedge (a dark teal fill killed contrast and ghosted the emblem edge).
-  accent: "#a7cdd2",
-  accentInk: "#14333a",
-  hub: "#1e3a1c",
-  hubInk: "#f4f3ec",
-  hubMuted: "#a9bda1",
+  bg: "#faf9f5",
+  accent: "#b8ccca", // teal-pale active wedge (emblem-legible)
+  accentInk: "#334b4a",
+  hub: "#334b4a", // deep teal
+  hubInk: "#faf9f5",
+  hubMuted: "#95b1af", // teal-soft
   hubRing: "rgba(255,255,255,.14)",
   levels: {
-    agro: { band: "#5f8d3e", sector: "#dde4cf", ink: "#26331f" },
-    food: { band: "#b5793a", sector: "#ece0cd", ink: "#46381f" },
+    agro: { band: "#2e7573", sector: "#e1ede8", ink: "#334b4a" }, // teal ramp
+    food: { band: "#5e6990", sector: "#d0daef", ink: "#5e6990" }, // periwinkle ramp
   },
 };
 
 const LEVEL_CHIP = {
-  agro: { dot: "#5f8d3e", text: "#4e7a2e" },
-  food: { dot: "#b5793a", text: "#9a6526" },
+  agro: { dot: "#2e7573", text: "#2e7573" },
+  food: { dot: "#5e6990", text: "#5e6990" },
 };
 
 type SolLink = { slug: string; title: string; state: string | null };
@@ -474,13 +473,13 @@ function Styles() {
   return (
     <style>{`
       .ae {
-        --ae-bg: #fbf8f2;
-        --ae-cream: #fbf8f2;
-        --ae-ink: #1f261f;
-        --ae-forest: #1e3a1c;
-        --ae-accent: #a7cdd2;
-        --ae-accent-ink: #14333a;
-        --ae-line: rgba(31,38,31,.12);
+        --ae-bg: #faf9f5;
+        --ae-cream: #faf9f5;
+        --ae-ink: #16130d;
+        --ae-forest: #334b4a;
+        --ae-accent: #b8ccca;
+        --ae-accent-ink: #334b4a;
+        --ae-line: rgba(51,75,74,.14);
         --ae-side-w: 312px;
         --ae-detail-w: 420px;
         background: var(--ae-bg);
@@ -567,20 +566,20 @@ function Styles() {
       .ae-detail-def { font-family: var(--font-fraunces), Georgia, serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
       .ae-detail-body { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.78); margin: 0 0 22px; }
       .ae-detail-india { border-top: 1px solid rgba(31,38,31,.12); padding-top: 18px; margin-bottom: 24px; }
-      .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
+      .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
       .ae-india-text { font-size: 14px; line-height: 1.6; color: rgba(31,38,31,.8); margin: 8px 0 12px; }
       .ae-levers { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
       .ae-lever { font-family: var(--font-jetbrains), monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); color: rgba(31,38,31,.7); }
       .ae-ask { margin-bottom: 24px; border-top: 1px solid var(--ae-line); padding-top: 18px; }
       .ae-ask-head { margin-bottom: 10px; }
-      .ae-ask-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
-      .ae-ask-btn { width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ae-forest); background: rgba(63,125,141,.07); border: 1px solid rgba(63,125,141,.22); border-radius: 12px; padding: 13px 15px; transition: all 160ms; }
-      .ae-ask-btn:hover { background: rgba(63,125,141,.12); border-color: rgba(63,125,141,.4); }
+      .ae-ask-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
+      .ae-ask-btn { width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ae-forest); background: rgba(46,117,115,.07); border: 1px solid rgba(46,117,115,.22); border-radius: 12px; padding: 13px 15px; transition: all 160ms; }
+      .ae-ask-btn:hover { background: rgba(46,117,115,.12); border-color: rgba(46,117,115,.4); }
       .ae-ask-body { background: rgba(31,38,31,.03); border: 1px solid var(--ae-line); border-radius: 12px; padding: 15px 16px; }
       .ae-ask-answer { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.85); margin: 0; }
       .ae-ask-loading { font-size: 14px; color: rgba(31,38,31,.5); margin: 0; font-style: italic; }
       .ae-ask-cites { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--ae-line); display: flex; flex-direction: column; gap: 5px; }
-      .ae-ask-cite { font-family: var(--font-jetbrains), monospace; font-size: 11px; line-height: 1.4; color: #2f6d7a; text-decoration: none; }
+      .ae-ask-cite { font-family: var(--font-jetbrains), monospace; font-size: 11px; line-height: 1.4; color: #2e7573; text-decoration: none; }
       .ae-ask-cite:hover { text-decoration: underline; }
       .ae-ask-again { margin-top: 12px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: rgba(31,38,31,.55); background: none; border: 0; cursor: pointer; padding: 0; }
       .ae-ask-again:hover { color: var(--ae-forest); }
@@ -591,7 +590,7 @@ function Styles() {
       .ae-sol-count { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-cream); background: var(--ae-forest); border-radius: 999px; min-width: 20px; height: 18px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
       .ae-sol-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
       .ae-sol-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px; border: 1px solid rgba(31,38,31,.12); text-decoration: none; color: var(--ae-ink); transition: border-color 150ms ease, transform 150ms ease, background 150ms ease; }
-      .ae-sol-item:hover { border-color: var(--ae-forest); background: rgba(95,141,62,.05); transform: translateX(2px); }
+      .ae-sol-item:hover { border-color: var(--ae-forest); background: rgba(46,117,115,.05); transform: translateX(2px); }
       .ae-sol-name { font-size: 13.5px; line-height: 1.3; font-weight: 500; flex: 1 1 auto; }
       .ae-sol-state { font-family: var(--font-jetbrains), monospace; font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: rgba(31,38,31,.5); flex: 0 0 auto; }
       .ae-sol-arrow { color: var(--ae-forest); flex: 0 0 auto; font-size: 14px; }
@@ -619,7 +618,7 @@ function Styles() {
       .ae-intro-level-range { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-forest); opacity: .7; }
       .ae-intro-level-blurb { font-size: 13.5px; line-height: 1.5; color: rgba(31,38,31,.7); margin-top: 3px; }
       .ae-source { margin-top: 26px; border-top: 1px solid var(--ae-line); padding-top: 20px; }
-      .ae-source-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #b5793a; }
+      .ae-source-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
       .ae-source-text { font-size: 13.5px; line-height: 1.55; color: rgba(31,38,31,.72); margin: 7px 0 12px; }
       .ae-source-links { display: flex; flex-wrap: wrap; gap: 8px; }
       .ae-source-link { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-forest); text-decoration: none; transition: all 150ms; }

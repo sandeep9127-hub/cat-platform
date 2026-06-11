@@ -33,7 +33,7 @@ export type EntryListItemData = {
 export function EntryListItem({ data }: { data: EntryListItemData }) {
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
   const wrapperClass =
-    "block group border-b border-line transition-colors hover:bg-cream focus-visible:bg-cream focus-visible:outline-none";
+    "block group border-b border-line transition-colors hover:bg-[#e1ede8]/45 focus-visible:bg-[#e1ede8]/45 focus-visible:outline-none";
   const body = (
     <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
         <div className="font-mono text-[10.5px] sm:text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
@@ -77,6 +77,12 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
             const Icon = categoryIconFor(t.slug);
             return <Icon key={t.slug} size={18} strokeWidth={1.7} style={{ color: t.colourHex }} aria-label={t.name} />;
           })}
+          <span
+            aria-hidden
+            className="mt-auto font-mono text-teal text-[15px] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+          >
+            &rarr;
+          </span>
         </div>
       </article>
   );
