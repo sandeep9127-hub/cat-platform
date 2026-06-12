@@ -20,6 +20,11 @@ export const PREVIEW_PASSWORD_SHA256 =
 
 export const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
+// Launch target for the countdown on the gate page. PLACEHOLDER — confirm the
+// exact London Climate Week launch date/time and update this single value.
+// ISO 8601 with offset (BST = +01:00).
+export const LAUNCH_DATE = "2026-06-29T09:00:00+01:00";
+
 /** The gate is active unless explicitly switched off via env. */
 export function previewGateEnabled(): boolean {
   return process.env.PREVIEW_GATE !== "off";

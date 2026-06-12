@@ -1,4 +1,5 @@
-import { safeFrom } from "@/lib/preview";
+import { safeFrom, LAUNCH_DATE } from "@/lib/preview";
+import { LaunchCountdown } from "@/components/preview/LaunchCountdown";
 
 export const metadata = {
   title: "Private preview · Transformation Hub",
@@ -33,6 +34,9 @@ export default async function PreviewPage({
           <p className="text-[15px] text-ink-soft leading-[1.6] mt-4 max-w-[42ch]">
             This is a private preview. Enter the access code you were given to continue.
           </p>
+          <div className="w-full max-w-[360px]">
+            <LaunchCountdown target={LAUNCH_DATE} />
+          </div>
         </div>
 
         <form
