@@ -559,58 +559,27 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
 }
 
 // ─── CONTENTS (Page 2) ───────────────────────────────────────────────────
-function drawContents(
-  ctx: Ctx,
-  items: { exhibit: string; title: string }[]
-) {
-  newPage(ctx, "Contents");
-  drawExhibitHeader(ctx, "00", "Navigation", "Contents");
-
-  drawBody(
-    ctx,
-    "This brief is a snapshot of the landscape as recorded in the Hub. Each exhibit stands on its own; the document is designed for tab-and-skim reading.",
-    { size: 10, lineHeight: 14, color: C.inkSoft, maxW: CONTENT_W * 0.78 }
-  );
-  ctx.y -= 10;
-  hairline(ctx);
-
-  for (const item of items) {
-    ensure(ctx, 26);
-    // Exhibit number
-    ctx.page.drawText(item.exhibit, {
-      x: M.left,
-      y: ctx.y - 12,
-      size: 10,
-      font: ctx.mono,
-      color: C.amber,
-    });
-    // Title
-    ctx.page.drawText(item.title, {
-      x: M.left + 42,
-      y: ctx.y - 12,
-      size: 12,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
-    // Trailing rule
-    ctx.page.drawRectangle({
-      x: M.left + 42,
-      y: ctx.y - 16,
-      width: CONTENT_W - 42,
-      height: 0.3,
-      color: C.hairline,
-    });
-    ctx.y -= 26;
+// Start a chapter in the flowing report. Break to a fresh page only when the
+// current one can't hold the chapter header plus its opening block; otherwise
+// add air + a divider and keep going, so pages fill densely instead of one
+// half-empty page per chapter.
+function sectionBreak(ctx: Ctx, title: string, minRoom = 180) {
+  if (ctx.pageNumber <= 1 || ctx.y - minRoom < SAFE_BOTTOM) {
+    newPage(ctx, title);
+    return;
   }
+  ctx.pageTitle = title;
+  ctx.y -= 32;
+  ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.4, color: C.hairline });
+  ctx.y -= 24;
 }
 
-// ─── AT A GLANCE (Executive dashboard) ───────────────────────────────────
 // ─── CHAPTER 1 — WHY THIS LANDSCAPE IS SPECIAL ───────────────────────────
 // Folds the old "at a glance", "context" and "challenges" exhibits into one
 // opening chapter: the hook, the headline facts, the deeper context, the
 // setting, and what the landscape is up against.
 function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit: string) {
-  newPage(ctx, "Why this landscape is special");
+  sectionBreak(ctx, "Why this landscape is special", 240);
   drawExhibitHeader(ctx, exhibit, "The landscape", `Why ${p.name} matters`);
 
   // The hook — gloss, set larger.
@@ -710,7 +679,7 @@ function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
 // What the plan actually does, from the costed line items: delivery packages
 // sized by share of the programme, then the intervention categories.
 function drawInterventions(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights, exhibit: string) {
-  newPage(ctx, "Summary of interventions");
+  sectionBreak(ctx, "Summary of interventions", 200);
   drawExhibitHeader(ctx, exhibit, "The plan", "Summary of interventions");
 
   const pkgs = ins.byPackage.filter((x) => x.total > 0);
@@ -760,7 +729,7 @@ function drawInterventions(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights
 
 // ─── FINANCE ─────────────────────────────────────────────────────────────
 function drawCosting(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhibit: string) {
-  newPage(ctx, "Costing");
+  sectionBreak(ctx, "Costing", 250);
   drawExhibitHeader(ctx, exhibit, "The money", "Costing the plan");
 
   // Headline + caption
@@ -989,7 +958,7 @@ function drawCosting(ctx: Ctx, p: LandscapeProfile, budget: BudgetSummary, exhib
 // ─── IMPLEMENTATION SNAPSHOT (replaces field_record; text only) ──────────
 // ─── CHAPTER 4 — THE METRICS (LIP Chapter 6) ─────────────────────────────
 function drawMetrics(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights, exhibit: string) {
-  newPage(ctx, "The metrics");
+  sectionBreak(ctx, "The metrics", 210);
   drawExhibitHeader(ctx, exhibit, "Chapter 6 · Reach & targets", "The metrics");
   drawBody(
     ctx,
@@ -1054,7 +1023,7 @@ function compactNum(n: number): string {
 
 // ─── COLOPHON (last page) ────────────────────────────────────────────────
 function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
-  newPage(ctx, "About this brief");
+  sectionBreak(ctx, "About this brief", 140);
   drawExhibitHeader(ctx, exhibit, "Editorial note", "About this brief");
 
   drawBody(
@@ -1268,18 +1237,10 @@ export async function buildLandscapeBriefPdf(
   }
   if (want("colophon")) planned.push({ key: "colophon", title: "About this brief" });
 
-  // Contents page (only when there are 3+ exhibits to navigate)
-  if (planned.length >= 3) {
-    drawContents(
-      ctx,
-      planned.map((p, i) => ({
-        exhibit: String(i + 1).padStart(2, "0"),
-        title: p.title,
-      }))
-    );
-  }
+  // No contents page — at 4 pages the report reads straight through, chapters
+  // flowing one into the next.
 
-  // Render each requested exhibit with sequential numbering
+  // Render each requested chapter with sequential numbering
   for (let i = 0; i < planned.length; i++) {
     const exhibit = String(i + 1).padStart(2, "0");
     switch (planned[i].key) {
