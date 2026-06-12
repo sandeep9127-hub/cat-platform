@@ -4,8 +4,9 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { landscapeHasLip, budgetSummary, listLandscapeDocuments } from "@/lib/db/landscape-kb";
-import { LandscapeKpiDashboard } from "@/components/landscape/LandscapeKpiDashboard";
+import { landscapeHasLip, budgetSummary, landscapeInsights } from "@/lib/db/landscape-kb";
+import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
+import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
 import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
@@ -43,10 +44,10 @@ export default async function LandscapeDetailPage({ params }: Props) {
 
   const hasLip = await landscapeHasLip(slug);
 
-  // KPI dashboard data — pulled in parallel
-  const [money, docs] = hasLip
-    ? await Promise.all([budgetSummary(slug), listLandscapeDocuments(slug)])
-    : [null, []];
+  // Budget summary + reach insights — pulled in parallel, only when there's a plan
+  const [money, insights] = hasLip
+    ? await Promise.all([budgetSummary(slug), landscapeInsights(slug)])
+    : [null, null];
 
   // Programmes in the same state
   const stateEntries = state
@@ -139,52 +140,47 @@ export default async function LandscapeDetailPage({ params }: Props) {
         <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} />
       </div>
 
-      {/* Interactive KPI dashboard with Land · People · Money slicer */}
-      <LandscapeKpiDashboard
+      {/* ORIENT — the facts ledger (Land / People / Investment), always visible */}
+      <LandscapeLedger
         landscapeName={p.name}
-        district={p.district}
-        region={p.region}
-        state={state?.name ?? g.stateCode ?? p.region}
-        agroclimaticZone={p.agroclimaticZone}
         area={p.area}
+        villages={p.villages}
+        agroclimaticZone={p.agroclimaticZone}
         population={p.population}
         households={p.households}
-        villages={p.villages}
-        keyChallengesCount={p.keyChallenges.length}
         lipStatus={p.lipStatus}
-        money={
-          money
-            ? {
-                totalCostInr: money.totalCostInr,
-                investmentRequiredInr: money.investmentRequiredInr,
-                govtInr: money.govtInr,
-                communityInr: money.communityInr,
-                horizonYears: 7,
-                interventionLines: money.byCategory.reduce(
-                  (acc, c) => acc + (c.total > 0 ? 1 : 0),
-                  0
-                ) || money.byCategory.length,
-                topCategories: money.byCategory
-                  .filter((c) => c.total > 0)
-                  .slice(0, 4)
-                  .map((c) => ({ category: c.category, total: c.total })),
-                indexedDocuments: docs.length,
-              }
-            : undefined
-        }
+        totalCostInr={money?.totalCostInr}
+        investmentRequiredInr={money?.investmentRequiredInr}
       />
 
-      {/* Documentary photographs from the landscape — captioned, credited, dated */}
-      {p.photos && p.photos.length > 0 && (
-        <LandscapeFieldRecord photos={p.photos} landscapeName={p.name} />
+      {/* MONEY — the funder-facing centrepiece, only when a plan is ingested */}
+      {money && insights && money.totalCostInr > 0 && (
+        <LandscapeMoney
+          slug={slug}
+          landscapeName={p.name}
+          total={money.totalCostInr}
+          investment={money.investmentRequiredInr}
+          govt={money.govtInr}
+          community={money.communityInr}
+          grants={money.grantsInr}
+          returnable={money.returnableGrantInr}
+          outcome={money.outcomeFinanceInr}
+          debt={money.debtInr}
+          byPackage={money.byPackage}
+          reach={{
+            householdEngagements: insights.totals.householdEngagements,
+            hectares: insights.totals.hectares,
+            lineCount: insights.totals.lineCount,
+          }}
+        />
       )}
 
+      {/* STORY — the narrative, now above the photographs */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
 
       <section className="mt-16 lg:mt-20 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12">
         <div className="max-w-reading">
           <NarrativeBlock label="Context">{p.bodyContext}</NarrativeBlock>
-          <NarrativeBlock label="Agroclimatic zone">{p.agroclimaticZone}</NarrativeBlock>
           <NarrativeBlock label="Key landscape challenges">
             <ol className="list-none p-0 m-0 flex flex-col gap-3.5 mt-1">
               {p.keyChallenges.map((c, i) => (
@@ -199,13 +195,6 @@ export default async function LandscapeDetailPage({ params }: Props) {
                 </li>
               ))}
             </ol>
-          </NarrativeBlock>
-          <NarrativeBlock label="The approach">
-            CAT&apos;s landscape-based approach brings together coordinated services,
-            institutions, and finance over a sustained period of at least seven years. Three
-            levers shape the work in every landscape: Policy, Markets, and Finance. The
-            agroecological pathway for {p.name} is rooted in building climate resilience,
-            enhancing adaptation, and enabling mitigation.
           </NarrativeBlock>
         </div>
 
@@ -249,37 +238,24 @@ export default async function LandscapeDetailPage({ params }: Props) {
               and field photographs where available.
             </p>
           </div>
-          <div>
-            <span className="eyebrow block mb-3">Three levers</span>
-            <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[14px] text-ink-soft leading-[1.5]">
+          <div className="border border-line rounded-[10px] p-5 bg-paper">
+            <span className="eyebrow block mb-3.5">How CAT works here</span>
+            <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[13.5px] text-ink-soft leading-[1.45]">
               <li className="flex gap-2.5 items-baseline">
                 <Scale size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
-                <span>
-                  <strong className="text-deep-teal font-semibold">Policy</strong> &middot; schemes,
-                  regulation, institutions
-                </span>
+                <span><strong className="text-deep-teal font-semibold">Policy</strong> &middot; schemes, regulation, institutions</span>
               </li>
               <li className="flex gap-2.5 items-baseline">
                 <ShoppingCart size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
-                <span>
-                  <strong className="text-deep-teal font-semibold">Markets</strong> &middot; procurement,
-                  processing, fair pricing
-                </span>
+                <span><strong className="text-deep-teal font-semibold">Markets</strong> &middot; procurement, processing, fair pricing</span>
               </li>
               <li className="flex gap-2.5 items-baseline">
                 <Wallet size={14} strokeWidth={1.6} className="text-deep-teal shrink-0 translate-y-[2px]" aria-hidden />
-                <span>
-                  <strong className="text-deep-teal font-semibold">Finance</strong> &middot; patient
-                  capital, blended financing
-                </span>
+                <span><strong className="text-deep-teal font-semibold">Finance</strong> &middot; patient capital, blended financing</span>
               </li>
             </ul>
-          </div>
-          <div>
-            <span className="eyebrow block mb-2">Time horizon</span>
-            <p className="text-[13.5px] text-ink-soft leading-[1.55]">
-              Agroecological transitions are seven-year projects at minimum. The Hub
-              reflects that pace.
+            <p className="text-[12.5px] text-muted leading-[1.5] mt-3.5 pt-3.5 border-t border-line/70">
+              A landscape is a seven-year project at minimum. The Hub reflects that pace.
             </p>
           </div>
           {stateEntries.length > 0 && (
@@ -303,20 +279,27 @@ export default async function LandscapeDetailPage({ params }: Props) {
           )}
         </aside>
       </section>
+      </div>
 
-      <footer className="mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
-        <span>
-          Source ·{" "}
-          <a
-            href="https://agroecologyindia.org/wp-content/uploads/2026/03/CAT-Landscape-Profiles-February_2026.pdf"
-            target="_blank"
-            rel="noreferrer"
-            className="text-teal hover:text-teal-soft"
-          >
-            CAT Landscape Profiles, Feb 2026 ↗
-          </a>
-        </span>
-      </footer>
+      {/* PROOF — documentary photographs close the page */}
+      {p.photos && p.photos.length > 0 && (
+        <LandscapeFieldRecord photos={p.photos} landscapeName={p.name} />
+      )}
+
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
+        <footer className="mt-16 lg:mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
+          <span>
+            Source ·{" "}
+            <a
+              href="https://agroecologyindia.org/wp-content/uploads/2026/03/CAT-Landscape-Profiles-February_2026.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="text-teal hover:text-teal-soft"
+            >
+              CAT Landscape Profiles, Feb 2026 ↗
+            </a>
+          </span>
+        </footer>
       </div>
     </article>
   );
