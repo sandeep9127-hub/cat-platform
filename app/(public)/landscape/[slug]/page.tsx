@@ -13,6 +13,7 @@ import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
 import { LandscapeAnchorPartner } from "@/components/landscape/LandscapeAnchorPartner";
 import { LandscapeFieldRecord } from "@/components/landscape/LandscapeFieldRecord";
+import { LandscapeInterventions } from "@/components/landscape/LandscapeInterventions";
 
 export const dynamic = "force-dynamic";
 
@@ -176,6 +177,9 @@ export default async function LandscapeDetailPage({ params }: Props) {
           />
         )}
       </CurrencyProvider>
+
+      {/* INTERVENTIONS — what the money buys, verbatim from the LIP, by theme */}
+      <LandscapeInterventions slug={slug} landscapeName={p.name} />
 
       {/* STORY — the narrative, now above the photographs */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
