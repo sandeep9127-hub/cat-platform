@@ -80,8 +80,10 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-8 list-none p-0"
       >
         {photos.map((p, i) => {
-          const isPortrait = p.height > p.width;
-          const aspect = isPortrait ? "3 / 4" : "4 / 3";
+          // Uniform frame for every card so grid rows stay even regardless of
+          // the source orientation; portrait shots are centre-cropped here and
+          // shown in full inside the lightbox.
+          const aspect = "4 / 3";
           return (
             <li
               key={p.src}
