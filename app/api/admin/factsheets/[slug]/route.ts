@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getFactSheet, type FactSheet, type FactSheetRow } from "@/lib/factsheet/generate";
+import { normalizeCategorySlugs } from "@/lib/data/categories";
 import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -55,7 +56,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const yearNum = rawYear ? Number.parseInt(rawYear, 10) : NaN;
   const start_year = Number.isInteger(yearNum) ? yearNum : null;
 
-  const themes = toStringArray(form.get("themes"));
+  // Categories arrive as one checkbox value per slug (the edit form) but we
+  // also tolerate a legacy comma-separated string. Canonicalise either shape
+  // against the controlled vocabulary so a stray "Fisheries" can never save as
+  // a slug the Atlas filter and counts won't match.
+  const rawThemes = form.getAll("themes").flatMap((v) => String(v).split(","));
+  const themes = normalizeCategorySlugs(rawThemes);
   const principle_alignment = toStringArray(form.get("principle_alignment"));
 
   const insight = {

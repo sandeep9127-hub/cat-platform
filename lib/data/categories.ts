@@ -30,3 +30,61 @@ export const CATEGORY_BY_SLUG: Record<string, Category> = Object.fromEntries(
 export function categoryName(slug: string): string {
   return CATEGORY_BY_SLUG[slug]?.name ?? slug;
 }
+
+// Case-insensitive lookup from any reasonable human spelling to the canonical
+// slug: the slug itself, the display name, the short label, plus a few common
+// aliases an editor might type by hand. Built once at module load.
+const CATEGORY_LOOKUP: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  const put = (k: string, slug: string) => {
+    m[k.trim().toLowerCase().replace(/\s+/g, " ")] = slug;
+  };
+  for (const c of CATEGORIES) {
+    put(c.slug, c.slug);
+    put(c.name, c.slug);
+    put(c.short, c.slug);
+  }
+  const aliases: Record<string, string> = {
+    fishery: "fisheries",
+    fish: "fisheries",
+    aquaculture: "fisheries",
+    agriculture: "agri-horti-agroforestry",
+    horticulture: "agri-horti-agroforestry",
+    agroforestry: "agri-horti-agroforestry",
+    agri: "agri-horti-agroforestry",
+    forestry: "forestry-ntfp",
+    ntfp: "forestry-ntfp",
+    "natural resource management": "nrm",
+    water: "nrm",
+    soil: "nrm",
+    watershed: "nrm",
+    markets: "market",
+    "value chain": "market",
+    "value chains": "market",
+    "technical assistance": "technical-assistance",
+    training: "technical-assistance",
+    extension: "technical-assistance",
+    "capacity building": "technical-assistance",
+  };
+  for (const [k, v] of Object.entries(aliases)) put(k, v);
+  return m;
+})();
+
+/**
+ * Canonicalise hand-entered category strings to valid Atlas slugs. This is the
+ * single guard that keeps a manual edit (e.g. "Fisheries" with a capital F)
+ * from saving a value the Atlas filter and category counts can never match.
+ * Case-insensitive, alias-aware, de-duplicated, order-preserving; anything
+ * that doesn't resolve to a known category is dropped rather than polluting
+ * the taxonomy.
+ */
+export function normalizeCategorySlugs(input: string[]): string[] {
+  const out: string[] = [];
+  for (const raw of input) {
+    const key = String(raw ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    if (!key) continue;
+    const slug = CATEGORY_LOOKUP[key];
+    if (slug && !out.includes(slug)) out.push(slug);
+  }
+  return out;
+}

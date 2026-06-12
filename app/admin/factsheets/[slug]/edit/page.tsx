@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFactSheet } from "@/lib/factsheet/generate";
+import { CATEGORIES } from "@/lib/data/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -111,11 +112,29 @@ export default async function EditFactSheet({
           <Field name="source_url" label="Source URL" defaultValue={s.source_url} />
         </div>
 
-        <Field
-          name="themes"
-          label="Themes (comma-separated slugs)"
-          defaultValue={themes.join(", ")}
-        />
+        <div>
+          <span className={labelClass}>Categories (Atlas themes)</span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {CATEGORIES.map((c) => (
+              <label
+                key={c.slug}
+                className="flex items-center gap-2 bg-cream border border-line rounded-[6px] px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
+              >
+                <input
+                  type="checkbox"
+                  name="themes"
+                  value={c.slug}
+                  defaultChecked={themes.includes(c.slug)}
+                  className="accent-deep-teal"
+                />
+                <span style={{ color: c.colourHex }} className="font-medium">{c.short}</span>
+              </label>
+            ))}
+          </div>
+          <p className="font-mono text-[10px] text-muted mt-1.5">
+            These drive the Atlas filter and the landing-page counts. Pick from the list, do not free-type.
+          </p>
+        </div>
         <Field
           name="principle_alignment"
           label="Principle alignment (comma-separated slugs)"
