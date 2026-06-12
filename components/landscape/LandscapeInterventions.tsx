@@ -54,31 +54,90 @@ export function LandscapeInterventions({
 }) {
   const groups = LANDSCAPE_INTERVENTIONS[slug];
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
 
+  // Scroll-reveal every card (across both the desktop masonry and the mobile
+  // column). Queried from the DOM so we don't juggle refs across two layouts.
   useEffect(() => {
-    const els = cardRefs.current.filter(Boolean) as HTMLDivElement[];
-    if (!els.length || !wrapRef.current) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const els = Array.from(wrap.querySelectorAll<HTMLElement>("[data-int-card]"));
+    if (!els.length) return;
     gsap.set(els, { opacity: 0, y: 24 });
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting) {
             io.disconnect();
-            gsap.to(els, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.08 });
+            gsap.to(els, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.07 });
           }
         }
       },
-      { threshold: 0.08 },
+      { threshold: 0.06 },
     );
-    io.observe(wrapRef.current);
+    io.observe(wrap);
     return () => io.disconnect();
   }, [slug]);
 
   if (!groups || groups.length === 0) return null;
 
   const total = groups.reduce((n, g) => n + g.items.length, 0);
+
+  // Balanced two-column masonry: greedily place each card in the currently
+  // shorter column (height proxied by header + total text length), so columns
+  // end up roughly even and pack tightly with no ragged row gaps.
+  const weight = (g: (typeof groups)[number]) =>
+    64 + g.items.reduce((s, it) => s + it.title.length + it.body.length, 0);
+  const colA: typeof groups = [];
+  const colB: typeof groups = [];
+  let hA = 0;
+  let hB = 0;
+  for (const g of groups) {
+    if (hA <= hB) {
+      colA.push(g);
+      hA += weight(g);
+    } else {
+      colB.push(g);
+      hB += weight(g);
+    }
+  }
+
+  const renderCard = (g: (typeof groups)[number], k: string) => {
+    const sg = slugFor(g.category);
+    const Icon = categoryIconFor(sg);
+    const colour = COLOUR_BY_SLUG[sg] ?? "#2e7573";
+    return (
+      <div
+        data-int-card
+        key={k}
+        className="relative overflow-hidden rounded-[11px] border border-line bg-paper"
+        style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 14px 32px -26px rgba(26,38,37,0.22)" }}
+      >
+        <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
+        <div className="p-5 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-[8px] shrink-0" style={{ background: `${colour}1a` }}>
+              <Icon size={18} strokeWidth={1.8} style={{ color: colour }} aria-hidden />
+            </span>
+            <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
+              {g.category}
+            </h3>
+            <span className="ml-auto font-mono text-[10px] tabular-nums text-muted">{g.items.length}</span>
+          </div>
+          <ul className="list-none p-0 m-0 flex flex-col">
+            {g.items.map((it, i) => (
+              <li key={it.title + i} className={i > 0 ? "pt-3 mt-3 border-t border-line/70" : ""}>
+                <p className="font-sans text-[14px] font-semibold text-deep-teal leading-snug">{it.title}</p>
+                {it.body && (
+                  <p className="font-sans text-[13px] text-ink-soft leading-[1.55] mt-1">{it.body}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section className="mt-16 lg:mt-20 max-w-page mx-auto px-5 sm:px-7 lg:px-10">
@@ -100,57 +159,16 @@ export function LandscapeInterventions({
         </p>
       </div>
 
-      <div ref={wrapRef} className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-        {groups.map((g, i) => {
-          const sg = slugFor(g.category);
-          const Icon = categoryIconFor(sg);
-          const colour = COLOUR_BY_SLUG[sg] ?? "#2e7573";
-          return (
-            <div
-              key={g.category + i}
-              ref={(el) => {
-                cardRefs.current[i] = el;
-              }}
-              className="relative overflow-hidden rounded-[11px] border border-line bg-paper"
-              style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 14px 32px -26px rgba(26,38,37,0.22)" }}
-            >
-              <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <span
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-[8px] shrink-0"
-                    style={{ background: `${colour}1a` }}
-                  >
-                    <Icon size={18} strokeWidth={1.8} style={{ color: colour }} aria-hidden />
-                  </span>
-                  <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
-                    {g.category}
-                  </h3>
-                  <span className="ml-auto font-mono text-[10px] tabular-nums text-muted">
-                    {g.items.length}
-                  </span>
-                </div>
-                <ul className="list-none p-0 m-0 flex flex-col">
-                  {g.items.map((it, k) => (
-                    <li
-                      key={it.title + k}
-                      className={k > 0 ? "pt-3 mt-3 border-t border-line/70" : ""}
-                    >
-                      <p className="font-sans text-[14px] font-semibold text-deep-teal leading-snug">
-                        {it.title}
-                      </p>
-                      {it.body && (
-                        <p className="font-sans text-[13px] text-ink-soft leading-[1.55] mt-1">
-                          {it.body}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          );
-        })}
+      <div ref={wrapRef}>
+        {/* Desktop: balanced two-column masonry (tight packing, aligned tops) */}
+        <div className="hidden lg:grid grid-cols-2 gap-5 items-start">
+          <div className="flex flex-col gap-5">{colA.map((g, i) => renderCard(g, `a${i}`))}</div>
+          <div className="flex flex-col gap-5">{colB.map((g, i) => renderCard(g, `b${i}`))}</div>
+        </div>
+        {/* Mobile: single column, natural order */}
+        <div className="flex flex-col gap-5 lg:hidden">
+          {groups.map((g, i) => renderCard(g, `m${i}`))}
+        </div>
       </div>
     </section>
   );
