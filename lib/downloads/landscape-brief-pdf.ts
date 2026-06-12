@@ -395,7 +395,7 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
   ctx.y = PAGE.h - M.top;
 
   // Lockup (left) + edition (right)
-  drawCatLockup(ctx, M.left, ctx.y - 30, { symbolHeight: 30, compact: true });
+  drawCatLockup(ctx, M.left, ctx.y - 36, { symbolHeight: 36, compact: true });
   const editionLine = "VOL. 01  ·  EDITION 2026";
   ctx.page.drawText(editionLine, {
     x: PAGE.w - M.right - ctx.mono.widthOfTextAtSize(editionLine, 8),
@@ -406,7 +406,7 @@ function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
     x: PAGE.w - M.right - ctx.sansBold.widthOfTextAtSize(briefLbl, 7.5),
     y: ctx.y - 20, size: 7.5, font: ctx.sansBold, color: C.amber,
   });
-  ctx.y -= 46;
+  ctx.y -= 54;
   ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.6, color: C.hairline });
   ctx.y -= 28;
 
@@ -474,6 +474,7 @@ function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string) {
   // title/facts (the masthead carries the hook and the headline numbers). When
   // the cover was excluded (custom brief), start a fresh page instead.
   if (ctx.y <= 0) newPage(ctx, "Why this landscape is special");
+  ctx.pageTitle = "Why this landscape is special";
   ctx.y -= 4;
   ctx.page.drawText(`WHY ${p.name.toUpperCase()} MATTERS`, { x: M.left, y: ctx.y, size: 8, font: ctx.sansBold, color: C.amber });
   ctx.y -= 18;
@@ -894,108 +895,24 @@ function compactNum(n: number): string {
 
 // ─── COLOPHON (last page) ────────────────────────────────────────────────
 function drawColophon(ctx: Ctx, p: LandscapeProfile, exhibit: string) {
-  sectionBreak(ctx, "About this brief", 140);
+  // Compact closing note — flows onto the foot of the metrics page rather than
+  // taking a page of its own. Low minRoom so it slots into available space.
+  sectionBreak(ctx, "About this brief", 110);
   drawExhibitHeader(ctx, exhibit, "Editorial note", "About this brief");
 
   drawBody(
     ctx,
-    "This brief is generated from the Transformation Hub, the publicly readable dashboard of food-systems work in India run by the Consortium for Agroecological Transformations. Every entry is checked against its sources by a CAT editor before it goes up. The Hub publishes what didn't work alongside what did.",
-    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
+    "Generated from the Transformation Hub, the publicly readable dashboard of food-systems work in India run by the Consortium for Agroecological Transformations. Profile content is drawn from the published CAT landscape dossier; finance and reach figures from the ingested investment plan. Every Hub entry is checked against its sources by a CAT editor, and the Hub publishes what didn't work alongside what did. Line-level budget data is queryable at the URL below.",
+    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 }
   );
-  ctx.y -= 6;
-  drawBody(
-    ctx,
-    "Whether a programme is on the Hub depends on whether it stands up to a serious read, regardless of who runs it. Where investment-plan finance is shown, the underlying line-level data is queryable in the budget explorer at the URL on this page.",
-    { size: 10, lineHeight: 14.5, color: C.inkSoft, maxW: CONTENT_W * 0.88 }
-  );
-  ctx.y -= 14;
+  ctx.y -= 10;
   hairline(ctx);
 
-  // How to cite
-  ctx.page.drawText("HOW TO CITE THIS BRIEF", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  ctx.y -= 20;
+  ctx.page.drawText("HOW TO CITE", { x: M.left, y: ctx.y - 8, size: 7.5, font: ctx.sansBold, color: C.amber });
+  ctx.y -= 18;
   const year = new Date().getFullYear();
   const citation = `Consortium for Agroecological Transformations. (${year}). ${p.name} Landscape Investment Brief. Transformation Hub. hub.agroecologyindia.org/landscape/${p.slug}`;
-  drawBody(ctx, citation, { size: 10, lineHeight: 14, color: C.ink });
-  ctx.y -= 8;
-
-  hairline(ctx);
-
-  // Imprint block — full compact lockup with site URL as caption
-  drawCatLockup(ctx, M.left, ctx.y - 36, { symbolHeight: 36, compact: true });
-  ctx.page.drawText("Transformation Hub  ·  hub.agroecologyindia.org", {
-    x: M.left,
-    y: ctx.y - 50,
-    size: 8,
-    font: ctx.sans,
-    color: C.muted,
-  });
-  ctx.y -= 60;
-
-  hairline(ctx);
-
-  // Methodology + revision panel — three small columns at the bottom so the
-  // page closes with useful provenance rather than empty space.
-  ctx.page.drawText("METHODOLOGY", {
-    x: M.left,
-    y: ctx.y - 8,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  ctx.y -= 18;
-  const methodCols = [
-    {
-      label: "DATA SOURCE",
-      body:
-        "Landscape profile content drawn from the published CAT landscape profile dossier; investment plan figures from the underlying ingested investment plan.",
-    },
-    {
-      label: "EDITORIAL CHECK",
-      body:
-        "Every Hub entry is read by a CAT editor before it goes live. Drafts surfaced by discovery agents are reviewed against public sources before promotion.",
-    },
-    {
-      label: "REVISION",
-      body:
-        "Generated live at the time of download. The canonical record is the Hub page itself; the brief is its print-friendly snapshot.",
-    },
-  ];
-  const methodColW = (CONTENT_W - 24) / 3;
-  const methodTop = ctx.y;
-  for (let i = 0; i < methodCols.length; i++) {
-    const cx = M.left + i * (methodColW + 12);
-    ctx.page.drawRectangle({
-      x: cx,
-      y: methodTop,
-      width: 24,
-      height: 0.8,
-      color: C.teal,
-    });
-    ctx.page.drawText(methodCols[i].label, {
-      x: cx,
-      y: methodTop - 14,
-      size: 7.5,
-      font: ctx.sansBold,
-      color: C.muted,
-    });
-    const lines = wrap(methodCols[i].body, ctx.sans, 9, methodColW - 4);
-    for (let k = 0; k < Math.min(lines.length, 6); k++) {
-      ctx.page.drawText(lines[k], {
-        x: cx,
-        y: methodTop - 28 - k * 12,
-        size: 9,
-        font: ctx.sans,
-        color: C.inkSoft,
-      });
-    }
-  }
+  drawBody(ctx, citation, { size: 9.5, lineHeight: 13.5, color: C.ink });
 }
 
 function shorten(s: string, n: number): string {
