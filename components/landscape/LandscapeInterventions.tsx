@@ -100,7 +100,7 @@ export function LandscapeInterventions({
         </p>
       </div>
 
-      <div ref={wrapRef} className="columns-1 lg:columns-2 gap-5 [column-fill:balance]">
+      <div ref={wrapRef} className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
         {groups.map((g, i) => {
           const sg = slugFor(g.category);
           const Icon = categoryIconFor(sg);
@@ -111,7 +111,7 @@ export function LandscapeInterventions({
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="break-inside-avoid mb-5 relative overflow-hidden rounded-[11px] border border-line bg-paper"
+              className="relative overflow-hidden rounded-[11px] border border-line bg-paper"
               style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 14px 32px -26px rgba(26,38,37,0.22)" }}
             >
               <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
