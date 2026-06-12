@@ -2,6 +2,7 @@
 
 import { Mountain, Users, Coins, type LucideIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { useCurrency, formatMoney } from "./currency";
 
 export type LedgerProps = {
   landscapeName: string;
@@ -15,21 +16,6 @@ export type LedgerProps = {
   totalCostInr?: number;
   investmentRequiredInr?: number;
 };
-
-function groupIN(n: number): string {
-  const s = Math.round(Math.abs(n)).toString();
-  const neg = n < 0 ? "-" : "";
-  if (s.length <= 3) return neg + s;
-  const last3 = s.slice(-3);
-  const rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
-  return neg + rest + "," + last3;
-}
-function inrShort(n: number): string {
-  if (!n || !isFinite(n)) return "—";
-  if (n >= 1e7) return `₹${(n / 1e7).toFixed(n >= 1e8 ? 0 : 1)} cr`;
-  if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)} L`;
-  return `₹${groupIN(n)}`;
-}
 
 function parseIndianNumber(s: string): number {
   if (!s) return 0;
@@ -55,6 +41,7 @@ type Row = { label: string; value: string; muted?: boolean };
  * the Investment group reads "In preparation" when no plan is ingested.
  */
 export function LandscapeLedger(props: LedgerProps) {
+  const { currency } = useCurrency();
   const hasMoney = props.totalCostInr != null && props.totalCostInr > 0;
   const hh = parseIndianNumber(props.households);
   const pop = parseIndianNumber(props.population);
@@ -90,8 +77,8 @@ export function LandscapeLedger(props: LedgerProps) {
       accent: "#946616",
       rows: hasMoney
         ? [
-            { label: "Total plan size", value: inrShort(props.totalCostInr!) },
-            { label: "External investment", value: inrShort(props.investmentRequiredInr ?? 0) },
+            { label: "Total plan size", value: formatMoney(props.totalCostInr!, currency) },
+            { label: "External investment", value: formatMoney(props.investmentRequiredInr ?? 0, currency) },
             { label: "Programme horizon", value: "7 years" },
           ]
         : [{ label: "Investment plan", value: "In preparation", muted: true }],
@@ -128,7 +115,7 @@ export function LandscapeLedger(props: LedgerProps) {
                       (r.muted ? "text-[15px] italic text-amber-deep" : "text-[19px] sm:text-[21px] text-deep-teal font-medium")
                     }
                   >
-                    {r.muted ? r.value : <AnimatedNumber value={r.value} />}
+                    {r.muted ? r.value : <AnimatedNumber key={g.key === "money" ? `${currency}` : undefined} value={r.value} />}
                   </dd>
                 </div>
               ))}

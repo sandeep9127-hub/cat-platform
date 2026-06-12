@@ -5,6 +5,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ArrowUpRight } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { useCurrency, formatMoney, CurrencyToggle, INR_PER } from "./currency";
 
 export type MoneyProps = {
   slug: string;
@@ -21,8 +22,6 @@ export type MoneyProps = {
   reach: { householdEngagements: number; hectares: number; lineCount: number };
 };
 
-// Deterministic Indian-grouping (1,23,456) — avoids server/client toLocaleString
-// ICU differences that cause hydration mismatches.
 function groupIN(n: number): string {
   const s = Math.round(Math.abs(n)).toString();
   const neg = n < 0 ? "-" : "";
@@ -31,15 +30,10 @@ function groupIN(n: number): string {
   const rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
   return neg + rest + "," + last3;
 }
-function inrShort(n: number): string {
-  if (!n || !isFinite(n)) return "—";
-  if (n >= 1e7) return `₹${(n / 1e7).toFixed(n >= 1e8 ? 0 : 1)} cr`;
-  if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)} L`;
-  return `₹${groupIN(n)}`;
-}
 function pct(part: number, whole: number): number {
   return whole ? Math.round((part / whole) * 100) : 0;
 }
+// Reach counts (households, hectares, lines) are never currency-converted.
 function compact(n: number): string {
   if (!n || !isFinite(n) || n <= 0) return "0";
   return groupIN(n);
@@ -62,6 +56,7 @@ const FUND_COLOURS: Record<string, string> = {
  * (engagements / hectares), with deep links into the Budget and Insights tabs.
  */
 export function LandscapeMoney(props: MoneyProps) {
+  const { currency } = useCurrency();
   const sources = [
     { label: "Government", value: props.govt },
     { label: "Community", value: props.community },
@@ -119,14 +114,22 @@ export function LandscapeMoney(props: MoneyProps) {
               <h2 className="font-sans font-semibold text-[clamp(26px,3.4vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-2 max-w-[18ch]">
                 Where the money goes
               </h2>
+              <div className="mt-4 flex items-center gap-2.5 flex-wrap">
+                <CurrencyToggle />
+                {currency !== "INR" && (
+                  <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
+                    Indicative · 1 {currency} ≈ ₹{INR_PER[currency]}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="lg:text-right">
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Total plan size · 7-year horizon</div>
               <div className="font-serif text-[clamp(40px,6vw,68px)] leading-none text-teal tracking-[-0.02em] tabular-nums mt-1">
-                <AnimatedNumber value={inrShort(props.total)} />
+                <AnimatedNumber key={currency} value={formatMoney(props.total, currency)} />
               </div>
               <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber-deep mt-2">
-                {inrShort(props.investment)} external investment · {pct(props.investment, props.total)}% of plan
+                {formatMoney(props.investment, currency)} external investment · {pct(props.investment, props.total)}% of plan
               </div>
             </div>
           </div>
@@ -138,7 +141,7 @@ export function LandscapeMoney(props: MoneyProps) {
               {sources.map((s) => (
                 <div
                   key={s.label}
-                  title={`${s.label} · ${inrShort(s.value)} · ${pct(s.value, fundTotal)}%`}
+                  title={`${s.label} · ${formatMoney(s.value, currency)} · ${pct(s.value, fundTotal)}%`}
                   style={{ width: `${(s.value / fundTotal) * 100}%`, background: FUND_COLOURS[s.label] ?? "#95b1af" }}
                 />
               ))}
@@ -171,7 +174,7 @@ export function LandscapeMoney(props: MoneyProps) {
                     </div>
                   </div>
                   <div className="font-serif text-[14px] text-deep-teal font-medium tabular-nums whitespace-nowrap">
-                    {inrShort(p.total)} <span className="font-mono text-[10px] text-muted tracking-[0.1em]">· {pct(p.total, props.total)}%</span>
+                    {formatMoney(p.total, currency)} <span className="font-mono text-[10px] text-muted tracking-[0.1em]">· {pct(p.total, props.total)}%</span>
                   </div>
                 </li>
               ))}

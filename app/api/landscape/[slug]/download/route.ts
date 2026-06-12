@@ -3,7 +3,6 @@ import { eq, and } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { buildLandscapeBriefPdf, ALL_BRIEF_SECTIONS, type BriefSection } from "@/lib/downloads/landscape-brief-pdf";
-import { buildLandscapeBriefDocx } from "@/lib/downloads/landscape-brief-docx";
 import { budgetSummary, landscapeInsights, landscapeHasLip } from "@/lib/db/landscape-kb";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +13,6 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const format = (req.nextUrl.searchParams.get("format") || "pdf").toLowerCase();
   const sectionsParam = req.nextUrl.searchParams.get("sections");
   const sections: BriefSection[] | undefined = sectionsParam
     ? (sectionsParam
@@ -63,21 +61,7 @@ export async function GET(
     // Non-fatal — costing/interventions/metrics pages just won't render.
   }
 
-  if (format === "docx") {
-    // DOCX always renders full brief — sections filtering is PDF-only for now.
-    const buf = await buildLandscapeBriefDocx(p, stateName, { budget });
-    return new NextResponse(new Uint8Array(buf), {
-      status: 200,
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="${slug}-investment-brief.docx"`,
-        "Cache-Control": "public, max-age=3600, must-revalidate",
-      },
-    });
-  }
-
-  // Default: PDF
+  // PDF only — the DOCX export was retired in favour of the print-grade PDF.
   const bytes = await buildLandscapeBriefPdf(p, stateName, { budget, insights, sections });
   // Custom selections get a different filename so users can tell their
   // hand-picked briefs apart from the canonical one.

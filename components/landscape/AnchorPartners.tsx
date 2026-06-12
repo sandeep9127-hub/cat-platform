@@ -35,7 +35,7 @@ export function AnchorPartners() {
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-center">
         <SectionOpener label="Anchor partners" align="centre" />
         <h2 className="font-sans text-[clamp(28px,3.2vw,40px)] font-light text-[color:var(--navy-teal)] mt-5 tracking-[-0.022em] leading-[1.18] max-w-[34ch] mx-auto">
-          The lead organisations delivering each CAT landscape on the ground
+          The lead organisations anchoring each CAT landscape on the ground
         </h2>
         <p className="font-sans italic text-[15px] text-ink-soft mt-4 max-w-[52ch] mx-auto leading-[1.6] font-light">
           One anchor partner per landscape. Tap a logo to open that landscape.

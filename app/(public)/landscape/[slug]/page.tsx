@@ -7,7 +7,8 @@ import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, budgetSummary, landscapeInsights } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
-import { FileText, FileType2, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
+import { CurrencyProvider } from "@/components/landscape/currency";
+import { FileText, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
 import { LandscapeAnchorPartner } from "@/components/landscape/LandscapeAnchorPartner";
@@ -140,40 +141,41 @@ export default async function LandscapeDetailPage({ params }: Props) {
         <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} />
       </div>
 
-      {/* ORIENT — the facts ledger (Land / People / Investment), always visible */}
-      <LandscapeLedger
-        landscapeName={p.name}
-        area={p.area}
-        villages={p.villages}
-        agroclimaticZone={p.agroclimaticZone}
-        population={p.population}
-        households={p.households}
-        lipStatus={p.lipStatus}
-        totalCostInr={money?.totalCostInr}
-        investmentRequiredInr={money?.investmentRequiredInr}
-      />
-
-      {/* MONEY — the funder-facing centrepiece, only when a plan is ingested */}
-      {money && insights && money.totalCostInr > 0 && (
-        <LandscapeMoney
-          slug={slug}
+      {/* ORIENT + MONEY — share one currency toggle (INR / USD / EUR) */}
+      <CurrencyProvider>
+        <LandscapeLedger
           landscapeName={p.name}
-          total={money.totalCostInr}
-          investment={money.investmentRequiredInr}
-          govt={money.govtInr}
-          community={money.communityInr}
-          grants={money.grantsInr}
-          returnable={money.returnableGrantInr}
-          outcome={money.outcomeFinanceInr}
-          debt={money.debtInr}
-          byPackage={money.byPackage}
-          reach={{
-            householdEngagements: insights.totals.householdEngagements,
-            hectares: insights.totals.hectares,
-            lineCount: insights.totals.lineCount,
-          }}
+          area={p.area}
+          villages={p.villages}
+          agroclimaticZone={p.agroclimaticZone}
+          population={p.population}
+          households={p.households}
+          lipStatus={p.lipStatus}
+          totalCostInr={money?.totalCostInr}
+          investmentRequiredInr={money?.investmentRequiredInr}
         />
-      )}
+
+        {money && insights && money.totalCostInr > 0 && (
+          <LandscapeMoney
+            slug={slug}
+            landscapeName={p.name}
+            total={money.totalCostInr}
+            investment={money.investmentRequiredInr}
+            govt={money.govtInr}
+            community={money.communityInr}
+            grants={money.grantsInr}
+            returnable={money.returnableGrantInr}
+            outcome={money.outcomeFinanceInr}
+            debt={money.debtInr}
+            byPackage={money.byPackage}
+            reach={{
+              householdEngagements: insights.totals.householdEngagements,
+              hectares: insights.totals.hectares,
+              lineCount: insights.totals.lineCount,
+            }}
+          />
+        )}
+      </CurrencyProvider>
 
       {/* STORY — the narrative, now above the photographs */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
@@ -224,18 +226,10 @@ export default async function LandscapeDetailPage({ params }: Props) {
                 <FileText size={13} strokeWidth={1.6} aria-hidden />
                 Investment brief · PDF
               </a>
-              <a
-                href={`/api/landscape/${slug}/download?format=docx`}
-                className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors self-start"
-                download={`${slug}-investment-brief.docx`}
-              >
-                <FileType2 size={13} strokeWidth={1.6} aria-hidden />
-                Investment brief · DOCX
-              </a>
             </div>
             <p className="relative font-sans italic text-[12.5px] text-muted mt-3 leading-snug">
-              Editorial brief generated live. Includes context, key challenges, finance summary
-              and field photographs where available.
+              A four-page investment brief, generated live: why the landscape matters, the
+              plan, its costing, and the metrics.
             </p>
           </div>
           <div className="border border-line rounded-[10px] p-5 bg-paper">
