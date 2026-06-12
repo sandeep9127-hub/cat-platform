@@ -133,6 +133,8 @@ export default async function AdminSourcesPage({
   const invalid = toInt(sp.invalid);
   const showResult = added !== null || skipped !== null || invalid !== null;
   const error = typeof sp.error === "string" ? sp.error : null;
+  const gen = typeof sp.gen === "string" ? sp.gen : null;
+  const genSlug = typeof sp.slug === "string" ? sp.slug : null;
 
   const sources = await db
     .select()
@@ -175,6 +177,44 @@ export default async function AdminSourcesPage({
           <span className="font-medium">{skipped ?? 0} skipped</span> (duplicates
           or already present),{" "}
           <span className="font-medium">{invalid ?? 0} invalid</span>.
+        </div>
+      ) : null}
+
+      {gen ? (
+        <div
+          className={`rounded-[10px] border px-4 py-3 text-[13px] text-ink ${
+            gen === "published"
+              ? "border-teal/40 bg-teal/5"
+              : gen === "flagged"
+              ? "border-amber/50 bg-amber/10"
+              : "border-red-alert/40 bg-red-alert/5"
+          }`}
+        >
+          {gen === "published" ? (
+            <>
+              Fact sheet generated and <strong>published to the Atlas</strong>
+              {genSlug ? (
+                <>
+                  {": "}
+                  <a href={`/factsheet/${genSlug}`} target="_blank" rel="noreferrer" className="text-deep-teal underline">
+                    {genSlug}
+                  </a>
+                </>
+              ) : null}
+              .
+            </>
+          ) : gen === "flagged" ? (
+            <>
+              Fact sheet generated but <strong>flagged for review</strong> (below the confidence bar). Review and publish it
+              on the <a href="/admin/factsheets" className="text-deep-teal underline">Fact sheets</a> page.
+            </>
+          ) : gen === "norows" ? (
+            "The engine could not produce a credible, sourced fact sheet for that input. Try a clearer programme name."
+          ) : gen === "noquery" ? (
+            "Enter a programme name (or the source had no URL)."
+          ) : (
+            "Generation failed. Try again, or use the Fact sheets generator."
+          )}
         </div>
       ) : null}
 
@@ -289,7 +329,7 @@ export default async function AdminSourcesPage({
         </p>
       ) : (
         <div className="rounded-[10px] border border-line overflow-x-auto">
-          <table className="w-full min-w-[820px] border-collapse text-[13.5px]">
+          <table className="w-full min-w-[1040px] border-collapse text-[13.5px]">
             <thead>
               <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
                 <th className="px-4 py-3 font-medium">URL</th>
@@ -298,6 +338,7 @@ export default async function AdminSourcesPage({
                 <th className="px-4 py-3 font-medium text-right">Crawl (days)</th>
                 <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">Last fetched</th>
+                <th className="px-4 py-3 font-medium">Generate fact sheet</th>
               </tr>
             </thead>
             <tbody>
@@ -337,6 +378,23 @@ export default async function AdminSourcesPage({
                     {s.lastFetchedAt
                       ? new Date(s.lastFetchedAt).toLocaleDateString()
                       : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <form action="/api/admin/sources/generate" method="post" className="flex items-center gap-1.5">
+                      <input type="hidden" name="url" value={s.url} />
+                      <input
+                        name="name"
+                        placeholder="Programme name (optional)"
+                        title="Leave blank to seed from the URL"
+                        className="rounded-[6px] border border-line bg-white px-2 py-1 text-[12px] text-ink focus:border-teal focus:outline-none w-[160px]"
+                      />
+                      <button
+                        type="submit"
+                        className="font-mono text-[9px] uppercase tracking-[0.1em] rounded-[6px] bg-deep-teal text-white px-2.5 py-1.5 hover:bg-teal whitespace-nowrap"
+                      >
+                        Generate
+                      </button>
+                    </form>
                   </td>
                 </tr>
               ))}

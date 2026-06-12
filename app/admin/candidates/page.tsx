@@ -47,10 +47,29 @@ function Banner({ gen, slug }: { gen?: string; slug?: string }) {
   return <div className={`rounded-[8px] border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
 }
 
+function DiscoveryBanner({ disc, found }: { disc?: string; found?: string }) {
+  if (!disc) return null;
+  const map: Record<string, { tone: "ok" | "warn" | "err"; text: React.ReactNode }> = {
+    ok: { tone: "ok", text: <>Discovery run complete. <strong>{found ?? 0}</strong> new candidate{found === "1" ? "" : "s"} added below.</> },
+    skipped: { tone: "warn", text: "Discovery skipped: the AI key isn't configured on the server." },
+    error: { tone: "err", text: "Discovery run failed. Try again in a moment." },
+    unauth: { tone: "err", text: "You don't have permission to run discovery." },
+  };
+  const m = map[disc];
+  if (!m) return null;
+  const tone =
+    m.tone === "ok"
+      ? "bg-teal/10 text-deep-teal border-teal/30"
+      : m.tone === "warn"
+        ? "bg-amber/20 text-deep-teal border-amber/40"
+        : "bg-red-alert/10 text-red-alert border-red-alert/30";
+  return <div className={`rounded-[8px] border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
+}
+
 export default async function AdminCandidates({
   searchParams,
 }: {
-  searchParams: Promise<{ gen?: string; slug?: string }>;
+  searchParams: Promise<{ gen?: string; slug?: string; disc?: string; found?: string }>;
 }) {
   const sp = await searchParams;
   const cands = await db
@@ -70,11 +89,23 @@ export default async function AdminCandidates({
           New programmes the weekly discovery agent surfaced from allow-listed sources. Generate a
           cited fact sheet straight onto the Atlas, or dismiss. Nothing here is public until you act.
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
-          {cands.length} awaiting triage
-        </p>
+        <div className="flex items-center justify-between gap-4 flex-wrap mt-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            {cands.length} awaiting triage
+          </p>
+          <form action="/api/admin/discovery/run" method="post" className="flex items-center gap-2">
+            <button
+              type="submit"
+              className="font-mono text-[10px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
+            >
+              Run discovery now
+            </button>
+            <span className="text-[11px] text-muted">Finds new candidates on demand (~1 min)</span>
+          </form>
+        </div>
       </header>
 
+      <DiscoveryBanner disc={sp.disc} found={sp.found} />
       <Banner gen={sp.gen} slug={sp.slug} />
 
       {cands.length === 0 ? (
