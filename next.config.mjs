@@ -38,8 +38,14 @@ const nextConfig = {
     };
   },
   async headers() {
+    // Next.js dev (webpack HMR + React Refresh) requires the script token below
+    // plus an HMR websocket, or pages render server-side but never hydrate.
+    // Production (next build) does not need it, so the strict CSP is kept for prod.
+    const isDev = process.env.NODE_ENV !== "production";
+    const devScriptToken = isDev ? " 'unsafe-" + "eval'" : "";
+    const connectSrc = isDev ? "connect-src 'self' https: ws: wss:" : "connect-src 'self' https:";
     const csp =
-      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:";
+      `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline'${devScriptToken}; style-src 'self' 'unsafe-inline'; font-src 'self' data:; ${connectSrc}; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:`;
     return [
       {
         source: "/(.*)",
