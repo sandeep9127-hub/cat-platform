@@ -388,174 +388,65 @@ function pctStr(part: number, whole: number): string {
 }
 
 // ─── COVER (Page 1) ──────────────────────────────────────────────────────
+// Masthead at the top of page 1. Compact and flowing: the executive content
+// (Chapter 1) fills the rest of the page below it, so there is no empty cover.
 function drawCover(ctx: Ctx, p: LandscapeProfile, stateName: string) {
-  // No page chrome on cover — clean, centred composition.
   ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: PAGE.h, color: C.paper });
+  ctx.y = PAGE.h - M.top;
 
-  // CAT lockup, top-left — full compact two-line wordmark
-  drawCatLockup(ctx, M.left, PAGE.h - M.top - 36, {
-    symbolHeight: 36,
-    compact: true,
-  });
-
-  // Edition meta, top-right
+  // Lockup (left) + edition (right)
+  drawCatLockup(ctx, M.left, ctx.y - 30, { symbolHeight: 30, compact: true });
   const editionLine = "VOL. 01  ·  EDITION 2026";
-  const editionW = ctx.mono.widthOfTextAtSize(editionLine, 8);
   ctx.page.drawText(editionLine, {
-    x: PAGE.w - M.right - editionW,
-    y: PAGE.h - M.top - 4,
-    size: 8,
-    font: ctx.mono,
-    color: C.muted,
+    x: PAGE.w - M.right - ctx.mono.widthOfTextAtSize(editionLine, 8),
+    y: ctx.y - 6, size: 8, font: ctx.mono, color: C.muted,
   });
-  ctx.page.drawText("LANDSCAPE INVESTMENT BRIEF", {
-    x: PAGE.w - M.right - ctx.sansBold.widthOfTextAtSize("LANDSCAPE INVESTMENT BRIEF", 7.5),
-    y: PAGE.h - M.top - 18,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
+  const briefLbl = "LANDSCAPE INVESTMENT BRIEF";
+  ctx.page.drawText(briefLbl, {
+    x: PAGE.w - M.right - ctx.sansBold.widthOfTextAtSize(briefLbl, 7.5),
+    y: ctx.y - 20, size: 7.5, font: ctx.sansBold, color: C.amber,
   });
+  ctx.y -= 46;
+  ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.6, color: C.hairline });
+  ctx.y -= 28;
 
-  // Title sits in the upper-third — keeps the cover from feeling top-heavy
-  // but gives the gloss + bottom band room to breathe below.
-  const titleY = PAGE.h * 0.70;
-  // Eyebrow "Landscape" — small amber line
-  ctx.page.drawText("LANDSCAPE", {
-    x: M.left,
-    y: titleY + 80,
-    size: 9,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  // CAT tri-colour signature rule (teal · periwinkle · amber) — brand mark
+  // LANDSCAPE eyebrow + CAT tri-colour signature rule
+  ctx.page.drawText("LANDSCAPE", { x: M.left, y: ctx.y, size: 9, font: ctx.sansBold, color: C.amber });
   {
     const segs = [C.teal, C.periwinkle, C.amber];
     const segW = 20;
     for (let s = 0; s < segs.length; s++) {
-      ctx.page.drawRectangle({
-        x: M.left + 70 + s * (segW + 4),
-        y: titleY + 83,
-        width: segW,
-        height: 2.4,
-        color: segs[s],
-      });
+      ctx.page.drawRectangle({ x: M.left + 70 + s * (segW + 4), y: ctx.y + 3, width: segW, height: 2.4, color: segs[s] });
     }
   }
-  // Big landscape name
-  const nameSize = p.name.length > 16 ? 44 : 56;
-  ctx.page.drawText(p.name, {
-    x: M.left,
-    y: titleY,
-    size: nameSize,
-    font: ctx.sansBold,
-    color: C.deepTeal,
-  });
-  // Subtitle — district · state
-  ctx.page.drawText(`${p.district}  ·  ${stateName}`, {
-    x: M.left,
-    y: titleY - 26,
-    size: 13,
-    font: ctx.sans,
-    color: C.inkSoft,
-  });
+  ctx.y -= 12;
 
-  // Body gloss — single paragraph editorial context
-  const glossY = titleY - 80;
-  const glossLines = wrap(p.context, ctx.sans, 11, CONTENT_W * 0.78);
-  for (let i = 0; i < Math.min(glossLines.length, 4); i++) {
-    ctx.page.drawText(glossLines[i], {
-      x: M.left,
-      y: glossY - i * 16,
-      size: 11,
-      font: ctx.sans,
-      color: C.ink,
-    });
-  }
+  // Big landscape name + subtitle
+  const nameSize = p.name.length > 16 ? 40 : 50;
+  ctx.page.drawText(p.name, { x: M.left, y: ctx.y - nameSize, size: nameSize, font: ctx.sansBold, color: C.deepTeal });
+  ctx.y -= nameSize + 8;
+  ctx.page.drawText(`${p.district}  ·  ${stateName}`, { x: M.left, y: ctx.y - 13, size: 13, font: ctx.sans, color: C.inkSoft });
+  ctx.y -= 28;
 
-  // Headline metrics strip — four numbers, equal columns, with mono labels.
-  // Sits in the middle band between the gloss and the bottom imprint, so
-  // the cover hands the reader real signal before they turn the page.
-  const metricsY = PAGE.h * 0.40;
-  ctx.page.drawRectangle({
-    x: M.left,
-    y: metricsY + 50,
-    width: CONTENT_W,
-    height: 0.4,
-    color: C.hairline,
-  });
-  ctx.page.drawText("THIS BRIEF AT A GLANCE", {
-    x: M.left,
-    y: metricsY + 36,
-    size: 7.5,
-    font: ctx.sansBold,
-    color: C.amber,
-  });
-  const coverMetrics = [
-    { label: "POPULATION", value: p.population },
-    { label: "HOUSEHOLDS", value: p.households },
-    { label: "VILLAGES", value: p.villages },
-    { label: "AREA", value: p.area },
+  // Gloss — the hook
+  drawBody(ctx, p.gloss, { size: 12, lineHeight: 17, color: C.ink, maxW: CONTENT_W * 0.88 });
+  ctx.y -= 10;
+
+  // At-a-glance band — four headline facts
+  ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.6, color: C.hairline });
+  ctx.page.drawText("THIS BRIEF AT A GLANCE", { x: M.left, y: ctx.y - 13, size: 7, font: ctx.sansBold, color: C.amber });
+  const facts: [string, string][] = [
+    ["POPULATION", p.population], ["HOUSEHOLDS", p.households], ["VILLAGES", p.villages], ["AREA", p.area],
   ];
   const colW = CONTENT_W / 4;
-  for (let i = 0; i < coverMetrics.length; i++) {
+  for (let i = 0; i < facts.length; i++) {
     const cx = M.left + i * colW;
-    ctx.page.drawText(coverMetrics[i].label, {
-      x: cx,
-      y: metricsY + 16,
-      size: 7,
-      font: ctx.sansBold,
-      color: C.muted,
-    });
-    ctx.page.drawText(coverMetrics[i].value, {
-      x: cx,
-      y: metricsY - 8,
-      size: 20,
-      font: ctx.sansBold,
-      color: C.deepTeal,
-    });
+    ctx.page.drawText(facts[i][0], { x: cx, y: ctx.y - 28, size: 7, font: ctx.sansBold, color: C.muted });
+    ctx.page.drawText(facts[i][1], { x: cx, y: ctx.y - 50, size: 20, font: ctx.sansBold, color: C.deepTeal });
   }
-  ctx.page.drawRectangle({
-    x: M.left,
-    y: metricsY - 24,
-    width: CONTENT_W,
-    height: 0.4,
-    color: C.hairline,
-  });
-
-  // Bottom band — a solid deep-teal CAT panel, full-bleed, with an amber hairline
-  // on its top edge. Reads as a branded, presentation-grade document anchor.
-  const bandH = 66;
-  ctx.page.drawRectangle({ x: 0, y: 0, width: PAGE.w, height: bandH, color: C.deepTeal });
-  ctx.page.drawRectangle({ x: 0, y: bandH - 2, width: PAGE.w, height: 2, color: C.amber });
-  const textY = bandH - 26;
-  ctx.page.drawText("CONSORTIUM FOR AGROECOLOGICAL TRANSFORMATIONS", {
-    x: M.left,
-    y: textY,
-    size: 8,
-    font: ctx.sansBold,
-    color: C.cream,
-  });
-  const now = new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  ctx.page.drawText(`Landscape Investment Brief  ·  Generated ${now}`, {
-    x: M.left,
-    y: textY - 13,
-    size: 8,
-    font: ctx.sans,
-    color: C.tealSoft,
-  });
-  const urlText = `hub.agroecologyindia.org/landscape/${p.slug}`;
-  const urlW = ctx.mono.widthOfTextAtSize(urlText, 8);
-  ctx.page.drawText(urlText, {
-    x: PAGE.w - M.right - urlW,
-    y: textY,
-    size: 8,
-    font: ctx.mono,
-    color: C.amberBright,
-  });
+  ctx.y -= 62;
+  ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.6, color: C.hairline });
+  ctx.y -= 4;
 }
 
 // ─── CONTENTS (Page 2) ───────────────────────────────────────────────────
@@ -578,38 +469,18 @@ function sectionBreak(ctx: Ctx, title: string, minRoom = 180) {
 // Folds the old "at a glance", "context" and "challenges" exhibits into one
 // opening chapter: the hook, the headline facts, the deeper context, the
 // setting, and what the landscape is up against.
-function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibit: string) {
-  sectionBreak(ctx, "Why this landscape is special", 240);
-  drawExhibitHeader(ctx, exhibit, "The landscape", `Why ${p.name} matters`);
-
-  // The hook — gloss, set larger.
-  drawBody(ctx, p.gloss, { size: 12, lineHeight: 17, color: C.ink, maxW: CONTENT_W * 0.86 });
-  ctx.y -= 10;
-  hairline(ctx);
-
-  // Headline facts — four tiles.
-  const tileW = CONTENT_W / 4;
-  const facts = [
-    { label: "POPULATION", value: p.population },
-    { label: "HOUSEHOLDS", value: p.households },
-    { label: "VILLAGES", value: p.villages },
-    { label: "AREA", value: p.area },
-  ];
-  const ty = ctx.y;
-  ctx.page.drawRectangle({ x: M.left, y: ty, width: CONTENT_W, height: 0.6, color: C.hairline });
-  for (let i = 0; i < facts.length; i++) {
-    const tx = M.left + i * tileW;
-    ctx.page.drawText(facts[i].label, { x: tx, y: ty - 12, size: 7, font: ctx.sansBold, color: C.muted });
-    const v = facts[i].value;
-    const vs = v.length > 9 ? 18 : 22;
-    ctx.page.drawText(v, { x: tx, y: ty - 16 - vs, size: vs, font: ctx.sansBold, color: C.deepTeal });
-  }
-  ctx.y = ty - 64;
-  hairline(ctx);
+function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string) {
+  // Flows directly under the masthead on page 1 — no page break, no repeated
+  // title/facts (the masthead carries the hook and the headline numbers). When
+  // the cover was excluded (custom brief), start a fresh page instead.
+  if (ctx.y <= 0) newPage(ctx, "Why this landscape is special");
+  ctx.y -= 4;
+  ctx.page.drawText(`WHY ${p.name.toUpperCase()} MATTERS`, { x: M.left, y: ctx.y, size: 8, font: ctx.sansBold, color: C.amber });
+  ctx.y -= 18;
 
   // The deeper why — body context.
-  drawBody(ctx, p.bodyContext, { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 });
-  ctx.y -= 10;
+  drawBody(ctx, p.bodyContext, { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.94 });
+  ctx.y -= 8;
   hairline(ctx);
 
   // Setting — region / agroclimatic zone / admin.
@@ -619,11 +490,11 @@ function drawWhySpecial(ctx: Ctx, p: LandscapeProfile, stateName: string, exhibi
     { label: "State", value: stateName },
     { label: "District", value: p.district },
   ]);
-  ctx.y -= 8;
+  ctx.y -= 6;
   hairline(ctx);
 
   // What it is up against — the key challenges, folded in.
-  ensure(ctx, 40);
+  ensure(ctx, 36);
   ctx.page.drawText("WHAT IT IS UP AGAINST", { x: M.left, y: ctx.y - 8, size: 7.5, font: ctx.sansBold, color: C.amber });
   ctx.y -= 20;
   p.keyChallenges.forEach((c, i) => {
@@ -1240,21 +1111,24 @@ export async function buildLandscapeBriefPdf(
   // No contents page — at 4 pages the report reads straight through, chapters
   // flowing one into the next.
 
-  // Render each requested chapter with sequential numbering
+  // Render each chapter. The cover/exec page (why_special) and the closing note
+  // (colophon) are unnumbered; the three analytical chapters carry exhibit 01-03.
+  let exhibitNum = 0;
   for (let i = 0; i < planned.length; i++) {
-    const exhibit = String(i + 1).padStart(2, "0");
-    switch (planned[i].key) {
+    const key = planned[i].key;
+    const exhibit = String(exhibitNum + 1).padStart(2, "0");
+    switch (key) {
       case "why_special":
-        drawWhySpecial(ctx, p, stateName, exhibit);
+        drawWhySpecial(ctx, p, stateName);
         break;
       case "interventions":
-        if (opts.insights) drawInterventions(ctx, p, opts.insights, exhibit);
+        if (opts.insights) { exhibitNum++; drawInterventions(ctx, p, opts.insights, String(exhibitNum).padStart(2, "0")); }
         break;
       case "costing":
-        if (opts.budget) drawCosting(ctx, p, opts.budget, exhibit);
+        if (opts.budget) { exhibitNum++; drawCosting(ctx, p, opts.budget, String(exhibitNum).padStart(2, "0")); }
         break;
       case "metrics":
-        if (opts.insights) drawMetrics(ctx, p, opts.insights, exhibit);
+        if (opts.insights) { exhibitNum++; drawMetrics(ctx, p, opts.insights, String(exhibitNum).padStart(2, "0")); }
         break;
       case "colophon":
         drawColophon(ctx, p, exhibit);
