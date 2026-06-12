@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getFactSheet, type FactSheet, type FactSheetRow } from "@/lib/factsheet/generate";
 import { normalizeCategorySlugs } from "@/lib/data/categories";
+import { canonicalPrinciples } from "@/lib/data/principles";
 import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -11,13 +12,6 @@ export const runtime = "nodejs";
 const SCALE_BANDS = new Set([
   "pilot", "block", "district", "multi_district", "state", "multi_state", "national",
 ]);
-
-function toStringArray(value: FormDataEntryValue | null): string[] {
-  return String(value || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 
 /**
  * Edit an auto-generated fact sheet. Admin/editor gated (mirrors the generate
@@ -62,7 +56,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   // a slug the Atlas filter and counts won't match.
   const rawThemes = form.getAll("themes").flatMap((v) => String(v).split(","));
   const themes = normalizeCategorySlugs(rawThemes);
-  const principle_alignment = toStringArray(form.get("principle_alignment"));
+  // Same guard for the principle axis: checkbox values (or a legacy comma
+  // string) canonicalised to the 13 valid principle slugs before save.
+  const rawPrinciples = form.getAll("principle_alignment").flatMap((v) => String(v).split(","));
+  const principle_alignment = canonicalPrinciples(rawPrinciples);
 
   const insight = {
     whats_working: String(form.get("whats_working") || "").trim() || null,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFactSheet } from "@/lib/factsheet/generate";
 import { CATEGORIES } from "@/lib/data/categories";
+import { PRINCIPLES } from "@/lib/data/principles";
 
 export const dynamic = "force-dynamic";
 
@@ -135,11 +136,29 @@ export default async function EditFactSheet({
             These drive the Atlas filter and the landing-page counts. Pick from the list, do not free-type.
           </p>
         </div>
-        <Field
-          name="principle_alignment"
-          label="Principle alignment (comma-separated slugs)"
-          defaultValue={principles.join(", ")}
-        />
+        <div>
+          <span className={labelClass}>Principle alignment (13 agroecology principles)</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {PRINCIPLES.map((p) => (
+              <label
+                key={p.slug}
+                className="flex items-center gap-2 bg-cream border border-line rounded-[6px] px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
+              >
+                <input
+                  type="checkbox"
+                  name="principle_alignment"
+                  value={p.slug}
+                  defaultChecked={principles.includes(p.slug)}
+                  className="accent-deep-teal"
+                />
+                <span className="font-medium">{p.n}. {p.title}</span>
+              </label>
+            ))}
+          </div>
+          <p className="font-mono text-[10px] text-muted mt-1.5">
+            Drives the Atlas principle filter. Pick from the list, do not free-type.
+          </p>
+        </div>
 
         <fieldset className="space-y-4 border border-line rounded-[8px] p-4">
           <legend className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted px-2">
