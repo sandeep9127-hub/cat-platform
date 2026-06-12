@@ -4,9 +4,11 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 
 export type Currency = "INR" | "USD" | "EUR";
 
-// Indicative conversion — INR per 1 unit of the currency. Approximate (2026);
-// the brief and dashboard label these as indicative, not transactional rates.
-export const INR_PER: Record<Currency, number> = { INR: 1, USD: 86, EUR: 93 };
+// Indicative conversion — INR per 1 unit of the currency. These are the FALLBACK
+// values; on mount CurrencyProvider fetches live ECB rates from /api/rates and
+// mutates this object in place, so formatMoney() picks up the live numbers. The
+// brief/dashboard label these as indicative, not transactional rates.
+export const INR_PER: Record<Currency, number> = { INR: 1, USD: 95, EUR: 100 };
 const SYMBOL: Record<Currency, string> = { INR: "₹", USD: "$", EUR: "€" };
 
 function groupIN(n: number): string {
@@ -47,18 +49,36 @@ export function countIN(n: number): string {
   return (v < 0 ? "-" : "") + rest + "," + last3;
 }
 
-const Ctx = createContext<{ currency: Currency; setCurrency: (c: Currency) => void }>({
+type Rates = Record<Currency, number>;
+
+const Ctx = createContext<{
+  currency: Currency;
+  setCurrency: (c: Currency) => void;
+  rates: Rates;
+  ratesLive: boolean;
+}>({
   currency: "INR",
   setCurrency: () => {},
+  rates: INR_PER,
+  ratesLive: false,
 });
 
 /**
  * Holds the chosen display currency, persisted to localStorage so it carries
  * across the Profile / Budget / Insights tabs. Server + first client render are
  * always INR (hydration-safe); the stored choice is applied after mount.
+ *
+ * On mount it also fetches live FX rates from /api/rates (ECB daily) and mutates
+ * the shared INR_PER object + bumps context, so every formatMoney() consumer
+ * re-renders with the live numbers. Conversion only ever runs after the user
+ * toggles to USD/EUR — which is always post-hydration — so there is no SSR
+ * mismatch risk from the async rate update.
  */
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCur] = useState<Currency>("INR");
+  const [rates, setRates] = useState<Rates>(INR_PER);
+  const [ratesLive, setRatesLive] = useState(false);
+
   useEffect(() => {
     try {
       const s = localStorage.getItem("cat-currency");
@@ -67,6 +87,35 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       /* ignore */
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/rates");
+        if (!res.ok) return;
+        const d = (await res.json()) as Partial<Rates> & { live?: boolean };
+        if (cancelled) return;
+        const next: Rates = {
+          INR: 1,
+          USD: typeof d.USD === "number" && d.USD > 0 ? d.USD : INR_PER.USD,
+          EUR: typeof d.EUR === "number" && d.EUR > 0 ? d.EUR : INR_PER.EUR,
+        };
+        // Mutate the shared object so the pure formatMoney() reads live values…
+        INR_PER.USD = next.USD;
+        INR_PER.EUR = next.EUR;
+        // …and bump context so consumers re-render with the new numbers.
+        setRates(next);
+        setRatesLive(Boolean(d.live));
+      } catch {
+        /* keep fallback rates */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const setCurrency = useCallback((c: Currency) => {
     setCur(c);
     try {
@@ -75,7 +124,9 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       /* ignore */
     }
   }, []);
-  return <Ctx.Provider value={{ currency, setCurrency }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ currency, setCurrency, rates, ratesLive }}>{children}</Ctx.Provider>
+  );
 }
 
 export function useCurrency() {

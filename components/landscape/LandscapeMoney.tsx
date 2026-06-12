@@ -5,7 +5,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ArrowUpRight } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { useCurrency, formatMoney, CurrencyToggle, INR_PER } from "./currency";
+import { useCurrency, formatMoney, CurrencyToggle } from "./currency";
 
 export type MoneyProps = {
   slug: string;
@@ -56,7 +56,7 @@ const FUND_COLOURS: Record<string, string> = {
  * (engagements / hectares), with deep links into the Budget and Insights tabs.
  */
 export function LandscapeMoney(props: MoneyProps) {
-  const { currency } = useCurrency();
+  const { currency, rates, ratesLive } = useCurrency();
   const sources = [
     { label: "Government", value: props.govt },
     { label: "Community", value: props.community },
@@ -118,7 +118,7 @@ export function LandscapeMoney(props: MoneyProps) {
                 <CurrencyToggle />
                 {currency !== "INR" && (
                   <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
-                    Indicative · 1 {currency} ≈ ₹{INR_PER[currency]}
+                    {ratesLive ? "Live" : "Indicative"} · 1 {currency} ≈ ₹{rates[currency]}
                   </span>
                 )}
               </div>
