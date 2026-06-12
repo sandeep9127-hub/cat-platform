@@ -13,9 +13,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const { id } = await params;
+  const form = await req.formData().catch(() => null);
+  const reason = form?.get("reason")?.toString() ?? null;
   await db
     .update(schema.discoveryCandidates)
-    .set({ status: "dismissed", triagedAt: new Date() })
+    .set({ status: "dismissed", triagedAt: new Date(), dismissalReason: reason })
     .where(eq(schema.discoveryCandidates.id, id));
   return NextResponse.redirect(new URL("/admin/candidates", req.url), 303);
 }
