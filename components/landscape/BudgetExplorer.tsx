@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { SectionOpener } from "@/components/ui/SectionOpener";
+import { useCurrency, formatMoney, countIN, CurrencyToggle, type Currency } from "./currency";
 import {
   Wallet,
   Landmark,
@@ -16,13 +17,9 @@ import {
   X as XIcon,
 } from "lucide-react";
 
-function inr(n: number | string | null | undefined): string {
-  const v = Number(n ?? 0);
-  if (!v) return "—";
-  if (v >= 1e7) return `₹${(v / 1e7).toFixed(2)} cr`;
-  if (v >= 1e5) return `₹${(v / 1e5).toFixed(2)} lakh`;
-  return `₹${v.toLocaleString("en-IN")}`;
-}
+// Currency-aware money formatter (precise: 2-decimal budget detail).
+const inrFor = (cur: Currency) => (n: number | string | null | undefined) =>
+  formatMoney(Number(n ?? 0), cur, true);
 
 function pct(part: number, whole: number): string {
   if (!whole) return "0%";
@@ -75,6 +72,8 @@ export function BudgetExplorer({
   summary: BudgetSummary;
   lines: BudgetLine[];
 }) {
+  const { currency } = useCurrency();
+  const inr = inrFor(currency);
   const categories = useMemo(() => {
     return Array.from(new Set(lines.map((l) => l.category).filter(Boolean))) as string[];
   }, [lines]);
@@ -126,11 +125,18 @@ export function BudgetExplorer({
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24">
       {/* Programme scale */}
-      <div className="mt-10 mb-4">
+      <div className="mt-10 mb-4 flex items-end justify-between gap-4 flex-wrap">
         <SectionOpener number="01" label="Programme scale" />
+        <div className="flex items-center gap-2.5 flex-wrap pb-1">
+          <CurrencyToggle />
+          {currency !== "INR" && (
+            <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
+          )}
+        </div>
       </div>
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
+          key={`total-${currency}`}
           label="Total cost · 7 years"
           value={inr(t.total)}
           sub="Programme size"
@@ -138,6 +144,7 @@ export function BudgetExplorer({
           accent={ACCENTS.deepTeal}
         />
         <StatCard
+          key={`govt-${currency}`}
           label="Government convergence"
           value={inr(t.govt)}
           sub={`${pct(t.govt, t.total)} of plan`}
@@ -145,6 +152,7 @@ export function BudgetExplorer({
           accent={ACCENTS.teal}
         />
         <StatCard
+          key={`comm-${currency}`}
           label="Community contribution"
           value={inr(t.community)}
           sub={`${pct(t.community, t.total)} of plan`}
@@ -152,6 +160,7 @@ export function BudgetExplorer({
           accent={ACCENTS.periwinkle}
         />
         <StatCard
+          key={`ext-${currency}`}
           label="External investment"
           value={inr(t.investment)}
           sub={`${pct(t.investment, t.total)} of plan`}
@@ -174,7 +183,7 @@ export function BudgetExplorer({
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Households reached"
-          value={Math.round(t.households).toLocaleString("en-IN") || "—"}
+          value={countIN(t.households)}
           sub="Cumulative across interventions"
           icon={Home}
           accent={ACCENTS.teal}
@@ -182,7 +191,7 @@ export function BudgetExplorer({
         />
         <StatCard
           label="Hectares"
-          value={Math.round(t.hectares).toLocaleString("en-IN") || "—"}
+          value={countIN(t.hectares)}
           sub="Land surface treated"
           icon={Trees}
           accent={ACCENTS.deepTeal}
@@ -190,7 +199,7 @@ export function BudgetExplorer({
         />
         <StatCard
           label="Animals"
-          value={Math.round(t.animals).toLocaleString("en-IN") || "—"}
+          value={countIN(t.animals)}
           sub="Livestock interventions"
           icon={Beef}
           accent={ACCENTS.periwinkle}
@@ -310,9 +319,7 @@ export function BudgetExplorer({
                     {inr(l.investmentRequiredInr)}
                   </td>
                   <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-ink-soft">
-                    {l.impactHouseholds
-                      ? Math.round(Number(l.impactHouseholds)).toLocaleString("en-IN")
-                      : "—"}
+                    {l.impactHouseholds ? countIN(Number(l.impactHouseholds)) : "—"}
                   </td>
                 </tr>
               ))}
@@ -402,6 +409,8 @@ function FundingMix({
     debt: number;
   };
 }) {
+  const { currency } = useCurrency();
+  const inr = inrFor(currency);
   const segments = [
     { label: "Government", value: totals.govt, color: "#2E7573" },
     { label: "Community", value: totals.community, color: "#929CC5" },
@@ -524,6 +533,8 @@ function BreakdownCard({
   grandTotal: number;
   accent: Accent;
 }) {
+  const { currency } = useCurrency();
+  const inr = inrFor(currency);
   return (
     <div
       className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6"

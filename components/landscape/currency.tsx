@@ -22,18 +22,29 @@ function groupIN(n: number): string {
  * Format an INR amount in the chosen currency. INR uses crore / lakh; USD and
  * EUR use M / K. Deterministic (no toLocaleString) so it is SSR-safe.
  */
-export function formatMoney(inr: number, cur: Currency): string {
+export function formatMoney(inr: number, cur: Currency, precise = false): string {
   if (!inr || !isFinite(inr)) return "—";
   if (cur === "INR") {
-    if (inr >= 1e7) return `₹${(inr / 1e7).toFixed(inr >= 1e8 ? 0 : 1)} cr`;
-    if (inr >= 1e5) return `₹${(inr / 1e5).toFixed(1)} L`;
+    if (inr >= 1e7) return `₹${(inr / 1e7).toFixed(precise ? 2 : inr >= 1e8 ? 0 : 1)} cr`;
+    if (inr >= 1e5) return `₹${(inr / 1e5).toFixed(precise ? 2 : 1)} ${precise ? "lakh" : "L"}`;
     return `₹${groupIN(inr)}`;
   }
   const v = inr / INR_PER[cur];
   const s = SYMBOL[cur];
-  if (v >= 1e6) return `${s}${(v / 1e6).toFixed(1)}M`;
-  if (v >= 1e3) return `${s}${(v / 1e3).toFixed(0)}K`;
+  if (v >= 1e6) return `${s}${(v / 1e6).toFixed(precise ? 2 : 1)}M`;
+  if (v >= 1e3) return `${s}${(v / 1e3).toFixed(precise ? 1 : 0)}K`;
   return `${s}${groupIN(v)}`;
+}
+
+/** Plain count grouping (households, hectares) — never currency-converted. */
+export function countIN(n: number): string {
+  const v = Math.round(Number(n) || 0);
+  if (v <= 0) return "—";
+  const s = Math.abs(v).toString();
+  if (s.length <= 3) return (v < 0 ? "-" : "") + s;
+  const last3 = s.slice(-3);
+  const rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+  return (v < 0 ? "-" : "") + rest + "," + last3;
 }
 
 const Ctx = createContext<{ currency: Currency; setCurrency: (c: Currency) => void }>({

@@ -3,6 +3,7 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { budgetSummary, listBudgetLines, landscapeHasLip } from "@/lib/db/landscape-kb";
 import { BudgetExplorer } from "@/components/landscape/BudgetExplorer";
+import { CurrencyProvider } from "@/components/landscape/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,9 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
 
       <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} />
 
-      <BudgetExplorer summary={summary} lines={lines} />
+      <CurrencyProvider>
+        <BudgetExplorer summary={summary} lines={lines} />
+      </CurrencyProvider>
     </>
   );
 }
