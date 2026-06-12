@@ -1,16 +1,11 @@
-import {
-  getOverviewCounts,
-  getPublishedEntries,
-} from "@/lib/db/queries";
+import { getOverviewCounts } from "@/lib/db/queries";
 import { listFactSheets, getCategoryCounts } from "@/lib/factsheet/generate";
 import { CATEGORIES } from "@/lib/data/categories";
-import { SectionHead } from "@/components/ui/SectionHead";
 import {
   Sparkles,
   ArrowUpRight,
   ShieldCheck,
   Globe2,
-  BookMarked,
   Sprout,
   Trees,
   Beef,
@@ -36,9 +31,16 @@ export const dynamic = "force-dynamic";
 
 export const revalidate = 60;
 
+// Deterministic UTC date format ("14 May 2026") so server and client render the
+// same string regardless of timezone/ICU — toLocaleDateString drifts across the
+// hydration boundary (see the landscape toLocaleString hydration gotcha).
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function fmtDateUTC(d: Date): string {
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
 export default async function LandingPage() {
-  const [entries, categoryCounts, counts] = await Promise.all([
-    getPublishedEntries(),
+  const [categoryCounts, counts] = await Promise.all([
     getCategoryCounts(),
     getOverviewCounts(),
   ]);
@@ -69,8 +71,10 @@ export default async function LandingPage() {
   // capped at 5 by AtlasSection (cap prop below) with a "Read more" CTA
   // linking to /map; the map itself shows all pins.
   // The Atlas is the fact-sheet engine only (uniformity) — same as /map.
-  const factsheets = (await listFactSheets()).filter(
-    (f) => f.status === "published" && f.latitude != null && f.longitude != null
+  const allFactsheets = await listFactSheets();
+  const publishedSheets = allFactsheets.filter((f) => f.status === "published");
+  const factsheets = publishedSheets.filter(
+    (f) => f.latitude != null && f.longitude != null
   );
 
   const mapEntries = factsheets.map((f) => ({
@@ -90,8 +94,13 @@ export default async function LandingPage() {
   ).size;
 
 
-  const lastUpdate =
-    entries[0]?.lastReviewedAt ?? entries[0]?.publishedDate ?? new Date();
+  // "Updated" syncs with the Atlas: the most recent published fact-sheet change.
+  // (Previously read entries[0] from the retired `entries` table, so it never moved.)
+  const lastUpdate = publishedSheets.reduce<Date>((max, f) => {
+    const t = f.updated_at ? new Date(f.updated_at) : null;
+    return t && !isNaN(t.getTime()) && t.getTime() > max.getTime() ? t : max;
+  }, new Date(0));
+  const hasLastUpdate = lastUpdate.getTime() > 0;
 
   return (
     <>
@@ -101,11 +110,12 @@ export default async function LandingPage() {
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
-            <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
-              <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
-              Updated{" "}
-              {lastUpdate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-            </div>
+            {hasLastUpdate && (
+              <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+                <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
+                Updated {fmtDateUTC(lastUpdate)}
+              </div>
+            )}
 
             <h1
               className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
@@ -334,76 +344,3 @@ export default async function LandingPage() {
   );
 }
 
-function FeaturedEntry({ entry }: { entry: Awaited<ReturnType<typeof getPublishedEntries>>[number] }) {
-  const endorsement =
-    entry.catEndorsement === "cat_authored"
-      ? "CAT Authored"
-      : entry.catEndorsement === "cat_endorsed"
-        ? "CAT Endorsed"
-        : "CAT Listed";
-
-  return (
-    <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-24">
-      <SectionHead title="Featured" italic="reading" meta={endorsement} />
-      <article
-        className="relative overflow-hidden border border-line rounded-[8px] mt-2"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.85) 60%, rgba(220,235,224,0.75) 100%)",
-          boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -20px rgba(46,117,115,0.20)",
-        }}
-      >
-        {/* Soft mint pool, lower-right corner */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden
-          style={{
-            background:
-              "radial-gradient(ellipse 50% 60% at 110% 110%, rgba(159,184,166,0.30), transparent 60%)",
-          }}
-        />
-        <div className="relative p-7 sm:p-10 lg:p-12">
-          <div className="max-w-[64ch]">
-            <div className="flex gap-2.5 items-center mb-5 font-mono text-[10.5px] uppercase tracking-mono-wide flex-wrap">
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-paper font-semibold"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
-                  boxShadow:
-                    "0 4px 12px -6px rgba(46,117,115,0.55), inset 0 1px 0 rgba(255,255,255,0.20)",
-                }}
-              >
-                <BookMarked size={11} strokeWidth={1.9} aria-hidden />
-                Featured programme
-              </span>
-              <span className="text-line">·</span>
-              <span className="text-amber-deep">{endorsement}</span>
-              <span className="text-line">·</span>
-              <span className="text-muted">{entry.primaryGeography.name}</span>
-            </div>
-            <h2 className="font-serif text-[32px] sm:text-[40px] lg:text-[46px] font-normal text-ink mb-5 tracking-[-0.022em] leading-[1.05]">
-              {entry.title}
-            </h2>
-            <p className="font-serif italic text-[18px] sm:text-[21px] text-teal leading-[1.45] mb-8 font-light">
-              {entry.tagline}
-            </p>
-            <Link
-              href={`/entry/${entry.slug}`}
-              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono-wide px-4 py-2.5 rounded-full text-deep-teal font-semibold transition-all hover:-translate-y-0.5"
-              style={{
-                background:
-                  "linear-gradient(135deg, #F8CA7C 0%, #E0A65A 100%)",
-                boxShadow:
-                  "0 8px 20px -10px rgba(198,140,46,0.55), inset 0 1px 0 rgba(255,255,255,0.30)",
-              }}
-            >
-              Read the entry
-              <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
-            </Link>
-          </div>
-        </div>
-      </article>
-    </section>
-  );
-}

@@ -72,7 +72,7 @@ export default async function LandscapesPage() {
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">Curated by CAT · the closed set</span>
           <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
-            CAT <span className="text-teal">Landscapes</span>.
+            CAT <span className="text-teal">Landscapes</span>
           </h1>
           <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[52ch] mt-6">
             Eleven landscapes across India where the Consortium is working with partners on
