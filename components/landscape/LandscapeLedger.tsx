@@ -16,11 +16,19 @@ export type LedgerProps = {
   investmentRequiredInr?: number;
 };
 
+function groupIN(n: number): string {
+  const s = Math.round(Math.abs(n)).toString();
+  const neg = n < 0 ? "-" : "";
+  if (s.length <= 3) return neg + s;
+  const last3 = s.slice(-3);
+  const rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+  return neg + rest + "," + last3;
+}
 function inrShort(n: number): string {
   if (!n || !isFinite(n)) return "—";
   if (n >= 1e7) return `₹${(n / 1e7).toFixed(n >= 1e8 ? 0 : 1)} cr`;
   if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)} L`;
-  return `₹${n.toLocaleString("en-IN")}`;
+  return `₹${groupIN(n)}`;
 }
 
 function parseIndianNumber(s: string): number {

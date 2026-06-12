@@ -21,18 +21,28 @@ export type MoneyProps = {
   reach: { householdEngagements: number; hectares: number; lineCount: number };
 };
 
+// Deterministic Indian-grouping (1,23,456) — avoids server/client toLocaleString
+// ICU differences that cause hydration mismatches.
+function groupIN(n: number): string {
+  const s = Math.round(Math.abs(n)).toString();
+  const neg = n < 0 ? "-" : "";
+  if (s.length <= 3) return neg + s;
+  const last3 = s.slice(-3);
+  const rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+  return neg + rest + "," + last3;
+}
 function inrShort(n: number): string {
   if (!n || !isFinite(n)) return "—";
   if (n >= 1e7) return `₹${(n / 1e7).toFixed(n >= 1e8 ? 0 : 1)} cr`;
   if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)} L`;
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
+  return `₹${groupIN(n)}`;
 }
 function pct(part: number, whole: number): number {
   return whole ? Math.round((part / whole) * 100) : 0;
 }
 function compact(n: number): string {
   if (!n || !isFinite(n) || n <= 0) return "0";
-  return Math.round(n).toLocaleString("en-IN");
+  return groupIN(n);
 }
 
 // Funding instruments, in the official CAT palette (distinguishable tones).
