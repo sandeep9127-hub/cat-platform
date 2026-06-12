@@ -15,6 +15,7 @@
 import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from "pdf-lib";
 import type { LandscapeProfile } from "@/lib/data/landscapes";
 import type { BudgetSummary, LandscapeInsights } from "@/lib/db/landscape-kb";
+import { LANDSCAPE_INTERVENTIONS } from "@/lib/data/landscape-interventions";
 
 // ─── Geometry ────────────────────────────────────────────────────────────
 // A4 portrait. Margins tightened to consultancy norms (52pt outer, generous
@@ -551,8 +552,39 @@ function drawTwoColTable(ctx: Ctx, rows: { label: string; value: string }[]) {
 // What the plan actually does, from the costed line items: delivery packages
 // sized by share of the programme, then the intervention categories.
 function drawInterventions(ctx: Ctx, p: LandscapeProfile, ins: LandscapeInsights, exhibit: string) {
-  sectionBreak(ctx, "Summary of interventions", 200);
-  drawExhibitHeader(ctx, exhibit, "The plan", "Summary of interventions");
+  sectionBreak(ctx, "What the plan does", 200);
+  drawExhibitHeader(ctx, exhibit, "The plan", "What the plan does on the ground");
+
+  // Preferred: the named interventions, verbatim from the Landscape Investment
+  // Plan, grouped by theme. Falls back to the budget-derived package summary.
+  const groups = LANDSCAPE_INTERVENTIONS[p.slug];
+  if (groups && groups.length > 0) {
+    const totalItems = groups.reduce((n, g) => n + g.items.length, 0);
+    drawBody(
+      ctx,
+      `Priority interventions from the ${p.name} Landscape Investment Plan, grouped by theme: ${totalItems} interventions across ${groups.length} themes. Reproduced from the plan, not summarised.`,
+      { size: 10.5, lineHeight: 15.5, color: C.inkSoft, maxW: CONTENT_W * 0.92 },
+    );
+    ctx.y -= 10;
+    hairline(ctx);
+    for (const g of groups) {
+      ensure(ctx, 34);
+      ctx.page.drawText(g.category.toUpperCase(), { x: M.left, y: ctx.y - 8, size: 8, font: ctx.sansBold, color: C.amber });
+      ctx.y -= 18;
+      for (const it of g.items) {
+        drawBody(ctx, it.title, { x: M.left + 12, size: 10.5, lineHeight: 14, color: C.deepTeal, bold: true, maxW: CONTENT_W - 12 });
+        if (it.body) {
+          drawBody(ctx, it.body, { x: M.left + 12, size: 9.5, lineHeight: 13.5, color: C.inkSoft, maxW: CONTENT_W - 12 });
+        }
+        ctx.y -= 7;
+      }
+      ctx.y -= 5;
+      ensure(ctx, 14);
+      ctx.page.drawRectangle({ x: M.left, y: ctx.y, width: CONTENT_W, height: 0.3, color: C.hairline });
+      ctx.y -= 12;
+    }
+    return;
+  }
 
   const pkgs = ins.byPackage.filter((x) => x.total > 0);
   const cats = ins.byCategory.filter((x) => x.total > 0);
