@@ -514,5 +514,21 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Limited access to grazing commons due to land-use changes, coupled with labour shortages, has constrained the traditional livestock sector.",
     ],
     lipStatus: "in_preparation",
+    photos: [
+      {
+        src: "/images/landscapes/vempalli/01.jpg",
+        caption: "Vempalli · Paddy fields below the red sandstone hills of YSR Kadapa",
+        credit: "CAT field team",
+        width: 1600,
+        height: 1200,
+      },
+      {
+        src: "/images/landscapes/vempalli/02.jpg",
+        caption: "Vempalli · A field walk with farmers and the landscape team",
+        credit: "CAT field team",
+        width: 1200,
+        height: 1600,
+      },
+    ],
   },
 };
