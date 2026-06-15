@@ -2,13 +2,28 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { categoryIconFor } from "@/components/ui/CategoryIcon";
 import { CATEGORIES } from "@/lib/data/categories";
 import { LANDSCAPE_INTERVENTIONS } from "@/lib/data/landscape-interventions";
 
 const COLOUR_BY_SLUG: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.slug, c.colourHex]),
 );
+
+// CAT-authored illustration per category (periwinkle set, public/icons/interventions).
+// Used ONLY here, where there's room to render them ~44px — the Atlas rows and
+// landing grid keep the line icons (illustrations turn to mud at 16px).
+const ILLUSTRATION_BY_SLUG: Record<string, string> = {
+  "agri-horti-agroforestry": "/icons/interventions/agri-horti-agroforestry.png",
+  "forestry-ntfp": "/icons/interventions/forestry-ntfp.png",
+  livestock: "/icons/interventions/livestock.png",
+  fisheries: "/icons/interventions/fisheries.png",
+  nrm: "/icons/interventions/nrm.png",
+  biodiversity: "/icons/interventions/biodiversity.png",
+  nutrition: "/icons/interventions/nutrition.png",
+  market: "/icons/interventions/market.png",
+  energy: "/icons/interventions/energy.png",
+  "technical-assistance": "/icons/interventions/technical-assistance.png",
+};
 
 // Booklet category names → our taxonomy slug (for icon + colour). Falls back to
 // agri-horti-agroforestry. Keyed on lowercased, trimmed names.
@@ -104,7 +119,7 @@ export function LandscapeInterventions({
 
   const renderCard = (g: (typeof groups)[number], k: string) => {
     const sg = slugFor(g.category);
-    const Icon = categoryIconFor(sg);
+    const illustration = ILLUSTRATION_BY_SLUG[sg];
     const colour = COLOUR_BY_SLUG[sg] ?? "#2e7573";
     return (
       <div
@@ -116,8 +131,18 @@ export function LandscapeInterventions({
         <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
         <div className="p-5 sm:p-6">
           <div className="flex items-center gap-3 mb-4">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-[8px] shrink-0" style={{ background: `${colour}1a` }}>
-              <Icon size={18} strokeWidth={1.8} style={{ color: colour }} aria-hidden />
+            <span
+              className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] shrink-0 border border-line/70"
+              style={{ background: `${colour}12` }}
+            >
+              <img
+                src={illustration}
+                alt=""
+                aria-hidden
+                width={44}
+                height={44}
+                className="w-11 h-11 object-contain"
+              />
             </span>
             <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
               {g.category}
