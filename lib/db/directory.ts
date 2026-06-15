@@ -7,6 +7,32 @@ function rowsOf<T>(r: unknown): T[] {
   return [];
 }
 
+const SMALL_WORDS = new Set([
+  "of", "the", "for", "and", "in", "on", "to", "a", "an", "at", "by", "with", "from",
+]);
+
+/**
+ * Tidy a directory org name for display. A chunk of imported orgs are stored in
+ * ALL CAPS ("ADARSH GRAM VIKAS SEWA SAMITI") while others are proper case — this
+ * normalises the shouty ones to Title Case without touching the DB. Names that
+ * already contain lowercase letters are assumed intentionally cased and left as
+ * is; a single short all-caps token (≤6 chars, e.g. "ANTHRA", "AASRA") is kept
+ * uppercase since it's almost certainly an acronym.
+ */
+export function tidyOrgName(raw: string): string {
+  const s = (raw ?? "").trim();
+  if (!s || /[a-z]/.test(s)) return s;
+  const tokens = s.split(/\s+/);
+  if (tokens.length === 1 && s.replace(/[^A-Za-z0-9]/g, "").length <= 6) return s;
+  return tokens
+    .map((w, i) => {
+      const lower = w.toLowerCase();
+      if (i > 0 && SMALL_WORDS.has(lower)) return lower;
+      return lower.replace(/^([^a-z0-9]*)([a-z0-9])/, (_m, pre, ch) => pre + ch.toUpperCase());
+    })
+    .join(" ");
+}
+
 export type DirectoryOrg = {
   id: string;
   name: string;
@@ -57,7 +83,7 @@ export async function getDirectory(): Promise<{
     website: string | null;
   }>(orgR).map((o) => ({
     id: o.id,
-    name: o.name,
+    name: tidyOrgName(o.name),
     orgType: o.orgType,
     domains: Array.isArray(o.domains) ? (o.domains as string[]) : [],
     locationCount: o.locationCount,
@@ -114,7 +140,7 @@ export async function listOrgsAdmin(): Promise<
   `);
   return rowsOf<{ id: string; name: string; website: string | null; states: string[] }>(r).map((o) => ({
     id: o.id,
-    name: o.name,
+    name: tidyOrgName(o.name),
     website: o.website || null,
     states: (o.states || []).filter(Boolean),
   }));

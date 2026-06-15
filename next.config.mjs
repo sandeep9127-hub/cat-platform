@@ -44,8 +44,11 @@ const nextConfig = {
     const isDev = process.env.NODE_ENV !== "production";
     const devScriptToken = isDev ? " 'unsafe-" + "eval'" : "";
     const connectSrc = isDev ? "connect-src 'self' https: ws: wss:" : "connect-src 'self' https:";
+    // unpkg.com hosts Leaflet + markercluster for the Organisations Atlas map
+    // (the only third-party runtime asset; the basemap itself is our own GeoJSON,
+    // no tile server). Allowed for scripts + styles so the map can load.
     const csp =
-      `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline'${devScriptToken}; style-src 'self' 'unsafe-inline'; font-src 'self' data:; ${connectSrc}; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:`;
+      `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' https://unpkg.com${devScriptToken}; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self' data:; ${connectSrc}; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:`;
     return [
       {
         source: "/(.*)",
