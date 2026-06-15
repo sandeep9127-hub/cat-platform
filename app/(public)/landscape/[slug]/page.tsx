@@ -179,14 +179,8 @@ export default async function LandscapeDetailPage({ params }: Props) {
         )}
       </CurrencyProvider>
 
-      {/* PRIORITIES — the strategic direction (fact-sheet priorities), above the
-          concrete interventions */}
-      <LandscapePriorities slug={slug} landscapeName={p.name} />
-
-      {/* INTERVENTIONS — what the money buys, verbatim from the LIP, by theme */}
-      <LandscapeInterventions slug={slug} landscapeName={p.name} />
-
-      {/* STORY — the narrative, now above the photographs */}
+      {/* STORY — establish the place and its challenges before the response
+          (context → challenges → priorities → interventions, fact-sheet order) */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
 
       <section className="mt-16 lg:mt-20 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12">
@@ -283,6 +277,13 @@ export default async function LandscapeDetailPage({ params }: Props) {
         </aside>
       </section>
       </div>
+
+      {/* PRIORITIES — the strategic direction (fact-sheet priorities), following
+          the context + challenges they respond to */}
+      <LandscapePriorities slug={slug} landscapeName={p.name} />
+
+      {/* INTERVENTIONS — what the money buys, verbatim from the LIP, by theme */}
+      <LandscapeInterventions slug={slug} landscapeName={p.name} />
 
       {/* PROOF — documentary photographs close the page */}
       {p.photos && p.photos.length > 0 && (
