@@ -174,7 +174,6 @@ export function LandscapeInterventions({
           </h2>
           <p className="font-sans text-[15px] text-ink-soft leading-[1.55] mt-3 max-w-[60ch]">
             Priority interventions from the {landscapeName} Landscape Investment Plan, grouped by theme.
-            Verbatim from the plan, not a summary.
           </p>
         </div>
         <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted pb-1.5">

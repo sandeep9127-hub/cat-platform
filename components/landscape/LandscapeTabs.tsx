@@ -11,9 +11,11 @@ export function LandscapeTabs({
   active: "profile" | "library" | "budget" | "insights" | "ask";
   hasLip: boolean;
 }) {
+  // Library tab removed from the nav (no longer a downloads surface); the route
+  // and its data stay in the background. Keep "library" in the active union so
+  // the library page itself still type-checks if linked directly.
   const tabs: Tab[] = [
     { href: `/landscape/${slug}`, label: "Profile", available: true },
-    { href: `/landscape/${slug}/library`, label: "Library", available: hasLip },
     { href: `/landscape/${slug}/budget`, label: "Budget", available: hasLip },
     { href: `/landscape/${slug}/insights`, label: "Insights", available: hasLip },
     { href: `/landscape/${slug}/ask`, label: "Ask", available: hasLip },

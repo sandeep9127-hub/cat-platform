@@ -313,7 +313,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 ref={(el) => {
                   chapterRefs.current[i + 1] = el;
                 }}
-                className="lg:min-h-[82vh] flex flex-col justify-center py-12 lg:py-0"
+                className="lg:min-h-[82vh] flex flex-col justify-center pt-12 pb-20 lg:pt-0 lg:pb-28"
               >
                 <div className={"transition-opacity duration-500 " + (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")}>
                   {profile?.photos?.[0] && (

@@ -28,9 +28,6 @@ export default async function LandscapesPage() {
     .where(eq(schema.geographies.type, "landscape"))
     .orderBy(asc(schema.geographies.name));
 
-  const publishedCount = Object.values(LANDSCAPES).filter(
-    (l) => l.lipStatus === "published"
-  ).length;
 
   // Pins for the dedicated CAT Landscapes map, drawn from the curated profile data
   const pins = rows
@@ -70,20 +67,20 @@ export default async function LandscapesPage() {
     <>
       <Reveal as="section" delay={0} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
-          <span className="eyebrow">Curated by CAT · the closed set</span>
+          <span className="eyebrow">Current Focus · Lighthouses of Transformation</span>
           <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
             CAT <span className="text-teal">Landscapes</span>
           </h1>
           <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[52ch] mt-6">
-            Eleven landscapes across India where the Consortium is working with partners on
-            seven-year investment plans. A landscape is an economically viable, contiguous
-            unit of land, adapted to local need, usually an administrative block or a
-            cluster of villages within one, chosen because the geography, communities and
-            institutions there make focused work possible.
+            Eleven landscapes across India where Consortium partners are working on
+            seven-year investment plans for mainstreaming agroecology. A landscape is an
+            economically viable, contiguous unit of land, adapted to local needs, usually
+            an administrative block or a cluster of villages within one, chosen because the
+            geography, communities and institutions there make focused work possible.
           </p>
           <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
-            This is the closed CAT set. For programmes, interventions, and contributed work
-            from across India, see the{" "}
+            These are the geographies currently at the heart of CAT&apos;s work. For
+            programmes, interventions, and contributed work from across India, see the{" "}
             <Link href="/map" className="text-teal hover:text-teal-soft underline-offset-2 hover:underline">
               Solutions Atlas
             </Link>
@@ -93,10 +90,8 @@ export default async function LandscapesPage() {
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
           <span className="eyebrow">Investment plans</span>
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
-            Each landscape has a Landscape Investment Plan, a place-based costing and
-            implementation roadmap. <strong className="text-deep-teal">{publishedCount}</strong>{" "}
-            published, <strong className="text-deep-teal">{11 - publishedCount}</strong>{" "}
-            in preparation.
+            Each landscape has a Landscape Investment Plan — a place-based costing and
+            implementation roadmap developed with its anchor partner.
           </p>
           <div className="mt-4 flex gap-2.5 items-center">
             <span className="w-6 h-px bg-amber-deep" />

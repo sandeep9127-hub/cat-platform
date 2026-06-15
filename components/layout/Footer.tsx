@@ -17,36 +17,34 @@ import { CatLogo } from "./CatLogo";
 export function Footer() {
   return (
     <footer className="relative pt-16 pb-8 mt-24 bg-cream text-ink border-t border-line">
-      <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2.2fr_1fr_1fr_1fr] gap-10 lg:gap-12">
+      <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
-          {/* CAT lockup */}
+          {/* CAT lockup — logo as-is, with the website link left-aligned beneath it */}
           <div className="flex items-start gap-4">
             <CatLogo size={54} />
-            <div className="pt-1">
-              <div className="font-sans font-semibold text-ink text-[15.5px] leading-[1.2] tracking-[-0.01em]">
-                Consortium for
-                <br />
-                Agroecological Transformations
-              </div>
-              <a
-                href="https://www.agroecologyindia.org"
-                target="_blank"
-                rel="noreferrer"
-                className="group mt-3 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
-              >
-                <span>agroecologyindia.org</span>
-                <ArrowUpRight
-                  size={11}
-                  strokeWidth={2}
-                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  aria-hidden
-                />
-              </a>
+            <div className="pt-1 font-sans font-semibold text-ink text-[15.5px] leading-[1.2] tracking-[-0.01em]">
+              Consortium for
+              <br />
+              Agroecological Transformations
             </div>
           </div>
+          <a
+            href="https://www.agroecologyindia.org"
+            target="_blank"
+            rel="noreferrer"
+            className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
+          >
+            <span>agroecologyindia.org</span>
+            <ArrowUpRight
+              size={11}
+              strokeWidth={2}
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden
+            />
+          </a>
 
-          <h3 className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[20ch] text-ink">
-            A quiet, <span className="text-teal">honest</span> record of food systems work in India.
+          <h3 className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[24ch] text-ink">
+            A <span className="text-teal">repository</span> of food systems initiatives, landscapes, and learning from across India.
           </h3>
           <p className="mt-4 text-[13.5px] leading-[1.6] text-ink-soft max-w-[42ch]">
             Run by the Consortium for Agroecological Transformations. Every entry is compiled
@@ -107,7 +105,8 @@ function FooterCol({
   external?: { href: string; label: string }[];
 }) {
   return (
-    <div>
+    // lg:text-right — right-align the Explore / About columns (Option 1)
+    <div className="lg:text-right">
       <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
         {Icon ? <Icon size={12} strokeWidth={1.8} aria-hidden /> : <span className="w-3 h-px bg-amber-deep" />}
         {title}

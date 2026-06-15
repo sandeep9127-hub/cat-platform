@@ -297,14 +297,14 @@ export function BudgetExplorer({
                 >
                   <td className="px-4 py-3.5 align-top">
                     <div className="font-sans text-ink leading-snug">{l.category ?? "—"}</div>
-                    {l.subintervention && (
+                  </td>
+                  <td className="px-4 py-3.5 align-top">
+                    <div className="font-sans text-ink-soft leading-snug">{l.subintervention ?? l.intervention ?? "—"}</div>
+                    {l.subintervention && l.intervention && (
                       <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-1">
-                        {l.subintervention}
+                        {l.intervention}
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3.5 align-top font-sans text-ink-soft leading-snug">
-                    {l.intervention ?? "—"}
                   </td>
                   <td className="px-4 py-3.5 align-top font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
                     {l.package ?? "—"}
