@@ -44,25 +44,44 @@ const EMBED_DIMS = 1024;
 const CHUNK_TARGET_CHARS = 1000;
 const CHUNK_OVERLAP_CHARS = 120;
 
-/** Embed a single string. NVIDIA's truncate=END handles slight overruns gracefully. */
-async function embedOne(text, inputType = "passage") {
-  const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${NVIDIA_KEY}`,
-    },
-    body: JSON.stringify({
-      input: [text],
-      model: EMBED_MODEL,
-      input_type: inputType,
-      encoding_format: "float",
-      truncate: "END",
-    }),
-  });
-  if (!res.ok) throw new Error(`Embed ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = await res.json();
-  return data.data[0].embedding;
+/** Embed a single string. NVIDIA's truncate=END handles slight overruns gracefully.
+ *  Retries transient upstream failures (429/5xx, network blips) with exponential
+ *  backoff — the hosted endpoint occasionally 502s mid-batch on long documents. */
+async function embedOne(text, inputType = "passage", attempt = 0) {
+  const MAX_ATTEMPTS = 6;
+  try {
+    const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${NVIDIA_KEY}`,
+      },
+      body: JSON.stringify({
+        input: [text],
+        model: EMBED_MODEL,
+        input_type: inputType,
+        encoding_format: "float",
+        truncate: "END",
+      }),
+    });
+    if (!res.ok) {
+      const body = (await res.text()).slice(0, 200);
+      if ([429, 500, 502, 503, 504].includes(res.status) && attempt < MAX_ATTEMPTS) {
+        await new Promise((r) => setTimeout(r, Math.min(1000 * 2 ** attempt, 20_000)));
+        return embedOne(text, inputType, attempt + 1);
+      }
+      throw new Error(`Embed ${res.status}: ${body}`);
+    }
+    const data = await res.json();
+    return data.data[0].embedding;
+  } catch (e) {
+    const msg = String(e?.message || e);
+    if (attempt < MAX_ATTEMPTS && /fetch failed|network|ECONN|ETIMEDOUT|socket|terminated/i.test(msg)) {
+      await new Promise((r) => setTimeout(r, Math.min(1000 * 2 ** attempt, 20_000)));
+      return embedOne(text, inputType, attempt + 1);
+    }
+    throw e;
+  }
 }
 
 async function embed(texts, inputType = "passage") {
@@ -116,66 +135,134 @@ async function extractDocx(filePath) {
   return value;
 }
 
+const numCell = (row, c) => {
+  const v = row.getCell(c).value;
+  if (v == null) return null;
+  if (typeof v === "number") return v;
+  if (v && typeof v === "object" && "result" in v) return Number(v.result);
+  const n = Number(String(v).replace(/[,\s₹]/g, ""));
+  return isFinite(n) ? n : null;
+};
+const strCell = (row, c) => {
+  const v = row.getCell(c).value;
+  if (v == null) return null;
+  if (typeof v === "object" && "richText" in v) return v.richText.map((t) => t.text).join("");
+  if (typeof v === "object" && "result" in v) return String(v.result);
+  return String(v).trim().slice(0, 400) || null;
+};
+
 async function extractBudget(filePath) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(filePath);
-  const sheet = wb.getWorksheet("5.2 Package Distribution");
-  if (!sheet) throw new Error("Sheet '5.2 Package Distribution' not found");
+  // Newer workbooks split the line-item budget ("5.2") from the thematic grouping
+  // ("Thematic Investment"); older ones used a single "5.2 Package Distribution".
+  const sheet = wb.getWorksheet("5.2") || wb.getWorksheet("5.2 Package Distribution");
+  if (!sheet) throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' not found");
+
+  // Map each Original Sub-Intervention -> its thematic delivery package (the
+  // grouping shown as "delivery packages by share of plan"). In the 5.2 sheet
+  // col6 is the Original Sub-Intervention; the thematic name lives in the
+  // "Thematic Investment" sheet (col6), keyed there by Original Sub-Intervention
+  // in col46. Falls back to the broad category when no thematic match exists.
+  const tiSheet = wb.getWorksheet("Thematic Investment");
+  const thematicByOrig = new Map();
+  if (tiSheet) {
+    for (let r = 4; r <= tiSheet.actualRowCount; r++) {
+      const trow = tiSheet.getRow(r);
+      const orig = strCell(trow, 46);
+      const thematic = strCell(trow, 6);
+      if (orig && thematic) thematicByOrig.set(orig.trim().toLowerCase(), thematic.trim());
+    }
+  }
+
+  // Per-thematic financing instrument split, parsed from the "Instrument Mix"
+  // sheet (e.g. "70% Grant / 30% RG", "100% Debt"). Newer workbooks express the
+  // catalytic split at the thematic level rather than per budget line — leaving
+  // the line-level grant/RG/debt columns blank — so we distribute each line's
+  // investment_required across instruments using its thematic's mix. Without
+  // this the "Who pays" panel would omit ~2/3 of the plan.
+  const mixByThematic = new Map();
+  const mixSheet = wb.getWorksheet("Instrument Mix ") || wb.getWorksheet("Instrument Mix");
+  if (mixSheet) {
+    for (let r = 2; r <= mixSheet.actualRowCount; r++) {
+      const th = strCell(mixSheet.getRow(r), 1);
+      const mixStr = strCell(mixSheet.getRow(r), 12);
+      if (!th || !mixStr) continue;
+      const frac = { grant: 0, rg: 0, debt: 0, obf: 0 };
+      for (const part of mixStr.split("/")) {
+        const m = part.match(/(\d+(?:\.\d+)?)\s*%\s*(returnable|rg|debt|obf|outcome|grant)/i);
+        if (!m) continue;
+        const p = Number(m[1]) / 100;
+        const label = m[2].toLowerCase();
+        if (label.startsWith("rg") || label.startsWith("return")) frac.rg += p;
+        else if (label.startsWith("debt")) frac.debt += p;
+        else if (label.startsWith("obf") || label.startsWith("outcome")) frac.obf += p;
+        else frac.grant += p;
+      }
+      mixByThematic.set(th.trim().toLowerCase(), frac);
+    }
+  }
+
   const rows = [];
-  const numCols = sheet.actualColumnCount || 57;
   for (let r = 5; r <= sheet.actualRowCount; r++) {
     const row = sheet.getRow(r);
     if (!row.getCell(1).value && !row.getCell(2).value) continue;
-    const num = (c) => {
-      const v = row.getCell(c).value;
-      if (v == null) return null;
-      if (typeof v === "number") return v;
-      if (v && typeof v === "object" && "result" in v) return Number(v.result);
-      const n = Number(String(v).replace(/[,\s₹]/g, ""));
-      return isFinite(n) ? n : null;
+    const origSub = strCell(row, 6);
+    const pkg =
+      (origSub && thematicByOrig.get(origSub.trim().toLowerCase())) || strCell(row, 2);
+    const sumImpact = (a, b) => {
+      const t = (numCell(row, a) || 0) + (numCell(row, b) || 0);
+      return t || null;
     };
-    const str = (c) => {
-      const v = row.getCell(c).value;
-      if (v == null) return null;
-      if (typeof v === "object" && "richText" in v) {
-        return v.richText.map((t) => t.text).join("");
-      }
-      if (typeof v === "object" && "result" in v) return String(v.result);
-      return String(v).trim().slice(0, 400) || null;
-    };
+    const investment = numCell(row, 45) ?? numCell(row, 19) ?? 0;
+    // Prefer explicit line-level instrument columns; otherwise split the
+    // investment_required across instruments using the thematic mix.
+    let grants = numCell(row, 46) ?? numCell(row, 20);
+    let returnable = numCell(row, 47) ?? numCell(row, 21);
+    let outcome = numCell(row, 48) ?? numCell(row, 22);
+    let debt = numCell(row, 49) ?? numCell(row, 23);
+    const haveLineSplit = [grants, returnable, outcome, debt].some((x) => x != null && x !== 0);
+    if (!haveLineSplit && investment > 0) {
+      const frac = mixByThematic.get(String(pkg).trim().toLowerCase()) || { grant: 1, rg: 0, debt: 0, obf: 0 };
+      grants = Math.round(investment * frac.grant) || null;
+      returnable = Math.round(investment * frac.rg) || null;
+      debt = Math.round(investment * frac.debt) || null;
+      outcome = Math.round(investment * frac.obf) || null;
+    }
     rows.push({
-      cat_no: str(1),
-      category: str(2),
-      intervention: str(3),
-      sno: str(4),
-      subintervention: str(5),
-      package: str(6),
-      capital_cost: num(7),
-      capital_description: str(8),
-      recurring_cost: num(9),
-      recurring_description: str(10),
-      years: num(11),
-      per_unit_cost: num(13),
-      units: num(14),
-      // Phase totals at end of sheet (cols 42-50)
-      total_cost: num(42) ?? num(15),
-      govt: num(43) ?? num(16),
-      govt_scheme: str(44) ?? str(17),
-      community: num(44) ?? num(18),
-      investment_required: num(45) ?? num(19),
-      grants: num(46) ?? num(20),
-      returnable_grant: num(47) ?? num(21),
-      outcome_finance: num(48) ?? num(22),
-      debt: num(49) ?? num(23),
-      impact_households: num(24),
-      impact_hectares: num(25),
-      impact_animals: num(26),
-      climate_tag: str(52),
-      equity_tag: str(53),
-      gender_tag: str(54),
-      economic_tag: str(55),
-      institution_type: str(56),
-      capital_type: str(57),
+      cat_no: strCell(row, 1),
+      category: strCell(row, 2),
+      intervention: strCell(row, 3),
+      sno: strCell(row, 4),
+      subintervention: strCell(row, 5),
+      package: pkg,
+      capital_cost: numCell(row, 7),
+      capital_description: strCell(row, 8),
+      recurring_cost: numCell(row, 9),
+      recurring_description: strCell(row, 10),
+      years: numCell(row, 11),
+      per_unit_cost: numCell(row, 13),
+      units: numCell(row, 14),
+      // Project-period financing totals (cols 42-49)
+      total_cost: numCell(row, 42) ?? numCell(row, 15),
+      govt: numCell(row, 43) ?? numCell(row, 16),
+      govt_scheme: strCell(row, 17),
+      community: numCell(row, 44) ?? numCell(row, 18),
+      investment_required: investment || null,
+      grants,
+      returnable_grant: returnable,
+      outcome_finance: outcome,
+      debt,
+      // Impact = phase 1 (24-26) + phase 2 (38-40)
+      impact_households: sumImpact(24, 38),
+      impact_hectares: sumImpact(25, 39),
+      impact_animals: sumImpact(26, 40),
+      climate_tag: strCell(row, 52),
+      equity_tag: strCell(row, 53),
+      gender_tag: strCell(row, 54),
+      economic_tag: strCell(row, 55),
+      institution_type: strCell(row, 56),
+      capital_type: strCell(row, 57),
       row_index: r,
     });
   }
@@ -188,7 +275,7 @@ async function main() {
   const docTitle = path.basename(DOCX_PATH).replace(/\.[^.]+$/, "");
   const budgetTitle = path.basename(XLSX_PATH).replace(/\.[^.]+$/, "");
 
-  console.log(`\n→ Ingesting Patratu landscape (${SLUG})`);
+  console.log(`\n→ Ingesting ${SLUG} landscape`);
   console.log(`  LIP:    ${docxFull}`);
   console.log(`  budget: ${xlsxFull}`);
 

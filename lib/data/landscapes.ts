@@ -277,10 +277,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "The Yamuna River and seasonal streams define its hydrology. Agriculture is dominated by fragmented smallholdings, while forests face degradation from overgrazing. High poverty and reliance on low-value wage labour intensify local vulnerability. The region remains ecologically sensitive, necessitating a transition toward climate-resilient agroecological systems. The agroecological pathway for Mau is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Central Plateau and Hills Region. Hot semi-arid climate (dry sub-humid to dry-arid) with monsoonal rainfall. Elevation 87.5-213 m (mean ~127 m). Rolling undulations typical of Bundelkhand transitional landscapes.",
-    area: "21,837 Ha",
-    population: "97,515",
-    households: "14,663",
-    villages: "44",
+    area: "13,800 Ha",
+    population: "66,000",
+    households: "8,350",
+    villages: "25",
     keyChallenges: [
       "Erratic rainfall and prolonged dry spells cause crop failures despite irrigation, creating acute climatic stress.",
       "Lateritic soils have low fertility, declining organic carbon, and severe erosion.",
@@ -288,7 +288,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Grazing pressure and degraded forests limit fodder, undermining livestock productivity.",
       "High poverty, fragmented landholdings, divided society, migration, and reliance on low-value wage labour intensify vulnerability and limit diversification.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/mau/01.jpg",
