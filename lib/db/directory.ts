@@ -13,18 +13,16 @@ const SMALL_WORDS = new Set([
 
 /**
  * Tidy a directory org name for display. A chunk of imported orgs are stored in
- * ALL CAPS ("ADARSH GRAM VIKAS SEWA SAMITI") while others are proper case — this
- * normalises the shouty ones to Title Case without touching the DB. Names that
- * already contain lowercase letters are assumed intentionally cased and left as
- * is; a single short all-caps token (≤6 chars, e.g. "ANTHRA", "AASRA") is kept
- * uppercase since it's almost certainly an acronym.
+ * ALL CAPS ("ADARSH GRAM VIKAS SEWA SAMITI", "ANTHRA") while others are proper
+ * case — this normalises the shouty ones to Title Case without touching the DB.
+ * Names that already contain lowercase letters are assumed intentionally cased
+ * and left as is (so "AASRA (Association for…)" keeps its acronym).
  */
 export function tidyOrgName(raw: string): string {
   const s = (raw ?? "").trim();
   if (!s || /[a-z]/.test(s)) return s;
-  const tokens = s.split(/\s+/);
-  if (tokens.length === 1 && s.replace(/[^A-Za-z0-9]/g, "").length <= 6) return s;
-  return tokens
+  return s
+    .split(/\s+/)
     .map((w, i) => {
       const lower = w.toLowerCase();
       if (i > 0 && SMALL_WORDS.has(lower)) return lower;

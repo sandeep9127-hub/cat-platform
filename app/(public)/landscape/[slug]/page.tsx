@@ -14,6 +14,7 @@ import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
 import { LandscapeAnchorPartner } from "@/components/landscape/LandscapeAnchorPartner";
 import { LandscapeFieldRecord } from "@/components/landscape/LandscapeFieldRecord";
 import { LandscapeInterventions } from "@/components/landscape/LandscapeInterventions";
+import { LandscapePriorities } from "@/components/landscape/LandscapePriorities";
 
 export const dynamic = "force-dynamic";
 
@@ -177,6 +178,10 @@ export default async function LandscapeDetailPage({ params }: Props) {
           />
         )}
       </CurrencyProvider>
+
+      {/* PRIORITIES — the strategic direction (fact-sheet priorities), above the
+          concrete interventions */}
+      <LandscapePriorities slug={slug} landscapeName={p.name} />
 
       {/* INTERVENTIONS — what the money buys, verbatim from the LIP, by theme */}
       <LandscapeInterventions slug={slug} landscapeName={p.name} />
