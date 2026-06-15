@@ -47,11 +47,13 @@ export function LandscapeLedger(props: LedgerProps) {
   const pop = parseIndianNumber(props.population);
   const avg = hh && pop ? (pop / hh).toFixed(1) : "—";
 
-  const groups: { key: string; label: string; Icon: LucideIcon; accent: string; rows: Row[] }[] = [
+  const groups: { key: string; label: string; Icon: LucideIcon; iconSrc?: string; accent: string; rows: Row[] }[] = [
     {
       key: "land",
       label: "Land",
       Icon: Mountain,
+      // CAT illustrated stat icon (periwinkle — matches the Land accent).
+      iconSrc: "/icons/stats/area.png",
       accent: "#5e6990",
       rows: [
         { label: "Geographical area", value: props.area },
@@ -63,6 +65,8 @@ export function LandscapeLedger(props: LedgerProps) {
       key: "people",
       label: "People",
       Icon: Users,
+      // CAT illustrated stat icon (teal — matches the People accent).
+      iconSrc: "/icons/stats/population.png",
       accent: "#2e7573",
       rows: [
         { label: "Population", value: props.population },
@@ -99,7 +103,11 @@ export function LandscapeLedger(props: LedgerProps) {
           <li key={g.key} className="relative bg-paper px-6 py-6 sm:px-7 sm:py-7">
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: g.accent }} />
             <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
-              <g.Icon size={13} strokeWidth={1.9} aria-hidden />
+              {g.iconSrc ? (
+                <img src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
+              ) : (
+                <g.Icon size={13} strokeWidth={1.9} aria-hidden />
+              )}
               {g.label}
             </div>
             <dl className="flex flex-col gap-0 m-0">

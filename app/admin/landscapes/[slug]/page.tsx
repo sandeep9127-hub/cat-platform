@@ -64,9 +64,20 @@ export default async function LandscapeAdminDetail({
       <section>
         <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mb-2">Ingested documents</div>
         {docs.length === 0 ? (
-          <p className="text-[13.5px] text-muted py-6">
-            No documents yet. Upload a landscape report above to add it to the assistant.
-          </p>
+          <div className="flex flex-col items-center text-center py-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/illustrations/seeder-field.png"
+              alt=""
+              aria-hidden
+              width={160}
+              height={120}
+              className="w-40 h-auto opacity-90 mb-3"
+            />
+            <p className="text-[13.5px] text-muted max-w-[34ch]">
+              No documents yet. Upload a landscape report above to add it to the assistant.
+            </p>
+          </div>
         ) : (
           <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
             {docs.map((d) => (
