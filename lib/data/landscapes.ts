@@ -106,10 +106,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       'Historically known as the "Cut-off Area" due to severe isolation by the Balimela Reservoir, the region is currently undergoing significant transformation. Livelihoods are shifting from traditional Podu cultivation to settled farming, and the Odisha government is placing strong emphasis on development following the construction of the strategic Gurupriya Bridge. The agroecological pathway for Chitrakonda is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.',
     agroclimaticZone:
       "Eastern Plateau and Hills Region. The landscape falls within the Southern Eastern Ghats, under Agro-Climatic Zone VII as classified by the Planning Commission. Average annual rainfall 1279-1554 mm.",
-    area: "1,02,880 Ha",
-    population: "62,739",
-    households: "14,568",
-    villages: "267",
+    area: "33,600 Ha",
+    population: "30,900",
+    households: "6,600",
+    villages: "19",
     keyChallenges: [
       "Steep slopes and erratic rainfall cause severe erosion, limiting agriculture to a single rainfed season.",
       "Decades of geographic isolation by the Balimela Reservoir continue to hinder market access despite recent connectivity improvements.",
@@ -148,10 +148,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Farming is mostly rainfed on lateritic, yellow clay, sandy loam, and black soils. Dantewada is a national leader in organic farming, with 110 villages under Large Area Certification, and supports rich NTFP-based livelihoods from mahua, tamarind, tendu leaves, and diverse indigenous crops. The agroecological pathway for Dantewada is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Bastar Plateau agroclimatic zone, part of the Eastern Plateau & Hills region. Sub-humid to semi-humid climate with hot summers and moderate rainfall.",
-    area: "58,428 Ha",
-    population: "94,351",
-    households: "13,000",
-    villages: "64 (including 4 uninhabited)",
+    area: "13,700 Ha",
+    population: "39,200",
+    households: "8,960",
+    villages: "29",
     keyChallenges: [
       "Water scarcity and minimal irrigation (only 2.33% of cropped area irrigated) keep agriculture highly monsoon-dependent.",
       "Climate variability — erratic, delayed and heavy rains with prolonged dry spells — disrupts sowing, damages crops, and undermines NTFP quantity and quality.",
@@ -191,10 +191,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "It is characterised by gently undulating basaltic terrain, black cotton soils, and a highly variable southwest monsoon. Agriculture is largely rainfed and closely tied to monsoon behaviour, while its central location facilitates access to markets, public offices, and essential services for surrounding villages. The agroecological pathway for Dharashiv is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Deccan Plateau, Hot Semi-Arid Eco-Region, in the rain-shadow of the Western Ghats. Hot semi-arid climate, gently undulating basaltic terrain, black cotton soils, highly variable monsoon rainfall.",
-    area: "1,32,615 Ha",
-    population: "75,656",
-    households: "16,707",
-    villages: "50",
+    area: "23,200 Ha",
+    population: "55,400",
+    households: "11,950",
+    villages: "35",
     keyChallenges: [
       "Erratic monsoons, recurrent droughts, and extreme rainfall events drive soil degradation, groundwater depletion, and declining productivity of black cotton soils.",
       "Input-intensive, monocrop agriculture leads to high costs, seasonal unemployment, distress migration, and limited income diversification.",
@@ -234,8 +234,8 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
     agroclimaticZone:
       "Eastern Himalayan Region (Zone 2). Humid and warm, very high rainfall (400-1,000 cm), mild subtropical highland climate. Sohra-station annual rainfall ~12,204 mm (1901-2023 average).",
     area: "32,400 Ha",
-    population: "33,570",
-    households: "6,587",
+    population: "33,500",
+    households: "6,580",
     villages: "94",
     keyChallenges: [
       "Extremely high rainfall, steep slopes (>50°), and shallow soils cause high runoff (~80%) and low groundwater recharge.",
@@ -320,9 +320,9 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Marked by rugged terrain, alpine ecosystems, and extreme climate, the region remains isolated for nearly six months each year due to heavy snowfall. A short growing season, traditional farming, and dependence on indigenous livestock systems and forest resources shape livelihoods. In April 2025, Pangi was declared Himachal Pradesh's first natural farming sub-division following sustained advocacy by local traditional governing institutions, the Praja Mandal. The agroecological pathway for Pangi is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Agro-Climatic Zone IV, cold temperate to alpine Himalayan (Cold Dry) zone. Cool summers, low rainfall, severe and prolonged winters, snow-fed hydrology. Elevations from ~3,000 to over 4,000 m with skeletal soils in upper reaches and sub-mountain soils in lower valleys.",
-    area: "1,60,052 Ha",
-    population: "24,426",
-    households: "6,107",
+    area: "1,60,000 Ha",
+    population: "24,400",
+    households: "6,100",
     villages: "60",
     keyChallenges: [
       "Long, severe winters and six months of isolation restrict farming to a short growing season and limit access to markets, services, and inputs.",
@@ -364,10 +364,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "The landscape is defined by a dense network of tidal channels, creeks, and distributaries of the Ganga River. Its low-lying, estuarine setting forms a unique mangrove-dominated ecosystem but also makes it highly vulnerable to cyclones, tidal surges, and embankment breaches. Limited local livelihood opportunities mean seasonal and long-term migration is a reality for many households, with remittances playing a significant role in sustaining the local economy. The agroecological pathway for Patharpratima is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Lower Gangetic Plain (Agro-Climatic Zone III) and the Coastal Saline Zone (WB-6). Sub-tropical eastern coastal plain, hot subhumid to semi-arid ecoregion. Flat alluvial deltaic landscape with tidal creeks, estuarine channels, and reclaimed embanked land.",
-    area: "48,448 Ha",
-    population: "96,839",
-    households: "20,459",
-    villages: "32",
+    area: "8,300 Ha",
+    population: "56,000",
+    households: "11,700",
+    villages: "17",
     keyChallenges: [
       "Chronic ecological vulnerability from recurrent cyclones, tidal flooding, and saline water ingress, affecting agriculture, settlements, and natural ecosystems.",
       "Agriculture is predominantly synthetic-chemical-input led; exorbitant use of chemical inputs has adversely affected soil health, lowering crop yields.",
@@ -407,10 +407,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Despite high rainfall, the region faces seasonal water scarcity due to rapid runoff across sloping, coarse-soiled terrain. Agriculture is predominantly rainfed and smallholder-based, often limited to mono-crop paddy. Mining-related fragmentation and soil acidity further constrain productivity, while proximity to urban markets offers significant potential for high-value agro-ecological diversification. Patratu stands out as one of NABARD's most successful JIVA projects, with plans for scaling up as a CAT landscape. The agroecological pathway for Patratu is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Eastern Plateau and Hills Region (Zone VII). Humid subtropical climate with pronounced summer and winter seasons. Elevation 322-988 m (mean ~430 m).",
-    area: "14,537 Ha",
-    population: "48,387",
-    households: "9,020",
-    villages: "42",
+    area: "10,700 Ha",
+    population: "35,700",
+    households: "6,660",
+    villages: "31",
     keyChallenges: [
       "Coarse soils and sloping terrain lead to rapid runoff, limiting water retention even during high rainfall.",
       "Dependence on single-crop paddy leads to seasonal unemployment and distress migration among tribal households.",
@@ -460,10 +460,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "The gently undulating landscape, under semi-arid conditions, is shaped by seasonal streams that drain into the Ken River system. Production is dominated by rainfed agriculture and a high dependence on smallholder cultivation and wage labour. The agroecological pathway for Rajnagar is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.",
     agroclimaticZone:
       "Bundelkhand Agro-Climatic Zone (Zone V) within the Central Plateau and Hills Region (Region VIII); Agro-Ecological Sub-Region 10.1 — Northern Madhya Pradesh, Bundelkhand Plateau.",
-    area: "1,37,835 Ha",
-    population: "99,111",
-    households: "18,906",
-    villages: "75",
+    area: "38,100 Ha",
+    population: "95,200",
+    households: "17,200",
+    villages: "38",
     keyChallenges: [
       "Semi-arid climate, erratic monsoon, shallow erosion-prone soils, and patchy irrigation drive chronic production and climate risks.",
       "Agriculture-dominated livelihoods with few non-farm options lead to low, volatile incomes and seasonal underemployment.",
@@ -503,10 +503,10 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       'Yet this landscape is agriculturally rich: fertile alluvial and black soils support a diverse cropping system. Most notably, Vempalli is historically celebrated as the "Second Bangalore" for its exceptionally high-quality lemon production, which remains a defining feature of the local economy. The agroecological pathway for Vempalli is rooted in building climate resilience, enhancing adaptation, and enabling mitigation across the landscape.',
     agroclimaticZone:
       "Deccan Plateau (hot, semi-arid/arid) agro-climatic zone. Semi-arid tropical climate, hot summers, low to moderate rainfall.",
-    area: "19,008 Ha",
-    population: "57,044",
-    households: "12,914",
-    villages: "26",
+    area: "13,100 Ha",
+    population: "36,500",
+    households: "9,140",
+    villages: "18",
     keyChallenges: [
       "Acute hydrological stress from semi-arid climate, recurrent droughts, and overexploitation of groundwater through deep borewells; declining water tables and fluoride contamination.",
       "Livelihoods increasingly vulnerable due to shift towards high-input monocropping of banana, cotton, Bengal gram, chrysanthemum, and paddy — soil degradation, rising pest incidence, exposure to volatile market prices.",
