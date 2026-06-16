@@ -38,8 +38,9 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
         {p.name} · <span className="text-teal">Climate value</span>
       </h1>
       <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
-        What the {p.name} plan is worth to the climate — valued with the C-GEM model across carbon,
-        adaptation and resilience, on tiered evidence. Modelled value, not a cash return.
+        What the {p.name} plan is worth to the climate — valued across carbon, adaptation and
+        resilience on tiered evidence, from local programme data to IPCC methods. Modelled value,
+        not a cash return.
       </p>
     </header>
   );
@@ -52,7 +53,7 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
           <p className="text-ink-soft text-[18px] max-w-[46ch] leading-[1.55] tracking-[-0.01em]">
             The climate valuation for {p.name} is in preparation. It will appear here once the
-            landscape&apos;s C-GEM model is complete.
+            landscape&apos;s climate valuation is complete.
           </p>
         </section>
       </>
@@ -82,8 +83,9 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
           {p.name} · <span className="text-teal">Climate value</span>
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
-          What the {p.name} plan is worth to the climate — valued with the C-GEM model across carbon,
-          adaptation and resilience, on tiered evidence. Modelled value, not a cash return.
+          What the {p.name} plan is worth to the climate — valued across carbon, adaptation and
+          resilience on tiered evidence, from local programme data to IPCC methods. Modelled value,
+          not a cash return.
         </p>
       </header>
       <LandscapeTabs slug={slug} active="climate" hasLip={hasLip} hasClimate={hasClimate} />

@@ -316,7 +316,7 @@ export type ClimateSummary = {
 };
 
 /**
- * Per-landscape climate valuation (C-GEM). Aggregates the per-intervention
+ * Per-landscape climate valuation. Aggregates the per-intervention
  * PRIMARY-track values (no double-counting) into the three tracks, and reads the
  * carbon tonnage/$ from the meta row. Returns null if the landscape has no
  * climate valuation loaded yet, so the page can hide the section.

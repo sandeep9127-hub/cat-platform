@@ -120,9 +120,50 @@ export function LandscapeClimateViews({ carbon, adaptation, resilience }: Props)
         })}
       </div>
 
-      <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted mt-7">
-        Evidence tiers · T1 local programme data · T2 national / ICAR · T3 IPCC &amp; global methods
-      </p>
+      {/* Evidence & method — explains the tier grades on each line above */}
+      <div className="mt-12 pt-8 border-t border-line">
+        <span className="eyebrow">Evidence &amp; method</span>
+        <h3 className="font-sans font-semibold text-[clamp(20px,2.4vw,28px)] tracking-[-0.025em] leading-[1.1] text-ink mt-2">
+          How the value is graded
+        </h3>
+        <p className="font-sans text-[14px] text-ink-soft leading-[1.55] mt-3 max-w-[68ch]">
+          Each intervention is assigned the single climate track it primarily serves, then valued over
+          the seven-year plan — so nothing is counted twice. Carbon is priced at benchmark removal,
+          reduction and avoidance rates. Every figure carries an evidence grade by the strength of its
+          source:
+        </p>
+        <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[10px] overflow-hidden border border-line list-none p-0">
+          {[
+            {
+              tier: "T1",
+              label: "Primary · local",
+              body: "Programme documents, baseline surveys and impact evaluations from the landscape itself — the strongest, most place-specific evidence.",
+            },
+            {
+              tier: "T2",
+              label: "Secondary · national",
+              body: "ICAR institutes, government datasets and peer-reviewed Indian studies — applied where local data is not yet available.",
+            },
+            {
+              tier: "T3",
+              label: "Global · methodological",
+              body: "IPCC Guidelines & AR6, FAO and international methods — used for emission factors and standardised conversions.",
+            },
+          ].map((t) => (
+            <li key={t.tier} className="bg-paper p-5">
+              <div className="flex items-baseline gap-2">
+                <span className="font-mono text-[12px] font-semibold tracking-[0.08em] text-deep-teal">{t.tier}</span>
+                <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">{t.label}</span>
+              </div>
+              <p className="font-sans text-[13px] text-ink-soft leading-[1.5] mt-2">{t.body}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="font-sans text-[12.5px] text-muted italic leading-[1.5] mt-4 max-w-[68ch]">
+          Lines tagged e.g. “T1+T2” combine a local figure with a national factor. All values are
+          modelled — avoided losses, protected income and verified carbon — not a cash return.
+        </p>
+      </div>
     </section>
   );
 }

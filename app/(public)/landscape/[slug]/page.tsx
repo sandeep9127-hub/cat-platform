@@ -52,7 +52,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
     ? await Promise.all([budgetSummary(slug), landscapeInsights(slug)])
     : [null, null];
 
-  // Climate valuation (C-GEM) lives in its own tab; just gate the tab here.
+  // Climate valuation lives in its own tab; just gate the tab here.
   const hasClimate = await landscapeHasClimate(slug);
 
   // Programmes in the same state

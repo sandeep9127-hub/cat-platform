@@ -169,7 +169,7 @@ async function main() {
   await pool.query(
     `INSERT INTO "cat".landscape_climate_meta (landscape_slug, carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, fx, model_version)
      VALUES ($1,$2,$3,$4,$5,$6)`,
-    [SLUG, Math.round(cTco2e), Math.round(cInr), Math.round(cUsd), fx, "C-GEM V3"]
+    [SLUG, Math.round(cTco2e), Math.round(cInr), Math.round(cUsd), fx, "v3"]
   );
 
   // --- Funder-lens views (04/05/06): primary lines per lens, with a metric string ---
@@ -232,7 +232,7 @@ async function main() {
   if (NVIDIA_KEY) {
     const cr = (n) => `₹${(n / 1e7).toFixed(2)} crore`;
     const text =
-      `Climate valuation (C-GEM model, evidence-tiered) for the ${SLUG} landscape. ` +
+      `Climate valuation (evidence-tiered model) for the ${SLUG} landscape. ` +
       `Total modelled climate value over 7 years: ${cr(total)}, split by primary track — ` +
       Object.entries(byTrack).map(([k, v]) => `${k}: ${cr(v)}`).join(", ") + ". " +
       `Carbon/mitigation: approximately ${Math.round(cTco2e).toLocaleString()} tCO2e over 7 years, ` +

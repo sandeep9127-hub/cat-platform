@@ -33,7 +33,7 @@ const TRACKS = [
 
 /**
  * "Climate value" — the climate counterpart to "Where the money goes". Shows the
- * C-GEM modelled 7-year climate value of the plan, split across resilience,
+ * modelled 7-year climate value of the plan, split across resilience,
  * adaptation and carbon, with a carbon-investor callout. Reframes climate beyond
  * carbon — the story funders and a global audience need.
  */
@@ -123,7 +123,7 @@ export function LandscapeClimate(props: ClimateProps) {
               </div>
             )}
             <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted sm:text-right">
-              Valued with the C-GEM model{props.modelVersion ? ` · ${props.modelVersion}` : ""}
+              Modelled climate valuation
               <br className="hidden sm:block" /> Evidence-tiered: local → national → IPCC
             </p>
           </div>
