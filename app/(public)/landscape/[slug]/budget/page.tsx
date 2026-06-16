@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { budgetSummary, listBudgetLines, landscapeHasLip } from "@/lib/db/landscape-kb";
+import { budgetSummary, listBudgetLines, landscapeHasLip, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { BudgetExplorer } from "@/components/landscape/BudgetExplorer";
 import { CurrencyProvider } from "@/components/landscape/currency";
 
@@ -18,7 +18,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
   const p = LANDSCAPES[slug];
   if (!p) notFound();
 
-  const hasLip = await landscapeHasLip(slug);
+  const [hasLip, hasClimate] = await Promise.all([landscapeHasLip(slug), landscapeHasClimate(slug)]);
   if (!hasLip) {
     return (
       <>
@@ -32,7 +32,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
             {p.name} · <span className="text-teal">Budget</span>
           </h1>
         </header>
-        <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} />
+        <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} hasClimate={hasClimate} />
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
           <p className="text-ink-soft text-[18px] max-w-[44ch] leading-[1.55] tracking-[-0.01em]">
             The {p.name} Landscape Investment Plan is in preparation. The interactive
@@ -63,7 +63,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
         </p>
       </header>
 
-      <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} />
+      <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} hasClimate={hasClimate} />
 
       <CurrencyProvider>
         <BudgetExplorer summary={summary} lines={lines} />

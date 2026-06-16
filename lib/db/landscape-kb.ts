@@ -351,3 +351,46 @@ export async function climateSummary(slug: string): Promise<ClimateSummary | nul
     modelVersion: (m.model_version as string) ?? null,
   };
 }
+
+/** Cheap check: does this landscape have a climate valuation loaded? (Gates the tab.) */
+export async function landscapeHasClimate(slug: string): Promise<boolean> {
+  const r = await db.execute(
+    sql`SELECT 1 FROM "cat".landscape_climate_lines WHERE landscape_slug = ${slug} LIMIT 1`
+  );
+  return rowsOf<unknown>(r).length > 0;
+}
+
+export type ClimateViewLine = {
+  subIntervention: string;
+  unit: string | null;
+  value7yrInr: number;
+  tco2e7yr: number | null;
+  metric: string | null;
+  tier: string | null;
+};
+
+/** The three funder-lens views (carbon / adaptation / resilience), each a list of
+ *  primary interventions sorted by 7-year value. Empty arrays if none loaded. */
+export async function climateViews(
+  slug: string
+): Promise<{ carbon: ClimateViewLine[]; adaptation: ClimateViewLine[]; resilience: ClimateViewLine[] }> {
+  const r = await db.execute(
+    sql`SELECT lens, sub_intervention, unit, value_7yr_inr, tco2e_7yr, metric, tier
+        FROM "cat".landscape_climate_view_lines WHERE landscape_slug = ${slug}
+        ORDER BY value_7yr_inr DESC NULLS LAST`
+  );
+  const out: Record<string, ClimateViewLine[]> = { carbon: [], adaptation: [], resilience: [] };
+  for (const row of rowsOf<Record<string, unknown>>(r)) {
+    const lens = String(row.lens);
+    if (!out[lens]) continue;
+    out[lens].push({
+      subIntervention: String(row.sub_intervention ?? ""),
+      unit: (row.unit as string) ?? null,
+      value7yrInr: Number(row.value_7yr_inr ?? 0),
+      tco2e7yr: row.tco2e_7yr != null ? Number(row.tco2e_7yr) : null,
+      metric: (row.metric as string) ?? null,
+      tier: (row.tier as string) ?? null,
+    });
+  }
+  return { carbon: out.carbon, adaptation: out.adaptation, resilience: out.resilience };
+}

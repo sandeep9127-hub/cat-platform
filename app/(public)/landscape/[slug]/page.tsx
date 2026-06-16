@@ -4,8 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { landscapeHasLip, budgetSummary, landscapeInsights, climateSummary } from "@/lib/db/landscape-kb";
-import { LandscapeClimate } from "@/components/landscape/LandscapeClimate";
+import { landscapeHasLip, budgetSummary, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
 import { CurrencyProvider } from "@/components/landscape/currency";
@@ -53,8 +52,8 @@ export default async function LandscapeDetailPage({ params }: Props) {
     ? await Promise.all([budgetSummary(slug), landscapeInsights(slug)])
     : [null, null];
 
-  // Climate valuation (C-GEM) — independent of the LIP; null when not loaded.
-  const climate = await climateSummary(slug);
+  // Climate valuation (C-GEM) lives in its own tab; just gate the tab here.
+  const hasClimate = await landscapeHasClimate(slug);
 
   // Programmes in the same state
   const stateEntries = state
@@ -144,7 +143,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
       </header>
 
       <div className="mt-8 lg:mt-12">
-        <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} />
+        <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
       </div>
 
       {/* ORIENT + MONEY — share one currency toggle (INR / USD / EUR) */}
@@ -179,21 +178,6 @@ export default async function LandscapeDetailPage({ params }: Props) {
               hectares: insights.totals.hectares,
               lineCount: insights.totals.lineCount,
             }}
-          />
-        )}
-
-        {/* CLIMATE — the C-GEM climate value of the plan (funder-facing) */}
-        {climate && (
-          <LandscapeClimate
-            landscapeName={p.name}
-            total={climate.totalInr}
-            mitigation={climate.mitigationInr}
-            adaptation={climate.adaptationInr}
-            resilience={climate.resilienceInr}
-            carbonTco2e={climate.carbonTco2e7yr}
-            carbonUsd={climate.carbonValueUsd}
-            planCostInr={money?.totalCostInr ?? 0}
-            modelVersion={climate.modelVersion}
           />
         )}
       </CurrencyProvider>

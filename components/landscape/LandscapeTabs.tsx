@@ -6,10 +6,12 @@ export function LandscapeTabs({
   slug,
   active,
   hasLip,
+  hasClimate = false,
 }: {
   slug: string;
-  active: "profile" | "library" | "budget" | "insights" | "ask";
+  active: "profile" | "library" | "budget" | "insights" | "climate" | "ask";
   hasLip: boolean;
+  hasClimate?: boolean;
 }) {
   // Library tab removed from the nav (no longer a downloads surface); the route
   // and its data stay in the background. Keep "library" in the active union so
@@ -18,6 +20,7 @@ export function LandscapeTabs({
     { href: `/landscape/${slug}`, label: "Profile", available: true },
     { href: `/landscape/${slug}/budget`, label: "Budget", available: hasLip },
     { href: `/landscape/${slug}/insights`, label: "Insights", available: hasLip },
+    { href: `/landscape/${slug}/climate`, label: "Climate", available: hasClimate },
     { href: `/landscape/${slug}/ask`, label: "Ask", available: hasLip },
   ];
 

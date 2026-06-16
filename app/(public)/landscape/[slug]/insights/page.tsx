@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { landscapeHasLip, landscapeInsights } from "@/lib/db/landscape-kb";
+import { landscapeHasLip, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeInsightsView } from "@/components/landscape/LandscapeInsightsView";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function InsightsPage({ params }: { params: Promise<{ slug:
   const p = LANDSCAPES[slug];
   if (!p) notFound();
 
-  const hasLip = await landscapeHasLip(slug);
+  const [hasLip, hasClimate] = await Promise.all([landscapeHasLip(slug), landscapeHasClimate(slug)]);
 
   return (
     <>
@@ -36,7 +36,7 @@ export default async function InsightsPage({ params }: { params: Promise<{ slug:
         </p>
       </header>
 
-      <LandscapeTabs slug={slug} active="insights" hasLip={hasLip} />
+      <LandscapeTabs slug={slug} active="insights" hasLip={hasLip} hasClimate={hasClimate} />
 
       {hasLip ? (
         <LandscapeInsightsView slug={slug} profile={p} data={await landscapeInsights(slug)} />

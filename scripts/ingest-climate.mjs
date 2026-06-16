@@ -50,6 +50,7 @@ const str = (cell) => {
   if (typeof v === "object" && "result" in v) return String(v.result);
   return String(v).trim() || null;
 };
+const fmtInt = (n) => (n == null ? null : Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
 
 async function embedOne(text, attempt = 0) {
   try {
@@ -92,6 +93,15 @@ async function main() {
       carbon_tco2e_7yr numeric, carbon_value_7yr_inr bigint, carbon_value_7yr_usd bigint,
       fx numeric, model_version text, updated_at timestamptz DEFAULT now()
     );
+    CREATE TABLE IF NOT EXISTS "cat".landscape_climate_view_lines (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      landscape_slug text NOT NULL,
+      lens text NOT NULL,                 -- carbon | adaptation | resilience
+      sub_intervention text, unit text,
+      value_7yr_inr bigint, tco2e_7yr numeric,
+      metric text, tier text, row_index int, created_at timestamptz DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS landscape_climate_view_lines_idx ON "cat".landscape_climate_view_lines (landscape_slug, lens);
   `);
   // Allow the climate doc type + chunk kind (standalone so they autocommit before use).
   for (const ddl of [
@@ -148,6 +158,7 @@ async function main() {
   // --- write ---
   await pool.query(`DELETE FROM "cat".landscape_climate_lines WHERE landscape_slug = $1`, [SLUG]);
   await pool.query(`DELETE FROM "cat".landscape_climate_meta WHERE landscape_slug = $1`, [SLUG]);
+  await pool.query(`DELETE FROM "cat".landscape_climate_view_lines WHERE landscape_slug = $1`, [SLUG]);
   for (const l of lines) {
     await pool.query(
       `INSERT INTO "cat".landscape_climate_lines (landscape_slug, package, sub_intervention, primacy, primary_value_7yr_inr, row_index)
@@ -160,6 +171,55 @@ async function main() {
      VALUES ($1,$2,$3,$4,$5,$6)`,
     [SLUG, Math.round(cTco2e), Math.round(cInr), Math.round(cUsd), fx, "C-GEM V3"]
   );
+
+  // --- Funder-lens views (04/05/06): primary lines per lens, with a metric string ---
+  const VIEWS = [
+    {
+      lens: "carbon", sheet: "04_View_Carbon_Investor", valueCol: 10,
+      build: (row) => {
+        const unit = str(row.getCell(2)), ghg = num(row.getCell(3)), subtype = str(row.getCell(4)), price = num(row.getCell(5)), tco = num(row.getCell(12));
+        const metric = [ghg != null ? `${ghg} tCO₂e/${unit || "unit"}` : null, subtype, price != null ? `$${price}/t` : null].filter(Boolean).join(" · ");
+        return { unit, tco2e: tco, metric, tier: str(row.getCell(14)) };
+      },
+    },
+    {
+      lens: "adaptation", sheet: "05_View_Adaptation_Finance", valueCol: 10,
+      build: (row) => {
+        const unit = str(row.getCell(2)), margin = num(row.getCell(5));
+        return { unit, tco2e: null, metric: margin ? `₹${fmtInt(margin)}/${unit || "unit"} margin uplift` : null, tier: str(row.getCell(12)) };
+      },
+    },
+    {
+      lens: "resilience", sheet: "06_View_Resilience_Donor", valueCol: 10,
+      build: (row) => {
+        const unit = str(row.getCell(2)), prot = num(row.getCell(5)), shock = num(row.getCell(4));
+        const metric = [prot ? `₹${fmtInt(prot)}/${unit || "HH"} protected` : null, shock != null ? `${Math.round(shock * 100)}% shock risk` : null].filter(Boolean).join(" · ");
+        return { unit, tco2e: null, metric, tier: str(row.getCell(12)) };
+      },
+    },
+  ];
+  let viewCount = 0;
+  for (const v of VIEWS) {
+    const ws = wb.getWorksheet(v.sheet);
+    if (!ws) continue;
+    let supp = false;
+    for (let r = 6; r <= ws.actualRowCount; r++) {
+      const sub = str(ws.getRow(r).getCell(1));
+      if (!sub) continue;
+      if (/SUPPLEMENTARY/i.test(sub)) { supp = true; continue; }
+      if (/SUBTOTAL|TOTAL/i.test(sub)) continue;
+      if (supp) continue; // primary lines only (match the band totals)
+      const value = Math.round(num(ws.getRow(r).getCell(v.valueCol)) ?? 0);
+      const d = v.build(ws.getRow(r));
+      await pool.query(
+        `INSERT INTO "cat".landscape_climate_view_lines (landscape_slug, lens, sub_intervention, unit, value_7yr_inr, tco2e_7yr, metric, tier, row_index)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [SLUG, v.lens, sub, d.unit, value, d.tco2e ?? null, d.metric, d.tier, r]
+      );
+      viewCount++;
+    }
+  }
+  console.log(`  ${viewCount} funder-lens view lines inserted`);
 
   const byTrack = {};
   for (const l of lines) byTrack[l.primacy] = (byTrack[l.primacy] ?? 0) + l.value;
