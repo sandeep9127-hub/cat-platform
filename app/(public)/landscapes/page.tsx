@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
@@ -105,115 +106,86 @@ export default async function LandscapesPage() {
       <LandscapeScrollytelling pins={pins} />
 
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-16 lg:pt-20">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 mb-8">
-          <div>
-            <span className="eyebrow">The index</span>
-            <h2 className="font-sans font-semibold text-[clamp(26px,3vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3">
-              All eleven, at a glance
-            </h2>
-          </div>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted flex items-center gap-4 pb-1.5">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#2E7573" }} />
-              Plan published
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#929CC5" }} />
-              In preparation
-            </span>
+        <div className="mb-8 max-w-[62ch]">
+          <span className="eyebrow">Landscape Investment Plans</span>
+          <h2 className="font-sans font-semibold text-[clamp(26px,3vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3">
+            The eleven plans
+          </h2>
+          <p className="font-sans text-[15px] text-ink-soft leading-[1.55] mt-3">
+            Each landscape&apos;s Investment Plan, illustrated. Open one to explore its profile, the
+            investment, and the work on the ground.
           </p>
         </div>
 
-        {/* Compact atlas index. The rich, photo-led panels are above; this is the
-            quick-jump directory. Hairline-separated cells, toned by plan status
-            with the two CAT colour ramps. 12 cells (11 + Atlas) divide cleanly
-            across 2 / 3 / 4 columns so no row is ever left ragged. */}
-        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-line rounded-[14px] overflow-hidden border border-line list-none p-0 m-0">
+        {/* Cover wall — each landscape's illustrated Investment Plan cover, linking
+            to its page. 11 covers + the Atlas card = 12 cells, dividing cleanly
+            across 2 / 3 / 4 columns. Covers are A4 portrait (800x1131). */}
+        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 list-none p-0 m-0">
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
-            const published = p?.lipStatus === "published";
-            const accent = published ? "#2E7573" : "#5E6990";
-            const dot = published ? "#2E7573" : "#929CC5";
-            const chipBg = published ? "#E1EDE8" : "#D0DAEF";
-            const chipFg = published ? "#2E7573" : "#5E6990";
-            const wash = published
-              ? "linear-gradient(180deg, rgba(225,237,232,0.9) 0%, rgba(225,237,232,0.28) 100%)"
-              : "linear-gradient(180deg, rgba(208,218,239,0.9) 0%, rgba(208,218,239,0.28) 100%)";
             return (
               <li key={g.id} className="reveal-stagger" style={{ animationDelay: `${i * 40}ms` }}>
-                <Link
-                  href={`/landscape/${g.slug}`}
-                  className="group relative flex flex-col h-full bg-paper px-5 py-5 sm:px-6 sm:py-7 min-h-[156px] overflow-hidden"
-                >
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
-                    style={{ background: wash }}
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute top-0 left-0 right-0 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out pointer-events-none"
-                    style={{ background: accent }}
-                  />
-
-                  <div className="relative flex items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                    <span className="tabular-nums">No. {String(i + 1).padStart(2, "0")}</span>
+                <Link href={`/landscape/${g.slug}`} className="group block">
+                  <div
+                    className="relative overflow-hidden rounded-[10px] border border-line bg-paper aspect-[800/1131]"
+                    style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(26,38,37,0.45)" }}
+                  >
+                    <Image
+                      src={`/images/landscapes/${g.slug}/cover.jpg`}
+                      alt={`${p?.name ?? g.name} — Landscape-Based Investment Plan cover`}
+                      width={800}
+                      height={1131}
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
+                      className="w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.035]"
+                    />
                     <span
-                      className="inline-flex items-center justify-center min-w-[26px] h-[20px] px-1.5 rounded-[3px] font-semibold tracking-[0.10em]"
-                      style={{ background: chipBg, color: chipFg }}
-                    >
+                      aria-hidden
+                      className="absolute inset-0 ring-1 ring-inset ring-black/0 group-hover:ring-teal/30 transition-[box-shadow] duration-300 rounded-[10px] pointer-events-none"
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between gap-2">
+                    <span className="font-sans text-[15px] font-semibold tracking-[-0.01em] text-ink group-hover:text-teal transition-colors">
+                      {p?.name ?? g.name}
+                    </span>
+                    <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted shrink-0">
                       {g.stateCode}
                     </span>
                   </div>
-
-                  <h3 className="relative font-sans text-[21px] sm:text-[23px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink mt-4 group-hover:text-teal transition-colors">
-                    {p?.name ?? g.name}
-                  </h3>
                   {p && (
-                    <div className="relative font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal mt-1.5">
+                    <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal mt-0.5">
                       {p.district}
                     </div>
                   )}
-
-                  <div className="relative mt-auto pt-5 flex items-center justify-between gap-2 font-mono text-[9.5px] uppercase tracking-[0.14em]">
-                    <span className="inline-flex items-center gap-1.5" style={{ color: chipFg }}>
-                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: dot }} />
-                      {published ? "Published" : "In preparation"}
-                    </span>
-                    <span
-                      aria-hidden
-                      className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
-                      style={{ color: accent }}
-                    >
-                      &rarr;
-                    </span>
-                  </div>
                 </Link>
               </li>
             );
           })}
 
           <li className="reveal-stagger" style={{ animationDelay: `${rows.length * 40}ms` }}>
-            <Link
-              href="/map"
-              className="group relative flex flex-col justify-between h-full px-5 py-5 sm:px-6 sm:py-7 min-h-[156px] overflow-hidden"
-              style={{ background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)" }}
-            >
-              <span className="relative font-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
-                Go wider
-              </span>
-              <span className="relative">
-                <span className="block font-sans text-[19px] sm:text-[21px] font-semibold leading-[1.12] tracking-[-0.02em] text-paper">
-                  The Solutions Atlas
+            <Link href="/map" className="group block">
+              <div
+                className="relative overflow-hidden rounded-[10px] aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"
+                style={{
+                  background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
+                  boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(46,117,115,0.5)",
+                }}
+              >
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
+                  Go wider
                 </span>
-                <span
-                  className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] transition-colors group-hover:text-paper"
-                  style={{ color: "#B8CCCA" }}
-                >
-                  Every landscape, and beyond
-                  <span className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                <span>
+                  <span className="block font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.12] tracking-[-0.02em] text-paper">
+                    The Solutions Atlas
+                  </span>
+                  <span
+                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em]"
+                    style={{ color: "#B8CCCA" }}
+                  >
+                    Every landscape, and beyond
+                    <span className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                  </span>
                 </span>
-              </span>
+              </div>
             </Link>
           </li>
         </ul>
