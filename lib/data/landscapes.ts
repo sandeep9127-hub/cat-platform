@@ -418,7 +418,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Poor market access allows middleman exploitation; inadequate housing and disease management lead to high livestock mortality.",
       "Limited diversification and inadequate post-harvest infrastructure constrain income realisation.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/patratu/02.jpg",
