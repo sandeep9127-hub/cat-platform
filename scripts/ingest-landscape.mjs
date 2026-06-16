@@ -156,8 +156,15 @@ async function extractBudget(filePath) {
   await wb.xlsx.readFile(filePath);
   // Newer workbooks split the line-item budget ("5.2") from the thematic grouping
   // ("Thematic Investment"); older ones used a single "5.2 Package Distribution".
-  const sheet = wb.getWorksheet("5.2") || wb.getWorksheet("5.2 Package Distribution");
-  if (!sheet) throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' not found");
+  // The latest export renames the line-item sheet to "Landscape Clean" and shifts
+  // its columns (7-year totals at c34-c37, tags at c40-c45, package label in c6) —
+  // handled by the header-resolved branch below.
+  const sheet =
+    wb.getWorksheet("5.2") ||
+    wb.getWorksheet("5.2 Package Distribution") ||
+    wb.getWorksheet("Landscape Clean");
+  if (!sheet)
+    throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' / 'Landscape Clean' not found");
 
   // Map each Original Sub-Intervention -> its thematic delivery package (the
   // grouping shown as "delivery packages by share of plan"). In the 5.2 sheet
@@ -212,6 +219,122 @@ async function extractBudget(filePath) {
     }
   }
 
+  // --- "Landscape Clean" layout (header-resolved columns) ----------------
+  // This export shifts every column relative to the legacy "5.2" sheet, so we
+  // resolve indices by matching the header row (row 4) rather than hard-coding
+  // them. The package label sits directly in the line sheet (c6); 7-year totals
+  // live in the "...P1+P2" columns; grant/RG/debt come from the thematic mix.
+  const headerRow = sheet.getRow(4);
+  const norm = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
+  const findCol = (re) => {
+    for (let c = 1; c <= sheet.actualColumnCount; c++) {
+      if (re.test(norm(strCell(headerRow, c)))) return c;
+    }
+    return null;
+  };
+  const projTotalCol = findCol(/total intervention cost for project period/);
+  if (projTotalCol) {
+    const col = {
+      catNo: findCol(/^cat no/),
+      category: findCol(/^category$/),
+      intervention: findCol(/^intervention$/),
+      sno: findCol(/^s\.? ?no/),
+      sub: findCol(/^sub intervention/),
+      pkg: findCol(/^thematic investment$/),
+      capital: findCol(/^capital ?\/? ?one-time cost/),
+      capDesc: findCol(/^description capital/),
+      recurring: findCol(/^per year recurring cost/),
+      recDesc: findCol(/^description recurring/),
+      years: findCol(/^no of years/),
+      perUnit: findCol(/^total per unit cost/),
+      units: findCol(/^no of units-p1/),
+      total: projTotalCol,
+      govt: findCol(/^total govt-p1\+p2/),
+      community: findCol(/^total community-p1\+p2/),
+      invest: findCol(/^total investment required-p1\+p2/),
+      govtScheme: findCol(/^govt scheme description -?p1/),
+      hhP1: findCol(/^impact no household-p1/),
+      hhP2: findCol(/^impact no household-p2/),
+      haP1: findCol(/^impact no hectares-p1/),
+      haP2: findCol(/^impact no hectares-p2/),
+      anP1: findCol(/^impact no animals-p1/),
+      anP2: findCol(/^impact no animals-p2/),
+      climate: findCol(/^climate$/),
+      equity: findCol(/^equity$/),
+      gender: findCol(/^gender$/),
+      economic: findCol(/^economic purpose/),
+      institution: findCol(/^institution type/),
+      capitalType: findCol(/^capital contributed to/),
+    };
+    const cleanRows = [];
+    for (let r = 5; r <= sheet.actualRowCount; r++) {
+      const row = sheet.getRow(r);
+      if (!row.getCell(1).value && !row.getCell(2).value) continue;
+      const sub = col.sub ? strCell(row, col.sub) : null;
+      const category = col.category ? strCell(row, col.category) : null;
+      // Skip any trailing "Grand Total" summary row (no sub-intervention).
+      if (!sub && /grand total/i.test(category || "")) continue;
+      const n = (c) => (c ? numCell(row, c) : null);
+      const s = (c) => (c ? strCell(row, c) : null);
+      const sum2 = (a, b) => {
+        const t = (n(a) || 0) + (n(b) || 0);
+        return t || null;
+      };
+      const pkg = s(col.pkg) || category;
+      const investment = n(col.invest) ?? 0;
+      // No line-level instrument split in this layout — distribute the line's
+      // investment_required across instruments using its thematic mix.
+      let grants = null,
+        returnable = null,
+        outcome = null,
+        debt = null;
+      if (investment > 0) {
+        const frac =
+          mixByThematic.get(String(pkg).trim().toLowerCase()) || { grant: 1, rg: 0, debt: 0, obf: 0 };
+        grants = Math.round(investment * frac.grant) || null;
+        returnable = Math.round(investment * frac.rg) || null;
+        debt = Math.round(investment * frac.debt) || null;
+        outcome = Math.round(investment * frac.obf) || null;
+      }
+      cleanRows.push({
+        cat_no: s(col.catNo),
+        category,
+        intervention: s(col.intervention),
+        sno: s(col.sno),
+        subintervention: sub,
+        package: pkg,
+        capital_cost: n(col.capital),
+        capital_description: s(col.capDesc),
+        recurring_cost: n(col.recurring),
+        recurring_description: s(col.recDesc),
+        years: n(col.years),
+        per_unit_cost: n(col.perUnit),
+        units: n(col.units),
+        total_cost: n(col.total),
+        govt: n(col.govt),
+        govt_scheme: s(col.govtScheme),
+        community: n(col.community),
+        investment_required: investment || null,
+        grants,
+        returnable_grant: returnable,
+        outcome_finance: outcome,
+        debt,
+        impact_households: sum2(col.hhP1, col.hhP2),
+        impact_hectares: sum2(col.haP1, col.haP2),
+        impact_animals: sum2(col.anP1, col.anP2),
+        climate_tag: s(col.climate),
+        equity_tag: s(col.equity),
+        gender_tag: s(col.gender),
+        economic_tag: s(col.economic),
+        institution_type: s(col.institution),
+        capital_type: s(col.capitalType),
+        row_index: r,
+      });
+    }
+    return cleanRows;
+  }
+
+  // --- Legacy "5.2" layout (unchanged) -----------------------------------
   const rows = [];
   for (let r = 5; r <= sheet.actualRowCount; r++) {
     const row = sheet.getRow(r);

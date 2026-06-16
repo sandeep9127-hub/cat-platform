@@ -201,7 +201,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Semi-critical basaltic aquifers, low tree cover, and degraded commons reduce ecological buffering and water security.",
       "Persistent poverty, fragmented holdings, nutrition insecurity, and uneven access to extension services — particularly for women and marginal farmers.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/dharashiv/01.jpg",
