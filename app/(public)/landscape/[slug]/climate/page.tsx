@@ -98,11 +98,18 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
             adaptation={climate.adaptationInr}
             resilience={climate.resilienceInr}
             carbonTco2e={climate.carbonTco2e7yr}
-            carbonUsd={climate.carbonValueUsd}
+            ghgTotalTco2e={climate.ghgTotalTco2e}
+            cobenefitInr={climate.cobenefitTotalInr}
             planCostInr={money?.totalCostInr ?? 0}
             modelVersion={climate.modelVersion}
           />
-          <LandscapeClimateViews carbon={views.carbon} adaptation={views.adaptation} resilience={views.resilience} />
+          <LandscapeClimateViews
+            carbon={views.carbon}
+            adaptation={views.adaptation}
+            resilience={views.resilience}
+            ghgTotalTco2e={climate.ghgTotalTco2e}
+            carbonCreditableTco2e={climate.carbonCreditableTco2e}
+          />
         </>
       )}
       <div className="h-16" />

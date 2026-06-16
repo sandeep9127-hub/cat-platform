@@ -312,6 +312,12 @@ export type ClimateSummary = {
   carbonTco2e7yr: number;
   carbonValueInr: number;
   carbonValueUsd: number;
+  /** All-tracks 7-yr GHG (incl. co-benefit carbon) — the full footprint. */
+  ghgTotalTco2e: number;
+  /** Tonnes on a registry pathway today; the rest is shadow-priced (needs MRV). */
+  carbonCreditableTco2e: number;
+  /** Non-primary-track value the same interventions also generate; disclosed, not summed. */
+  cobenefitTotalInr: number;
   modelVersion: string | null;
 };
 
@@ -336,7 +342,8 @@ export async function climateSummary(slug: string): Promise<ClimateSummary | nul
   const resilienceInr = pick(/resilience/i);
 
   const metaR = await db.execute(
-    sql`SELECT carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, model_version
+    sql`SELECT carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, model_version,
+               ghg_total_tco2e, carbon_creditable_tco2e, cobenefit_total_inr
         FROM "cat".landscape_climate_meta WHERE landscape_slug = ${slug}`
   );
   const m = rowsOf<Record<string, string>>(metaR)[0] ?? {};
@@ -348,6 +355,9 @@ export async function climateSummary(slug: string): Promise<ClimateSummary | nul
     carbonTco2e7yr: Number(m.carbon_tco2e_7yr ?? 0),
     carbonValueInr: Number(m.carbon_value_7yr_inr ?? 0),
     carbonValueUsd: Number(m.carbon_value_7yr_usd ?? 0),
+    ghgTotalTco2e: Number(m.ghg_total_tco2e ?? 0),
+    carbonCreditableTco2e: Number(m.carbon_creditable_tco2e ?? 0),
+    cobenefitTotalInr: Number(m.cobenefit_total_inr ?? 0),
     modelVersion: (m.model_version as string) ?? null,
   };
 }

@@ -7,6 +7,10 @@ type Props = {
   carbon: ClimateViewLine[];
   adaptation: ClimateViewLine[];
   resilience: ClimateViewLine[];
+  /** All-tracks 7-yr GHG footprint (tCO₂e) — denominator for marketability. */
+  ghgTotalTco2e?: number;
+  /** Tonnes on a registry pathway today; the rest is shadow-priced. */
+  carbonCreditableTco2e?: number;
 };
 
 const LENSES = [
@@ -42,9 +46,17 @@ function groupUS(n: number): string {
  * that climate track. A carbon buyer, an adaptation fund and a resilience donor
  * each see their own value, evidence-tier and per-intervention detail.
  */
-export function LandscapeClimateViews({ carbon, adaptation, resilience }: Props) {
+export function LandscapeClimateViews({
+  carbon,
+  adaptation,
+  resilience,
+  ghgTotalTco2e = 0,
+  carbonCreditableTco2e = 0,
+}: Props) {
   const { currency } = useCurrency();
   const data = { carbon, adaptation, resilience };
+  const creditablePct = ghgTotalTco2e ? Math.round((carbonCreditableTco2e / ghgTotalTco2e) * 100) : 0;
+  const shadowPct = ghgTotalTco2e ? 100 - creditablePct : 0;
 
   return (
     <section className="mt-14 lg:mt-16 max-w-page mx-auto px-5 sm:px-7 lg:px-10">
@@ -82,10 +94,35 @@ export function LandscapeClimateViews({ carbon, adaptation, resilience }: Props)
                   </div>
                 </div>
                 <p className="font-sans text-[13px] text-ink-soft leading-[1.5] mt-2 max-w-[70ch]">{lens.blurb}</p>
-                {lens.key === "carbon" && totalTco2e > 0 && (
-                  <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-amber-deep mt-2">
-                    {groupUS(totalTco2e)} tCO₂e over 7 years
-                  </p>
+                {lens.key === "carbon" && (ghgTotalTco2e || totalTco2e) > 0 && (
+                  <div className="mt-3">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-amber-deep">
+                      {groupUS(ghgTotalTco2e || totalTco2e)} tCO₂e over 7 years · all tracks
+                    </p>
+                    {ghgTotalTco2e > 0 && carbonCreditableTco2e > 0 && (
+                      <div className="mt-3 max-w-[72ch]">
+                        <div className="flex h-2.5 rounded-full overflow-hidden border border-line">
+                          <div style={{ width: `${creditablePct}%`, background: lens.colour }} title={`Creditable today · ${creditablePct}%`} />
+                          <div style={{ width: `${shadowPct}%`, background: `${lens.colour}33` }} title={`Shadow price · ${shadowPct}%`} />
+                        </div>
+                        <div className="flex items-center gap-4 mt-2 font-mono text-[10px] uppercase tracking-[0.1em]">
+                          <span className="flex items-center gap-1.5" style={{ color: lens.colour }}>
+                            <span className="inline-block w-2 h-2 rounded-sm" style={{ background: lens.colour }} />
+                            {creditablePct}% creditable today
+                          </span>
+                          <span className="flex items-center gap-1.5 text-muted">
+                            <span className="inline-block w-2 h-2 rounded-sm" style={{ background: `${lens.colour}33` }} />
+                            {shadowPct}% shadow price
+                          </span>
+                        </div>
+                        <p className="font-sans text-[12.5px] text-ink-soft leading-[1.5] mt-2">
+                          Only the {creditablePct}% on a registry pathway is creditable today. The remaining {shadowPct}%
+                          is genuine greenhouse-gas impact with no smallholder MRV pathway yet — an opportunity for early
+                          funders to help build the methodology that turns it into creditable supply.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <ul className="list-none p-0 m-0 divide-y divide-line/70">

@@ -9,13 +9,16 @@ export type ClimateProps = {
   adaptation: number;
   resilience: number;
   carbonTco2e: number;
-  carbonUsd: number;
+  /** All-tracks 7-yr GHG (incl. co-benefit carbon) — the full footprint shown to a carbon buyer. */
+  ghgTotalTco2e: number;
+  /** Value the same interventions also generate in non-primary tracks; disclosed, not in the headline. */
+  cobenefitInr: number;
   planCostInr: number;
   modelVersion: string | null;
 };
 
-// Western thousands grouping — the carbon tonnage and USD value are read by a
-// global / carbon-market audience, so 685,805 (not 6,85,805).
+// Western thousands grouping — the carbon tonnage is read by a global /
+// carbon-market audience, so 42,973 (not 42,973 with Indian grouping).
 function groupUS(n: number): string {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -105,21 +108,35 @@ export function LandscapeClimate(props: ClimateProps) {
             ))}
           </ul>
 
+          {/* Co-benefit disclosure — the value the same interventions throw off in
+              their NON-primary tracks. Deliberately kept out of the headline to
+              avoid double-counting; disclosed here to show the full picture. */}
+          {props.cobenefitInr > 0 && (
+            <div className="mt-6 rounded-[10px] border border-line bg-line-soft px-5 py-4">
+              <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                Also generated · not in the headline
+              </div>
+              <p className="font-sans text-[13px] text-ink-soft leading-[1.55] mt-1.5 max-w-[82ch]">
+                The same interventions generate a further{" "}
+                <span className="font-serif text-deep-teal text-[16px] tabular-nums">
+                  ≈ {formatMoney(props.cobenefitInr, currency)}
+                </span>{" "}
+                of climate value in tracks other than their primary one — a livestock asset also protects
+                income and stores carbon, for example. We disclose this but deliberately keep it out of the
+                headline above, so no rupee is counted twice.
+              </p>
+            </div>
+          )}
+
           {/* Carbon callout + evidence */}
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-5 border-t border-line">
-            {props.carbonTco2e > 0 && (
+            {props.ghgTotalTco2e > 0 && (
               <div className="flex items-baseline gap-4 flex-wrap">
                 <div>
-                  <span className="font-serif text-[20px] text-ink tabular-nums">{groupUS(props.carbonTco2e)}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted ml-1.5">tCO₂e · 7 yr</span>
+                  <span className="font-serif text-[20px] text-ink tabular-nums">{groupUS(props.ghgTotalTco2e)}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted ml-1.5">tCO₂e · 7 yr · all tracks</span>
                 </div>
-                {props.carbonUsd > 0 && (
-                  <div>
-                    <span className="font-serif text-[20px] text-ink tabular-nums">${groupUS(props.carbonUsd)}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted ml-1.5">carbon value</span>
-                  </div>
-                )}
-                <span className="font-sans text-[12.5px] text-muted italic">the tradeable, verified slice</span>
+                <span className="font-sans text-[12.5px] text-muted italic">full greenhouse-gas footprint, every track</span>
               </div>
             )}
             <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted sm:text-right">

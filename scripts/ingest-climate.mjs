@@ -91,8 +91,15 @@ async function main() {
     CREATE TABLE IF NOT EXISTS "cat".landscape_climate_meta (
       landscape_slug text PRIMARY KEY,
       carbon_tco2e_7yr numeric, carbon_value_7yr_inr bigint, carbon_value_7yr_usd bigint,
-      fx numeric, model_version text, updated_at timestamptz DEFAULT now()
+      fx numeric, model_version text, updated_at timestamptz DEFAULT now(),
+      -- Portfolio-headline aggregates (cached "C. PORTFOLIO HEADLINES" block in 03):
+      ghg_total_tco2e numeric,        -- all-tracks 7-yr GHG (incl. co-benefit carbon)
+      carbon_creditable_tco2e numeric,-- tonnes on a registry pathway today
+      cobenefit_total_inr bigint      -- non-primary-track value, disclosed not summed
     );
+    ALTER TABLE "cat".landscape_climate_meta ADD COLUMN IF NOT EXISTS ghg_total_tco2e numeric;
+    ALTER TABLE "cat".landscape_climate_meta ADD COLUMN IF NOT EXISTS carbon_creditable_tco2e numeric;
+    ALTER TABLE "cat".landscape_climate_meta ADD COLUMN IF NOT EXISTS cobenefit_total_inr bigint;
     CREATE TABLE IF NOT EXISTS "cat".landscape_climate_view_lines (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       landscape_slug text NOT NULL,
@@ -155,6 +162,31 @@ async function main() {
   const assum = wb.getWorksheet("01_Assumptions");
   const fx = assum ? num(assum.getRow(14).getCell(2)) : 84;
 
+  // --- Portfolio headline aggregates (03 "C. PORTFOLIO HEADLINES" block) ---
+  // These are cached single cells (label in col1, value in col2), so they stay
+  // reliable even when per-line formula cells are not recalculated. We read them
+  // by label rather than fixed row so the block can move.
+  let ghgTotal = null, cobenefitInr = null;
+  for (let r = 1; r <= calc.actualRowCount; r++) {
+    const lab = str(calc.getRow(r).getCell(1)) || "";
+    if (/total co-?benefit pool/i.test(lab)) cobenefitInr = num(calc.getRow(r).getCell(2));
+    if (/total tco2e.*all interventions|total tco2e, 7 ?yr/i.test(lab)) ghgTotal = num(calc.getRow(r).getCell(2));
+  }
+  // Creditable carbon = main-table tonnes flagged "Registerable" (a registry
+  // pathway exists today); the rest is "shadow price only" — real GHG awaiting MRV.
+  let creditableTco2e = 0;
+  if (carbon) {
+    for (let r = 6; r <= carbon.actualRowCount; r++) {
+      const a = str(carbon.getRow(r).getCell(1));
+      if (!a) continue;
+      if (/SUPPLEMENTARY/i.test(a)) break;
+      if (/SUBTOTAL|TOTAL/i.test(a)) continue;
+      if (/register/i.test(str(carbon.getRow(r).getCell(13)) || "")) {
+        creditableTco2e += num(carbon.getRow(r).getCell(12)) ?? 0;
+      }
+    }
+  }
+
   // --- write ---
   await pool.query(`DELETE FROM "cat".landscape_climate_lines WHERE landscape_slug = $1`, [SLUG]);
   await pool.query(`DELETE FROM "cat".landscape_climate_meta WHERE landscape_slug = $1`, [SLUG]);
@@ -167,9 +199,16 @@ async function main() {
     );
   }
   await pool.query(
-    `INSERT INTO "cat".landscape_climate_meta (landscape_slug, carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, fx, model_version)
-     VALUES ($1,$2,$3,$4,$5,$6)`,
-    [SLUG, Math.round(cTco2e), Math.round(cInr), Math.round(cUsd), fx, "v3"]
+    `INSERT INTO "cat".landscape_climate_meta
+       (landscape_slug, carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, fx, model_version,
+        ghg_total_tco2e, carbon_creditable_tco2e, cobenefit_total_inr)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [
+      SLUG, Math.round(cTco2e), Math.round(cInr), Math.round(cUsd), fx, "v3",
+      ghgTotal != null ? Math.round(ghgTotal) : null,
+      Math.round(creditableTco2e) || null,
+      cobenefitInr != null ? Math.round(cobenefitInr) : null,
+    ]
   );
 
   // --- Funder-lens views (04/05/06): primary lines per lens, with a metric string ---
