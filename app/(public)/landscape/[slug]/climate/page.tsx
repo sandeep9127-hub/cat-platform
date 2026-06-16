@@ -66,14 +66,29 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
   ]);
 
   return (
-    <>
-      {Header}
-      <LandscapeTabs slug={slug} active="climate" hasLip={hasLip} hasClimate={hasClimate} />
-      {climate && (
-        <CurrencyProvider>
-          <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex justify-end -mb-4 pt-2">
+    <CurrencyProvider>
+      <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+            <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
+            <span className="text-line">/</span>
+            <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
+          </div>
+          <div className="shrink-0">
             <CurrencyToggle />
           </div>
+        </div>
+        <h1 className="font-sans font-semibold text-[clamp(38px,4.4vw,64px)] tracking-[-0.035em] leading-[1.02] text-ink">
+          {p.name} · <span className="text-teal">Climate value</span>
+        </h1>
+        <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
+          What the {p.name} plan is worth to the climate — valued with the C-GEM model across carbon,
+          adaptation and resilience, on tiered evidence. Modelled value, not a cash return.
+        </p>
+      </header>
+      <LandscapeTabs slug={slug} active="climate" hasLip={hasLip} hasClimate={hasClimate} />
+      {climate && (
+        <>
           <LandscapeClimate
             landscapeName={p.name}
             total={climate.totalInr}
@@ -86,9 +101,9 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
             modelVersion={climate.modelVersion}
           />
           <LandscapeClimateViews carbon={views.carbon} adaptation={views.adaptation} resilience={views.resilience} />
-        </CurrencyProvider>
+        </>
       )}
       <div className="h-16" />
-    </>
+    </CurrencyProvider>
   );
 }
