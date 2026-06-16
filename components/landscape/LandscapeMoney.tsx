@@ -5,7 +5,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ArrowUpRight } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { useCurrency, formatMoney, CurrencyToggle } from "./currency";
+import { useCurrency, formatMoney } from "./currency";
 
 export type MoneyProps = {
   slug: string;
@@ -56,7 +56,7 @@ const FUND_COLOURS: Record<string, string> = {
  * (engagements / hectares), with deep links into the Budget and Insights tabs.
  */
 export function LandscapeMoney(props: MoneyProps) {
-  const { currency, rates, ratesLive } = useCurrency();
+  const { currency } = useCurrency();
   const sources = [
     { label: "Government", value: props.govt },
     { label: "Community", value: props.community },
@@ -114,14 +114,6 @@ export function LandscapeMoney(props: MoneyProps) {
               <h2 className="font-sans font-semibold text-[clamp(26px,3.4vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-2 max-w-[18ch]">
                 Where the money goes
               </h2>
-              <div className="mt-4 flex items-center gap-2.5 flex-wrap">
-                <CurrencyToggle />
-                {currency !== "INR" && (
-                  <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
-                    {ratesLive ? "Live" : "Indicative"} · 1 {currency} ≈ ₹{rates[currency]}
-                  </span>
-                )}
-              </div>
             </div>
             <div className="lg:text-right">
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Total plan size · 7-year horizon</div>

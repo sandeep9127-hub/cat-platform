@@ -7,7 +7,7 @@ import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, budgetSummary, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
-import { CurrencyProvider } from "@/components/landscape/currency";
+import { CurrencyProvider, CurrencyControl } from "@/components/landscape/currency";
 import { FileText, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
 import { LandscapeAnchor } from "@/components/landscape/LandscapeAnchor";
@@ -72,6 +72,14 @@ export default async function LandscapeDetailPage({ params }: Props) {
 
   return (
     <article className="pt-10 sm:pt-14 lg:pt-20 pb-24">
+      {/* One currency control for the whole page — sits top-right, drives the
+          ledger, the plan and every figure below it (INR / USD / EUR). */}
+      <CurrencyProvider>
+      {money && money.totalCostInr > 0 && (
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex justify-end mb-4 reveal-stagger">
+          <CurrencyControl />
+        </div>
+      )}
       {/* Hero visual anchor: photograph when available, procedural signature otherwise */}
       {p.photos && p.photos.length > 0 ? (
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-6 reveal-stagger">
@@ -146,8 +154,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
         <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
       </div>
 
-      {/* ORIENT + MONEY — share one currency toggle (INR / USD / EUR) */}
-      <CurrencyProvider>
+      {/* ORIENT + MONEY — share the page currency control above */}
         <LandscapeLedger
           landscapeName={p.name}
           area={p.area}

@@ -133,6 +133,26 @@ export function useCurrency() {
   return useContext(Ctx);
 }
 
+/**
+ * The currency toggle with its live-rate caption — the "currency converter".
+ * Used at the top-right of a landscape page so every figure below it (ledger,
+ * plan, climate) shares one control. Caption only appears once a non-INR
+ * currency is chosen.
+ */
+export function CurrencyControl({ className = "" }: { className?: string }) {
+  const { currency, rates, ratesLive } = useCurrency();
+  return (
+    <div className={"flex flex-col items-end gap-1.5 " + className}>
+      <CurrencyToggle />
+      {currency !== "INR" && (
+        <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
+          {ratesLive ? "Live" : "Indicative"} · 1 {currency} ≈ ₹{rates[currency]}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function CurrencyToggle({ className = "" }: { className?: string }) {
   const { currency, setCurrency } = useCurrency();
   const opts: Currency[] = ["INR", "USD", "EUR"];
