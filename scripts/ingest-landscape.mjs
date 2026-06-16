@@ -164,14 +164,23 @@ async function extractBudget(filePath) {
   // col6 is the Original Sub-Intervention; the thematic name lives in the
   // "Thematic Investment" sheet (col6), keyed there by Original Sub-Intervention
   // in col46. Falls back to the broad category when no thematic match exists.
+  // Two lookups from the Thematic Investment sheet: by Original Sub-Intervention
+  // (col46) AND by Sub-Intervention (col5). Some lines (e.g. Technical Assistance
+  // cadres) have a blank/None Original Sub-Intervention, so the col5 fallback is
+  // what resolves them to their thematic package instead of falling back to the
+  // raw category label.
   const tiSheet = wb.getWorksheet("Thematic Investment");
   const thematicByOrig = new Map();
+  const thematicBySub = new Map();
   if (tiSheet) {
     for (let r = 4; r <= tiSheet.actualRowCount; r++) {
       const trow = tiSheet.getRow(r);
-      const orig = strCell(trow, 46);
       const thematic = strCell(trow, 6);
-      if (orig && thematic) thematicByOrig.set(orig.trim().toLowerCase(), thematic.trim());
+      if (!thematic || thematic.trim().toLowerCase() === "none") continue;
+      const orig = strCell(trow, 46);
+      const sub = strCell(trow, 5);
+      if (orig) thematicByOrig.set(orig.trim().toLowerCase(), thematic.trim());
+      if (sub) thematicBySub.set(sub.trim().toLowerCase(), thematic.trim());
     }
   }
 
@@ -208,8 +217,11 @@ async function extractBudget(filePath) {
     const row = sheet.getRow(r);
     if (!row.getCell(1).value && !row.getCell(2).value) continue;
     const origSub = strCell(row, 6);
+    const subInt = strCell(row, 5);
     const pkg =
-      (origSub && thematicByOrig.get(origSub.trim().toLowerCase())) || strCell(row, 2);
+      (origSub && thematicByOrig.get(origSub.trim().toLowerCase())) ||
+      (subInt && thematicBySub.get(subInt.trim().toLowerCase())) ||
+      strCell(row, 2);
     const sumImpact = (a, b) => {
       const t = (numCell(row, a) || 0) + (numCell(row, b) || 0);
       return t || null;
