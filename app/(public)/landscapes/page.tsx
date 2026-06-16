@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Mail } from "lucide-react";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
@@ -115,6 +116,18 @@ export default async function LandscapesPage() {
             Each landscape&apos;s Investment Plan, illustrated. Open one to explore its profile, the
             investment, and the work on the ground.
           </p>
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="font-sans text-[14px] text-ink-soft">
+              For the detailed report, get in touch:
+            </span>
+            <a
+              href="mailto:programmes@agroecologyindia.org?subject=Request%3A%20detailed%20Landscape%20Investment%20Plan"
+              className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.14em] font-semibold text-paper bg-deep-teal hover:bg-teal rounded-full px-4 py-2 no-underline transition-colors"
+            >
+              <Mail size={13} strokeWidth={1.9} aria-hidden />
+              Email the team
+            </a>
+          </div>
         </div>
 
         {/* Cover wall — each landscape's illustrated Investment Plan cover, linking
