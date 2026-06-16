@@ -301,3 +301,53 @@ export async function searchLandscapeChunks(
     score: number;
   }>(r);
 }
+
+export type ClimateSummary = {
+  /** Modelled 7-year climate value, in INR, by primary track. */
+  totalInr: number;
+  mitigationInr: number;
+  adaptationInr: number;
+  resilienceInr: number;
+  /** Carbon (mitigation) specifics for the carbon-investor callout. */
+  carbonTco2e7yr: number;
+  carbonValueInr: number;
+  carbonValueUsd: number;
+  modelVersion: string | null;
+};
+
+/**
+ * Per-landscape climate valuation (C-GEM). Aggregates the per-intervention
+ * PRIMARY-track values (no double-counting) into the three tracks, and reads the
+ * carbon tonnage/$ from the meta row. Returns null if the landscape has no
+ * climate valuation loaded yet, so the page can hide the section.
+ */
+export async function climateSummary(slug: string): Promise<ClimateSummary | null> {
+  const byTrackR = await db.execute(
+    sql`SELECT primacy, coalesce(SUM(primary_value_7yr_inr), 0) AS v
+        FROM "cat".landscape_climate_lines WHERE landscape_slug = ${slug}
+        GROUP BY primacy`
+  );
+  const tracks = rowsOf<{ primacy: string; v: string }>(byTrackR);
+  if (tracks.length === 0) return null;
+  const pick = (re: RegExp) =>
+    tracks.filter((t) => re.test(t.primacy || "")).reduce((s, t) => s + Number(t.v ?? 0), 0);
+  const mitigationInr = pick(/mitigation/i);
+  const adaptationInr = pick(/adaptation/i);
+  const resilienceInr = pick(/resilience/i);
+
+  const metaR = await db.execute(
+    sql`SELECT carbon_tco2e_7yr, carbon_value_7yr_inr, carbon_value_7yr_usd, model_version
+        FROM "cat".landscape_climate_meta WHERE landscape_slug = ${slug}`
+  );
+  const m = rowsOf<Record<string, string>>(metaR)[0] ?? {};
+  return {
+    totalInr: mitigationInr + adaptationInr + resilienceInr,
+    mitigationInr,
+    adaptationInr,
+    resilienceInr,
+    carbonTco2e7yr: Number(m.carbon_tco2e_7yr ?? 0),
+    carbonValueInr: Number(m.carbon_value_7yr_inr ?? 0),
+    carbonValueUsd: Number(m.carbon_value_7yr_usd ?? 0),
+    modelVersion: (m.model_version as string) ?? null,
+  };
+}
