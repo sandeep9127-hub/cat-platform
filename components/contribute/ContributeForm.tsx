@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { GeographyPicker } from "@/components/geo/GeographyPicker";
 
 type Theme = { slug: string; name: string; colourHex: string };
 type State = { code: string | null; name: string };
@@ -23,6 +24,8 @@ type FormState = {
   tagline: string;
   themeSlug: string;
   stateCode: string;
+  primaryGeographyId: string;
+  primaryGeographyLabel: string;
   scaleBand: string;
   startYear: string;
   context: string;
@@ -40,6 +43,8 @@ const initialState: FormState = {
   tagline: "",
   themeSlug: "",
   stateCode: "",
+  primaryGeographyId: "",
+  primaryGeographyLabel: "",
   scaleBand: "",
   startYear: "",
   context: "",
@@ -228,6 +233,39 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
                 ))}
               </select>
             </Field>
+          </div>
+          <div className="block mb-5">
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-soft font-semibold">
+              Primary district / location
+            </span>
+            <div className="mt-1.5">
+              <GeographyPicker
+                key={v.stateCode || "all"}
+                type="district"
+                state={v.stateCode || undefined}
+                placeholder={v.stateCode ? "Type a district name…" : "Choose a state first, or type a district…"}
+                defaultValue={
+                  v.primaryGeographyId
+                    ? {
+                        id: v.primaryGeographyId,
+                        name: v.primaryGeographyLabel,
+                        type: "district",
+                        path: [],
+                        label: v.primaryGeographyLabel,
+                        lgdCode: null,
+                        verified: true,
+                      }
+                    : null
+                }
+                onChange={(hit) => {
+                  update("primaryGeographyId", hit?.id ?? "");
+                  update("primaryGeographyLabel", hit ? hit.label : "");
+                }}
+              />
+            </div>
+            <span className="block font-serif italic text-[13px] text-muted mt-1.5 font-light">
+              Type to search — pick the exact district so it&apos;s tagged consistently (optional).
+            </span>
           </div>
           <Field label="Start year" required>
             <input

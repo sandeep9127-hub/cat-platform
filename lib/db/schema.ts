@@ -254,6 +254,10 @@ export const geographies = pgTable(
     latitude: doublePrecision("latitude"),
     longitude: doublePrecision("longitude"),
     displayOnMap: boolean("display_on_map").default(true).notNull(),
+    // Canonical-source provenance for the cascading geography picker.
+    lgdCode: varchar("lgd_code", { length: 24 }), // Local Government Directory code (stable, unique per level)
+    source: varchar("source", { length: 32 }), // e.g. "lgd", "census2011", "manual"
+    verified: boolean("verified").default(true).notNull(), // false = user-proposed, pending admin confirmation
   },
   (t) => ({
     parentIdx: index("geo_parent_idx").on(t.parentId),

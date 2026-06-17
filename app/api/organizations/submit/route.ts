@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
           district: str(l.district, 120),
           subdistrict: str(l.subdistrict, 120),
           block: str(l.block, 120),
+          // Canonical geography id from the picker — uniform tagging, no spelling drift.
+          geographyId: str(l.geographyId, 64),
           latitude: numOrNull(l.latitude),
           longitude: numOrNull(l.longitude),
         }))

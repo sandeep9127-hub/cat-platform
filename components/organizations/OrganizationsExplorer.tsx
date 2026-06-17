@@ -4,6 +4,25 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Globe, MapPin } from "lucide-react";
+import { GeographyPicker } from "@/components/geo/GeographyPicker";
+import type { GeoHit } from "@/lib/db/geo";
+
+/** Map a picked canonical place to the legacy state/district/block fields (+ id).
+ *  The hierarchy is fixed (state → district → block → village), so the hit's type
+ *  tells us what each ancestor in `path` (nearest-first) is. */
+function hitToLoc(hit: GeoHit): { state: string; district: string; block: string; geographyId: string } {
+  const p = hit.path;
+  let state = "", district = "", block = "";
+  switch (hit.type) {
+    case "state": state = hit.name; break;
+    case "district": district = hit.name; state = p[0] ?? ""; break;
+    case "block": block = hit.name; district = p[0] ?? ""; state = p[1] ?? ""; break;
+    case "landscape": block = hit.name; state = p[0] ?? ""; break;
+    case "village": block = p[0] ?? ""; district = p[1] ?? ""; state = p[2] ?? ""; break;
+    default: district = hit.name; state = p[0] ?? "";
+  }
+  return { state, district, block, geographyId: hit.id };
+}
 
 type Org = {
   id: string;
@@ -511,19 +530,17 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
     submitterNote: "",
   });
   // One organisation can work in many places — collect a list of locations.
-  type LocRow = { state: string; district: string; block: string };
+  type LocRow = { state: string; district: string; block: string; geographyId: string };
   const [locations, setLocations] = useState<LocRow[]>([
-    { state: "", district: "", block: "" },
+    { state: "", district: "", block: "", geographyId: "" },
   ]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
 
   const up = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
-  const upLoc = (i: number, k: keyof LocRow, v: string) =>
-    setLocations((rows) => rows.map((r, idx) => (idx === i ? { ...r, [k]: v } : r)));
   const addLoc = () =>
-    setLocations((rows) => [...rows, { state: "", district: "", block: "" }]);
+    setLocations((rows) => [...rows, { state: "", district: "", block: "", geographyId: "" }]);
   const removeLoc = (i: number) =>
     setLocations((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
 
@@ -537,8 +554,9 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
           state: l.state.trim(),
           district: l.district.trim(),
           block: l.block.trim(),
+          geographyId: l.geographyId || undefined,
         }))
-        .filter((l) => l.state || l.district || l.block);
+        .filter((l) => l.state || l.district || l.block || l.geographyId);
       const res = await fetch("/api/organizations/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -628,10 +646,37 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                 <span className="og-loc-hint">Add a row for each location</span>
               </div>
               {locations.map((loc, i) => (
-                <div key={i} className="og-loc-row">
-                  <input className="og-loc-in" placeholder="State" value={loc.state} onChange={(e) => upLoc(i, "state", e.target.value)} />
-                  <input className="og-loc-in" placeholder="District" value={loc.district} onChange={(e) => upLoc(i, "district", e.target.value)} />
-                  <input className="og-loc-in" placeholder="Block" value={loc.block} onChange={(e) => upLoc(i, "block", e.target.value)} />
+                <div key={i} className="og-loc-row" style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <GeographyPicker
+                      key={loc.geographyId || `row-${i}`}
+                      placeholder="Type a district or place — pick the exact one"
+                      defaultValue={
+                        loc.geographyId
+                          ? {
+                              id: loc.geographyId,
+                              name: loc.district || loc.block || loc.state,
+                              type: loc.block ? "block" : "district",
+                              path: [loc.state].filter(Boolean),
+                              label: [loc.district || loc.block, loc.state].filter(Boolean).join(" · "),
+                              lgdCode: null,
+                              verified: true,
+                            }
+                          : null
+                      }
+                      onChange={(hit) =>
+                        setLocations((rows) =>
+                          rows.map((r, idx) =>
+                            idx === i
+                              ? hit
+                                ? hitToLoc(hit)
+                                : { state: "", district: "", block: "", geographyId: "" }
+                              : r
+                          )
+                        )
+                      }
+                    />
+                  </div>
                   <button
                     type="button"
                     className="og-loc-del"
