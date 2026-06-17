@@ -38,9 +38,8 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
         {p.name} · <span className="text-teal">Climate value</span>
       </h1>
       <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
-        What the {p.name} plan is worth to the climate — valued across carbon, adaptation and
-        resilience on tiered evidence, from local programme data to IPCC methods. Modelled value,
-        not a cash return.
+        What seven years of the {p.name} plan is worth to the climate — and to the families who
+        farm it. These are modelled estimates: a sense of scale, not cash in hand.
       </p>
     </header>
   );
