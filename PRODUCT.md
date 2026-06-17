@@ -5,7 +5,30 @@
 **Register:** brand-primary, product-secondary.
 The public surface is brand register — design IS the product, an editorial publication. The admin surface is product register — design SERVES the editor's work. Both surfaces share one typographic system, one palette, one voice. They are not two products; they are the publication and its desk.
 
-**Last updated:** 14 May 2026 — extended from the original CLAUDE.md brief (13 May 2026) through `$impeccable shape` discovery.
+**Last updated:** 17 June 2026 (live-system sync). The structural plan below was authored 14 May 2026 through `$impeccable shape` discovery, on the foundation of the original CLAUDE.md brief (13 May 2026). This sync layers in what actually shipped.
+
+---
+
+## 0. Live system (June 2026 sync)
+
+The plan in §1 to §19 still describes the editorial publication accurately. Since the original write-up, the platform shipped and grew a second pillar. Read this section first, then the plan.
+
+**Live at:** `hub.agroecologyindia.org` (Cloudflare A-record; old `*.vercel.app` shows a "moved" page). Repo: `github.com/sandeep9127-hub/cat-platform`. Pre-launch the whole site sits behind a shared-password preview gate (`/preview`); the gate lifts at launch or via `PREVIEW_GATE=off`. Ship by `git push` to `main` (Vercel auto-deploys); never the `vercel` CLI.
+
+**Two pillars now, one publication:**
+
+1. **The editorial publication** (the original plan): curated Entries, Organisations, Themes, the AI ingestion loop, the admin desk, search, and the Ask/agent preview.
+2. **The Landscapes dashboard** (new): CAT's own field landscapes, each with an Investment Plan. Per landscape: a Profile, a Budget ("where the money goes"), Insights (reach), a Climate valuation, and a scoped Ask. See the new surfaces block in §7.
+
+**Stack reality (diverges from the §11 "locked" rows, noted with reasons):**
+
+- **Database is Neon Postgres, not Supabase.** Same Postgres + pgvector contract; chosen for the serverless driver and branch databases. Auth and storage are handled separately (NextAuth + Vercel Blob) rather than Supabase's bundled services.
+- **Embeddings are NVIDIA `nv-embedqa-e5-v5` (1024-dim), not Anthropic.** Retrieval-tuned and cost-effective for the RAG chunks behind landscape Ask and search.
+- **The organizations explorer map uses Leaflet + markercluster (from unpkg), not the custom SVG.** The §11 "no Leaflet" rule still holds for the editorial atlas; the org explorer needed clustering over hundreds of work locations, so it carries a real tile map. Raise before extending Leaflet to other surfaces.
+- **A live currency system** (INR / USD / EUR, live ECB rates via `/api/rates`) drives every money figure on landscape pages.
+- **A canonical geography picker** backs location entry: type-ahead, typo-tolerant (pg_trgm) search over the full India tree (36 states, 693 districts, 6,940 blocks, 262,561 villages, LGD-coded). See §7 and DESIGN.md.
+
+**Contractor confidentiality (locked):** the climate valuation is produced with an external contractor's model. That contractor's name must never appear on any user-facing surface or in shipped output. Refer to it only as "the modelled climate valuation".
 
 ---
 
@@ -236,6 +259,25 @@ A platform-wide invariant: **AI authorship is never displayed as authorship.** A
 | `/agent` | **Public agent preview (v1 demo)** | Single-conversation demo of the conversational agent. Tool-use against the structured schema. Heavily rate-limited, clearly labelled "Preview". See §8. |
 | `/contribute` | Submission forms for Entry, Resource, News | Magic-link auth required. Multi-step form with autosave. |
 | `/about`, `/editorial-process`, `/style-guide` | Editorial transparency pages | Plain copy. The editorial-process page explains the AI loop publicly. |
+| `/principles`, `/funders` | The 13 agroecology principles; the funders pitch | Principles use the official PNG icons. |
+
+### Landscape surfaces (new pillar, live June 2026)
+
+CAT's own field landscapes, each backed by a Landscape Investment Plan (LIP). Eleven landscapes exist; three are published with full budget data (Patratu, Mau, Dharashiv), one carries a climate valuation (Patratu), the rest are profile-only and read "in preparation" on the data tabs.
+
+| Route | Purpose | Notes |
+|---|---|---|
+| `/landscapes` | The cover wall: all eleven landscapes as illustrated covers | Click through to a profile. |
+| `/landscape/[slug]` | Profile: hero, "at a glance" facts, context, challenges, transformational priorities, interventions | Tab bar: **Profile · Budget · Insights · Climate · Ask**. A currency toggle sits top-right and drives every figure below it. |
+| `/landscape/[slug]/budget` | "Where the money goes": total plan size, who-pays split, delivery packages | Figures from `landscape_budget_lines`; reconcile to the LIP. |
+| `/landscape/[slug]/insights` | Reach: households, hectares, intervention counts | |
+| `/landscape/[slug]/climate` | The modelled climate valuation | Headline value, investment-to-return ratio, three tracks (resilience / adaptation / carbon) counted once, a disclosed co-benefit pool kept out of the headline, all-tracks GHG with a creditable-vs-shadow marketability split, and three funder-lens views with evidence tiers T1/T2/T3. Modelled value, not a cash return. |
+| `/landscape/[slug]/library` | Source documents for the landscape | |
+| `/landscape/[slug]/ask` | Per-landscape Ask | Redirects to `/agent?scope=[slug]`; RAG over the LIP narrative chunks. |
+
+**Climate valuation method (locked framing):** every intervention is assigned the single climate track it primarily serves, so the headline never double-counts. Value it generates in its other tracks is disclosed as a co-benefit pool, explicitly excluded from the headline. Carbon is priced at benchmark rates; tonnage shown is the full all-tracks footprint, of which only the registry-pathway slice is creditable today. Every figure carries an evidence grade. The contractor behind the model is never named (see §0).
+
+**Geography (locked):** locations are chosen from the canonical tree via the type-ahead picker, never free-typed. Stored as a geography id (FK), which is what keeps tagging uniform and kills spelling, wrong-village, and mis-tag errors. Authoritative source is the LGD (Local Government Directory) hierarchy with stable codes.
 
 ### Admin surfaces (`/admin/*`, magic-link + `editor` role required)
 
@@ -470,15 +512,15 @@ Standard 28 + 8 UTs. ISO-style 2-letter codes (JH, OD, MH, UP, etc.). North-east
 | Language | **TypeScript, strict** | Schema-heavy product |
 | Styling | **Tailwind v3** + custom CSS variables | Brand tokens as variables |
 | Components | Hand-built; **shadcn/ui** only for form primitives + a11y wrappers | Editorial, not SaaS-default |
-| Database | **Postgres via Supabase** | Managed Postgres + Storage + Auth in one provider; cost-effective |
+| Database | ~~Postgres via Supabase~~ → **Neon Postgres** (June 2026) | Same Postgres + pgvector contract; chosen for the serverless driver and branch databases. Auth via NextAuth, storage via Vercel Blob. |
 | ORM | **Drizzle** | Type-safe, schema-as-code |
 | Auth | **Auth.js, magic-link via Resend** | No passwords. Standard. Role flag on user. |
 | Search (lexical) | **Postgres full-text** | No Elasticsearch, no Algolia |
-| Search (semantic) | **pgvector** + Anthropic embeddings | Powers `/search` synthesis paragraph and `/agent` retrieval |
+| Search (semantic) | **pgvector** + ~~Anthropic~~ **NVIDIA `nv-embedqa-e5-v5`** embeddings (1024-dim, June 2026) | Powers `/search` synthesis, `/agent` retrieval, and the per-landscape Ask over LIP chunks. Also enables `pg_trgm` fuzzy geography search. |
 | AI layer | **Anthropic Claude API via Vercel AI SDK** | Discovery agent, draft writer, freshness diff summaries, public agent preview |
 | Web search (discovery agent) | **Anthropic web search tool** | Allowlisted domains. Locked. |
 | PDF ingestion | **Claude file-upload at draft time** | Cost-effective; revisit a separate parser only if citation accuracy proves insufficient on the first 25 entries |
-| Map | **Custom SVG built from real Datameet/OCHA GeoJSON** → Mapshaper 5% → d3-geo Mercator → SVGOMG. Plus overlay GeoJSON for CAT landscapes and river basins. **No Leaflet, no Mapbox.** |
+| Map | Editorial atlas: **custom SVG** from Datameet/OCHA GeoJSON → Mapshaper 5% → d3-geo Mercator → SVGOMG, plus overlay GeoJSON for landscapes and river basins. **Organizations explorer (June 2026): Leaflet + markercluster** (from unpkg) for clustering hundreds of work-location markers. The "no Leaflet" rule still holds for the editorial atlas; raise before extending Leaflet elsewhere. |
 | Hosting | **Vercel** (frontend + cron + edge functions) | Single platform; cron for ingestion |
 | Image storage | **Supabase Storage** | Consolidated with DB provider; cheaper than R2 + DB elsewhere |
 | Email | **Resend** | Magic-link, submission acknowledgements, revision notifications |
@@ -587,6 +629,16 @@ Strict order. Each phase depends on the previous being clean.
 - Federated identity for contributors.
 - Programme-of-programmes nesting if needed.
 
+### Phase 9: Landscapes pillar, climate, geography (shipped, June 2026)
+
+Realised after the editorial launch. The numbering follows §8 because it post-dates it; the work is live, not deferred.
+
+- **Landscapes pillar:** the cover wall and per-landscape Profile / Budget / Insights / Climate / Ask, fed by the Landscape Investment Plans. Budget + RAG ingested from the LIP workbook and narrative via `scripts/ingest-landscape.mjs` (handles both the legacy "5.2" and the newer "Landscape Clean" workbook layouts). Three landscapes published (Patratu, Mau, Dharashiv).
+- **Currency system:** INR / USD / EUR with live ECB rates (`/api/rates`), one control top-right of each landscape page driving every figure, persisted across tabs.
+- **Climate valuation:** the modelled three-track valuation with the investment-to-return ratio, interactive track focus, co-benefit disclosure, carbon marketability split, and funder-lens accordion. Ingested by `scripts/ingest-climate.mjs`; aggregates read from the workbook's cached headline block. Contractor name never surfaced.
+- **Canonical geography:** `cat.geographies` extended with `lgd_code` / `source` / `verified` and a `pg_trgm` trigram index; the full India tree loaded (36 states, 693 districts, 6,940 blocks, 262,561 villages) via `scripts/geo-import-full.mjs`; `/api/geo/search` (fuzzy, full-path) and `/api/geo/children` (cascade); the `GeographyPicker` type-ahead component, piloted on the organization-submission location editor.
+- **QA:** a manual testing script for the team lives at `TESTING.md`.
+
 ---
 
 ## 15. Cost and operational notes
@@ -625,7 +677,8 @@ Match-and-refuse. If a screen could be guessed from the category alone, it has f
 | File | Purpose |
 |---|---|
 | `PRODUCT.md` | This file. Hand to `$impeccable craft` and to any contributor onboarding. |
-| `DESIGN.md` | *(To be written next: tokens, typography scale, motion rules, component inventory.)* |
+| `DESIGN.md` | The design system: tokens, typography, motion, bans, and the component inventory (landscape, climate, geography, currency). |
+| `TESTING.md` | Manual QA script for the team, plus the latest automated smoke-test results. |
 | `/mockup/cat_platform_mockup.html` | Original visual reference (carry forward as input). |
 | `/cat-landing.html` | Static landing prototype produced in `$impeccable` session 2026-05-13. Carries forward as the public-surface visual baseline. |
 | `/docs/CAT_Dashboard_PRD_v1.docx` | Original PRD: background context, audience reasoning, agreed principles. |
@@ -645,4 +698,4 @@ If the schema is missing something the product needs, raise it before adding fie
 
 ---
 
-*Last updated: 14 May 2026. Authored by Sandeep Nayak through `$impeccable shape` (Round 1–3 discovery) on the foundation of the original CLAUDE.md (13 May 2026).*
+*Plan authored 14 May 2026 by Sandeep Nayak through `$impeccable shape` (Round 1 to 3 discovery) on the foundation of the original CLAUDE.md (13 May 2026). Live-system sync 17 June 2026 (§0, Landscape surfaces in §7, stack notes in §11, Phase 9 in §14).*
