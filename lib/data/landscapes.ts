@@ -245,7 +245,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Poor transport access and headloading raise drudgery and costs, limiting market engagement.",
       "Stunting, anaemia, and 25-30% BPL reflect persistent livelihood and nutrition vulnerabilities.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/khatarshnong-laitkroh/01.jpg",

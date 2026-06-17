@@ -139,7 +139,13 @@ const numCell = (row, c) => {
   const v = row.getCell(c).value;
   if (v == null) return null;
   if (typeof v === "number") return v;
-  if (v && typeof v === "object" && "result" in v) return Number(v.result);
+  // Formula cell: use the cached result. Uncached formulas (no stored result)
+  // must read as null, never NaN — otherwise they poison sums and defeat the
+  // "is there a line split?" check below.
+  if (v && typeof v === "object" && "result" in v) {
+    const r = Number(v.result);
+    return Number.isFinite(r) ? r : null;
+  }
   const n = Number(String(v).replace(/[,\s₹]/g, ""));
   return isFinite(n) ? n : null;
 };
@@ -334,11 +340,19 @@ async function extractBudget(filePath) {
     return cleanRows;
   }
 
-  // --- Legacy "5.2" layout (unchanged) -----------------------------------
+  // --- Legacy "5.2" layout -----------------------------------------------
+  // Data starts the row after the "Cat No." column-header row (workbooks vary:
+  // some have a note/title row above it). Detect it instead of hard-coding 5.
+  let dataStart = 5;
+  for (let r = 1; r <= Math.min(sheet.actualRowCount, 8); r++) {
+    if (/^cat\s*no/i.test(strCell(sheet.getRow(r), 1) || "")) { dataStart = r + 1; break; }
+  }
   const rows = [];
-  for (let r = 5; r <= sheet.actualRowCount; r++) {
+  for (let r = dataStart; r <= sheet.actualRowCount; r++) {
     const row = sheet.getRow(r);
     if (!row.getCell(1).value && !row.getCell(2).value) continue;
+    // skip a trailing "Grand Total" summary row if present
+    if (/grand total|^total$/i.test(strCell(row, 2) || "") && !strCell(row, 5)) continue;
     const origSub = strCell(row, 6);
     const subInt = strCell(row, 5);
     const pkg =
@@ -350,19 +364,25 @@ async function extractBudget(filePath) {
       return t || null;
     };
     const investment = numCell(row, 45) ?? numCell(row, 19) ?? 0;
-    // Prefer explicit line-level instrument columns; otherwise split the
-    // investment_required across instruments using the thematic mix.
-    let grants = numCell(row, 46) ?? numCell(row, 20);
-    let returnable = numCell(row, 47) ?? numCell(row, 21);
-    let outcome = numCell(row, 48) ?? numCell(row, 22);
-    let debt = numCell(row, 49) ?? numCell(row, 23);
-    const haveLineSplit = [grants, returnable, outcome, debt].some((x) => x != null && x !== 0);
-    if (!haveLineSplit && investment > 0) {
-      const frac = mixByThematic.get(String(pkg).trim().toLowerCase()) || { grant: 1, rg: 0, debt: 0, obf: 0 };
+    // The catalytic split is authoritative at the THEMATIC level (Instrument Mix
+    // sheet). Prefer it whenever the line's package resolves to a mix. The
+    // per-line grant/RG/debt columns are often uncached formulas (read as null)
+    // or carry a single artifact value, so we only fall back to them when no
+    // thematic mix exists, and to 100% grant if neither is available.
+    const frac = mixByThematic.get(String(pkg).trim().toLowerCase());
+    let grants, returnable, outcome, debt;
+    if (frac && investment > 0) {
       grants = Math.round(investment * frac.grant) || null;
       returnable = Math.round(investment * frac.rg) || null;
       debt = Math.round(investment * frac.debt) || null;
       outcome = Math.round(investment * frac.obf) || null;
+    } else {
+      grants = numCell(row, 46) ?? numCell(row, 20);
+      returnable = numCell(row, 47) ?? numCell(row, 21);
+      outcome = numCell(row, 48) ?? numCell(row, 22);
+      debt = numCell(row, 49) ?? numCell(row, 23);
+      const haveLineSplit = [grants, returnable, outcome, debt].some((x) => x != null && x !== 0);
+      if (!haveLineSplit && investment > 0) grants = investment; // no split anywhere → treat as grant
     }
     rows.push({
       cat_no: strCell(row, 1),
