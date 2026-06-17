@@ -165,12 +165,16 @@ async function extractBudget(filePath) {
   // The latest export renames the line-item sheet to "Landscape Clean" and shifts
   // its columns (7-year totals at c34-c37, tags at c40-c45, package label in c6) —
   // handled by the header-resolved branch below.
+  // Some workbooks ship only a cached "Thematic Investment" sheet in the same
+  // header-resolved layout (package label in c6, 7-yr totals in the "P1+P2"
+  // columns), with the "5.2"/"How to fill" sheet left uncached. Accept it last.
   const sheet =
     wb.getWorksheet("5.2") ||
     wb.getWorksheet("5.2 Package Distribution") ||
-    wb.getWorksheet("Landscape Clean");
+    wb.getWorksheet("Landscape Clean") ||
+    wb.getWorksheet("Thematic Investment");
   if (!sheet)
-    throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' / 'Landscape Clean' not found");
+    throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' / 'Landscape Clean' / 'Thematic Investment' not found");
 
   // Map each Original Sub-Intervention -> its thematic delivery package (the
   // grouping shown as "delivery packages by share of plan"). In the 5.2 sheet
@@ -253,18 +257,20 @@ async function extractBudget(filePath) {
       recDesc: findCol(/^description recurring/),
       years: findCol(/^no of years/),
       perUnit: findCol(/^total per unit cost/),
-      units: findCol(/^no of units-p1/),
+      // The "P1"/"P2" suffix is sometimes hyphenated ("Govt-P1+P2") and
+      // sometimes spaced ("Govt P1+P2"); [\s-]? matches either.
+      units: findCol(/^no of units[\s-]?p1/),
       total: projTotalCol,
-      govt: findCol(/^total govt-p1\+p2/),
-      community: findCol(/^total community-p1\+p2/),
-      invest: findCol(/^total investment required-p1\+p2/),
-      govtScheme: findCol(/^govt scheme description -?p1/),
-      hhP1: findCol(/^impact no household-p1/),
-      hhP2: findCol(/^impact no household-p2/),
-      haP1: findCol(/^impact no hectares-p1/),
-      haP2: findCol(/^impact no hectares-p2/),
-      anP1: findCol(/^impact no animals-p1/),
-      anP2: findCol(/^impact no animals-p2/),
+      govt: findCol(/^total govt[\s-]?p1\+p2/),
+      community: findCol(/^total community[\s-]?p1\+p2/),
+      invest: findCol(/^total investment required[\s-]?p1\+p2/),
+      govtScheme: findCol(/^govt scheme description[\s-]?p1/),
+      hhP1: findCol(/^impact no household[\s-]?p1/),
+      hhP2: findCol(/^impact no household[\s-]?p2/),
+      haP1: findCol(/^impact no hectares[\s-]?p1/),
+      haP2: findCol(/^impact no hectares[\s-]?p2/),
+      anP1: findCol(/^impact no animals[\s-]?p1/),
+      anP2: findCol(/^impact no animals[\s-]?p2/),
       climate: findCol(/^climate$/),
       equity: findCol(/^equity$/),
       gender: findCol(/^gender$/),
