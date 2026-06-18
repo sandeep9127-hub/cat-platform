@@ -242,10 +242,12 @@ export default async function MapPage({
         />
       </div>
 
-      {/* Results list (left) + a bigger India map pinned on the right. Five rows
-          per page keeps the list height close to the map's, so they line up. */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,42fr)_minmax(0,58fr)] gap-8 lg:gap-12 items-start">
-        <div className="min-w-0">
+      {/* A bigger India map pinned on the left + the results list on the right.
+          Five rows per page keeps the list height close to the map's. Explicit
+          column placement keeps the map left on desktop while the list stays
+          first in source order (so it's results-first when stacked on mobile). */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,58fr)_minmax(0,42fr)] gap-8 lg:gap-12 items-start">
+        <div className="min-w-0 lg:col-start-2 lg:row-start-1">
           <AtlasSection
             layout="list"
             mapEntries={mapEntries}
@@ -254,7 +256,7 @@ export default async function MapPage({
             pageSize={5}
           />
         </div>
-        <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-24 lg:self-start">
           <IndiaMap
             entries={mapEntries}
             totalProgrammes={mapEntries.length}
