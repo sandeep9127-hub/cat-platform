@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
+import { HeroBrandMorph } from "@/components/home/HeroBrandMorph";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { ApproachFilm } from "@/components/home/ApproachFilm";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -107,7 +108,12 @@ export default async function LandingPage() {
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
+        {/* Brand band — the large "Transformation Hub" lockup that scroll-morphs
+            up into the floating header (landing page only; reduced-motion safe). */}
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-12 lg:pt-14">
+          <HeroBrandMorph />
+        </div>
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-2 sm:pt-4 lg:pt-6 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             {hasLastUpdate && (

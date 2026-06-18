@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Layers,
@@ -26,6 +27,8 @@ const NAV_LINKS = [
 export function BrandBar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
     function onScroll() {
@@ -35,6 +38,20 @@ export function BrandBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onMq = () => setReduce(mq.matches);
+    onMq();
+    mq.addEventListener("change", onMq);
+    return () => mq.removeEventListener("change", onMq);
+  }, []);
+
+  // On the landing page the hero brand-morph owns the logo until it docks into
+  // this slot, so we start the header's own lockup hidden (it's the morph's
+  // measured target, revealed imperatively as the clone lands). Off for reduced
+  // motion and on every other page, where the logo just shows normally.
+  const morphTarget = pathname === "/" && !reduce;
 
   return (
     <header className="sticky top-0 z-50 px-3 sm:px-4 lg:px-6 pt-2.5 sm:pt-3 pointer-events-none">
@@ -60,7 +77,13 @@ export function BrandBar() {
             scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"
           }`}
         >
-        <Link href="/" className="flex items-center gap-3 no-underline text-ink group shrink-0">
+        <Link
+          href="/"
+          data-brand-dest
+          className={`flex items-center gap-3 no-underline text-ink group shrink-0 ${
+            morphTarget ? "opacity-0 pointer-events-none" : ""
+          }`}
+        >
           {/* The logo is rendered ONCE at 36px and CSS-scaled when the
               bar shrinks on scroll. Changing the SVG's size attribute
               forced a full re-render mid-scroll, and at ~28px the
