@@ -523,8 +523,15 @@ async function main() {
 
   // 1. Clear previous ingestion for this landscape (idempotent)
   await pool.query(`DELETE FROM "cat".landscape_budget_lines WHERE landscape_slug = $1`, [SLUG]);
-  await pool.query(`DELETE FROM "cat".landscape_documents WHERE landscape_slug = $1`, [SLUG]);
-  console.log("  cleared previous rows");
+  // Only clear the doc types this script re-creates (lip + budget). Other doc
+  // types for the same landscape (e.g. climate C-GEM valuation, uploaded
+  // separately) are left intact so a re-publish doesn't destroy them. Chunks
+  // cascade on document delete, so lip/budget chunks are cleared with their docs.
+  await pool.query(
+    `DELETE FROM "cat".landscape_documents WHERE landscape_slug = $1 AND type IN ('lip','budget')`,
+    [SLUG]
+  );
+  console.log("  cleared previous lip+budget rows (climate/other docs preserved)");
 
   // 2. Insert documents
   const { rows: docRows } = await pool.query(
