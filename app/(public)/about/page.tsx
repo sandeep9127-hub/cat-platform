@@ -175,23 +175,6 @@ export default function AboutPage() {
             </div>
 
             <aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
-              <div className="callout callout-amber">
-                <span className="eyebrow block mb-3">Endorsement tiers</span>
-                <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[13.5px] text-ink-soft leading-[1.55]">
-                  <li>
-                    <strong className="text-amber-deep font-semibold">CAT Authored</strong>
-                    <br />AI-drafted from public sources, then researched and edited by CAT. CAT vouches for the prose.
-                  </li>
-                  <li>
-                    <strong className="text-teal font-semibold">CAT Endorsed</strong>
-                    <br />Submitted by the lead organisation. Reviewed and endorsed by CAT.
-                  </li>
-                  <li>
-                    <strong className="text-muted font-semibold">CAT Listed</strong>
-                    <br />Listed because the programme exists. CAT does not vouch for the description.
-                  </li>
-                </ul>
-              </div>
               <div className="callout callout-teal">
                 <span className="eyebrow block mb-3">Where AI stops</span>
                 <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[13.5px] text-ink-soft leading-[1.55]">
