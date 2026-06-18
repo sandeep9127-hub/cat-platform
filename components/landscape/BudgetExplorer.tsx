@@ -728,7 +728,7 @@ function YearRamp({
           const color = yr <= r1[1] ? "#2E7573" : "#929CC5";
           const h = (v / max) * 100;
           return (
-            <div key={yr} className="flex-1 flex flex-col items-center justify-end gap-1.5 group">
+            <div key={yr} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group">
               <span className="font-mono text-[8.5px] tabular-nums text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                 {inr(v)}
               </span>
