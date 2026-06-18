@@ -72,8 +72,6 @@ export function Footer() {
           Icon={Info}
           links={[
             { href: "/about", label: "About CAT" },
-            { href: "/editors", label: "Editors" },
-            { href: "/funders", label: "Funders" },
             { href: "/contact", label: "Contact" },
           ]}
           external={[
