@@ -53,6 +53,35 @@ type Props = {
 
 type StateFeature = GeoJSON.Feature<GeoJSON.Geometry, { st_code?: string; ST_NM?: string; STNAME?: string; NAME_1?: string }>;
 
+// Each category lights the map in a colour drawn from the official CAT palette
+// (teals + periwinkles, with the three warm accents for a few) — never the
+// off-brand rainbow. Keeps the phased hero reveal within brand.
+const THEME_PALETTE: Record<string, string> = {
+  // Cool family only (teals + periwinkles) — the calm core of the CAT palette.
+  // The prominent themes get the distinct mid-tones; smaller themes reuse the
+  // lighter swatches (phases never overlap, so reuse is invisible). The warm
+  // accents (rose/coral/amber) are kept for small UI, not large map fills.
+  "agri-horti-agroforestry": "#2E7573", // teal (primary)
+  "technical-assistance": "#5E6990", // deep periwinkle
+  market: "#929CC5", // periwinkle
+  biodiversity: "#334B4A", // deep teal
+  nrm: "#95B1AF", // sage teal
+  nutrition: "#AFBADC", // soft periwinkle
+  livestock: "#B8CCCA", // pale teal
+  "forestry-ntfp": "#C0CCE9", // pale periwinkle
+  fisheries: "#95B1AF", // sage (reused; single-state)
+  energy: "#AFBADC", // soft periwinkle (reused; single-state)
+};
+
+/** #RRGGBB → rgba() at the given alpha, for translucent state fills. */
+function hexRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className, bare = false, phased = false }: Props) {
   const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
@@ -117,7 +146,12 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
     const counts = new Map<string, number>();
     for (const e of entries) for (const t of e.themes ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
     return CATEGORIES.filter((c) => (counts.get(c.slug) ?? 0) > 0)
-      .map((c) => ({ slug: c.slug, short: c.short, colourHex: c.colourHex, count: counts.get(c.slug) ?? 0 }))
+      .map((c) => ({
+        slug: c.slug,
+        short: c.short,
+        color: THEME_PALETTE[c.slug] ?? "#2E7573",
+        count: counts.get(c.slug) ?? 0,
+      }))
       .sort((a, b) => b.count - a.count);
   }, [entries]);
 
@@ -279,7 +313,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
           >
             <span
               className="w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ background: activeTheme.colourHex, boxShadow: `0 0 0 3px ${activeTheme.colourHex}33` }}
+              style={{ background: activeTheme.color, boxShadow: `0 0 0 3px ${activeTheme.color}33` }}
             />
             <span className="font-sans text-[13px] sm:text-[13.5px] font-medium text-ink leading-none whitespace-nowrap">
               {activeTheme.short}
@@ -295,7 +329,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                 className="h-[3px] rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: i === phaseIdx ? 16 : 7,
-                  background: i === phaseIdx ? activeTheme.colourHex : "rgba(26,38,37,0.16)",
+                  background: i === phaseIdx ? activeTheme.color : "rgba(26,38,37,0.16)",
                 }}
               />
             ))}
@@ -336,13 +370,21 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
           </text>
         ) : (
           <g className="map-country">
-            {paths.map((p) => (
+            {paths.map((p) => {
+              const hoverActive = !!activeState && activeState === p.code;
+              const themeLit = !activeState && !!themeStates?.has(p.code) && !!activeTheme;
+              return (
               <path
                 key={p.code + p.name}
                 d={p.d}
-                className={`map-state ${
-                  (activeState ? activeState === p.code : themeStates?.has(p.code)) ? "active" : ""
-                }`}
+                // Hover/lock → teal .active (CSS). Theme tour → the category's
+                // palette colour, applied inline so it overrides the CSS.
+                className={`map-state ${hoverActive ? "active" : ""}`}
+                style={
+                  themeLit && activeTheme
+                    ? { fill: hexRgba(activeTheme.color, 0.42), stroke: activeTheme.color, strokeWidth: 1 }
+                    : undefined
+                }
                 data-code={p.code}
                 onMouseEnter={() => handleStateEnter(p.code)}
                 onMouseLeave={handleStateLeave}
@@ -350,7 +392,8 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               >
                 <title>{p.name}</title>
               </path>
-            ))}
+              );
+            })}
           </g>
         )}
 

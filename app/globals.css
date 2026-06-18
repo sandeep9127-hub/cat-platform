@@ -295,10 +295,10 @@ body::before {
   stroke-width: 0.8;
 }
 .map-state.active {
-  fill: rgba(248, 202, 124, 0.48);
-  stroke: var(--amber-deep);
+  fill: rgba(46, 117, 115, 0.30);
+  stroke: var(--teal);
   stroke-width: 1.1;
-  filter: drop-shadow(0 4px 10px rgba(198, 140, 46, 0.30));
+  filter: drop-shadow(0 4px 10px rgba(46, 117, 115, 0.24));
 }
 /* Lift the whole country group with a soft drop-shadow (card map only) */
 .map-country {
