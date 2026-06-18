@@ -35,15 +35,17 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
   const wrapperClass =
     "block group border-b border-line transition-colors hover:bg-[#e1ede8]/45 focus-visible:bg-[#e1ede8]/45 focus-visible:outline-none";
   const body = (
-    <article className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 py-6 items-start">
-        <div className="font-mono text-[10.5px] sm:text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
-          <span className="hidden sm:inline">No.</span>
-          <span className="text-amber-deep font-semibold">
-            {String(data.index).padStart(2, "0")}<span className="text-muted font-normal"> / {data.total}</span>
+    <article className="grid grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[80px_minmax(0,1fr)_auto] gap-x-5 sm:gap-x-7 py-7 sm:py-8 items-start">
+        {/* Index — "No." sits on the eyebrow line, the numeral aligns to the title */}
+        <div className="font-mono tracking-mono-mid text-muted flex flex-col gap-[5px] pt-[3px]">
+          <span className="hidden sm:inline text-[9px]">No.</span>
+          <span className="text-amber-deep font-semibold text-[11px] tabular-nums leading-none">
+            {String(data.index).padStart(2, "0")}
+            <span className="text-muted/70 font-normal"> / {data.total}</span>
           </span>
         </div>
         <div className="min-w-0">
-          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center mb-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
             <span>State</span>
             <span className="text-line">/</span>
             <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
@@ -52,13 +54,13 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
             <span className="text-line">·</span>
             <span className="font-normal tracking-mono-mid">{yearRange}</span>
           </div>
-          <h3 className="font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.14] tracking-[-0.025em] text-ink mb-2 group-hover:text-teal transition-colors">
+          <h3 className="font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.14] tracking-[-0.025em] text-ink mt-2.5 group-hover:text-teal transition-colors">
             {data.title}
           </h3>
-          <p className="text-[14.5px] text-ink-soft leading-[1.5] max-w-[58ch] tracking-[-0.01em]">
+          <p className="text-[14.5px] text-ink-soft leading-[1.55] max-w-[60ch] tracking-[-0.01em] mt-2">
             {data.tagline}
           </p>
-          <div className="flex gap-2 sm:gap-3.5 mt-3.5 items-center flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
+          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
             {data.themes.slice(0, 2).map((t) => {
               const Icon = categoryIconFor(t.slug);
               return (
@@ -68,11 +70,12 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
                 </span>
               );
             })}
-            <span>· {humaniseScale(data.scaleBand)}</span>
+            <span className="text-muted/80">{humaniseScale(data.scaleBand)}</span>
           </div>
         </div>
-        {/* Category icon(s), in the category colour — flush right. */}
-        <div className="hidden sm:flex flex-col gap-2 items-end pt-1.5">
+        {/* Category icon(s), in the category colour. Top icon aligns with the
+            eyebrow; the hover arrow pins to the bottom of the row. */}
+        <div className="hidden sm:flex flex-col gap-2.5 items-end self-stretch pt-[2px]">
           {data.themes.slice(0, 3).map((t) => {
             const Icon = categoryIconFor(t.slug);
             return <Icon key={t.slug} size={18} strokeWidth={1.7} style={{ color: t.colourHex }} aria-label={t.name} />;
