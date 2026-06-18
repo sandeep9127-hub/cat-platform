@@ -66,11 +66,10 @@ const ACCENTS = {
 };
 
 export function BudgetExplorer({
+  summary,
   lines,
 }: {
-  // `summary` is still accepted from the server page but the breakdowns are now
-  // computed client-side from `lines` so they respond to filters.
-  summary?: BudgetSummary;
+  summary: BudgetSummary;
   lines: BudgetLine[];
 }) {
   const { currency } = useCurrency();
@@ -122,53 +121,6 @@ export function BudgetExplorer({
     }
     return o;
   }, [filtered]);
-
-  // ── Phasing ──────────────────────────────────────────────────────────────
-  const phase1Label = lines.find((l) => l.phase1Label)?.phase1Label ?? "Phase 1";
-  const phase2Label = lines.find((l) => l.phase2Label)?.phase2Label ?? "Phase 2";
-  const phase = useMemo(() => {
-    const o = { p1: 0, p2: 0, p1g: 0, p1c: 0, p1i: 0, p2g: 0, p2c: 0, p2i: 0 };
-    for (const l of filtered) {
-      o.p1 += Number(l.phase1TotalCostInr ?? 0);
-      o.p2 += Number(l.phase2TotalCostInr ?? 0);
-      o.p1g += Number(l.phase1GovtInr ?? 0);
-      o.p1c += Number(l.phase1CommunityInr ?? 0);
-      o.p1i += Number(l.phase1InvestmentRequiredInr ?? 0);
-      o.p2g += Number(l.phase2GovtInr ?? 0);
-      o.p2c += Number(l.phase2CommunityInr ?? 0);
-      o.p2i += Number(l.phase2InvestmentRequiredInr ?? 0);
-    }
-    return o;
-  }, [filtered]);
-  const hasPhase = phase.p1 > 0 || phase.p2 > 0;
-  const yearOf = (label: string): [number, number] => {
-    const m = label.match(/yr ?(\d+)\s*[-–]\s*(\d+)/i);
-    if (m) return [Number(m[1]), Number(m[2])];
-    const y = label.match(/(\d+)\s*year/i);
-    return [1, y ? Number(y[1]) : 3];
-  };
-  const range1 = yearOf(phase1Label);
-  const r2raw = yearOf(phase2Label);
-  const range2: [number, number] = r2raw[0] <= range1[1] ? [range1[1] + 1, 7] : r2raw;
-  // Modelled annual cashflow: spread each phase total across its years, with the
-  // phase's first year front-loaded (capital). Clearly indicative — the 5.2 only
-  // gives phase-level figures.
-  const ramp = useMemo(() => {
-    const yr = new Array(8).fill(0);
-    const spread = (amt: number, [s, e]: [number, number]) => {
-      const n = e - s + 1;
-      if (n <= 0 || amt <= 0) return;
-      const w: number[] = [];
-      for (let i = 0; i < n; i++) w.push(i === 0 ? 1.5 : 1);
-      const W = w.reduce((a, b) => a + b, 0);
-      w.forEach((wi, i) => {
-        if (s + i <= 7) yr[s + i] += (amt * wi) / W;
-      });
-    };
-    spread(phase.p1, range1);
-    spread(phase.p2, range2);
-    return yr.slice(1, 8);
-  }, [phase, range1, range2]);
 
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24">
@@ -255,23 +207,6 @@ export function BudgetExplorer({
         />
       </section>
 
-      {/* Phasing & cashflow */}
-      {hasPhase && (
-        <>
-          <div className="mt-12 mb-4">
-            <SectionOpener number="04" label="Phasing & cashflow" />
-          </div>
-          <PhaseBlock phase={phase} l1={phase1Label} l2={phase2Label} inr={inr} />
-          <YearRamp ramp={ramp} r1={range1} r2={range2} inr={inr} />
-        </>
-      )}
-
-      {/* Where the money goes — money by objective, toggleable */}
-      <div className="mt-12 mb-4">
-        <SectionOpener number={hasPhase ? "05" : "04"} label="Where the money goes" />
-      </div>
-      <ObjectiveBreakdown filtered={filtered} total={t.total} inr={inr} />
-
       {/* Filters */}
       <section className="mt-14 flex flex-wrap gap-3 items-end">
         <span className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
@@ -296,6 +231,38 @@ export function BudgetExplorer({
           {filtered.length} of {lines.length} lines
         </span>
       </section>
+
+      {/* Category and package breakdowns */}
+      {!cat && !pkg && (
+        <section className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <BreakdownCard
+            title="By category"
+            rows={summary.byCategory.map((c) => ({
+              label: c.category,
+              total: c.total,
+              investment: c.investment,
+            }))}
+            grandTotal={summary.totalCostInr}
+            accent={ACCENTS.teal}
+          />
+          <BreakdownCard
+            title="By package"
+            rows={summary.byPackage.map((p) => ({
+              label: p.package,
+              total: p.total,
+              investment: p.investment,
+            }))}
+            grandTotal={summary.totalCostInr}
+            accent={ACCENTS.amber}
+          />
+        </section>
+      )}
+      {!cat && !pkg && (
+        <p className="mt-3 font-sans text-[12px] text-muted leading-[1.5] max-w-[70ch]">
+          A package bundles related interventions into one costed workstream: the unit the plan is
+          financed and delivered in.
+        </p>
+      )}
 
       {/* Line table */}
       <section className="mt-14">
@@ -617,197 +584,6 @@ function BreakdownCard({
           );
         })}
       </ul>
-    </div>
-  );
-}
-
-/* ── Phasing components ─────────────────────────────────────────────────── */
-
-type PhaseTotals = {
-  p1: number; p2: number;
-  p1g: number; p1c: number; p1i: number;
-  p2g: number; p2c: number; p2i: number;
-};
-
-// "Scale-Up Phase - 4 years (Yr 1-4) (31 Villages)" → { name:"Scale-Up Phase", years:"Yr 1–4" }
-function cleanPhaseLabel(label: string): { name: string; years: string } {
-  const yr = (label.match(/yr ?\d+\s*[-–]\s*\d+/i)?.[0] ?? "").replace(/\s+/g, " ").replace("-", "–");
-  let name = label
-    .replace(/\([^)]*\)/g, "")
-    .replace(/[-–]\s*\d+\s*years?.*/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!name) name = label.split(/[-–(]/)[0].trim();
-  return { name, years: yr };
-}
-
-const PHASE_SEGMENTS = [
-  { label: "Government", color: "#2E7573" },
-  { label: "Community", color: "#929CC5" },
-  { label: "Investment", color: "#C68C2E" },
-] as const;
-
-function PhaseBlock({
-  phase,
-  l1,
-  l2,
-  inr,
-}: {
-  phase: PhaseTotals;
-  l1: string;
-  l2: string;
-  inr: (n: number | string | null | undefined) => string;
-}) {
-  const max = Math.max(phase.p1, phase.p2, 1);
-  const c1 = cleanPhaseLabel(l1);
-  const c2 = cleanPhaseLabel(l2);
-  const Bar = ({
-    name, years, total, g, c, i,
-  }: { name: string; years: string; total: number; g: number; c: number; i: number }) => {
-    const w = (total / max) * 100;
-    const seg = (v: number) => (total ? (v / total) * 100 : 0);
-    return (
-      <div>
-        <div className="flex justify-between items-baseline gap-3 mb-1.5">
-          <span className="font-sans text-[14px] text-ink">
-            {name}
-            {years && (
-              <span className="text-muted font-mono text-[10px] uppercase tracking-[0.12em] ml-2">{years}</span>
-            )}
-          </span>
-          <span className="font-mono tabular-nums text-deep-teal font-semibold text-[14px]">{inr(total)}</span>
-        </div>
-        <div className="h-3.5 rounded-full bg-line-soft overflow-hidden">
-          <div className="h-full flex transition-[width] duration-700 ease-out" style={{ width: `${w}%` }}>
-            <span style={{ width: `${seg(g)}%`, background: "#2E7573" }} />
-            <span style={{ width: `${seg(c)}%`, background: "#929CC5" }} />
-            <span style={{ width: `${seg(i)}%`, background: "#C68C2E" }} />
-          </div>
-        </div>
-      </div>
-    );
-  };
-  return (
-    <section
-      className="rounded-[8px] border border-line bg-paper p-5 sm:p-6 flex flex-col gap-5"
-      style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.18)" }}
-    >
-      <Bar name={c1.name} years={c1.years} total={phase.p1} g={phase.p1g} c={phase.p1c} i={phase.p1i} />
-      <Bar name={c2.name} years={c2.years} total={phase.p2} g={phase.p2g} c={phase.p2c} i={phase.p2i} />
-      <div className="flex gap-4 flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted pt-0.5">
-        {PHASE_SEGMENTS.map((s) => (
-          <span key={s.label} className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.color }} />
-            {s.label}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function YearRamp({
-  ramp,
-  r1,
-  inr,
-}: {
-  ramp: number[];
-  r1: [number, number];
-  r2: [number, number];
-  inr: (n: number | string | null | undefined) => string;
-}) {
-  const max = Math.max(...ramp, 1);
-  return (
-    <div
-      className="mt-4 rounded-[8px] border border-line bg-paper p-5 sm:p-6"
-      style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(146,156,197,0.20)" }}
-    >
-      <div className="flex items-end gap-2 sm:gap-3 h-36">
-        {ramp.map((v, idx) => {
-          const yr = idx + 1;
-          const color = yr <= r1[1] ? "#2E7573" : "#929CC5";
-          const h = (v / max) * 100;
-          return (
-            <div key={yr} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group">
-              <span className="font-mono text-[8.5px] tabular-nums text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                {inr(v)}
-              </span>
-              <div
-                className="w-full rounded-t-[4px] transition-[height] duration-700 ease-out"
-                style={{ height: `${Math.max(2, h)}%`, background: color }}
-              />
-              <span className="font-mono text-[9px] tabular-nums text-muted">Y{yr}</span>
-            </div>
-          );
-        })}
-      </div>
-      <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-muted">
-        Indicative annual spend · phase totals spread across their years (first year front-loaded)
-      </p>
-    </div>
-  );
-}
-
-/* ── "Where the money goes" — toggleable objective breakdown ─────────────── */
-
-const OBJ_DIMS: {
-  key: string;
-  label: string;
-  accent: Accent;
-  get: (l: BudgetLine) => string | null;
-}[] = [
-  { key: "package", label: "Theme", accent: ACCENTS.teal, get: (l) => l.package },
-  { key: "category", label: "Category", accent: ACCENTS.deepTeal, get: (l) => l.category },
-  { key: "climate", label: "Climate", accent: ACCENTS.teal, get: (l) => l.climateTag },
-  { key: "equity", label: "Equity", accent: ACCENTS.periwinkle, get: (l) => l.equityTag },
-  { key: "gender", label: "Gender", accent: ACCENTS.periwinkle, get: (l) => l.genderTag },
-  { key: "capital", label: "Capital type", accent: ACCENTS.amber, get: (l) => l.capitalType },
-];
-
-function ObjectiveBreakdown({
-  filtered,
-  total,
-  inr,
-}: {
-  filtered: BudgetLine[];
-  total: number;
-  inr: (n: number | string | null | undefined) => string;
-}) {
-  const [dim, setDim] = useState("package");
-  const active = OBJ_DIMS.find((d) => d.key === dim) ?? OBJ_DIMS[0];
-  const rows = useMemo(() => {
-    const m = new Map<string, { label: string; total: number; investment: number }>();
-    for (const l of filtered) {
-      const k = (active.get(l) || "").trim() || "Unspecified";
-      const cur = m.get(k) ?? { label: k, total: 0, investment: 0 };
-      cur.total += Number(l.totalCostInr ?? 0);
-      cur.investment += Number(l.investmentRequiredInr ?? 0);
-      m.set(k, cur);
-    }
-    return [...m.values()].sort((a, b) => b.total - a.total);
-  }, [filtered, active]);
-
-  return (
-    <div>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {OBJ_DIMS.map((d) => (
-          <button
-            key={d.key}
-            type="button"
-            onClick={() => setDim(d.key)}
-            aria-pressed={d.key === dim}
-            className={
-              "rounded-full border px-3.5 py-1.5 text-[12.5px] active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-              (d.key === dim
-                ? "bg-deep-teal text-paper border-deep-teal"
-                : "border-line text-ink-soft hover:border-deep-teal hover:text-deep-teal")
-            }
-          >
-            {d.label}
-          </button>
-        ))}
-      </div>
-      <BreakdownCard title={`By ${active.label.toLowerCase()}`} rows={rows} grandTotal={total} accent={active.accent} />
     </div>
   );
 }

@@ -68,19 +68,6 @@ export type BudgetLine = {
   equityTag: string | null;
   genderTag: string | null;
   economicTag: string | null;
-  capitalType: string | null;
-  institutionType: string | null;
-  // Per-phase split (early phase = Yr 1-3 or 1-4; late phase = the rest).
-  phase1TotalCostInr: string | null;
-  phase2TotalCostInr: string | null;
-  phase1GovtInr: string | null;
-  phase2GovtInr: string | null;
-  phase1CommunityInr: string | null;
-  phase2CommunityInr: string | null;
-  phase1InvestmentRequiredInr: string | null;
-  phase2InvestmentRequiredInr: string | null;
-  phase1Label: string | null;
-  phase2Label: string | null;
 };
 
 export async function listBudgetLines(slug: string): Promise<BudgetLine[]> {
@@ -97,14 +84,7 @@ export async function listBudgetLines(slug: string): Promise<BudgetLine[]> {
               impact_households AS "impactHouseholds", impact_hectares AS "impactHectares",
               impact_animals AS "impactAnimals",
               climate_tag AS "climateTag", equity_tag AS "equityTag", gender_tag AS "genderTag",
-              economic_tag AS "economicTag", capital_type AS "capitalType",
-              institution_type AS "institutionType",
-              phase1_total_cost_inr AS "phase1TotalCostInr", phase2_total_cost_inr AS "phase2TotalCostInr",
-              phase1_govt_inr AS "phase1GovtInr", phase2_govt_inr AS "phase2GovtInr",
-              phase1_community_inr AS "phase1CommunityInr", phase2_community_inr AS "phase2CommunityInr",
-              phase1_investment_required_inr AS "phase1InvestmentRequiredInr",
-              phase2_investment_required_inr AS "phase2InvestmentRequiredInr",
-              phase1_label AS "phase1Label", phase2_label AS "phase2Label"
+              economic_tag AS "economicTag"
         FROM "cat".landscape_budget_lines
         WHERE landscape_slug = ${slug}
         ORDER BY category_no, row_index`
