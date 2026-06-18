@@ -19,9 +19,20 @@ import ExcelJS from "exceljs";
 
 dns.setDefaultResultOrder("verbatim");
 
-const [, , SLUG, DOCX_PATH, XLSX_PATH] = process.argv;
-if (!SLUG || !DOCX_PATH || !XLSX_PATH) {
-  console.error("Usage: ingest-landscape.mjs <slug> <lip.docx> <budget.xlsx>");
+// --budget-only is a dry run: parse the XLSX and print the budget summary
+// without touching the DB or embeddings — used to validate a new workbook's
+// sheet layout before committing to the (slow) narrative-embedding pass.
+const RAW_ARGS = process.argv.slice(2);
+const BUDGET_ONLY = RAW_ARGS.includes("--budget-only");
+const POS = RAW_ARGS.filter((a) => !a.startsWith("--"));
+const SLUG = POS[0];
+const DOCX_PATH = BUDGET_ONLY ? null : POS[1];
+const XLSX_PATH = BUDGET_ONLY ? POS[1] : POS[2];
+if (!SLUG || !XLSX_PATH || (!BUDGET_ONLY && !DOCX_PATH)) {
+  console.error(
+    "Usage: ingest-landscape.mjs <slug> <lip.docx> <budget.xlsx>\n" +
+      "   or: ingest-landscape.mjs --budget-only <slug> <budget.xlsx>  (dry run, no DB writes)"
+  );
   process.exit(1);
 }
 
@@ -160,6 +171,16 @@ const strCell = (row, c) => {
 async function extractBudget(filePath) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(filePath);
+  // Case/space-insensitive worksheet lookup — sheet names drift between exports
+  // ("Instrument Mix" vs "Instrument mix" vs trailing space).
+  const findSheet = (...names) => {
+    const wanted = names.map((n) => n.replace(/\s+/g, " ").trim().toLowerCase());
+    for (const ws of wb.worksheets) {
+      const n = String(ws.name).replace(/\s+/g, " ").trim().toLowerCase();
+      if (wanted.includes(n)) return ws;
+    }
+    return null;
+  };
   // Newer workbooks split the line-item budget ("5.2") from the thematic grouping
   // ("Thematic Investment"); older ones used a single "5.2 Package Distribution".
   // The latest export renames the line-item sheet to "Landscape Clean" and shifts
@@ -168,13 +189,21 @@ async function extractBudget(filePath) {
   // Some workbooks ship only a cached "Thematic Investment" sheet in the same
   // header-resolved layout (package label in c6, 7-yr totals in the "P1+P2"
   // columns), with the "5.2"/"How to fill" sheet left uncached. Accept it last.
+  // "Landscape Main sheet" is the latest single-sheet export: same
+  // header-resolved layout as "Landscape Clean", but the header lands on row 3
+  // (data from row 4) and the workbook ships without companion Thematic
+  // Investment / Instrument Mix sheets — the package label is read straight
+  // from the line sheet's "Thematic Investment" column (c6).
   const sheet =
     wb.getWorksheet("5.2") ||
     wb.getWorksheet("5.2 Package Distribution") ||
     wb.getWorksheet("Landscape Clean") ||
-    wb.getWorksheet("Thematic Investment");
+    wb.getWorksheet("Thematic Investment") ||
+    wb.getWorksheet("Landscape Main sheet");
   if (!sheet)
-    throw new Error("Budget sheet '5.2' / '5.2 Package Distribution' / 'Landscape Clean' / 'Thematic Investment' not found");
+    throw new Error(
+      "Budget sheet '5.2' / '5.2 Package Distribution' / 'Landscape Clean' / 'Thematic Investment' / 'Landscape Main sheet' not found"
+    );
 
   // Map each Original Sub-Intervention -> its thematic delivery package (the
   // grouping shown as "delivery packages by share of plan"). In the 5.2 sheet
@@ -208,7 +237,7 @@ async function extractBudget(filePath) {
   // investment_required across instruments using its thematic's mix. Without
   // this the "Who pays" panel would omit ~2/3 of the plan.
   const mixByThematic = new Map();
-  const mixSheet = wb.getWorksheet("Instrument Mix ") || wb.getWorksheet("Instrument Mix");
+  const mixSheet = findSheet("Instrument Mix");
   if (mixSheet) {
     for (let r = 2; r <= mixSheet.actualRowCount; r++) {
       const th = strCell(mixSheet.getRow(r), 1);
@@ -234,7 +263,17 @@ async function extractBudget(filePath) {
   // resolve indices by matching the header row (row 4) rather than hard-coding
   // them. The package label sits directly in the line sheet (c6); 7-year totals
   // live in the "...P1+P2" columns; grant/RG/debt come from the thematic mix.
-  const headerRow = sheet.getRow(4);
+  // The header row is usually row 4, but some exports (e.g. "Landscape Main
+  // sheet") put it on row 3. Locate it by the "Cat No." column header instead
+  // of hard-coding, so the data loop below starts on the right row.
+  let headerRowNum = 4;
+  for (let r = 1; r <= Math.min(sheet.actualRowCount, 8); r++) {
+    if (/^cat\s*no/i.test(strCell(sheet.getRow(r), 1) || "")) {
+      headerRowNum = r;
+      break;
+    }
+  }
+  const headerRow = sheet.getRow(headerRowNum);
   const norm = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
   const findCol = (re) => {
     for (let c = 1; c <= sheet.actualColumnCount; c++) {
@@ -261,9 +300,12 @@ async function extractBudget(filePath) {
       // sometimes spaced ("Govt P1+P2"); [\s-]? matches either.
       units: findCol(/^no of units[\s-]?p1/),
       total: projTotalCol,
-      govt: findCol(/^total govt[\s-]?p1\+p2/),
-      community: findCol(/^total community[\s-]?p1\+p2/),
-      invest: findCol(/^total investment required[\s-]?p1\+p2/),
+      // The "P1+P2" suffix is present on some exports ("Total Govt-P1+P2") and
+      // absent on others ("Total Govt"); make it optional, anchored at end so we
+      // don't swallow "Total Govt Scheme description".
+      govt: findCol(/^total govt(?:[\s-]?p1\+p2)?$/),
+      community: findCol(/^total community(?:[\s-]?p1\+p2)?$/),
+      invest: findCol(/^total investment required(?:[\s-]?p1\+p2)?$/),
       govtScheme: findCol(/^govt scheme description[\s-]?p1/),
       hhP1: findCol(/^impact no household[\s-]?p1/),
       hhP2: findCol(/^impact no household[\s-]?p2/),
@@ -279,7 +321,7 @@ async function extractBudget(filePath) {
       capitalType: findCol(/^capital contributed to/),
     };
     const cleanRows = [];
-    for (let r = 5; r <= sheet.actualRowCount; r++) {
+    for (let r = headerRowNum + 1; r <= sheet.actualRowCount; r++) {
       const row = sheet.getRow(r);
       if (!row.getCell(1).value && !row.getCell(2).value) continue;
       const sub = col.sub ? strCell(row, col.sub) : null;
@@ -292,7 +334,10 @@ async function extractBudget(filePath) {
         const t = (n(a) || 0) + (n(b) || 0);
         return t || null;
       };
-      const pkg = s(col.pkg) || category;
+      // Collapse stray double-spaces in the package label so data-entry typos
+      // (e.g. "NRM -  Commons" vs "NRM - Commons") don't fork one package in two.
+      const pkgRaw = s(col.pkg) || category;
+      const pkg = pkgRaw ? String(pkgRaw).replace(/\s+/g, " ").trim() : pkgRaw;
       const investment = n(col.invest) ?? 0;
       // No line-level instrument split in this layout — distribute the line's
       // investment_required across instruments using its thematic mix.
@@ -431,6 +476,28 @@ async function extractBudget(filePath) {
 }
 
 async function main() {
+  // Dry run: validate the budget workbook's layout without DB writes or embeds.
+  if (BUDGET_ONLY) {
+    const budget = await extractBudget(path.resolve(XLSX_PATH));
+    const sum = (k) => budget.reduce((s, b) => s + (Number(b[k]) || 0), 0);
+    const inr = (n) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+    const pkgs = [...new Set(budget.map((b) => b.package).filter(Boolean))];
+    console.log(`\n[DRY RUN] budget-only for ${SLUG} — ${path.basename(XLSX_PATH)}`);
+    console.log(`  rows:               ${budget.length}`);
+    console.log(`  total intervention: ${inr(sum("total_cost"))}`);
+    console.log(`  govt convergence:   ${inr(sum("govt"))}`);
+    console.log(`  community:          ${inr(sum("community"))}`);
+    console.log(`  investment req:     ${inr(sum("investment_required"))}`);
+    console.log(`  grants:             ${inr(sum("grants"))}`);
+    console.log(`  returnable grant:   ${inr(sum("returnable_grant"))}`);
+    console.log(`  debt:               ${inr(sum("debt"))}`);
+    console.log(`  packages (${pkgs.length}):`);
+    for (const p of pkgs) console.log(`    · ${p}`);
+    console.log(`\n  sample row:`, budget[0]);
+    await pool.end();
+    return;
+  }
+
   const docxFull = path.resolve(DOCX_PATH);
   const xlsxFull = path.resolve(XLSX_PATH);
   const docTitle = path.basename(DOCX_PATH).replace(/\.[^.]+$/, "");

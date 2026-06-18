@@ -513,7 +513,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Severe human-wildlife conflict acts as a structural barrier to farmers cultivating diverse food crops, threatening household nutritional security.",
       "Limited access to grazing commons due to land-use changes, coupled with labour shortages, has constrained the traditional livestock sector.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/vempalli/01.jpg",
