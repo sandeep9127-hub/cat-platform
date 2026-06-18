@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
+import { IndiaMap } from "@/components/map/IndiaMap";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
@@ -224,11 +225,15 @@ export default async function MapPage({
         </aside>
       </section>
 
-      {/* Two-axis filter — deep-linkable, with live counts. Axis 1: the 10
-          intervention categories (what it does). Axis 2: the 13 agroecology
-          principles (what it advances). The axes intersect. Both share the
-          fact-sheet data that drives the landing tiles, so numbers always tally. */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-7 space-y-4">
+      {/* Explorer layout: a sticky filter sidebar (deep-linkable chips, live
+          counts) · the results list · the India map pinned in its own column so
+          there's no blank space below it as the list scrolls. Stacks on < xl. */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)_minmax(0,380px)] gap-8 xl:gap-9 items-start">
+        {/* ── Filter sidebar ─────────────────────────────────────────────── */}
+        <aside className="xl:sticky xl:top-24 xl:self-start xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto pr-0.5 space-y-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal font-semibold pb-1">
+          Filter the Atlas
+        </div>
         {/* Axis 1 — categories */}
         <nav aria-label="Filter the Atlas by intervention category">
           <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
@@ -416,14 +421,30 @@ export default async function MapPage({
             </Link>
           </p>
         )}
-      </div>
+        </aside>
 
-      <AtlasSection
-        mapEntries={mapEntries}
-        listEntries={listEntries}
-        totalStates={stateCount}
-        pageSize={10}
-      />
+        {/* ── Map column — pinned (sticky) so no blank space below it. Source
+            order #2 so on mobile it stacks above the list; placed in column 3
+            on xl. ─────────────────────────────────────────────────────────── */}
+        <div className="xl:col-start-3 xl:row-start-1 xl:sticky xl:top-24 xl:self-start">
+          <IndiaMap
+            entries={mapEntries}
+            totalProgrammes={mapEntries.length}
+            totalStates={stateCount}
+          />
+        </div>
+
+        {/* ── Results list — column 2 on xl ──────────────────────────────── */}
+        <div className="xl:col-start-2 xl:row-start-1 min-w-0">
+          <AtlasSection
+            layout="list"
+            mapEntries={mapEntries}
+            listEntries={listEntries}
+            totalStates={stateCount}
+            pageSize={10}
+          />
+        </div>
+      </div>
     </>
   );
 }

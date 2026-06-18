@@ -29,6 +29,13 @@ type Props = {
    * Destination for the "Read more" CTA. Defaults to `/map`.
    */
   readMoreHref?: string;
+  /**
+   * "split" (default): map + list in a 2-col grid (home).
+   * "list": render only the list + pagination, no map and no grid wrapper —
+   * used by the /map "explorer" where the map lives in its own sticky column
+   * and filtering is driven by the sidebar (URL), not map clicks.
+   */
+  layout?: "split" | "list";
 };
 
 const STATE_NAMES: Record<string, string> = {
@@ -49,6 +56,7 @@ export function AtlasSection({
   cap,
   pageSize,
   readMoreHref = "/map",
+  layout = "split",
 }: Props) {
   const [filterState, setFilterState] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -92,15 +100,7 @@ export function AtlasSection({
       : filtered;
   const hiddenCount = shouldCap ? filtered.length - cap! : 0;
 
-  return (
-    <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-10 lg:gap-12">
-      <IndiaMap
-        entries={mapEntries}
-        totalStates={totalStates}
-        totalProgrammes={mapEntries.length}
-        onFilterState={setFilterState}
-        activeState={filterState}
-      />
+  const list = (
       <div className="flex flex-col" ref={listTopRef}>
         {/* Filter-clear chip — sits above the list whenever a state is active */}
         {filterState && (
@@ -180,6 +180,21 @@ export function AtlasSection({
           </>
         )}
       </div>
+  );
+
+  // List-only: the /map explorer renders the map in its own sticky column.
+  if (layout === "list") return list;
+
+  return (
+    <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-10 lg:gap-12">
+      <IndiaMap
+        entries={mapEntries}
+        totalStates={totalStates}
+        totalProgrammes={mapEntries.length}
+        onFilterState={setFilterState}
+        activeState={filterState}
+      />
+      {list}
     </section>
   );
 }
