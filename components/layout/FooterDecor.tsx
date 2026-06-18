@@ -25,7 +25,8 @@ export function FooterDecor() {
     return () => mq.removeEventListener("change", onMq);
   }, []);
 
-  // Goat: one-time rise + de-blur on view.
+  // Goat: one-time rise + de-blur on view. IO (efficient) + a scroll/rect
+  // fallback so it never stays hidden if IO doesn't fire.
   useEffect(() => {
     const el = goatRef.current;
     if (!el) return;
@@ -33,20 +34,40 @@ export function FooterDecor() {
       el.classList.add("in");
       return;
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            el.classList.add("in");
-            io.disconnect();
-            break;
-          }
-        }
-      },
-      { threshold: 0.25 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    let io: IntersectionObserver | null = null;
+    const inView = () => {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      return r.top < vh * 0.95 && r.bottom > 0;
+    };
+    const cleanup = () => {
+      io?.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    const reveal = () => {
+      el.classList.add("in");
+      cleanup();
+    };
+    const onScroll = () => {
+      if (inView()) reveal();
+    };
+    if (inView()) {
+      reveal();
+      return;
+    }
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) reveal();
+        },
+        { threshold: 0.25 }
+      );
+      io.observe(el);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return cleanup;
   }, [reduced]);
 
   // Band: gentle scroll parallax (±12px). The band box overshoots its frame so

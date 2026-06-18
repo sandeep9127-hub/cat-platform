@@ -27,20 +27,45 @@ export function ClipReveal({
   useEffect(() => {
     const el = ref.current;
     if (!el || shown) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-            break;
-          }
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
+
+    let io: IntersectionObserver | null = null;
+    const inView = () => {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      return r.top < vh * 0.92 && r.bottom > 0;
+    };
+    const cleanup = () => {
+      io?.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    const reveal = () => {
+      setShown(true);
+      cleanup();
+    };
+    const onScroll = () => {
+      if (inView()) reveal();
+    };
+
+    // Already in view at mount → still animates (initial clipped state paints
+    // first). Otherwise IO (efficient) + a scroll/rect fallback so the reveal
+    // never gets stuck if IO doesn't fire.
+    if (inView()) {
+      reveal();
+      return;
+    }
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) reveal();
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+      );
+      io.observe(el);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return cleanup;
   }, [shown]);
 
   return (
