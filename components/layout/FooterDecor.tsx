@@ -14,7 +14,6 @@ import { useEffect, useRef, useState } from "react";
 export function FooterDecor() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const bandRef = useRef<HTMLDivElement | null>(null);
-  const goatRef = useRef<HTMLDivElement | null>(null);
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
@@ -24,51 +23,6 @@ export function FooterDecor() {
     mq.addEventListener("change", onMq);
     return () => mq.removeEventListener("change", onMq);
   }, []);
-
-  // Goat: one-time rise + de-blur on view. IO (efficient) + a scroll/rect
-  // fallback so it never stays hidden if IO doesn't fire.
-  useEffect(() => {
-    const el = goatRef.current;
-    if (!el) return;
-    if (reduced) {
-      el.classList.add("in");
-      return;
-    }
-    let io: IntersectionObserver | null = null;
-    const inView = () => {
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
-      return r.top < vh * 0.95 && r.bottom > 0;
-    };
-    const cleanup = () => {
-      io?.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-    const reveal = () => {
-      el.classList.add("in");
-      cleanup();
-    };
-    const onScroll = () => {
-      if (inView()) reveal();
-    };
-    if (inView()) {
-      reveal();
-      return;
-    }
-    if (typeof IntersectionObserver !== "undefined") {
-      io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) reveal();
-        },
-        { threshold: 0.25 }
-      );
-      io.observe(el);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return cleanup;
-  }, [reduced]);
 
   // Band: gentle scroll parallax (±12px). The band box overshoots its frame so
   // the drift never exposes an edge.
@@ -114,20 +68,6 @@ export function FooterDecor() {
             className="object-cover object-center"
           />
         </div>
-      </div>
-      {/* Goat signature — bottom-right maker's mark */}
-      <div
-        ref={goatRef}
-        className="goat-rise hidden md:block absolute z-10 bottom-3 right-[3%] lg:right-[5%] w-[150px] lg:w-[185px] select-none"
-      >
-        <Image
-          src="/illustrations/goats.png"
-          alt=""
-          width={620}
-          height={601}
-          sizes="200px"
-          className="w-full h-auto"
-        />
       </div>
     </div>
   );
