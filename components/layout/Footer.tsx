@@ -16,7 +16,7 @@ import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
  */
 export function Footer() {
   return (
-    <footer className="relative pt-16 mt-24 bg-cream text-ink border-t border-line overflow-hidden">
+    <footer className="relative pt-16 pb-9 mt-24 bg-cream text-ink border-t border-line overflow-hidden">
       {/* Watercolor wash — the CAT brand band (botanical sprigs frame the sides),
           matching agroecologyindia.org. Decorative; sits behind the content.
           next/image auto-serves an optimised WebP so the 1MB PNG isn't shipped. */}
@@ -92,24 +92,25 @@ export function Footer() {
 
       <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
         <div className="h-px w-full bg-line" aria-hidden />
-        <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-muted">
+        {/* Left-aligned so the bottom-right corner is free for the goat signature. */}
+        <div className="pt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-mono-mid text-muted">
           <span>Transformation Hub · 2026</span>
+          <span className="text-line" aria-hidden>·</span>
           <span>Made in India · For food systems</span>
         </div>
       </div>
 
-      {/* Meadow sign-off — the CAT goats grazing. Centred on mobile, drifts
-          right on wider screens; clear of the copyright line above. */}
-      <div aria-hidden className="relative z-10 mt-8 h-[140px] sm:h-[175px] lg:h-[200px] pointer-events-none select-none">
-        <Image
-          src="/illustrations/goats.png"
-          alt=""
-          width={620}
-          height={601}
-          sizes="(min-width: 1024px) 200px, 175px"
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-[8%] lg:right-[12%] h-full w-auto"
-        />
-      </div>
+      {/* Signature — the CAT goats grazing, tucked into the bottom-right corner
+          like a hand-drawn maker's mark (desktop only; decorative). */}
+      <Image
+        src="/illustrations/goats.png"
+        alt=""
+        aria-hidden
+        width={620}
+        height={601}
+        sizes="200px"
+        className="hidden md:block absolute z-10 bottom-3 right-[3%] lg:right-[5%] w-[150px] lg:w-[185px] h-auto pointer-events-none select-none"
+      />
     </footer>
   );
 }

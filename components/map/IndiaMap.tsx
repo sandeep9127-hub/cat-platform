@@ -57,20 +57,19 @@ type StateFeature = GeoJSON.Feature<GeoJSON.Geometry, { st_code?: string; ST_NM?
 // (teals + periwinkles, with the three warm accents for a few) — never the
 // off-brand rainbow. Keeps the phased hero reveal within brand.
 const THEME_PALETTE: Record<string, string> = {
-  // Cool family only (teals + periwinkles) — the calm core of the CAT palette.
-  // The prominent themes get the distinct mid-tones; smaller themes reuse the
-  // lighter swatches (phases never overlap, so reuse is invisible). The warm
-  // accents (rose/coral/amber) are kept for small UI, not large map fills.
+  // Cool family (teals + periwinkles) for the prominent themes; a hint of the
+  // warm accents (rose / coral) for two small themes so the tour gets a touch
+  // of warmth without the off-brand gold. All from the CAT palette.
   "agri-horti-agroforestry": "#2E7573", // teal (primary)
   "technical-assistance": "#5E6990", // deep periwinkle
   market: "#929CC5", // periwinkle
   biodiversity: "#334B4A", // deep teal
   nrm: "#95B1AF", // sage teal
-  nutrition: "#AFBADC", // soft periwinkle
-  livestock: "#B8CCCA", // pale teal
-  "forestry-ntfp": "#C0CCE9", // pale periwinkle
-  fisheries: "#95B1AF", // sage (reused; single-state)
-  energy: "#AFBADC", // soft periwinkle (reused; single-state)
+  nutrition: "#F8A07B", // coral (warm hint)
+  livestock: "#C68F95", // dusty rose (warm hint)
+  "forestry-ntfp": "#AFBADC", // soft periwinkle
+  fisheries: "#5E6990", // deep periwinkle (reused; single-state)
+  energy: "#B8CCCA", // pale teal (kept cool — no gold)
 };
 
 /** #RRGGBB → rgba() at the given alpha, for translucent state fills. */
@@ -382,7 +381,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                 className={`map-state ${hoverActive ? "active" : ""}`}
                 style={
                   themeLit && activeTheme
-                    ? { fill: hexRgba(activeTheme.color, 0.42), stroke: activeTheme.color, strokeWidth: 1 }
+                    ? { fill: hexRgba(activeTheme.color, 0.5), stroke: activeTheme.color, strokeWidth: 1.2 }
                     : undefined
                 }
                 data-code={p.code}
