@@ -19,3 +19,6 @@ coverage
 # public/geo/india-states-topo.json
 tsconfig.tsbuildinfo
 .data/
+
+# Bulky source illustration set (only the optimised copies in public/illustrations are tracked)
+public/cat. hub illustration/

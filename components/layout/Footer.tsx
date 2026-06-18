@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
 
 /**
@@ -15,8 +16,20 @@ import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
  */
 export function Footer() {
   return (
-    <footer className="relative pt-16 pb-8 mt-24 bg-cream text-ink border-t border-line">
-      <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
+    <footer className="relative pt-16 mt-24 bg-cream text-ink border-t border-line overflow-hidden">
+      {/* Watercolor wash — the CAT brand band (botanical sprigs frame the sides),
+          matching agroecologyindia.org. Decorative; sits behind the content.
+          next/image auto-serves an optimised WebP so the 1MB PNG isn't shipped. */}
+      <div aria-hidden className="absolute inset-0 opacity-[0.55] pointer-events-none">
+        <Image
+          src="/illustrations/meadow-band.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
+      <div className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
           {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -77,12 +90,25 @@ export function Footer() {
         />
       </div>
 
-      <div className="relative max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
+      <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
         <div className="h-px w-full bg-line" aria-hidden />
         <div className="pt-5 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between font-mono text-[10px] uppercase tracking-mono-mid text-muted">
           <span>Transformation Hub · 2026</span>
           <span>Made in India · For food systems</span>
         </div>
+      </div>
+
+      {/* Meadow sign-off — the CAT goats grazing. Centred on mobile, drifts
+          right on wider screens; clear of the copyright line above. */}
+      <div aria-hidden className="relative z-10 mt-8 h-[140px] sm:h-[175px] lg:h-[200px] pointer-events-none select-none">
+        <Image
+          src="/illustrations/goats.png"
+          alt=""
+          width={620}
+          height={601}
+          sizes="(min-width: 1024px) 200px, 175px"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-[8%] lg:right-[12%] h-full w-auto"
+        />
       </div>
     </footer>
   );
