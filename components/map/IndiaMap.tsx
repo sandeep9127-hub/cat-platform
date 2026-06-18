@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoPath } from "d3-geo";
+import { CATEGORIES } from "@/lib/data/categories";
 import {
   makeIndiaProjection,
   PROJECTION_VIEWBOX,
@@ -28,6 +29,9 @@ export type MapEntry = {
    * internalHref is provided.
    */
   externalUrl?: string;
+  /** Intervention-theme slugs (from CATEGORIES) this solution is tagged with.
+   *  Drives the phased theme reveal. */
+  themes?: string[];
 };
 
 type Props = {
@@ -41,14 +45,22 @@ type Props = {
   className?: string;
   /** Hero mode: drop the card chrome so the map sits directly on the page. */
   bare?: boolean;
+  /** Run an auto-advancing theme tour: each phase lights the states whose
+   *  solutions are tagged with that theme. Pauses on hover; off for reduced
+   *  motion. */
+  phased?: boolean;
 };
 
 type StateFeature = GeoJSON.Feature<GeoJSON.Geometry, { st_code?: string; ST_NM?: string; STNAME?: string; NAME_1?: string }>;
 
-export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className, bare = false }: Props) {
+export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState, activeState: externalActive, className, bare = false, phased = false }: Props) {
   const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [lockedState, setLockedState] = useState<string | null>(null);
+  const [reduce, setReduce] = useState(false);
+  const [phaseIdx, setPhaseIdx] = useState(0);
+  const [dotPaused, setDotPaused] = useState(false);
+  const [tourStarted, setTourStarted] = useState(false);
 
   // External clear (e.g., from the AtlasSection chip) wins over internal lock.
   useEffect(() => {
@@ -89,6 +101,55 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
   const visibleEntries = activeState
     ? entries.filter((e) => e.stateCode === activeState)
     : entries;
+
+  // ── Phased theme tour ────────────────────────────────────────────────────
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onMq = () => setReduce(mq.matches);
+    onMq();
+    mq.addEventListener("change", onMq);
+    return () => mq.removeEventListener("change", onMq);
+  }, []);
+
+  // The themes that actually have mapped solutions, busiest first. Each becomes
+  // one phase of the tour; the count is the number of pins that light up.
+  const phaseThemes = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of entries) for (const t of e.themes ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
+    return CATEGORIES.filter((c) => (counts.get(c.slug) ?? 0) > 0)
+      .map((c) => ({ slug: c.slug, short: c.short, colourHex: c.colourHex, count: counts.get(c.slug) ?? 0 }))
+      .sort((a, b) => b.count - a.count);
+  }, [entries]);
+
+  // Let every pin land first (entrance pop), then begin the tour.
+  useEffect(() => {
+    if (!phased || reduce || phaseThemes.length === 0) return;
+    const id = setTimeout(() => setTourStarted(true), 1400);
+    return () => clearTimeout(id);
+  }, [phased, reduce, phaseThemes.length]);
+
+  // Pause while the user is engaging the map (hovering a state or a dot).
+  const tourRunning =
+    phased && !reduce && tourStarted && phaseThemes.length > 1 && !activeState && !dotPaused;
+  useEffect(() => {
+    if (!tourRunning) return;
+    const id = setInterval(() => setPhaseIdx((i) => (i + 1) % phaseThemes.length), 2800);
+    return () => clearInterval(id);
+  }, [tourRunning, phaseThemes.length]);
+  useEffect(() => {
+    if (phaseIdx >= phaseThemes.length && phaseThemes.length > 0) setPhaseIdx(0);
+  }, [phaseThemes.length, phaseIdx]);
+
+  // Theme highlight is active only when the tour has started and the user isn't
+  // manually filtering by state.
+  const themeMode = phased && !reduce && tourStarted && phaseThemes.length > 0 && !activeState;
+  const activeTheme = themeMode ? phaseThemes[Math.min(phaseIdx, phaseThemes.length - 1)] : null;
+  const themeStates = useMemo(() => {
+    if (!activeTheme) return null;
+    const s = new Set<string>();
+    for (const e of entries) if ((e.themes ?? []).includes(activeTheme.slug) && e.stateCode) s.add(e.stateCode);
+    return s;
+  }, [activeTheme, entries]);
 
   const handleStateEnter = (code: string) => {
     if (lockedState) return;
@@ -204,6 +265,44 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       </div>
       )}
 
+      {/* Phased theme tour caption — names the theme lighting up, with its live
+          count and a progress bar across the themes. Hidden while filtering. */}
+      {activeTheme && (
+        <div className="absolute left-3 bottom-3 sm:left-4 sm:bottom-4 z-10 flex flex-col gap-2 pointer-events-none select-none max-w-[calc(100%-2rem)]">
+          <div
+            key={activeTheme.slug}
+            className="inline-flex items-center gap-2.5 px-3 py-2 rounded-[10px] backdrop-blur-md border border-line/70 animate-scope-pop w-fit"
+            style={{
+              background: "rgba(251,248,242,0.92)",
+              boxShadow: "0 8px 22px -12px rgba(26,38,37,0.30), 0 1px 2px rgba(26,38,37,0.04)",
+            }}
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ background: activeTheme.colourHex, boxShadow: `0 0 0 3px ${activeTheme.colourHex}33` }}
+            />
+            <span className="font-sans text-[13px] sm:text-[13.5px] font-medium text-ink leading-none whitespace-nowrap">
+              {activeTheme.short}
+            </span>
+            <span className="font-mono text-[11px] tabular-nums text-muted leading-none">
+              {activeTheme.count}
+            </span>
+          </div>
+          <div className="flex gap-1 pl-0.5">
+            {phaseThemes.map((t, i) => (
+              <span
+                key={t.slug}
+                className="h-[3px] rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: i === phaseIdx ? 16 : 7,
+                  background: i === phaseIdx ? activeTheme.colourHex : "rgba(26,38,37,0.16)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* SVG */}
       <svg
         viewBox={`0 0 ${PROJECTION_VIEWBOX.width} ${PROJECTION_VIEWBOX.height}`}
@@ -241,7 +340,9 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               <path
                 key={p.code + p.name}
                 d={p.d}
-                className={`map-state ${activeState === p.code ? "active" : ""}`}
+                className={`map-state ${
+                  (activeState ? activeState === p.code : themeStates?.has(p.code)) ? "active" : ""
+                }`}
                 data-code={p.code}
                 onMouseEnter={() => handleStateEnter(p.code)}
                 onMouseLeave={handleStateLeave}
@@ -263,7 +364,13 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               const isAmber = entry.provenance === "sourced";
               const halo = scaleHaloRadius(entry.scaleBand);
               const core = scaleCoreRadius(entry.scaleBand);
-              const dim = activeState && entry.stateCode !== activeState;
+              // Dim if filtered out by an active state, or — during the theme
+              // tour — if this solution isn't tagged with the current theme.
+              const dim = activeState
+                ? entry.stateCode !== activeState
+                : themeMode && activeTheme
+                  ? !(entry.themes ?? []).includes(activeTheme.slug)
+                  : false;
               // Two independent staggers: a quick entrance wave (pins drop in),
               // and a slower travelling breathe wave once they have landed.
               const popDelay = `${(idx % 12) * 0.035}s`;
@@ -271,9 +378,12 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
               return (
                 <g
                   key={entry.id}
-                  opacity={dim ? 0.18 : 1}
+                  onMouseEnter={() => setDotPaused(true)}
                   onMouseMove={(e) => handleDotEnter(e, entry)}
-                  onMouseLeave={() => setTooltip(null)}
+                  onMouseLeave={() => {
+                    setTooltip(null);
+                    setDotPaused(false);
+                  }}
                   onClick={() => {
                     // Priority: internal Hub page (atlas record description or
                     // full entry) > legacy external URL > default entry slug.
@@ -289,6 +399,8 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   style={
                     {
                       color: isAmber ? "#5e6990" : "var(--teal)",
+                      opacity: dim ? 0.12 : 1,
+                      transition: "opacity 0.6s ease",
                       "--pop-delay": popDelay,
                       "--halo-delay": haloDelay,
                     } as React.CSSProperties

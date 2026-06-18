@@ -87,6 +87,7 @@ export default async function LandingPage() {
     latitude: f.latitude!,
     longitude: f.longitude!,
     internalHref: `/factsheet/${f.slug}`,
+    themes: f.themes ?? [],
   }));
   const combinedTotal = factsheets.length;
   const combinedStateCount = new Set(
@@ -163,6 +164,7 @@ export default async function LandingPage() {
               totalProgrammes={combinedTotal}
               totalStates={combinedStateCount}
               bare
+              phased
             />
             <dl className="mt-5 pt-5 border-t border-line/80 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
               {[
