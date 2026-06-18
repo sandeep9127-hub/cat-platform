@@ -234,7 +234,7 @@ export default async function LandingPage() {
       </section>
 
       {/* THE APPROACH — short film from the Consortium, lazy-loaded facade */}
-      <Reveal as="section" className="bg-paper border-t border-line">
+      <Reveal as="section" className="bg-paper bg-grid border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-center">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
