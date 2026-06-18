@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Layers,
@@ -27,7 +26,6 @@ const NAV_LINKS = [
 export function BrandBar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pathname = usePathname();
   const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
@@ -47,11 +45,10 @@ export function BrandBar() {
     return () => mq.removeEventListener("change", onMq);
   }, []);
 
-  // On the landing page the hero brand-morph owns the logo until it docks into
-  // this slot, so we start the header's own lockup hidden (it's the morph's
-  // measured target, revealed imperatively as the clone lands). Off for reduced
-  // motion and on every other page, where the logo just shows normally.
-  const morphTarget = pathname === "/" && !reduce;
+  // Anthropic-style brand fold: at the top the header shows the full lockup
+  // (mark + "Transformation Hub"); once scrolled, the wordmark collapses away
+  // and only the mark remains. Disabled for reduced motion (lockup stays full).
+  const collapse = scrolled && !reduce;
 
   return (
     <header className="sticky top-0 z-50 px-3 sm:px-4 lg:px-6 pt-2.5 sm:pt-3 pointer-events-none">
@@ -79,29 +76,23 @@ export function BrandBar() {
         >
         <Link
           href="/"
-          data-brand-dest
-          className={`flex items-center gap-3 no-underline text-ink group shrink-0 ${
-            morphTarget ? "opacity-0 pointer-events-none" : ""
-          }`}
+          aria-label="Transformation Hub — home"
+          className="flex items-center no-underline text-ink group shrink-0"
         >
-          {/* The logo is rendered ONCE at 36px and CSS-scaled when the
-              bar shrinks on scroll. Changing the SVG's size attribute
-              forced a full re-render mid-scroll, and at ~28px the
-              smallest inner arch fell into sub-pixel territory and
-              visibly flickered. Transform-scale skips the re-render. */}
-          <div
-            className={`shrink-0 origin-left transition-transform duration-300 ease-out group-hover:rotate-[-4deg] ${
-              scrolled ? "scale-[0.78]" : "scale-100"
-            }`}
-          >
+          {/* The mark stays put and crisp; only the wordmark folds away. The
+              logo is rendered ONCE at 36px (re-sizing the SVG mid-scroll made
+              the smallest arch flicker at sub-pixel sizes). */}
+          <div className="shrink-0 origin-center transition-transform duration-300 ease-out group-hover:rotate-[-4deg]">
             <CatLogo size={36} />
           </div>
-          <span className="flex flex-col">
-            <span
-              className={`font-serif font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap transition-[font-size,color] duration-300 ease-out group-hover:text-teal ${
-                scrolled ? "text-[14px] sm:text-[15px]" : "text-[16px] sm:text-[18px]"
-              }`}
-            >
+          {/* Wordmark — collapses to zero width (and fades) on scroll, leaving
+              just the mark. overflow-hidden + max-width is what animates the fold. */}
+          <span
+            className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
+              collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3"
+            }`}
+          >
+            <span className="font-serif font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
           </span>
