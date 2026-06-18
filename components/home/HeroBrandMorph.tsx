@@ -113,8 +113,10 @@ export function HeroBrandMorph() {
     apply();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
-    // Fonts/images can shift the start rect after first paint.
+    // Fonts/images can shift the start rect after first paint — re-measure once
+    // they settle (the serif wordmark in particular changes width on font swap).
     const settle = setTimeout(onResize, 350);
+    document.fonts?.ready.then(onResize).catch(() => {});
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
