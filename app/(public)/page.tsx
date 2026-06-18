@@ -107,7 +107,9 @@ export default async function LandingPage() {
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
+        {/* Faint record-sheet grid behind the hero, masked to fade at the edges */}
+        <div aria-hidden className="absolute inset-0 bg-grid-layer pointer-events-none" />
+        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             {hasLastUpdate && (
@@ -186,7 +188,7 @@ export default async function LandingPage() {
       </section>
 
       {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
-      <section className="relative bg-cream">
+      <section className="relative bg-cream bg-grid">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-3 gap-y-8">
           {[
             {
@@ -266,7 +268,7 @@ export default async function LandingPage() {
       {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
           Each category's colour IS its icon (a flat block). Counts pulled live
           from the Atlas; each cell deep-links into the filtered Atlas. */}
-      <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
+      <Reveal as="section" className="bg-cream bg-grid mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten themes

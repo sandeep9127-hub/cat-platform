@@ -37,29 +37,29 @@ export function BrandBar() {
   }, []);
 
   return (
-    <header
-      className={`sticky top-0 z-50 border-b backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
-        scrolled
-          ? "border-line shadow-[0_8px_24px_-16px_rgba(26,38,37,0.18)]"
-          : "border-line-soft"
-      }`}
-      style={{
-        // Tailwind's bg-paper/92 produces an invalid color because --paper is
-        // a hex value, not RGB channels. Use rgba() directly so the
-        // translucency actually applies and the backdrop-blur has something
-        // to tint.
-        backgroundColor: scrolled
-          ? "rgba(251, 248, 242, 0.86)"
-          : "rgba(251, 248, 242, 0.78)",
-      }}
-    >
-      {/* Thin amber→teal gradient hairline at top of bar — brand signature */}
-      <div className="h-px w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
+    <header className="sticky top-0 z-50 px-3 sm:px-4 lg:px-6 pt-2.5 sm:pt-3 pointer-events-none">
+      {/* Floating, detached bar — rounded, shadowed, with a margin from the edges.
+          pointer-events: the transparent gutter passes clicks through; the bar itself
+          re-enables them. */}
       <div
-        className={`max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex items-center gap-4 sm:gap-8 lg:gap-10 transition-[padding] duration-300 ease-out ${
-          scrolled ? "py-2 sm:py-2.5" : "py-3.5 sm:py-4"
+        className={`max-w-page mx-auto rounded-[18px] border backdrop-blur-md overflow-hidden pointer-events-auto transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
+          scrolled
+            ? "border-line shadow-[0_12px_32px_-16px_rgba(26,38,37,0.30)]"
+            : "border-line-soft shadow-[0_6px_22px_-16px_rgba(26,38,37,0.18)]"
         }`}
+        style={{
+          // --paper is a hex, so Tailwind's /opacity syntax breaks; rgba() directly
+          // so the translucency works and backdrop-blur has something to tint.
+          backgroundColor: scrolled ? "rgba(251, 248, 242, 0.90)" : "rgba(251, 248, 242, 0.82)",
+        }}
       >
+        {/* Thin amber→teal gradient hairline at top of the bar — brand signature */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
+        <div
+          className={`px-5 sm:px-7 lg:px-9 flex items-center gap-4 sm:gap-8 lg:gap-10 transition-[padding] duration-300 ease-out ${
+            scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"
+          }`}
+        >
         <Link href="/" className="flex items-center gap-3 no-underline text-ink group shrink-0">
           {/* The logo is rendered ONCE at 36px and CSS-scaled when the
               bar shrinks on scroll. Changing the SVG's size attribute
@@ -197,6 +197,7 @@ export function BrandBar() {
           </nav>
         </div>
       )}
+      </div>
     </header>
   );
 }
