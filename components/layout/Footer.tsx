@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
-import { CatLogo } from "./CatLogo";
 
 /**
  * Footer.
@@ -19,15 +18,13 @@ export function Footer() {
     <footer className="relative pt-16 pb-8 mt-24 bg-cream text-ink border-t border-line">
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
-          {/* CAT lockup — logo as-is, with the website link left-aligned beneath it */}
-          <div className="flex items-start gap-4">
-            <CatLogo size={54} />
-            <div className="pt-1 font-sans font-semibold text-ink text-[15.5px] leading-[1.2] tracking-[-0.01em]">
-              Consortium for
-              <br />
-              Agroecological Transformations
-            </div>
-          </div>
+          {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/cat-logo.png"
+            alt="Consortium for Agroecological Transformations"
+            className="h-[68px] sm:h-[76px] w-auto"
+          />
           <a
             href="https://www.agroecologyindia.org"
             target="_blank"

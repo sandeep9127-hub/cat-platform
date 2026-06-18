@@ -26,7 +26,7 @@ export default async function PreviewPage({
       <div className="w-full max-w-[440px]">
         <div className="flex flex-col items-center text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/cat-logo-full.svg" alt="Consortium for Agroecological Transformations" className="h-14 w-auto mb-8" />
+          <img src="/images/cat-logo.png" alt="Consortium for Agroecological Transformations" className="h-16 w-auto mb-8" />
           <span className="eyebrow">Private preview</span>
           <h1 className="font-sans font-semibold text-[clamp(26px,4vw,34px)] tracking-[-0.03em] leading-[1.1] text-ink mt-3 max-w-[18ch]">
             The Transformation Hub launches at London Climate Week
