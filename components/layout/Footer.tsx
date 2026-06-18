@@ -90,14 +90,11 @@ export function Footer() {
         />
       </div>
 
-      <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10 pt-6">
-        <div className="h-px w-full bg-line" aria-hidden />
+      <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10">
         {/* Left-aligned so the bottom-right corner is free for the goat signature. */}
-        <div className="pt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-mono-mid text-muted">
-          <span>Transformation Hub · 2026</span>
-          <span className="text-line" aria-hidden>·</span>
-          <span>Made in India · For food systems</span>
-        </div>
+        <p className="font-mono text-[10.5px] tracking-[0.05em] text-muted">
+          Copyright © 2026 Consortium for Agroecological Transformations
+        </p>
       </div>
 
       {/* Signature — the CAT goats grazing, tucked into the bottom-right corner
