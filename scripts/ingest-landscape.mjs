@@ -24,14 +24,20 @@ dns.setDefaultResultOrder("verbatim");
 // sheet layout before committing to the (slow) narrative-embedding pass.
 const RAW_ARGS = process.argv.slice(2);
 const BUDGET_ONLY = RAW_ARGS.includes("--budget-only");
+// --budget-write rewrites ONLY the budget_lines for a landscape from its XLSX
+// (no docx, no embeddings) — used to refresh the budget table (e.g. add the
+// phase split) without re-embedding the whole narrative.
+const BUDGET_WRITE = RAW_ARGS.includes("--budget-write");
+const BUDGET_XLSX_ONLY = BUDGET_ONLY || BUDGET_WRITE;
 const POS = RAW_ARGS.filter((a) => !a.startsWith("--"));
 const SLUG = POS[0];
-const DOCX_PATH = BUDGET_ONLY ? null : POS[1];
-const XLSX_PATH = BUDGET_ONLY ? POS[1] : POS[2];
-if (!SLUG || !XLSX_PATH || (!BUDGET_ONLY && !DOCX_PATH)) {
+const DOCX_PATH = BUDGET_XLSX_ONLY ? null : POS[1];
+const XLSX_PATH = BUDGET_XLSX_ONLY ? POS[1] : POS[2];
+if (!SLUG || !XLSX_PATH || (!BUDGET_XLSX_ONLY && !DOCX_PATH)) {
   console.error(
     "Usage: ingest-landscape.mjs <slug> <lip.docx> <budget.xlsx>\n" +
-      "   or: ingest-landscape.mjs --budget-only <slug> <budget.xlsx>  (dry run, no DB writes)"
+      "   or: ingest-landscape.mjs --budget-only  <slug> <budget.xlsx>  (dry run, no DB writes)\n" +
+      "   or: ingest-landscape.mjs --budget-write <slug> <budget.xlsx>  (rewrite budget_lines only)"
   );
   process.exit(1);
 }
@@ -295,6 +301,54 @@ async function extractBudget(filePath) {
   const hhCols = findCols(/^impact no household/);
   const haCols = findCols(/^impact no hectares/);
   const anCols = findCols(/^impact no animals/);
+
+  // Phase split. The merged group-header row above the column headers labels
+  // which phase a column belongs to ("Phase 1 - 3 years" / "Phase 2 - 4 years" /
+  // "Project period"). Merged cells leave blanks, so forward-fill the label
+  // rightward, then resolve a metric within a given phase. Handles both the
+  // "-P1"/"-P2"-suffixed exports and the bare-header ones (disambiguated only by
+  // their group).
+  const groupRow = sheet.getRow(headerRowNum - 1);
+  const groups = []; // normalised, forward-filled
+  const origGroups = []; // original casing, for display labels
+  let lastGroup = "";
+  let lastOrig = "";
+  for (let c = 1; c <= sheet.actualColumnCount; c++) {
+    const raw = (strCell(groupRow, c) || "").replace(/\s+/g, " ").trim();
+    if (raw) {
+      lastGroup = raw.toLowerCase();
+      lastOrig = raw;
+    }
+    groups[c] = lastGroup;
+    origGroups[c] = lastOrig;
+  }
+  // Identify the two non-"project period" phase groups in column order. Handles
+  // both "Phase 1 - 3 years / Phase 2 - 4 years" (3+4) and "Scale-Up Phase (Yr
+  // 1-4) / Sustainability Phase (Yr 5-7)" (4+3). First = early phase, second =
+  // late phase, regardless of the names used.
+  const isPhaseGroup = (g) => /phase|scale|sustainab|yr ?\d|year/.test(g) && !/project/.test(g);
+  const phaseOrder = [];
+  for (let c = 1; c <= sheet.actualColumnCount; c++) {
+    const g = groups[c];
+    if (g && isPhaseGroup(g) && !phaseOrder.includes(g)) phaseOrder.push(g);
+  }
+  const earlyGroup = phaseOrder[0] || null;
+  const lateGroup = phaseOrder[1] || null;
+  const colInGroup = (g, headerRe) => {
+    if (!g) return null;
+    for (let c = 1; c <= sheet.actualColumnCount; c++) {
+      if (groups[c] === g && headerRe.test(norm(strCell(headerRow, c)))) return c;
+    }
+    return null;
+  };
+  const labelForGroup = (g) => {
+    if (!g) return null;
+    for (let c = 1; c <= sheet.actualColumnCount; c++) if (groups[c] === g) return origGroups[c];
+    return null;
+  };
+  const phase1Label = labelForGroup(earlyGroup);
+  const phase2Label = labelForGroup(lateGroup);
+
   const projTotalCol = findCol(/total intervention cost for project period/);
   if (projTotalCol) {
     const col = {
@@ -333,6 +387,15 @@ async function extractBudget(filePath) {
       economic: findCol(/^economic purpose/),
       institution: findCol(/^institution type/),
       capitalType: findCol(/^capital contributed to/),
+      // Per-phase amounts — early phase (yrs 1-3 or 1-4) and late phase, by group.
+      p1Total: colInGroup(earlyGroup, /^total intervention cost(?! for project)/),
+      p2Total: colInGroup(lateGroup, /^total intervention cost(?! for project)/),
+      p1Govt: colInGroup(earlyGroup, /^govt(?!\s*scheme)/),
+      p2Govt: colInGroup(lateGroup, /^govt(?!\s*scheme)/),
+      p1Community: colInGroup(earlyGroup, /^community/),
+      p2Community: colInGroup(lateGroup, /^community/),
+      p1Invest: colInGroup(earlyGroup, /^investment required/),
+      p2Invest: colInGroup(lateGroup, /^investment required/),
     };
     const cleanRows = [];
     for (let r = headerRowNum + 1; r <= sheet.actualRowCount; r++) {
@@ -399,6 +462,16 @@ async function extractBudget(filePath) {
         economic_tag: s(col.economic),
         institution_type: s(col.institution),
         capital_type: s(col.capitalType),
+        phase1_total_cost: n(col.p1Total),
+        phase2_total_cost: n(col.p2Total),
+        phase1_govt: n(col.p1Govt),
+        phase2_govt: n(col.p2Govt),
+        phase1_community: n(col.p1Community),
+        phase2_community: n(col.p2Community),
+        phase1_investment: n(col.p1Invest),
+        phase2_investment: n(col.p2Invest),
+        phase1_label: phase1Label,
+        phase2_label: phase2Label,
         row_index: r,
       });
     }
@@ -505,9 +578,61 @@ async function main() {
     console.log(`  grants:             ${inr(sum("grants"))}`);
     console.log(`  returnable grant:   ${inr(sum("returnable_grant"))}`);
     console.log(`  debt:               ${inr(sum("debt"))}`);
+    console.log(`  phase 1 (yr 1-3):   ${inr(sum("phase1_total_cost"))}`);
+    console.log(`  phase 2 (yr 4-7):   ${inr(sum("phase2_total_cost"))}`);
     console.log(`  packages (${pkgs.length}):`);
     for (const p of pkgs) console.log(`    · ${p}`);
     console.log(`\n  sample row:`, budget[0]);
+    await pool.end();
+    return;
+  }
+
+  // Rewrite ONLY this landscape's budget_lines from its XLSX (keeps narrative +
+  // RAG chunks untouched). Used to refresh the budget table / add the phase split.
+  if (BUDGET_WRITE) {
+    const xlsx = path.resolve(XLSX_PATH);
+    console.log(`\n→ Rewriting budget_lines for ${SLUG} from ${path.basename(xlsx)}`);
+    const budget = await extractBudget(xlsx);
+    const { rows: dr } = await pool.query(
+      `SELECT id FROM "cat".landscape_documents WHERE landscape_slug=$1 AND type='budget' ORDER BY uploaded_at DESC LIMIT 1`,
+      [SLUG]
+    );
+    const docId = dr[0]?.id ?? null;
+    await pool.query(`DELETE FROM "cat".landscape_budget_lines WHERE landscape_slug=$1`, [SLUG]);
+    for (const b of budget) {
+      await pool.query(
+        `INSERT INTO "cat".landscape_budget_lines
+          (landscape_slug, source_document_id, category, category_no, intervention,
+           subintervention, package, capital_cost_inr, capital_description,
+           recurring_cost_inr, recurring_description, years, per_unit_cost_inr, units,
+           total_intervention_cost_inr, govt_inr, govt_scheme, community_inr,
+           investment_required_inr, grants_inr, returnable_grant_inr, outcome_finance_inr,
+           debt_inr, impact_households, impact_hectares, impact_animals,
+           climate_tag, equity_tag, gender_tag, economic_tag, institution_type, capital_type,
+           phase1_total_cost_inr, phase2_total_cost_inr, phase1_govt_inr, phase2_govt_inr,
+           phase1_community_inr, phase2_community_inr, phase1_investment_required_inr,
+           phase2_investment_required_inr, phase1_label, phase2_label, row_index)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)`,
+        [
+          SLUG, docId, b.category, b.cat_no, b.intervention, b.subintervention, b.package,
+          b.capital_cost, b.capital_description, b.recurring_cost, b.recurring_description,
+          b.years, b.per_unit_cost, b.units, b.total_cost, b.govt, b.govt_scheme, b.community,
+          b.investment_required, b.grants, b.returnable_grant, b.outcome_finance, b.debt,
+          b.impact_households, b.impact_hectares, b.impact_animals, b.climate_tag, b.equity_tag,
+          b.gender_tag, b.economic_tag, b.institution_type, b.capital_type,
+          b.phase1_total_cost ?? null, b.phase2_total_cost ?? null, b.phase1_govt ?? null,
+          b.phase2_govt ?? null, b.phase1_community ?? null, b.phase2_community ?? null,
+          b.phase1_investment ?? null, b.phase2_investment ?? null,
+          b.phase1_label ?? null, b.phase2_label ?? null, b.row_index,
+        ]
+      );
+    }
+    const sum = (k) => budget.reduce((s, b) => s + (Number(b[k]) || 0), 0);
+    const cr = (n) => `₹${(n / 1e7).toFixed(2)}Cr`;
+    console.log(
+      `  ${budget.length} budget lines rewritten. total ${cr(sum("total_cost"))} ` +
+        `(P1 ${cr(sum("phase1_total_cost"))} + P2 ${cr(sum("phase2_total_cost"))})`
+    );
     await pool.end();
     return;
   }
@@ -589,8 +714,11 @@ async function main() {
          total_intervention_cost_inr, govt_inr, govt_scheme, community_inr,
          investment_required_inr, grants_inr, returnable_grant_inr, outcome_finance_inr,
          debt_inr, impact_households, impact_hectares, impact_animals,
-         climate_tag, equity_tag, gender_tag, economic_tag, institution_type, capital_type, row_index)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33)`,
+         climate_tag, equity_tag, gender_tag, economic_tag, institution_type, capital_type,
+         phase1_total_cost_inr, phase2_total_cost_inr, phase1_govt_inr, phase2_govt_inr,
+         phase1_community_inr, phase2_community_inr, phase1_investment_required_inr,
+         phase2_investment_required_inr, phase1_label, phase2_label, row_index)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)`,
       [
         SLUG,
         budgetDocId,
@@ -624,6 +752,16 @@ async function main() {
         b.economic_tag,
         b.institution_type,
         b.capital_type,
+        b.phase1_total_cost ?? null,
+        b.phase2_total_cost ?? null,
+        b.phase1_govt ?? null,
+        b.phase2_govt ?? null,
+        b.phase1_community ?? null,
+        b.phase2_community ?? null,
+        b.phase1_investment ?? null,
+        b.phase2_investment ?? null,
+        b.phase1_label ?? null,
+        b.phase2_label ?? null,
         b.row_index,
       ]
     );
