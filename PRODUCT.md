@@ -30,6 +30,8 @@ The plan in §1 to §19 still describes the editorial publication accurately. Si
 
 **Contractor confidentiality (locked):** the climate valuation is produced with an external contractor's model. That contractor's name must never appear on any user-facing surface or in shipped output. Refer to it only as "the modelled climate valuation".
 
+**Editorial transparency (June 2026 decision):** the About page now states explicitly that entries are AI-generated, then human-reviewed before publishing. The standalone `/editorial-process` and `/style-guide` pages were removed and the editorial process folded into `/about#editorial-process`; `/editors` and `/funders` were also removed. This is a more explicit AI disclosure than the original §6 invariant ("AI authorship is never displayed as authorship"); the human-approval gate is unchanged, so a published `cat_authored` entry is still CAT-authored.
+
 ---
 
 ## 1. Product purpose

@@ -1,8 +1,8 @@
 import { Scale, ShoppingCart, Wallet, type LucideIcon } from "lucide-react";
 
 /**
- * The three CAT levers: Policy, Markets, Finance. Used on /about,
- * /editorial-process, and landscape detail pages to surface the strategic frame.
+ * The three CAT levers: Policy, Markets, Finance. Used on /about and landscape
+ * detail pages to surface the strategic frame.
  * Floating tile treatment with brand-rotated accents.
  */
 export function ThreeLevers() {

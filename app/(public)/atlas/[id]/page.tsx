@@ -263,7 +263,7 @@ export default async function AtlasRecordPage({ params }: Props) {
           </p>
           <div className="mt-5 flex flex-wrap gap-3 items-center font-mono text-[10px] uppercase tracking-[0.14em]">
             <Link
-              href="/editorial-process"
+              href="/about#editorial-process"
               className="inline-flex items-center gap-1.5 text-teal border-b border-line-soft pb-0.5 hover:border-teal transition-colors"
             >
               How entries are written

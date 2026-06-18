@@ -69,11 +69,11 @@ export default function AboutPage() {
             Treat every entry as if a funder, the originating organisation, and a critical
             journalist will all read it. The &quot;what did not work&quot; field is required design
             infrastructure, not a footnote. Plain language. Short sentences. Voice over jargon.
-            Read the{" "}
-            <Link href="/editorial-process" className="text-teal underline-offset-2 hover:underline">
-              editorial process
-            </Link>{" "}
-            for how an entry gets from a public source to a published page.
+            See{" "}
+            <a href="#editorial-process" className="text-teal underline-offset-2 hover:underline">
+              how an entry gets published
+            </a>{" "}
+            below, from a public source to a page (and note: entries are AI-generated, human-approved).
           </Block>
 
           <Block label="Who this is for">
@@ -106,6 +106,100 @@ export default function AboutPage() {
           </div>
         </aside>
       </Reveal>
+
+      {/* Editorial process, folded in from the former standalone page */}
+      <section id="editorial-process">
+        <Reveal as="div" className="mt-24" delay={120}>
+          <div className="flex items-baseline gap-4 sm:gap-7 mb-6 flex-wrap">
+            <h2 className="font-sans font-semibold text-[26px] sm:text-[30px] lg:text-[34px] tracking-[-0.02em] text-ink">
+              How an entry <span className="text-teal">gets published</span>
+            </h2>
+            <span className="flex-1 h-px bg-line mt-[14px] sm:mt-[18px] hidden sm:block" />
+          </div>
+
+          {/* Explicit AI-generated disclosure */}
+          <div className="callout callout-teal max-w-[66ch] mb-10">
+            <span className="eyebrow block mb-2">AI-generated, human-approved</span>
+            <p className="text-[15.5px] text-ink-soft leading-[1.6]">
+              To be explicit: the entries on this Platform are{" "}
+              <strong className="text-ink">AI-generated</strong>. An AI pipeline drafts each one from
+              public sources. A CAT editor then checks every sentence against those sources and approves,
+              edits, or rejects it before it is published. AI does the production work; it never makes the
+              editorial decision, and it never edits a published entry silently.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
+            <div className="max-w-reading">
+              <Step n="01" title="Sourcing">
+                A registry of around 80 to 150 trusted sources is crawled weekly: state agriculture
+                departments, NABARD and IFAD project pages, key research institutions, partner annual
+                reports. A separate AI discovery agent proposes new programmes from web search,
+                allowlisted to <code>.gov.in</code>, <code>.org</code>, and major news domains. The
+                output lands in a queue, not the public surface.
+              </Step>
+              <Step n="02" title="Drafting (AI)">
+                For new candidates or detected source updates, AI reads the source content (HTML, PDFs)
+                and drafts the five narrative blocks of an entry: context, attempted, achieved, what
+                worked, what did not work. Every sentence carries citation anchors back to the source.
+              </Step>
+              <Step n="03" title="Review (human)">
+                A CAT editor opens the AI draft in the admin desk and reads it side by side with the
+                source passages. They edit prose, fix tone, push back on overclaims, and flag where a
+                programme&apos;s own materials are not honest enough about limitations.
+              </Step>
+              <Step n="04" title="Approval (human)">
+                The editor approves, returns for edits, or rejects. Approved entries publish and become
+                part of the library funders and journalists read. Only the latest version is public, with
+                the last-reviewed date visible on every entry.
+              </Step>
+              <Step n="05" title="Freshness">
+                A daily sweep re-fetches the source for every published entry. When a source changes
+                materially, the entry is flagged for review with a one-line diff summary. Public prose is
+                never edited silently. Dates older than six months turn red as a freshness signal.
+              </Step>
+              <Step n="06" title="Submissions">
+                Organisations can pitch their own programmes to the editors at{" "}
+                <a href="/contact" className="text-teal underline-offset-2 hover:underline">info@agroecologyindia.org</a>.
+                Submissions enter the same review queue.
+              </Step>
+            </div>
+
+            <aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
+              <div className="callout callout-amber">
+                <span className="eyebrow block mb-3">Endorsement tiers</span>
+                <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[13.5px] text-ink-soft leading-[1.55]">
+                  <li>
+                    <strong className="text-amber-deep font-semibold">CAT Authored</strong>
+                    <br />AI-drafted from public sources, then researched and edited by CAT. CAT vouches for the prose.
+                  </li>
+                  <li>
+                    <strong className="text-teal font-semibold">CAT Endorsed</strong>
+                    <br />Submitted by the lead organisation. Reviewed and endorsed by CAT.
+                  </li>
+                  <li>
+                    <strong className="text-muted font-semibold">CAT Listed</strong>
+                    <br />Listed because the programme exists. CAT does not vouch for the description.
+                  </li>
+                </ul>
+              </div>
+              <div className="callout callout-teal">
+                <span className="eyebrow block mb-3">Where AI stops</span>
+                <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[13.5px] text-ink-soft leading-[1.55]">
+                  <li>AI never decides what publishes.</li>
+                  <li>AI never silently edits a published entry.</li>
+                  <li>The discovery agent is allowlisted, not the open web.</li>
+                  <li>Every public entry has been approved by a human.</li>
+                </ul>
+                <p className="mt-3 pt-3 border-t border-line/70 text-[12px] text-muted leading-[1.5]">
+                  AI can make mistakes. That is exactly why a human editor checks every entry against its
+                  sources before it goes up.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </Reveal>
+      </section>
 
       {/* Three Levers */}
       <Reveal as="section" className="mt-24" delay={120}>
@@ -150,12 +244,12 @@ export default function AboutPage() {
             >
               The CAT Landscapes →
             </Link>
-            <Link
-              href="/editorial-process"
+            <a
+              href="#editorial-process"
               className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
             >
               Editorial process →
-            </Link>
+            </a>
           </div>
         </div>
       </Reveal>
@@ -171,6 +265,20 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </span>
       <p className="text-[16.5px] leading-[1.65] text-ink-soft">{children}</p>
+    </section>
+  );
+}
+
+function Step({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+  return (
+    <section className="my-9 grid grid-cols-[56px_1fr] gap-5 items-start">
+      <span className="font-mono text-[12px] uppercase tracking-[0.18em] text-amber-deep font-semibold pt-2 border-t-2 border-amber-deep">
+        {n}
+      </span>
+      <div>
+        <h3 className="font-sans font-semibold text-[20px] tracking-[-0.02em] text-ink mb-2">{title}</h3>
+        <div className="text-[16px] leading-[1.6] text-ink-soft">{children}</div>
+      </div>
     </section>
   );
 }
