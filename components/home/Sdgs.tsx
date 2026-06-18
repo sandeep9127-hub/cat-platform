@@ -24,14 +24,14 @@ export function Sdgs() {
       />
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-center">
-        <SectionOpener number="02" label="Our commitment to SDGs" align="centre" />
+        <SectionOpener label="Our commitment to SDGs" align="centre" />
         <h2 className="font-sans text-[clamp(26px,3.0vw,38px)] font-light text-[color:var(--navy-teal)] mt-5 tracking-[-0.022em] leading-[1.18] max-w-[36ch] mx-auto">
           Work on this Hub maps to 12 UN Sustainable Development Goals,
-          across food security, climate, biodiversity, and livelihoods.
+          across food security, climate, biodiversity, and livelihoods
         </h2>
         <p className="font-sans italic text-[15px] text-ink-soft mt-4 max-w-[52ch] mx-auto leading-[1.6] font-light">
-          Each landscape investment plan declares its contribution. We do not
-          claim the goals themselves, only credible contribution to them.
+          Intervention by intervention, our landscape-based investment plans contribute
+          towards these goals in small but meaningful ways.
         </p>
       </div>
 

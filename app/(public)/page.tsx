@@ -129,9 +129,8 @@ export default async function LandingPage() {
               className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
               style={{ animationDelay: "240ms" }}
             >
-              A living atlas of credible programmes from across the country, each compiled
-              from public sources and checked before it goes up. What didn&apos;t work sits
-              next to what did.
+              A living atlas of pioneer programmes from across the country, each compiled
+              and verified from public sources before it goes up.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
@@ -198,12 +197,12 @@ export default async function LandingPage() {
             {
               Icon: ShieldCheck,
               title: "Source-verified",
-              body: "Every figure is cited to where it came from. Unverifiable claims are refused, never guessed.",
+              body: "Every figure is cited to where it came from.",
             },
             {
               Icon: Globe2,
               title: "The whole sector",
-              body: "Government missions, NGO programmes, farmer federations and markets across India, not just CAT's portfolio.",
+              body: "Government missions, NGO programmes, farmer federations and markets across India, and CAT's lighthouse landscapes.",
             },
           ].map(({ Icon, title, body }, i) => (
             <div
@@ -246,8 +245,9 @@ export default async function LandingPage() {
             </h2>
             <p className="mt-4 max-w-[46ch] text-[15px] leading-[1.6] text-ink-soft">
               The Consortium for Agroecological Transformations works across India to put
-              farmers, soil, and food systems at the centre. Watch the short film on what
-              that looks like on the ground.
+              farming communities and the environment at the centre of food systems
+              transformations. Watch the short film on what that looks like through a
+              landscape-based approach.
             </p>
             <a
               href="https://www.agroecologyindia.org"
@@ -275,8 +275,8 @@ export default async function LandingPage() {
             Explore solutions by theme
           </h2>
           <p className="mt-4 max-w-[60ch] text-[15px] leading-[1.6] text-ink-soft">
-            Every solution in the Atlas is tagged to one or more of these ten themes.
-            The counts update as the Atlas grows.
+            Every solution in the Solutions Atlas is tagged to one or more of these ten
+            themes. The counts update as the Atlas grows.
           </p>
         </div>
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">

@@ -14,15 +14,22 @@ export default function AboutPage() {
       <Reveal as="header" className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end" delay={0}>
         <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
           <span className="eyebrow">About</span>
-          <h1 className="font-sans font-semibold text-hero-xl text-ink mt-4 tracking-[-0.035em] leading-[0.98]">
-            A quiet, <span className="text-teal">honest</span> record
-            <br />
-            of work that matters.
+          <h1 className="font-sans font-semibold text-hero-xl text-ink mt-4 tracking-[-0.035em] leading-[1.0]">
+            A repository of <span className="text-teal">food systems</span> initiatives,
+            landscapes, and learning from across India
           </h1>
-          <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[48ch] mt-6">
-            The Transformation Hub is the public face of the Consortium for Agroecological
-            Transformations. It documents credible food-systems work across India, anchored in
-            CAT&apos;s eleven focus landscapes and extending to the broader fraternity.
+          <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[54ch] mt-6">
+            The Transformation Hub has been developed by the Consortium for Agroecological
+            Transformations to facilitate knowledge sharing on agroecology and food systems
+            transitions in India. It documents the real story of agroecology in India, the wins
+            and the gaps, as it is unfolding through multiple stewards, initiatives, programmes
+            and innovations across the country. It also shines light on one such initiative taking
+            form through CAT&apos;s and its partners&apos; efforts: the landscape-based work across
+            eleven focus regions in India.
+          </p>
+          <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[54ch] mt-4">
+            Let&apos;s embark on an exciting journey to discover how we can build more sustainable
+            food systems together.
           </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
@@ -39,7 +46,7 @@ export default function AboutPage() {
         <div className="max-w-reading">
           <Block label="What CAT does">
             CAT (Consortium for Agroecological Transformations) supports India&apos;s 40 million
-            farmers in transitioning towards agroecological practices that enable a sustainable
+            farming households in transitioning towards agroecological practices that enable a sustainable
             and equitable food system. It unites diverse stakeholders for collaborative action
             on interlinked challenges: climate change, nutritional insecurity, farmer debt,
             biodiversity loss, and natural-resource degradation.
@@ -59,49 +66,25 @@ export default function AboutPage() {
 
           <Block label="What this Platform is">
             This is the publicly readable face of that work. It covers credible food-systems
-            programmes from across India, not just CAT&apos;s own portfolio: government missions,
-            NGO programmes, farmer federations, market infrastructure, research-led
-            interventions. Whether it&apos;s in here depends on whether it stands up to a serious
-            read, not on who runs it.
-          </Block>
-
-          <Block label="The editorial bar">
-            Treat every entry as if a funder, the originating organisation, and a critical
-            journalist will all read it. The &quot;what did not work&quot; field is required design
-            infrastructure, not a footnote. Plain language. Short sentences. Voice over jargon.
-            See{" "}
-            <a href="#editorial-process" className="text-teal underline-offset-2 hover:underline">
-              how an entry gets published
-            </a>{" "}
-            below, from a public source to a page (and note: entries are AI-generated, human-approved).
+            programmes from across India, including CAT&apos;s own portfolio: government missions,
+            NGO programmes, farmer federations, market infrastructure, and research-led
+            interventions. The key to being a part of the Hub lies in the strength and credibility
+            of the programme.
           </Block>
 
           <Block label="Who this is for">
-            Funders and their advisors. NGO programme designers. Researchers and journalists.
-            Government and policy actors. In that order, when design choices conflict. Funders
-            never need to register. Every URL is shareable.
+            Everyone in food systems: from funders, market enthusiasts, NGOs and their programme
+            designers, to researchers, communicators, government and policy actors.
           </Block>
         </div>
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="callout callout-amber">
-            <span className="eyebrow block mb-2">Standing rules</span>
-            <ul className="list-none p-0 m-0 flex flex-col gap-2 text-[14px] text-ink-soft leading-[1.55]">
-              <li>Every entry is edited by hand</li>
-              <li>Programme level, not activity level</li>
-              <li>&quot;What did not work&quot; is required</li>
-              <li>AI assists, editors decide</li>
-              <li>Funders never register</li>
-              <li>Provenance is shown openly</li>
-              <li>The map is not GIS</li>
-            </ul>
-          </div>
           <div className="callout callout-teal">
             <span className="eyebrow block mb-2">Time horizon</span>
             <p className="text-[14px] text-ink-soft leading-[1.55]">
-              Agroecological transitions are seven-year projects at minimum. The Platform
-              reflects that pace. Programmes are added when there is something defensible to
-              say, not on a release schedule.
+              Agroecological transitions in CAT&apos;s landscape-based planning are mapped across
+              seven years, our absolute minimum, as behavioural and policy shifts, viable markets,
+              and substantial environmental and economic benefits take even longer to surface.
             </p>
           </div>
         </aside>
@@ -118,59 +101,51 @@ export default function AboutPage() {
           </div>
 
           {/* Explicit AI-generated disclosure */}
-          <div className="callout callout-teal max-w-[66ch] mb-10">
+          <div className="callout callout-teal max-w-[66ch] mb-8">
             <span className="eyebrow block mb-2">AI-generated, human-approved</span>
             <p className="text-[15.5px] text-ink-soft leading-[1.6]">
-              To be explicit: the entries on this Platform are{" "}
-              <strong className="text-ink">AI-generated</strong>. An AI pipeline drafts each one from
-              public sources. A CAT editor then checks every sentence against those sources and approves,
-              edits, or rejects it before it is published. AI does the production work; it never makes the
-              editorial decision, and it never edits a published entry silently.
+              All content on this Platform is <strong className="text-ink">AI-generated</strong>, but from
+              controlled, credible sources.
             </p>
           </div>
 
           <p className="text-[16.5px] leading-[1.65] text-ink-soft max-w-reading mb-2">
-            The Platform carries two kinds of content. <strong className="text-ink">CAT Landscapes</strong>{" "}
-            are built from each landscape&apos;s Investment Plan: the plan document and its costing become the
+            The Hub carries two kinds of content. <strong className="text-ink">CAT Landscapes</strong> are
+            built from each landscape&apos;s Investment Plan: the plan document and its costing become the
             profile, the budget, the reach figures, the modelled climate valuation, and a landscape-scoped
             Ask. <strong className="text-ink">Editorial entries</strong> document credible programmes from
-            across India, drafted from public sources. Both are reviewed by a CAT editor before they go up;
-            the loop below describes the editorial-entry path.
+            across India, drafted from public sources. Both are reviewed by a CAT editor before they are
+            published; the Hub does not publish an entry silently.
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
             <div className="max-w-reading">
               <Step n="01" title="Sourcing">
-                A curated registry of trusted sources is monitored for changes: state agriculture
-                departments, NABARD and IFAD project pages, research institutions, partner annual reports.
-                A weekly AI discovery agent also proposes new programmes from web search, allowlisted to{" "}
-                <code>.gov.in</code>, <code>.org</code>, and major news domains. Everything lands in a
-                review queue, not the public surface.
+                A curated registry of trusted sources is regularly monitored for updates. A weekly AI
+                discovery agent suggests new programmes from <code>.gov.in</code>, <code>.org</code>, and
+                major news sites, with all findings placed into a review queue before being displayed.
               </Step>
               <Step n="02" title="Drafting (AI)">
-                For new candidates or detected source updates, AI reads the source content (HTML, PDFs)
-                and drafts the five narrative blocks of an entry: context, attempted, achieved, what
-                worked, what did not work. Every sentence carries citation anchors back to the source.
+                For new candidates or source updates, the AI analyses the content (like HTML and PDFs) and
+                creates five narrative blocks: context, attempts, achievements, what worked, and what
+                didn&apos;t work. Each sentence includes citation anchors to the source.
               </Step>
               <Step n="03" title="Review (human)">
-                A CAT editor opens the AI draft in the admin desk and reads it side by side with the
-                source passages. They edit prose, fix tone, push back on overclaims, and flag where a
-                programme&apos;s own materials are not honest enough about limitations.
+                A CAT editor reviews the AI draft alongside the source passages, editing prose and
+                addressing overclaims.
               </Step>
               <Step n="04" title="Approval (human)">
-                The editor approves, returns for edits, or rejects. Approved entries publish and become
-                part of the library funders and journalists read. Only the latest version is public, with
-                the last-reviewed date visible on every entry.
+                Only approved entries are published and included in the library for funders and
+                journalists. The last review date is visible for each entry.
               </Step>
-              <Step n="05" title="Freshness">
-                A weekly sweep re-fetches the source for every published entry. When a source changes
-                materially, the entry is flagged for review with a one-line diff summary. Public prose is
-                never edited silently. Dates older than six months turn red as a freshness signal.
+              <Step n="05" title="Recency">
+                A weekly review updates the source for each published entry. Entries are flagged for
+                evaluation if a source changes significantly, and dates older than six months are
+                highlighted in red to indicate recency.
               </Step>
               <Step n="06" title="Submissions">
                 Organisations can pitch their own programmes to the editors at{" "}
                 <a href="/contact" className="text-teal underline-offset-2 hover:underline">info@agroecologyindia.org</a>.
-                Submissions enter the same review queue.
               </Step>
             </div>
 
@@ -212,24 +187,15 @@ export default function AboutPage() {
         <ThreeLevers />
       </Reveal>
 
-      {/* SDGs + collaboration */}
-      <Reveal as="section" className="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16" delay={160}>
-        <div className="reveal-stagger">
+      {/* Vision */}
+      <Reveal as="section" className="mt-24" delay={160}>
+        <div className="reveal-stagger max-w-[60ch]">
           <span className="eyebrow">Our vision</span>
-          <p className="text-[20px] sm:text-[22px] text-ink leading-[1.45] mt-4 max-w-[44ch]">
+          <p className="text-[20px] sm:text-[22px] text-ink leading-[1.45] mt-4 max-w-[46ch]">
             A future where agroecology enables resilient livelihoods, healthy ecosystems, and
-            equitable food systems, rooted in local landscapes and driven by farming
-            communities.
+            equitable food systems, rooted in local landscapes and driven by farming communities.
           </p>
-        </div>
-        <div className="reveal-stagger" style={{ animationDelay: "120ms" }}>
-          <span className="eyebrow">Where we contribute</span>
-          <p className="text-[16.5px] text-ink-soft leading-[1.6] mt-4 max-w-[48ch]">
-            CAT&apos;s work contributes to multiple Sustainable Development Goals related to
-            food security, climate action, biodiversity, and livelihoods. The Platform is one
-            way we make that contribution legible, to funders, to peers, and to the public.
-          </p>
-          <div className="mt-5 flex gap-3.5">
+          <div className="mt-6 flex gap-3.5 flex-wrap">
             <Link
               href="/landscapes"
               className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"

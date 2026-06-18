@@ -36,7 +36,7 @@ export function ThreeLevers() {
       chipBg: "rgba(46,117,115,0.12)",
       chipFg: "#2E7573",
       body:
-        "Procurement at fair prices. Processing and aggregation that earn the producer a margin. Traceability protocols that survive contact with the broker chain.",
+        "Procurement at fair prices. Processing and aggregation that earn the producer a margin. Traceability protocols that survive contact with the broker chain. Consumer demand that creates a strong pull for agroecological produce.",
     },
     {
       name: "Finance",
@@ -47,7 +47,7 @@ export function ThreeLevers() {
       chipBg: "rgba(248,202,124,0.22)",
       chipFg: "#C68C2E",
       body:
-        "Patient capital. Blended financing for landscape-scale work. Working-capital instruments built around farmer-collective realities, not just commercial banking norms.",
+        "Patient capital. Blended financing for landscape-scale work. Working-capital instruments built around farmer-collective realities.",
     },
   ];
 

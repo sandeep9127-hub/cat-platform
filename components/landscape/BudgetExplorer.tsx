@@ -257,6 +257,12 @@ export function BudgetExplorer({
           />
         </section>
       )}
+      {!cat && !pkg && (
+        <p className="mt-3 font-sans text-[12px] text-muted leading-[1.5] max-w-[70ch]">
+          A package bundles related interventions into one costed workstream: the unit the plan is
+          financed and delivered in.
+        </p>
+      )}
 
       {/* Line table */}
       <section className="mt-14">
@@ -300,11 +306,6 @@ export function BudgetExplorer({
                   </td>
                   <td className="px-4 py-3.5 align-top">
                     <div className="font-sans text-ink-soft leading-snug">{l.subintervention ?? l.intervention ?? "—"}</div>
-                    {l.subintervention && l.intervention && (
-                      <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-1">
-                        {l.intervention}
-                      </div>
-                    )}
                   </td>
                   <td className="px-4 py-3.5 align-top font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
                     {l.package ?? "—"}

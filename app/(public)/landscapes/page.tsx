@@ -113,8 +113,9 @@ export default async function LandscapesPage() {
             The eleven plans
           </h2>
           <p className="font-sans text-[15px] text-ink-soft leading-[1.55] mt-3">
-            Each landscape&apos;s Investment Plan, illustrated. Open one to explore its profile, the
-            investment, and the work on the ground.
+            A comprehensive investment plan for each landscape has been prepared. Open the following
+            to explore this in brief: the landscape&apos;s profile, the work planned on the ground, and
+            its related investment.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="font-sans text-[14px] text-ink-soft">

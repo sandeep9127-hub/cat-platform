@@ -196,6 +196,10 @@ export default async function MapPage({
             </Link>
             .
           </p>
+          <p className="text-[15px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[54ch] mt-4">
+            Explore the whole library at once, or use the filters below to view related solutions
+            and programmes.
+          </p>
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
           <span className="eyebrow">In the Solutions Atlas</span>

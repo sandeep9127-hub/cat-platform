@@ -296,8 +296,8 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
             </h2>
             <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.6] mt-6 max-w-[52ch]">
               From the Himalayan valleys of Pangi to the Sundarbans delta, eleven places
-              where the Consortium works to transform India&apos;s food systems, each one a
-              different climate, community, and way of farming.
+              where partners within the Consortium work to transform India&apos;s food systems,
+              each one in a different climate, community, and way of farming.
             </p>
           </div>
 
@@ -313,7 +313,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 ref={(el) => {
                   chapterRefs.current[i + 1] = el;
                 }}
-                className="lg:min-h-[82vh] flex flex-col justify-center pt-12 pb-20 lg:pt-0 lg:pb-28"
+                className="lg:min-h-[82vh] flex flex-col justify-center pt-12 pb-28 lg:pt-0 lg:pb-40"
               >
                 <div className={"transition-opacity duration-500 " + (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")}>
                   {profile?.photos?.[0] && (

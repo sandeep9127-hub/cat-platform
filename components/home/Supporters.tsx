@@ -52,14 +52,14 @@ export function Supporters() {
       />
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 text-center">
-        <SectionOpener number="01" label="Our supporters" align="centre" />
+        <SectionOpener label="Our supporters" align="centre" />
         <h2 className="font-sans text-[clamp(28px,3.2vw,40px)] font-light text-[color:var(--navy-teal)] mt-5 tracking-[-0.022em] leading-[1.18] max-w-[34ch] mx-auto">
           A network of organisations and individuals with deep experience in food
-          systems, policy, and systems change.
+          systems, policy, and systems change
         </h2>
         <p className="font-sans italic text-[15px] text-ink-soft mt-4 max-w-[52ch] mx-auto leading-[1.6] font-light">
-          The Consortium is convened with support from the partners below. None
-          influence what gets published.
+          The Consortium has been convened through enduring support from the partners
+          below.
         </p>
       </div>
 

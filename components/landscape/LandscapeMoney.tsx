@@ -153,7 +153,7 @@ export function LandscapeMoney(props: MoneyProps) {
           <div ref={barsWrap} className="mt-9 pt-7 border-t border-line">
             <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold mb-1.5">Delivery packages by share of plan</div>
             <p className="font-sans text-[12.5px] text-muted leading-[1.5] mb-4 max-w-[58ch]">
-              A package bundles related interventions into one costed workstream — the unit the plan is financed and delivered in.
+              A package bundles related interventions into one costed workstream: the unit the plan is financed and delivered in.
             </p>
             <ul className="list-none p-0 m-0 flex flex-col gap-3.5">
               {pkgs.map((p, i) => (
