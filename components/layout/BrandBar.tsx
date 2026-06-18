@@ -81,13 +81,6 @@ export function BrandBar() {
             >
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
-            <span
-              className={`hidden sm:block font-mono tracking-[0.08em] uppercase text-muted mt-[3px] whitespace-nowrap overflow-hidden transition-all duration-300 ease-out ${
-                scrolled ? "max-h-0 opacity-0 mt-0 text-[0px]" : "max-h-4 opacity-100 text-[8.5px] md:text-[9px]"
-              }`}
-            >
-              By the Consortium for Agroecological Transformations
-            </span>
           </span>
         </Link>
         <nav className="ml-auto flex items-center gap-3.5 lg:gap-4 xl:gap-5">
@@ -95,7 +88,7 @@ export function BrandBar() {
             <Link
               key={href}
               href={href}
-              className="hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
+              className="hidden xl:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
             >
               <Icon size={13} strokeWidth={1.7} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
               <span className="relative">
@@ -118,7 +111,7 @@ export function BrandBar() {
             href={PARENT_SITE}
             target="_blank"
             rel="noreferrer"
-            className="hidden lg:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
+            className="hidden xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
           >
             <span>The Consortium</span>
             <ArrowUpRight size={12} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
@@ -137,7 +130,7 @@ export function BrandBar() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="lg:hidden p-2 -mr-2 text-ink hover:text-teal transition-colors"
+            className="xl:hidden p-2 -mr-2 text-ink hover:text-teal transition-colors"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               {open ? (
@@ -159,7 +152,7 @@ export function BrandBar() {
 
       {/* Disclosure sheet */}
       {open && (
-        <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-[18px] overflow-hidden">
+        <div className="xl:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-[18px] overflow-hidden">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
             {NAV_LINKS.map(({ href, label, Icon }) => (
               // No per-item stagger — the parent drawer already animates

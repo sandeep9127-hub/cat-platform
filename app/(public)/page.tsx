@@ -186,7 +186,7 @@ export default async function LandingPage() {
       </section>
 
       {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
-      <section className="relative bg-cream bg-grid">
+      <section className="relative bg-cream">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-3 gap-y-8">
           {[
             {
@@ -234,7 +234,7 @@ export default async function LandingPage() {
       </section>
 
       {/* THE APPROACH — short film from the Consortium, lazy-loaded facade */}
-      <Reveal as="section" className="bg-paper bg-grid border-t border-line">
+      <Reveal as="section" className="bg-paper border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-center">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
@@ -266,7 +266,7 @@ export default async function LandingPage() {
       {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
           Each category's colour IS its icon (a flat block). Counts pulled live
           from the Atlas; each cell deep-links into the filtered Atlas. */}
-      <Reveal as="section" className="bg-cream bg-grid mt-16 lg:mt-20 border-t border-line">
+      <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten themes
