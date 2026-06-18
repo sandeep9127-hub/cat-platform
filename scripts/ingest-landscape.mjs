@@ -281,6 +281,20 @@ async function extractBudget(filePath) {
     }
     return null;
   };
+  // Returns ALL columns matching a header, in document order. Phase-1/Phase-2
+  // pairs (impact metrics) sometimes carry explicit "-P1"/"-P2" suffixes and
+  // sometimes share an identical bare header ("Impact no Household" twice) — in
+  // both cases the first match is Phase 1 and the second is Phase 2.
+  const findCols = (re) => {
+    const out = [];
+    for (let c = 1; c <= sheet.actualColumnCount; c++) {
+      if (re.test(norm(strCell(headerRow, c)))) out.push(c);
+    }
+    return out;
+  };
+  const hhCols = findCols(/^impact no household/);
+  const haCols = findCols(/^impact no hectares/);
+  const anCols = findCols(/^impact no animals/);
   const projTotalCol = findCol(/total intervention cost for project period/);
   if (projTotalCol) {
     const col = {
@@ -307,12 +321,12 @@ async function extractBudget(filePath) {
       community: findCol(/^total community(?:[\s-]?p1\+p2)?$/),
       invest: findCol(/^total investment required(?:[\s-]?p1\+p2)?$/),
       govtScheme: findCol(/^govt scheme description[\s-]?p1/),
-      hhP1: findCol(/^impact no household[\s-]?p1/),
-      hhP2: findCol(/^impact no household[\s-]?p2/),
-      haP1: findCol(/^impact no hectares[\s-]?p1/),
-      haP2: findCol(/^impact no hectares[\s-]?p2/),
-      anP1: findCol(/^impact no animals[\s-]?p1/),
-      anP2: findCol(/^impact no animals[\s-]?p2/),
+      hhP1: hhCols[0] ?? null,
+      hhP2: hhCols[1] ?? null,
+      haP1: haCols[0] ?? null,
+      haP2: haCols[1] ?? null,
+      anP1: anCols[0] ?? null,
+      anP2: anCols[1] ?? null,
       climate: findCol(/^climate$/),
       equity: findCol(/^equity$/),
       gender: findCol(/^gender$/),
