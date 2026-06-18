@@ -28,6 +28,8 @@ export function Supporters() {
           "linear-gradient(180deg, rgba(232,240,234,0.50) 0%, rgba(232,240,234,0.20) 100%)",
       }}
     >
+      {/* Faint record-sheet grid, behind everything (the edge fades soften it) */}
+      <div aria-hidden className="absolute inset-0 bg-grid pointer-events-none" />
       {/* Soft sage edge fades — top and bottom of section dissolve into paper */}
       <div
         aria-hidden

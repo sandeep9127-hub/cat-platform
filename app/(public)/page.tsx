@@ -107,9 +107,7 @@ export default async function LandingPage() {
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative bg-cream">
-        {/* Faint record-sheet grid behind the hero, masked to fade at the edges */}
-        <div aria-hidden className="absolute inset-0 bg-grid-layer pointer-events-none" />
-        <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             {hasLastUpdate && (

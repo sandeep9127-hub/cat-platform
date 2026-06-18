@@ -42,7 +42,7 @@ export function BrandBar() {
           pointer-events: the transparent gutter passes clicks through; the bar itself
           re-enables them. */}
       <div
-        className={`max-w-page mx-auto rounded-[18px] border backdrop-blur-md overflow-hidden pointer-events-auto transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
+        className={`max-w-page mx-auto rounded-[18px] border backdrop-blur-md pointer-events-auto transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
           scrolled
             ? "border-line shadow-[0_12px_32px_-16px_rgba(26,38,37,0.30)]"
             : "border-line-soft shadow-[0_6px_22px_-16px_rgba(26,38,37,0.18)]"
@@ -54,9 +54,9 @@ export function BrandBar() {
         }}
       >
         {/* Thin amber→teal gradient hairline at top of the bar — brand signature */}
-        <div className="h-[2px] w-full bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
+        <div className="h-[2px] w-full rounded-t-[18px] bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
         <div
-          className={`px-5 sm:px-7 lg:px-9 flex items-center gap-4 sm:gap-8 lg:gap-10 transition-[padding] duration-300 ease-out ${
+          className={`px-4 sm:px-6 lg:px-7 flex items-center gap-3 sm:gap-5 lg:gap-7 transition-[padding] duration-300 ease-out ${
             scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"
           }`}
         >
@@ -90,7 +90,7 @@ export function BrandBar() {
             </span>
           </span>
         </Link>
-        <nav className="ml-auto flex items-center gap-4 lg:gap-[18px] xl:gap-6">
+        <nav className="ml-auto flex items-center gap-3.5 lg:gap-4 xl:gap-5">
           {NAV_LINKS.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -159,7 +159,7 @@ export function BrandBar() {
 
       {/* Disclosure sheet */}
       {open && (
-        <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down">
+        <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-[18px] overflow-hidden">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
             {NAV_LINKS.map(({ href, label, Icon }) => (
               // No per-item stagger — the parent drawer already animates

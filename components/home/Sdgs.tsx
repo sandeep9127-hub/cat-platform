@@ -5,6 +5,8 @@ import { SectionOpener } from "@/components/ui/SectionOpener";
 export function Sdgs() {
   return (
     <section className="relative overflow-hidden py-16 lg:py-24">
+      {/* Faint record-sheet grid, behind everything */}
+      <div aria-hidden className="absolute inset-0 bg-grid pointer-events-none" />
       <div
         className="absolute inset-0 pointer-events-none"
         aria-hidden
