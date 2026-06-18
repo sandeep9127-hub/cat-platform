@@ -129,14 +129,23 @@ export default function AboutPage() {
             </p>
           </div>
 
+          <p className="text-[16.5px] leading-[1.65] text-ink-soft max-w-reading mb-2">
+            The Platform carries two kinds of content. <strong className="text-ink">CAT Landscapes</strong>{" "}
+            are built from each landscape&apos;s Investment Plan: the plan document and its costing become the
+            profile, the budget, the reach figures, the modelled climate valuation, and a landscape-scoped
+            Ask. <strong className="text-ink">Editorial entries</strong> document credible programmes from
+            across India, drafted from public sources. Both are reviewed by a CAT editor before they go up;
+            the loop below describes the editorial-entry path.
+          </p>
+
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-12">
             <div className="max-w-reading">
               <Step n="01" title="Sourcing">
-                A registry of around 80 to 150 trusted sources is crawled weekly: state agriculture
-                departments, NABARD and IFAD project pages, key research institutions, partner annual
-                reports. A separate AI discovery agent proposes new programmes from web search,
-                allowlisted to <code>.gov.in</code>, <code>.org</code>, and major news domains. The
-                output lands in a queue, not the public surface.
+                A curated registry of trusted sources is monitored for changes: state agriculture
+                departments, NABARD and IFAD project pages, research institutions, partner annual reports.
+                A weekly AI discovery agent also proposes new programmes from web search, allowlisted to{" "}
+                <code>.gov.in</code>, <code>.org</code>, and major news domains. Everything lands in a
+                review queue, not the public surface.
               </Step>
               <Step n="02" title="Drafting (AI)">
                 For new candidates or detected source updates, AI reads the source content (HTML, PDFs)
@@ -154,7 +163,7 @@ export default function AboutPage() {
                 the last-reviewed date visible on every entry.
               </Step>
               <Step n="05" title="Freshness">
-                A daily sweep re-fetches the source for every published entry. When a source changes
+                A weekly sweep re-fetches the source for every published entry. When a source changes
                 materially, the entry is flagged for review with a one-line diff summary. Public prose is
                 never edited silently. Dates older than six months turn red as a freshness signal.
               </Step>
