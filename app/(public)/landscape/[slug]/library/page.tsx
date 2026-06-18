@@ -105,7 +105,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                 return (
                   <li key={d.id} className="reveal-stagger" style={{ animationDelay: `${i * 60}ms` }}>
                     <article
-                      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-all duration-300 ease-out hover:-translate-y-0.5"
+                      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
                       style={{
                         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${accent.glow}`,
                         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,

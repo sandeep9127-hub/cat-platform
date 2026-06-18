@@ -335,7 +335,7 @@ export default async function LandingPage() {
                   </span>
                   <span
                     aria-hidden
-                    className="font-mono opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                    className="font-mono opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-300 ease-out"
                     style={{ color: t.colourHex }}
                   >
                     &rarr;

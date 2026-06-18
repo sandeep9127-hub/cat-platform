@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
+import { FooterDecor } from "./FooterDecor";
 
 /**
  * Footer.
@@ -17,18 +17,8 @@ import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
 export function Footer() {
   return (
     <footer className="relative pt-16 pb-9 mt-24 bg-cream text-ink border-t border-line overflow-hidden">
-      {/* Watercolor wash — the CAT brand band (botanical sprigs frame the sides),
-          matching agroecologyindia.org. Decorative; sits behind the content.
-          next/image auto-serves an optimised WebP so the 1MB PNG isn't shipped. */}
-      <div aria-hidden className="absolute inset-0 opacity-[0.55] pointer-events-none">
-        <Image
-          src="/illustrations/meadow-band.png"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-      </div>
+      {/* Watercolor band wash (parallax) + goat signature — the animated decor. */}
+      <FooterDecor />
       <div className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
           {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
@@ -97,17 +87,6 @@ export function Footer() {
         </p>
       </div>
 
-      {/* Signature — the CAT goats grazing, tucked into the bottom-right corner
-          like a hand-drawn maker's mark (desktop only; decorative). */}
-      <Image
-        src="/illustrations/goats.png"
-        alt=""
-        aria-hidden
-        width={620}
-        height={601}
-        sizes="200px"
-        className="hidden md:block absolute z-10 bottom-3 right-[3%] lg:right-[5%] w-[150px] lg:w-[185px] h-auto pointer-events-none select-none"
-      />
     </footer>
   );
 }

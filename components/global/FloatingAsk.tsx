@@ -164,7 +164,7 @@ export function FloatingAsk() {
         aria-label={open ? "Close Ask" : `Open ${mode.label}`}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-[60] inline-flex items-center gap-2 px-4 py-3 rounded-full text-paper shadow-[0_8px_24px_-8px_rgba(46,117,115,0.45),0_2px_4px_rgba(26,38,37,0.10),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 ${
+        className={`fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-[60] inline-flex items-center gap-2 px-4 py-3 rounded-full text-paper shadow-[0_8px_24px_-8px_rgba(46,117,115,0.45),0_2px_4px_rgba(26,38,37,0.10),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[transform,box-shadow,background-color] duration-300 ${
           open
             ? "bg-deep-teal scale-95"
             : "bg-gradient-to-br from-deep-teal via-teal to-deep-teal hover:scale-105"
@@ -329,7 +329,7 @@ export function FloatingAsk() {
                 type="submit"
                 disabled={!input.trim() || busy}
                 aria-label="Send"
-                className="m-1.5 p-2 rounded-[4px] bg-gradient-to-br from-deep-teal to-teal text-paper disabled:opacity-40 disabled:cursor-not-allowed hover:from-teal hover:to-deep-teal transition-all"
+                className="m-1.5 p-2 rounded-[4px] bg-gradient-to-br from-deep-teal to-teal text-paper disabled:opacity-40 disabled:cursor-not-allowed hover:from-teal hover:to-deep-teal transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
               >
                 <ArrowUp size={14} strokeWidth={2} aria-hidden />
               </button>

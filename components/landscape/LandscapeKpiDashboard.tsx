@@ -247,7 +247,7 @@ function KpiTile({
       ref={ref}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="group relative overflow-hidden rounded-[6px] border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-all duration-300 ease-out hover:-translate-y-0.5"
+      className="group relative overflow-hidden rounded-[6px] border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
       style={{
         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -12px ${tone.glow}`,
         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,

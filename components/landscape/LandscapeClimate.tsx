@@ -212,7 +212,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 <li
                   key={s.key}
                   {...focusFns(s.key)}
-                  className="bg-paper p-5 cursor-pointer outline-none transition-all focus-visible:ring-2 focus-visible:ring-inset"
+                  className="bg-paper p-5 cursor-pointer outline-none transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-inset"
                   style={{
                     opacity: dimmed ? 0.55 : 1,
                     boxShadow: active ? `inset 0 0 0 2px ${s.colour}` : "none",

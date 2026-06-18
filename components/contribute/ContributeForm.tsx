@@ -359,7 +359,7 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
         <button
           type="submit"
           disabled={submitting}
-          className="group relative inline-flex items-center justify-center gap-2 px-7 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-[8px] text-paper bg-gradient-to-br from-deep-teal via-teal to-deep-teal shadow-[0_10px_24px_-8px_rgba(46,117,115,0.55),0_2px_4px_rgba(26,38,37,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal hover:-translate-y-px hover:shadow-[0_14px_32px_-8px_rgba(46,117,115,0.65),0_4px_8px_rgba(26,38,37,0.14),inset_0_1px_0_rgba(255,255,255,0.22)] active:translate-y-0 active:shadow-[0_4px_10px_-2px_rgba(46,117,115,0.45),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all duration-200 ease-out disabled:opacity-60 disabled:cursor-not-allowed"
+          className="group relative inline-flex items-center justify-center gap-2 px-7 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-[8px] text-paper bg-gradient-to-br from-deep-teal via-teal to-deep-teal shadow-[0_10px_24px_-8px_rgba(46,117,115,0.55),0_2px_4px_rgba(26,38,37,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] hover:from-teal hover:to-deep-teal hover:-translate-y-px hover:shadow-[0_14px_32px_-8px_rgba(46,117,115,0.65),0_4px_8px_rgba(26,38,37,0.14),inset_0_1px_0_rgba(255,255,255,0.22)] active:translate-y-0 active:shadow-[0_4px_10px_-2px_rgba(46,117,115,0.45),inset_0_1px_0_rgba(255,255,255,0.10)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting…" : "Submit for editorial review"}
           <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
@@ -424,7 +424,7 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
 }
 
 const inputCls =
-  "w-full mt-2 px-4 py-3 bg-paper border border-line rounded-[6px] font-sans text-[15px] leading-[1.55] text-ink placeholder:text-muted/70 placeholder:italic shadow-[inset_0_1px_0_rgba(26,38,37,0.04)] hover:border-line-soft hover:bg-cream/40 focus:outline-none focus:border-teal focus:bg-paper focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.04),0_0_0_3px_rgba(46,117,115,0.18),0_0_0_4px_rgba(248,202,124,0.45)] transition-all duration-200 ease-out";
+  "w-full mt-2 px-4 py-3 bg-paper border border-line rounded-[6px] font-sans text-[15px] leading-[1.55] text-ink placeholder:text-muted/70 placeholder:italic shadow-[inset_0_1px_0_rgba(26,38,37,0.04)] hover:border-line-soft hover:bg-cream/40 focus:outline-none focus:border-teal focus:bg-paper focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.04),0_0_0_3px_rgba(46,117,115,0.18),0_0_0_4px_rgba(248,202,124,0.45)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out";
 
 function Field({
   label,

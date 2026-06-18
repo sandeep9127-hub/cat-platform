@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
+import { ClipReveal } from "@/components/ui/ClipReveal";
 
 const VIDEO_ID = "8XQ-Bv_mBAE";
 
@@ -15,6 +16,7 @@ export function ApproachFilm() {
   const [playing, setPlaying] = useState(false);
 
   return (
+    <ClipReveal className="rounded-[12px]">
     <div className="relative aspect-video rounded-[12px] overflow-hidden border border-line bg-deep-teal/5">
       {playing ? (
         <iframe
@@ -59,5 +61,6 @@ export function ApproachFilm() {
         </button>
       )}
     </div>
+    </ClipReveal>
   );
 }

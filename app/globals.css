@@ -442,6 +442,81 @@ body::before {
   animation: fade-in 0.22s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
+/* Press feedback — a subtle scale-down on any pressable surface (cards, rows,
+   pins). Buttons already do this inline; this is for the larger targets. */
+.press {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.press:active {
+  transform: scale(0.985);
+}
+
+/* Hover lift — only on true pointer devices, so a tap on touch never triggers
+   a phantom hover. Pairs with .press on cards. */
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px -20px rgba(26, 38, 37, 0.32);
+  }
+}
+
+/* Image reveal — clip the image up from the bottom + a slight settle-scale as
+   it enters view (toggled by ClipReveal's IntersectionObserver). Editorial,
+   like a photo developing. */
+.clip-reveal {
+  clip-path: inset(0 0 100% 0);
+  transform: scale(1.04);
+  transition: clip-path 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: clip-path, transform;
+}
+.clip-reveal.in {
+  clip-path: inset(0 0 0% 0);
+  transform: scale(1);
+}
+
+/* Footer goat signature — a one-time settle: rise + de-blur as it enters view. */
+.goat-rise {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(4px);
+  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.goat-rise.in {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press,
+  .press:active,
+  .lift,
+  .lift:hover {
+    transition: none;
+    transform: none;
+    box-shadow: none;
+  }
+  /* Keep the image visible (drop the motion); fade only. */
+  .clip-reveal {
+    clip-path: none;
+    transform: none;
+    transition: opacity 300ms ease;
+  }
+  .goat-rise {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
 
 /* Origin-aware popover entrance (scales in from its trigger corner). */
 @keyframes scope-pop {

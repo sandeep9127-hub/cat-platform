@@ -351,7 +351,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 transition-all duration-300 ease-out hover:-translate-y-0.5"
+      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
       style={{
         boxShadow: highlighted
           ? `0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -14px ${accent.glow}`
@@ -453,7 +453,7 @@ function FundingMix({
             return (
               <div
                 key={s.label + i}
-                className="absolute top-0 bottom-0 transition-all duration-700 ease-out"
+                className="absolute top-0 bottom-0 transition-[width] duration-700 ease-out"
                 style={{
                   left: `${left}%`,
                   width: `${w}%`,
@@ -510,7 +510,7 @@ function FilterDropdown({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-all"
+        className="px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
       >
         <option value="">All</option>
         {options.map((o) => (
@@ -568,7 +568,7 @@ function BreakdownCard({
               </div>
               <div className="mt-2 h-2 bg-line-soft rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  className="h-full rounded-full transition-[width] duration-700 ease-out"
                   style={{
                     width: `${Math.min(100, p)}%`,
                     background: `linear-gradient(90deg, ${accent.bar}, ${accent.bar}aa)`,

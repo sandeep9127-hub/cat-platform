@@ -32,7 +32,7 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
       <span
         id={`tier-${tier}`}
         role="tooltip"
-        className="pointer-events-none absolute right-0 bottom-full z-[60] mb-2.5 w-[260px] text-left normal-case font-sans font-normal text-[12.5px] leading-[1.5] tracking-normal text-paper rounded-[6px] px-3.5 py-3 opacity-0 translate-y-1 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
+        className="pointer-events-none absolute right-0 bottom-full z-[60] mb-2.5 w-[260px] text-left normal-case font-sans font-normal text-[12.5px] leading-[1.5] tracking-normal text-paper rounded-[6px] px-3.5 py-3 opacity-0 translate-y-1 transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
         style={{
           background:
             "linear-gradient(135deg, #1A2625 0%, #2C4544 60%, #334B4A 100%)",
@@ -109,7 +109,7 @@ export function EndorsementLegend({ className }: { className?: string }) {
         {LEGEND_ITEMS.map((it) => (
           <div
             key={it.label}
-            className="group relative overflow-hidden rounded-[6px] border border-line bg-paper p-4 transition-all duration-300 ease-out hover:-translate-y-0.5"
+            className="group relative overflow-hidden rounded-[6px] border border-line bg-paper p-4 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
             style={{
               boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -10px ${it.glow}`,
               backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${it.soft} 100%)`,

@@ -82,7 +82,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           })}
           <span
             aria-hidden
-            className="mt-auto font-mono text-teal text-[15px] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+            className="mt-auto font-mono text-teal text-[15px] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-300 ease-out"
           >
             &rarr;
           </span>

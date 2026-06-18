@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           />
           <button
             type="submit"
-            className="group inline-flex items-center justify-center gap-2 px-6 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-all hover:-translate-y-0.5"
+            className="group inline-flex items-center justify-center gap-2 px-6 py-4 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out hover:-translate-y-0.5"
             style={{
               background: "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
               boxShadow:

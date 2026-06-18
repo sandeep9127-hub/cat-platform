@@ -325,7 +325,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
             {phaseThemes.map((t, i) => (
               <span
                 key={t.slug}
-                className="h-[3px] rounded-full transition-all duration-500 ease-out"
+                className="h-[3px] rounded-full transition-[width,background-color] duration-500 ease-out"
                 style={{
                   width: i === phaseIdx ? 16 : 7,
                   background: i === phaseIdx ? activeTheme.color : "rgba(26,38,37,0.16)",
