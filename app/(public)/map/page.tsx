@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
 import { MapFilterBar } from "@/components/entries/MapFilterBar";
+import { MapExplorer } from "@/components/entries/MapExplorer";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
@@ -239,30 +240,32 @@ export default async function MapPage({
           categories={categoryOpts}
           principles={principleOpts}
           states={stateOpts}
+          resultCount={factsheets.length}
         />
       </div>
 
-      {/* A bigger India map pinned on the left + the results list on the right.
-          Five rows per page keeps the list height close to the map's. Explicit
-          column placement keeps the map left on desktop while the list stays
-          first in source order (so it's results-first when stacked on mobile). */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,58fr)_minmax(0,42fr)] gap-8 lg:gap-12 items-start">
-        <div className="min-w-0 lg:col-start-2 lg:row-start-1">
-          <AtlasSection
-            layout="list"
-            mapEntries={mapEntries}
-            listEntries={listEntries}
-            totalStates={stateCount}
-            pageSize={5}
-          />
-        </div>
-        <div className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-24 lg:self-start">
-          <IndiaMap
-            entries={mapEntries}
-            totalProgrammes={mapEntries.length}
-            totalStates={stateCount}
-          />
-        </div>
+      {/* A bigger India map (left, sticky) + the results list (right), 5 rows a
+          page so heights line up. On mobile, MapExplorer swaps to a List/Map
+          toggle so the tall map isn't buried below the list. */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
+        <MapExplorer
+          map={
+            <IndiaMap
+              entries={mapEntries}
+              totalProgrammes={mapEntries.length}
+              totalStates={stateCount}
+            />
+          }
+          list={
+            <AtlasSection
+              layout="list"
+              mapEntries={mapEntries}
+              listEntries={listEntries}
+              totalStates={stateCount}
+              pageSize={5}
+            />
+          }
+        />
       </div>
     </>
   );

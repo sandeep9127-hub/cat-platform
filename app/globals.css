@@ -442,6 +442,24 @@ body::before {
   animation: fade-in 0.22s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
+/* Bottom sheet (mobile filters) — slides up from the bottom edge. */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: fade-in 0.2s ease both;
+  }
+}
+
 /* Press feedback — a subtle scale-down on any pressable surface (cards, rows,
    pins). Buttons already do this inline; this is for the larger targets. */
 .press {
