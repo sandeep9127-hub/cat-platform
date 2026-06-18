@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { AtlasSection } from "@/components/entries/AtlasSection";
+import { MapFilterBar } from "@/components/entries/MapFilterBar";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { listFactSheets } from "@/lib/factsheet/generate";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
-import { PRINCIPLES, getPrincipleBySlug, principleTitle } from "@/lib/data/principles";
-import { Layers, Compass, MapPin } from "lucide-react";
-import { categoryIconFor } from "@/components/ui/CategoryIcon";
+import { PRINCIPLES, getPrincipleBySlug } from "@/lib/data/principles";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 export const dynamic = "force-dynamic";
@@ -71,10 +70,6 @@ export default async function MapPage({
   searchParams: Promise<{ category?: string; principle?: string; state?: string }>;
 }) {
   const sp = await searchParams;
-  const activeCategory =
-    sp.category && CATEGORY_BY_SLUG[sp.category] ? sp.category : null;
-  const activePrinciple =
-    sp.principle && getPrincipleBySlug(sp.principle) ? sp.principle : null;
 
   const allFactsheets = await listFactSheets();
   // Published, geocoded fact sheets are the Atlas (decoupled engine).
@@ -100,42 +95,44 @@ export default async function MapPage({
   const statesWithCounts = Object.keys(stateCounts).sort((a, b) =>
     (STATE_NAMES[a] ?? a).localeCompare(STATE_NAMES[b] ?? b),
   );
-  // Multi-select states (comma-separated codes), validated against the codes
-  // that actually exist in the data (not the name map) + de-duped.
-  const activeStates = [
-    ...new Set(
-      (sp.state ?? "")
-        .split(",")
-        .map((s) => s.trim().toUpperCase())
-        .filter((s) => s && stateCounts[s] != null),
-    ),
-  ];
+  // All three axes are multi-select (comma-separated in the URL), validated and
+  // de-duped. Within an axis the values are OR'd; the three axes intersect (AND).
+  const parseList = (v: string | undefined) =>
+    [...new Set((v ?? "").split(",").map((s) => s.trim()).filter(Boolean))];
+  const activeCategories = parseList(sp.category).filter((s) => CATEGORY_BY_SLUG[s]);
+  const activePrinciples = parseList(sp.principle).filter((s) => getPrincipleBySlug(s));
+  const activeStates = parseList(sp.state)
+    .map((s) => s.toUpperCase())
+    .filter((s) => stateCounts[s] != null);
 
-  // Two axes, intersected: category (what it does) AND principle (which
-  // agroecology principles it advances).
   const factsheets = publishedFactsheets.filter(
     (f) =>
-      (!activeCategory || (f.themes ?? []).includes(activeCategory)) &&
-      (!activePrinciple || (f.principle_alignment ?? []).includes(activePrinciple)) &&
+      (activeCategories.length === 0 ||
+        (f.themes ?? []).some((t) => activeCategories.includes(t))) &&
+      (activePrinciples.length === 0 ||
+        (f.principle_alignment ?? []).some((p) => activePrinciples.includes(p))) &&
       (activeStates.length === 0 || activeStates.includes(f.state_code ?? ""))
   );
 
-  // Helper to build an href that preserves the *other* axes.
-  const hrefWith = (next: {
-    category?: string | null;
-    principle?: string | null;
-    states?: string[];
-  }) => {
-    const cat = next.category !== undefined ? next.category : activeCategory;
-    const pri = next.principle !== undefined ? next.principle : activePrinciple;
-    const sts = next.states !== undefined ? next.states : activeStates;
-    const qs = new URLSearchParams();
-    if (cat) qs.set("category", cat);
-    if (pri) qs.set("principle", pri);
-    if (sts && sts.length) qs.set("state", sts.join(","));
-    const s = qs.toString();
-    return s ? `/map?${s}` : "/map";
-  };
+  // Options for the multi-select dropdown filter bar (counts are over the full
+  // published set so they stay stable).
+  const categoryOpts = CATEGORIES.map((c) => ({
+    value: c.slug,
+    label: c.short,
+    count: categoryCounts[c.slug] ?? 0,
+  }));
+  const principleOpts = PRINCIPLES.map((p) => ({
+    value: p.slug,
+    label: p.title,
+    count: principleCounts[p.slug] ?? 0,
+    n: p.n,
+  }));
+  const stateOpts = statesWithCounts.map((code) => ({
+    value: code,
+    label: STATE_NAMES[code] ?? code,
+    count: stateCounts[code] ?? 0,
+  }));
+  const totalActive = activeCategories.length + activePrinciples.length + activeStates.length;
 
   // The Solutions Atlas is now the fact-sheet engine ONLY. Old hardcoded
   // records and CAT-authored DB entries are retired for uniformity — every
@@ -225,223 +222,43 @@ export default async function MapPage({
         </aside>
       </section>
 
-      {/* Explorer layout: a sticky filter sidebar (deep-linkable chips, live
-          counts) · the results list · the India map pinned in its own column so
-          there's no blank space below it as the list scrolls. Stacks on < xl. */}
-      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)_minmax(0,380px)] gap-8 xl:gap-9 items-start">
-        {/* ── Filter sidebar ─────────────────────────────────────────────── */}
-        <aside className="xl:sticky xl:top-24 xl:self-start xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto pr-0.5 space-y-5">
-        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal font-semibold pb-1">
-          Filter the Atlas
-        </div>
-        {/* Axis 1 — categories */}
-        <nav aria-label="Filter the Atlas by intervention category">
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
-            <Layers size={11} strokeWidth={1.8} aria-hidden />
-            By intervention
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={hrefWith({ category: null })}
-              aria-current={!activeCategory ? "true" : undefined}
-              className={
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-                (!activeCategory
-                  ? "bg-deep-teal text-paper border-deep-teal"
-                  : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
-              }
-            >
-              All
-              <span className="font-mono text-[10px] tabular-nums opacity-70">
-                {publishedFactsheets.length}
-              </span>
-            </Link>
-            {CATEGORIES.map((c) => {
-              const active = activeCategory === c.slug;
-              const n = categoryCounts[c.slug] ?? 0;
-              const Icon = categoryIconFor(c.slug);
-              return (
-                <Link
-                  key={c.slug}
-                  href={hrefWith({ category: active ? null : c.slug })}
-                  aria-current={active ? "true" : undefined}
-                  className={
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-                    (active
-                      ? "text-paper"
-                      : n === 0
-                        ? "text-muted border-line/70 opacity-60 hover:opacity-100"
-                        : "text-ink-soft border-line hover:text-ink")
-                  }
-                  style={
-                    active
-                      ? { background: c.colourHex, borderColor: c.colourHex }
-                      : ({ ["--c" as string]: c.colourHex } as React.CSSProperties)
-                  }
-                >
-                  <Icon
-                    size={13}
-                    strokeWidth={1.8}
-                    className="shrink-0"
-                    style={{ color: active ? "rgba(255,255,255,0.92)" : c.colourHex }}
-                    aria-hidden
-                  />
-                  {c.short}
-                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+      {/* Filter bar — three multi-select dropdowns, right-aligned (Intervention
+          · Principle · State). Selections live in the URL (deep-linkable). */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-5 flex flex-wrap items-center justify-between gap-3">
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+          Showing{" "}
+          <span className="text-deep-teal font-semibold tabular-nums">{factsheets.length}</span>
+          {totalActive > 0 ? (
+            <>
+              {" "}of <span className="tabular-nums">{publishedFactsheets.length}</span>
+            </>
+          ) : null}{" "}
+          {factsheets.length === 1 ? "solution" : "solutions"}
+        </p>
+        <MapFilterBar
+          categories={categoryOpts}
+          principles={principleOpts}
+          states={stateOpts}
+        />
+      </div>
 
-        {/* Axis 2 — agroecology principles */}
-        <nav aria-label="Filter the Atlas by agroecology principle">
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
-            <Compass size={11} strokeWidth={1.8} aria-hidden />
-            By agroecology principle
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {PRINCIPLES.map((p) => {
-              const active = activePrinciple === p.slug;
-              const n = principleCounts[p.slug] ?? 0;
-              const tint = p.level === "agro" ? "#5f8d3e" : "#b5793a";
-              return (
-                <Link
-                  key={p.slug}
-                  href={hrefWith({ principle: active ? null : p.slug })}
-                  aria-current={active ? "true" : undefined}
-                  className={
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-                    (active
-                      ? "text-paper"
-                      : n === 0
-                        ? "text-muted border-line/70 opacity-60 hover:opacity-100"
-                        : "text-ink-soft border-line hover:text-ink")
-                  }
-                  style={active ? { background: tint, borderColor: tint } : undefined}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/images/principle-icons/p${p.n}.png?v=4`}
-                    alt=""
-                    width={16}
-                    height={16}
-                    className={
-                      "shrink-0 w-4 h-4 object-contain " +
-                      (active ? "rounded-full bg-paper/95 p-[1px]" : "")
-                    }
-                    aria-hidden
-                  />
-                  {p.title}
-                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Axis 3 — states (multi-select). Solves clicking overlapping map dots. */}
-        <nav aria-label="Filter the Atlas by state">
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-2.5 inline-flex items-center gap-1.5">
-            <MapPin size={11} strokeWidth={1.8} aria-hidden />
-            By state
-            {activeStates.length > 0 ? (
-              <span className="text-deep-teal normal-case tracking-normal">
-                · {activeStates.length} selected
-              </span>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={hrefWith({ states: [] })}
-              aria-current={activeStates.length === 0 ? "true" : undefined}
-              className={
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-                (activeStates.length === 0
-                  ? "bg-deep-teal text-paper border-deep-teal"
-                  : "bg-transparent text-ink-soft border-line hover:border-deep-teal hover:text-deep-teal")
-              }
-            >
-              All states
-              <span className="font-mono text-[10px] tabular-nums opacity-70">
-                {statesWithCounts.length}
-              </span>
-            </Link>
-            {statesWithCounts.map((code) => {
-              const active = activeStates.includes(code);
-              const n = stateCounts[code] ?? 0;
-              const nextStates = active
-                ? activeStates.filter((c) => c !== code)
-                : [...activeStates, code];
-              return (
-                <Link
-                  key={code}
-                  href={hrefWith({ states: nextStates })}
-                  aria-current={active ? "true" : undefined}
-                  className={
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] border active:scale-[0.97] transition-[transform,background-color,border-color,color] duration-150 ease-out-expo " +
-                    (active
-                      ? "bg-deep-teal text-paper border-deep-teal"
-                      : "bg-transparent text-ink-soft border-line hover:text-ink hover:border-deep-teal")
-                  }
-                >
-                  {STATE_NAMES[code] ?? code}
-                  <span className="font-mono text-[10px] tabular-nums opacity-70">{n}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-
-        {(activeCategory || activePrinciple || activeStates.length > 0) && (
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted pt-1">
-            Showing {factsheets.length} {factsheets.length === 1 ? "solution" : "solutions"}
-            {activeCategory && (
-              <>
-                {" "}in <span className="text-ink-soft">{categoryName(activeCategory)}</span>
-              </>
-            )}
-            {activePrinciple && (
-              <>
-                {" "}advancing{" "}
-                <span className="text-ink-soft">{principleTitle(activePrinciple)}</span>
-              </>
-            )}
-            {activeStates.length > 0 && (
-              <>
-                {" "}across{" "}
-                <span className="text-ink-soft">
-                  {activeStates.map((c) => STATE_NAMES[c] ?? c).join(", ")}
-                </span>
-              </>
-            )}
-            {" · "}
-            <Link href="/map" className="text-deep-teal hover:underline">
-              clear
-            </Link>
-          </p>
-        )}
-        </aside>
-
-        {/* ── Map column — pinned (sticky) so no blank space below it. Source
-            order #2 so on mobile it stacks above the list; placed in column 3
-            on xl. ─────────────────────────────────────────────────────────── */}
-        <div className="xl:col-start-3 xl:row-start-1 xl:sticky xl:top-24 xl:self-start">
-          <IndiaMap
-            entries={mapEntries}
-            totalProgrammes={mapEntries.length}
-            totalStates={stateCount}
-          />
-        </div>
-
-        {/* ── Results list — column 2 on xl ──────────────────────────────── */}
-        <div className="xl:col-start-2 xl:row-start-1 min-w-0">
+      {/* Results list (left) + a bigger India map pinned on the right. Five rows
+          per page keeps the list height close to the map's, so they line up. */}
+      <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,42fr)_minmax(0,58fr)] gap-8 lg:gap-12 items-start">
+        <div className="min-w-0">
           <AtlasSection
             layout="list"
             mapEntries={mapEntries}
             listEntries={listEntries}
             totalStates={stateCount}
-            pageSize={10}
+            pageSize={5}
+          />
+        </div>
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <IndiaMap
+            entries={mapEntries}
+            totalProgrammes={mapEntries.length}
+            totalStates={stateCount}
           />
         </div>
       </div>
