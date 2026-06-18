@@ -9,7 +9,7 @@ import {
   Info,
   Compass,
   Users,
-  Home,
+  ArrowUpRight,
 } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
@@ -75,7 +75,7 @@ export function BrandBar() {
           </div>
           <span className="flex flex-col">
             <span
-              className={`font-serif font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap transition-[font-size] duration-300 ease-out ${
+              className={`font-serif font-medium leading-[1.05] tracking-[-0.012em] whitespace-nowrap transition-[font-size,color] duration-300 ease-out group-hover:text-teal ${
                 scrolled ? "text-[14px] sm:text-[15px]" : "text-[16px] sm:text-[18px]"
               }`}
             >
@@ -91,21 +91,6 @@ export function BrandBar() {
           </span>
         </Link>
         <nav className="ml-auto flex items-center gap-4 lg:gap-[18px] xl:gap-6">
-          {/* Home = the parent organisation site; the Hub lives inside it. */}
-          <a
-            href={PARENT_SITE}
-            className="hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
-          >
-            <Home size={13} strokeWidth={1.7} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
-            <span className="relative">
-              Home
-              <span
-                aria-hidden
-                className="absolute left-0 -bottom-1 h-[1.5px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
-                style={{ background: "linear-gradient(90deg, #2E7573 0%, #C68C2E 100%)" }}
-              />
-            </span>
-          </a>
           {NAV_LINKS.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -127,6 +112,17 @@ export function BrandBar() {
               </span>
             </Link>
           ))}
+          {/* The parent organisation — clearly external, opens in a new tab so the
+              Hub stays open. Deliberately not called "Home" (it leaves the Hub). */}
+          <a
+            href={PARENT_SITE}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden lg:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
+          >
+            <span>The Consortium</span>
+            <ArrowUpRight size={12} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+          </a>
           {/* Ask — single highlighted entry point (replaces the old floating widget) */}
           <Link
             href="/agent"
@@ -165,14 +161,6 @@ export function BrandBar() {
       {open && (
         <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
-            <a
-              href={PARENT_SITE}
-              onClick={() => setOpen(false)}
-              className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft inline-flex items-center gap-3"
-            >
-              <Home size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
-              <span>Home</span>
-            </a>
             {NAV_LINKS.map(({ href, label, Icon }) => (
               // No per-item stagger — the parent drawer already animates
               // in. The stagger had items at opacity 0 mid-flight which
@@ -195,6 +183,17 @@ export function BrandBar() {
               <MessageCircle size={14} strokeWidth={2} aria-hidden />
               Ask the Hub
             </Link>
+            {/* Parent organisation — clearly external, new tab. Not "Home". */}
+            <a
+              href={PARENT_SITE}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="mt-4 pt-4 border-t border-line-soft text-[14px] text-muted hover:text-teal inline-flex items-center gap-1.5"
+            >
+              <span>Visit the Consortium · agroecologyindia.org</span>
+              <ArrowUpRight size={14} strokeWidth={1.8} aria-hidden />
+            </a>
           </nav>
         </div>
       )}
