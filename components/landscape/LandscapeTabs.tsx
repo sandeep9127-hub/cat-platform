@@ -37,7 +37,7 @@ export function LandscapeTabs({
             return t.label.toLowerCase() === active;
           })();
           const ariaCurrent = isActive ? "page" : undefined;
-          const cls = `font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.16em] py-4 inline-block border-b-2 transition-colors whitespace-nowrap ${
+          const cls = `font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.16em] py-4 px-1.5 rounded-[5px] inline-block border-b-2 transition-colors whitespace-nowrap focus-visible:bg-teal-wash focus-visible:text-deep-teal ${
             isActive
               ? "border-amber-deep text-deep-teal font-semibold"
               : t.available
