@@ -49,7 +49,7 @@ export default async function PreviewPage({
 
           <label className="flex flex-col gap-1.5">
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-              Your name or organisation <span className="text-line">(optional)</span>
+              Your name or organisation <span className="text-muted normal-case tracking-normal">(optional)</span>
             </span>
             <input
               name="name"
