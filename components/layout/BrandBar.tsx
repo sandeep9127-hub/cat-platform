@@ -89,7 +89,7 @@ export function BrandBar() {
               just the mark. overflow-hidden + max-width is what animates the fold. */}
           <span
             className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
-              collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3"
+              collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
             }`}
           >
             <span className="font-serif font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
