@@ -77,20 +77,15 @@ export function BudgetExplorer({
   const categories = useMemo(() => {
     return Array.from(new Set(lines.map((l) => l.category).filter(Boolean))) as string[];
   }, [lines]);
-  const packages = useMemo(() => {
-    return Array.from(new Set(lines.map((l) => l.package).filter(Boolean))) as string[];
-  }, [lines]);
 
   const [cat, setCat] = useState<string>("");
-  const [pkg, setPkg] = useState<string>("");
 
   const filtered = useMemo(() => {
     return lines.filter((l) => {
       if (cat && l.category !== cat) return false;
-      if (pkg && l.package !== pkg) return false;
       return true;
     });
-  }, [lines, cat, pkg]);
+  }, [lines, cat]);
 
   const t = useMemo(() => {
     const o = {
@@ -214,17 +209,13 @@ export function BudgetExplorer({
           Filter the plan
         </span>
         <FilterDropdown label="Category" value={cat} onChange={setCat} options={categories} />
-        <FilterDropdown label="Package" value={pkg} onChange={setPkg} options={packages} />
-        {(cat || pkg) && (
+        {cat && (
           <button
-            onClick={() => {
-              setCat("");
-              setPkg("");
-            }}
+            onClick={() => setCat("")}
             className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
           >
             <XIcon size={12} strokeWidth={2} />
-            Clear filters
+            Clear filter
           </button>
         )}
         <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
@@ -232,9 +223,9 @@ export function BudgetExplorer({
         </span>
       </section>
 
-      {/* Category and package breakdowns */}
-      {!cat && !pkg && (
-        <section className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {/* Category breakdown */}
+      {!cat && (
+        <section className="mt-10">
           <BreakdownCard
             title="By category"
             rows={summary.byCategory.map((c) => ({
@@ -245,23 +236,7 @@ export function BudgetExplorer({
             grandTotal={summary.totalCostInr}
             accent={ACCENTS.teal}
           />
-          <BreakdownCard
-            title="By package"
-            rows={summary.byPackage.map((p) => ({
-              label: p.package,
-              total: p.total,
-              investment: p.investment,
-            }))}
-            grandTotal={summary.totalCostInr}
-            accent={ACCENTS.amber}
-          />
         </section>
-      )}
-      {!cat && !pkg && (
-        <p className="mt-3 font-sans text-[12px] text-muted leading-[1.5] max-w-[70ch]">
-          A package bundles related interventions into one costed workstream: the unit the plan is
-          financed and delivered in.
-        </p>
       )}
 
       {/* Line table */}
@@ -286,7 +261,6 @@ export function BudgetExplorer({
               <tr className="text-left font-mono uppercase text-[10px] tracking-[0.14em]">
                 <th className="px-4 py-3.5 font-semibold">Category</th>
                 <th className="px-4 py-3.5 font-semibold">Intervention</th>
-                <th className="px-4 py-3.5 font-semibold">Package</th>
                 <th className="px-4 py-3.5 font-semibold text-right">Total</th>
                 <th className="px-4 py-3.5 font-semibold text-right">Govt</th>
                 <th className="px-4 py-3.5 font-semibold text-right">Investment</th>
@@ -306,9 +280,6 @@ export function BudgetExplorer({
                   </td>
                   <td className="px-4 py-3.5 align-top">
                     <div className="font-sans text-ink-soft leading-snug">{l.subintervention ?? l.intervention ?? "—"}</div>
-                  </td>
-                  <td className="px-4 py-3.5 align-top font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
-                    {l.package ?? "—"}
                   </td>
                   <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-deep-teal font-semibold">
                     {inr(l.totalCostInr)}
