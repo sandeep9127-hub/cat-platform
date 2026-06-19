@@ -56,19 +56,19 @@ export function BrandBar() {
           pointer-events: the transparent gutter passes clicks through; the bar itself
           re-enables them. */}
       <div
-        className={`max-w-page mx-auto rounded-[18px] border backdrop-blur-md pointer-events-auto transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
+        className={`max-w-page mx-auto rounded-[18px] pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
           scrolled
-            ? "border-line shadow-[0_12px_32px_-16px_rgba(26,38,37,0.30)]"
-            : "border-line-soft shadow-[0_6px_22px_-16px_rgba(26,38,37,0.18)]"
+            ? "shadow-[0_10px_30px_-18px_rgba(26,38,37,0.22)]"
+            : "shadow-none"
         }`}
         style={{
-          // --paper is a hex, so Tailwind's /opacity syntax breaks; rgba() directly
-          // so the translucency works and backdrop-blur has something to tint.
-          backgroundColor: scrolled ? "rgba(251, 248, 242, 0.90)" : "rgba(251, 248, 242, 0.82)",
+          // Same fill as the body (--paper) so the bar reads as a floating nav
+          // rather than a distinct white card/strip. Opaque so content scrolling
+          // underneath is masked cleanly; a whisper of shadow appears only on
+          // scroll to lift it off the content.
+          backgroundColor: "var(--paper)",
         }}
       >
-        {/* Thin amber→teal gradient hairline at top of the bar — brand signature */}
-        <div className="h-[2px] w-full rounded-t-[18px] bg-gradient-to-r from-amber/0 via-amber-deep/60 to-teal/40" aria-hidden />
         <div
           className={`px-4 sm:px-6 lg:px-7 flex items-center gap-3 sm:gap-5 lg:gap-7 transition-[padding] duration-300 ease-out ${
             scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"

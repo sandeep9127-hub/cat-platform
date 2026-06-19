@@ -188,22 +188,7 @@ export default async function LandingPage() {
       </section>
 
       {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
-      <section className="relative bg-cream overflow-hidden">
-        {/* Watercolor leaf accents — CAT brand illustrations (agroecologyindia.org) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/illustrations/leaves-1.png"
-          alt=""
-          aria-hidden
-          className="hidden lg:block absolute -top-2 left-2 w-[120px] xl:w-[140px] opacity-70 pointer-events-none select-none"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/illustrations/leaves-2.png"
-          alt=""
-          aria-hidden
-          className="hidden lg:block absolute bottom-0 right-2 w-[150px] xl:w-[180px] opacity-70 pointer-events-none select-none"
-        />
+      <section className="relative bg-cream">
         <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-3 gap-y-8">
           {[
             {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
-import { FooterDecor } from "./FooterDecor";
 
 /**
  * Footer.
@@ -16,9 +15,7 @@ import { FooterDecor } from "./FooterDecor";
  */
 export function Footer() {
   return (
-    <footer className="relative pt-16 pb-9 mt-24 bg-cream text-ink border-t border-line overflow-hidden">
-      {/* Watercolor band wash (parallax) + goat signature — the animated decor. */}
-      <FooterDecor />
+    <footer className="relative pt-16 pb-9 mt-24 bg-cream text-ink border-t border-line">
       <div className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
           {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
