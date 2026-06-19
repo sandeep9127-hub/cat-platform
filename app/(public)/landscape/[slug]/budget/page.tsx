@@ -57,9 +57,8 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
           {p.name} · <span className="text-teal">Budget</span>
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
-          Every intervention costed in the {p.name} investment plan. Filter by package, category, or
-          funding mechanism. Numbers are 7-year totals across {lines.length} intervention
-          lines unless filtered.
+          Every intervention costed in the {p.name} investment plan, filterable by category. Numbers
+          are 7-year totals across {lines.length} intervention lines unless filtered.
         </p>
       </header>
 
