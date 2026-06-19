@@ -218,7 +218,7 @@ export default async function MapPage({
           </dl>
           <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted mt-4 leading-relaxed">
             <span className="text-amber-deep">●</span> includes routed discovery records:
-            government, NGO and federation-led programmes pulled from public sources
+            government, NGO and collaborations led programmes pulled from public sources
           </p>
         </aside>
       </section>
