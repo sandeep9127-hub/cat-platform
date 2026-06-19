@@ -7,6 +7,12 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 // gave ~5s TTFB. New publishes appear within the window.
 export const revalidate = 300;
 
+// Prerender all known landscapes at build (the slug set is a fixed Record) so
+// Vercel serves them as cached ISR pages, not per-request dynamic renders.
+export function generateStaticParams() {
+  return Object.keys(LANDSCAPES).map((slug) => ({ slug }));
+}
+
 /**
  * The per-landscape Ask tab is consolidated into the global assistant at
  * `/agent`. We preserve the deep-link by routing the scope through.

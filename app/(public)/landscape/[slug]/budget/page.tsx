@@ -11,6 +11,12 @@ import { CurrencyProvider } from "@/components/landscape/currency";
 // gave ~5s TTFB. New publishes appear within the window.
 export const revalidate = 300;
 
+// Prerender all known landscapes at build (the slug set is a fixed Record) so
+// Vercel serves them as cached ISR pages, not per-request dynamic renders.
+export function generateStaticParams() {
+  return Object.keys(LANDSCAPES).map((slug) => ({ slug }));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const p = LANDSCAPES[slug];

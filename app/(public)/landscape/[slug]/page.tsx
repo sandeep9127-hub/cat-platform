@@ -22,6 +22,12 @@ import { LandscapePriorities } from "@/components/landscape/LandscapePriorities"
 // gave ~5s TTFB. New publishes appear within the window.
 export const revalidate = 300;
 
+// Prerender all known landscapes at build (the slug set is a fixed Record) so
+// Vercel serves them as cached ISR pages, not per-request dynamic renders.
+export function generateStaticParams() {
+  return Object.keys(LANDSCAPES).map((slug) => ({ slug }));
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
