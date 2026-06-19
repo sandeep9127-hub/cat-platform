@@ -16,7 +16,11 @@ import { LandscapeFieldRecord } from "@/components/landscape/LandscapeFieldRecor
 import { LandscapeInterventions } from "@/components/landscape/LandscapeInterventions";
 import { LandscapePriorities } from "@/components/landscape/LandscapePriorities";
 
-export const dynamic = "force-dynamic";
+// ISR: cache the rendered page at the edge (revalidate every 5 min). These
+// pages read DB data only (no per-request searchParams/cookies/headers), so
+// static-with-revalidation is correct and avoids the slow per-request SSR that
+// gave ~5s TTFB. New publishes appear within the window.
+export const revalidate = 300;
 
 type Props = { params: Promise<{ slug: string }> };
 

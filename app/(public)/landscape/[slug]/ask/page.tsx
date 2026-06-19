@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 
-export const dynamic = "force-dynamic";
+// ISR: cache the rendered page at the edge (revalidate every 5 min). These
+// pages read DB data only (no per-request searchParams/cookies/headers), so
+// static-with-revalidation is correct and avoids the slow per-request SSR that
+// gave ~5s TTFB. New publishes appear within the window.
+export const revalidate = 300;
 
 /**
  * The per-landscape Ask tab is consolidated into the global assistant at

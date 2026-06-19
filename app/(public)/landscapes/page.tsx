@@ -8,7 +8,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { AnchorPartners } from "@/components/landscape/AnchorPartners";
 import { LandscapeScrollytelling } from "@/components/landscape/LandscapeScrollytelling";
 
-export const dynamic = "force-dynamic";
+// ISR: DB-only page, no per-request inputs — cache + revalidate (was force-dynamic).
+export const revalidate = 300;
 
 export const metadata = {
   title: "CAT Landscapes",

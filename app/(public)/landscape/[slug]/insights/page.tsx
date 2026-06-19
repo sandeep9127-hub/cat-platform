@@ -4,7 +4,11 @@ import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeInsightsView } from "@/components/landscape/LandscapeInsightsView";
 
-export const dynamic = "force-dynamic";
+// ISR: cache the rendered page at the edge (revalidate every 5 min). These
+// pages read DB data only (no per-request searchParams/cookies/headers), so
+// static-with-revalidation is correct and avoids the slow per-request SSR that
+// gave ~5s TTFB. New publishes appear within the window.
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
