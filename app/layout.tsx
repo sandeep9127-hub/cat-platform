@@ -4,10 +4,8 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
 /**
- * Inter variable (opsz, wght) served locally. Per request, Inter is the SINGLE
- * sitewide typeface: the sans, serif, and mono tokens all resolve to it (see
- * the html style block below), so every font-sans / font-serif / font-mono
- * class renders in Inter without touching markup across the app.
+ * Inter variable (opsz, wght) served locally — the sitewide SANS for all body
+ * copy, UI chrome, and most headings (font-sans / font-mono both resolve here).
  */
 const inter = localFont({
   src: [
@@ -16,6 +14,23 @@ const inter = localFont({
   ],
   variable: "--font-inter",
   display: "swap",
+});
+
+/**
+ * Fraunces — warm, soft editorial display serif (opsz/wght variable), served
+ * locally for CSP (font-src 'self'). Used ONLY via the `font-serif` token,
+ * which the app applies to editorial moments — page titles, display headings,
+ * pull quotes, and the big budget numbers — never to body copy (that stays
+ * Inter). preload:false: it's a heading face with display:swap, so it loads
+ * async and never blocks LCP. Restores the serif/sans pairing the design
+ * system was built around (Arva/Anthropic editorial standard).
+ */
+const fraunces = localFont({
+  src: [{ path: "../public/fonts/fraunces/Fraunces-Variable.ttf", style: "normal", weight: "100 900" }],
+  variable: "--font-fraunces",
+  display: "swap",
+  preload: false,
+  fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
 const PROD_URL =
@@ -49,11 +64,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={inter.variable}
-      // Single typeface: point the serif and mono tokens at Inter too, so
-      // font-serif and font-mono both resolve to Inter sitewide.
+      className={`${inter.variable} ${fraunces.variable}`}
+      // Serif (font-serif) → Fraunces. Mono (font-mono) still resolves to Inter
+      // — no separate mono face is loaded; mono usage is just tracked/uppercased
+      // Inter labels.
       style={{
-        ["--font-fraunces" as string]: `var(--font-inter)`,
         ["--font-jetbrains" as string]: `var(--font-inter)`,
       }}
     >
