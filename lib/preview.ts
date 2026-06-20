@@ -20,9 +20,9 @@ export const PREVIEW_PASSWORD_SHA256 =
 
 export const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
-// Launch target for the countdown on the gate page. London Climate Action Week
-// 2026 runs 20–28 June; the Hub launches on the 21st. 09:00 BST (London, +01:00).
-export const LAUNCH_DATE = "2026-06-21T09:00:00+01:00";
+// Launch target for the countdown on the gate page. 23 June 2026, 15:00 IST
+// (3:00 PM India, +05:30).
+export const LAUNCH_DATE = "2026-06-23T15:00:00+05:30";
 
 /** The gate is active unless explicitly switched off via env. */
 export function previewGateEnabled(): boolean {
