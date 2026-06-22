@@ -20,13 +20,23 @@ export const PREVIEW_PASSWORD_SHA256 =
 
 export const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
-// Launch target for the countdown on the gate page. 23 June 2026, 15:00 IST
-// (3:00 PM India, +05:30).
-export const LAUNCH_DATE = "2026-06-23T15:00:00+05:30";
+// Launch target: 23 June 2026, 10:00 IST (10:00 AM India, +05:30). The gate
+// AUTO-LIFTS at this moment (see previewGateEnabled) and the countdown hits zero.
+export const LAUNCH_DATE = "2026-06-23T10:00:00+05:30";
 
-/** The gate is active unless explicitly switched off via env. */
+const LAUNCH_MS = new Date(LAUNCH_DATE).getTime();
+
+/**
+ * The gate is on UNTIL the launch moment, then auto-lifts — evaluated per request
+ * in edge middleware (never cached), so the site flips public exactly at
+ * LAUNCH_DATE with no deploy or manual step. `PREVIEW_GATE=off` is a manual
+ * kill-switch to lift it early; `PREVIEW_GATE=on` forces it to stay (overrides
+ * the date) if a launch ever needs to be held.
+ */
 export function previewGateEnabled(): boolean {
-  return process.env.PREVIEW_GATE !== "off";
+  if (process.env.PREVIEW_GATE === "off") return false;
+  if (process.env.PREVIEW_GATE === "on") return true;
+  return Date.now() < LAUNCH_MS;
 }
 
 /** Only allow internal, non-loop redirect targets. */
