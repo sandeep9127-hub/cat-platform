@@ -1,8 +1,7 @@
 import { AgentChat } from "@/components/agent/AgentChat";
-import { CustomBriefBuilder } from "@/components/agent/CustomBriefBuilder";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { getIngestedLandscapeSlugs } from "@/lib/db/landscape-kb";
-import { ShieldCheck, FileDown } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -54,50 +53,7 @@ export default async function AgentPage({
 
       <section className="pt-2">
         {enabled ? (
-          <>
-            <AgentChat initialScope={scope} landscapes={landscapes} />
-            {/* Custom brief builder, sits at the bottom of the assistant page */}
-            <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10">
-              <div
-                className="relative overflow-hidden rounded-[10px] border border-line p-5 sm:p-6"
-                style={{
-                  boxShadow:
-                    "0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -16px rgba(248,202,124,0.30)",
-                  backgroundImage:
-                    "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(248,202,124,0.10) 100%)",
-                }}
-              >
-                <span
-                  aria-hidden
-                  className="absolute top-0 left-0 right-0 h-[2px]"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #C68C2E 0%, rgba(198,140,46,0.6) 60%, transparent 100%)",
-                  }}
-                />
-                <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-                  <div className="flex items-start gap-3">
-                    <span className="w-10 h-10 rounded-[8px] inline-flex items-center justify-center bg-amber/30 text-amber-deep shrink-0">
-                      <FileDown size={18} strokeWidth={1.7} />
-                    </span>
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
-                        Custom report
-                      </span>
-                      <h2 className="font-sans text-[18px] font-medium text-[color:var(--navy-teal)] mt-1.5 leading-tight">
-                        Generate a custom landscape brief
-                      </h2>
-                      <p className="font-sans text-[13.5px] text-ink-soft leading-[1.55] mt-1.5 max-w-[60ch]">
-                        Pick a landscape and the sections you want. The brief is built live from
-                        the curated data, finance, photos, context, whatever applies.
-                      </p>
-                    </div>
-                  </div>
-                  <CustomBriefBuilder />
-                </div>
-              </div>
-            </div>
-          </>
+          <AgentChat initialScope={scope} landscapes={landscapes} />
         ) : (
           <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
             <div className="max-w-[60ch] py-10">
