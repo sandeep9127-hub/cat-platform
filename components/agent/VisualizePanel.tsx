@@ -24,6 +24,9 @@ export function VisualizePanel({ slugs, answerText }: { slugs: string[]; answerT
   const [aiCharts, setAiCharts] = useState<VizSpec[] | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [shown, setShown] = useState<VizSpec | null>(null);
+  const [instruction, setInstruction] = useState("");
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState(false);
 
   async function loadDb() {
     if (slugs.length === 0 || Object.keys(dbCharts).length > 0) return;
@@ -62,6 +65,32 @@ export function VisualizePanel({ slugs, answerText }: { slugs: string[]; answerT
       setAiCharts([]);
     } finally {
       setAiLoading(false);
+    }
+  }
+
+  async function submitCustom(e: React.FormEvent) {
+    e.preventDefault();
+    const q = instruction.trim();
+    if (!q || customLoading) return;
+    setCustomLoading(true);
+    setCustomError(false);
+    try {
+      const r = await fetch("/api/agent/visualize", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: answerText, instruction: q }),
+      });
+      const j = (await r.json()) as { charts?: VizSpec[] };
+      if (j.charts && j.charts[0]) {
+        setShown(j.charts[0]);
+        setInstruction("");
+      } else {
+        setCustomError(true);
+      }
+    } catch {
+      setCustomError(true);
+    } finally {
+      setCustomLoading(false);
     }
   }
 
@@ -148,6 +177,33 @@ export function VisualizePanel({ slugs, answerText }: { slugs: string[]; answerT
           )}
 
           {shown && <VizChart spec={shown} />}
+
+          {/* Phase 3 — free-form: describe the chart you want */}
+          <form onSubmit={submitCustom} className="mt-3 flex items-center gap-2">
+            <input
+              value={instruction}
+              onChange={(e) => {
+                setInstruction(e.target.value);
+                setCustomError(false);
+              }}
+              placeholder="Describe a chart… e.g. grants vs debt as a bar"
+              maxLength={200}
+              className="flex-1 bg-paper border border-line rounded-full px-3.5 py-1.5 text-[12.5px] text-ink placeholder:text-muted/80 focus-visible:outline-none focus-visible:border-deep-teal transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={customLoading || !instruction.trim()}
+              className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] px-3 py-1.5 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] disabled:opacity-40 transition-[transform,background-color] duration-150"
+            >
+              {customLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} strokeWidth={1.9} />}
+              Make
+            </button>
+          </form>
+          {customError && (
+            <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-amber-deep">
+              Couldn&apos;t build that from the answer&apos;s figures — try different wording.
+            </p>
+          )}
         </div>
       )}
     </div>

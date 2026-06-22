@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 type Slice = { label: string; value: number; color: string };
 export type VizSpec = {
   id: string;
-  kind: "donut" | "bar";
+  kind: "donut" | "bar" | "line";
   title: string;
   unit: string; // e.g. "₹ crore"
   series: Slice[];
@@ -102,9 +102,10 @@ export async function GET(req: NextRequest) {
 const AI_VIZ_SYSTEM = `You turn an analytical answer into chart specifications. Rules:
 - Use ONLY numeric figures explicitly stated in the answer text. NEVER invent, infer, or estimate numbers. If a figure is not written in the text, do not include it.
 - Group related figures into a chart. Return at most 3 charts; each chart 2–8 data points.
-- "kind" must be "donut" (parts of a whole, e.g. a split that sums to a total) or "bar" (comparisons / rankings).
+- "kind" must be "donut" (parts of a whole that sum to a total), "bar" (comparisons / rankings), or "line" (a trend / sequence over ordered steps, e.g. years or phases).
 - Give each chart a short "title" and a "unit" (e.g. "₹ crore", "%", "households", "" if unitless).
 - If the answer has no chartable numeric figures, return {"charts": []}.
+- If the user gives an instruction, honour it (chart type, which figures, ordering) — but still only use numbers present in the text.
 Return ONLY JSON: {"charts":[{"kind":"bar","title":"...","unit":"...","series":[{"label":"...","value":12.3}]}]}`;
 
 const AI_RAMP = [
@@ -120,13 +121,17 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit({ key: "visualize", ip, limit: 20, windowSec: 60 });
   if (!limited.ok) return NextResponse.json({ charts: [] }, { status: 429 });
 
-  const body = (await req.json().catch(() => ({}))) as { text?: string };
+  const body = (await req.json().catch(() => ({}))) as { text?: string; instruction?: string };
   const text = (body.text ?? "").slice(0, 6000).trim();
+  const instruction = (body.instruction ?? "").slice(0, 280).trim();
   if (text.length < 40 || !/\d/.test(text)) return NextResponse.json({ charts: [] });
 
+  const userContent = instruction
+    ? `ANSWER:\n${text}\n\nUSER INSTRUCTION: ${instruction}`
+    : text;
   const messages: ChatMessage[] = [
     { role: "system", content: AI_VIZ_SYSTEM },
-    { role: "user", content: text },
+    { role: "user", content: userContent },
   ];
   let parsed: { charts?: AiChart[] } | null = null;
   try {
@@ -138,7 +143,7 @@ export async function POST(req: NextRequest) {
 
   const charts: VizSpec[] = [];
   for (const c of (parsed?.charts ?? []).slice(0, 3)) {
-    const kind = c.kind === "donut" ? "donut" : "bar";
+    const kind = c.kind === "donut" ? "donut" : c.kind === "line" ? "line" : "bar";
     const series = (c.series ?? [])
       .filter((s) => s && typeof s.value === "number" && isFinite(s.value as number) && (s.label ?? "").trim())
       .slice(0, 8)

@@ -6,7 +6,7 @@ import { Download } from "lucide-react";
 export type Slice = { label: string; value: number; color: string };
 export type VizSpec = {
   id: string;
-  kind: "donut" | "bar";
+  kind: "donut" | "bar" | "line";
   title: string;
   unit: string;
   series: Slice[];
@@ -137,6 +137,48 @@ function Bars({ spec }: { spec: VizSpec }) {
   );
 }
 
+function Line({ spec }: { spec: VizSpec }) {
+  const W = 640;
+  const H = 300;
+  const padL = 56;
+  const padR = 24;
+  const padT = 20;
+  const padB = 54;
+  const max = Math.max(...spec.series.map((d) => d.value), 1);
+  const n = spec.series.length;
+  const x = (i: number) => padL + (i * (W - padL - padR)) / Math.max(1, n - 1);
+  const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
+  const stroke = "#2E7573";
+  const pts = spec.series.map((d, i) => `${x(i)},${y(d.value)}`).join(" ");
+  const area = `${padL},${y(0)} ${pts} ${x(n - 1)},${y(0)}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+      <rect width={W} height={H} fill={PAPER} />
+      {[0, 0.5, 1].map((f, i) => {
+        const gy = padT + (1 - f) * (H - padT - padB);
+        return (
+          <g key={i}>
+            <line x1={padL} y1={gy} x2={W - padR} y2={gy} stroke="#e6e3db" strokeWidth="1" />
+            <text x={padL - 8} y={gy + 4} textAnchor="end" fontSize="10" fill={MUTED} fontFamily="Inter, system-ui, sans-serif">
+              {fmt(Math.round(max * f * 100) / 100)}
+            </text>
+          </g>
+        );
+      })}
+      <polygon points={area} fill="rgba(46,117,115,0.10)" />
+      <polyline points={pts} fill="none" stroke={stroke} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+      {spec.series.map((d, i) => (
+        <g key={i}>
+          <circle cx={x(i)} cy={y(d.value)} r="3.5" fill={stroke} stroke={PAPER} strokeWidth="1.5" />
+          <text x={x(i)} y={H - padB + 18} textAnchor="middle" fontSize="10" fill={INK} fontFamily="Inter, system-ui, sans-serif">
+            {d.label.length > 10 ? d.label.slice(0, 9) + "…" : d.label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export function VizChart({ spec }: { spec: VizSpec }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const download = () => {
@@ -163,7 +205,7 @@ export function VizChart({ spec }: { spec: VizSpec }) {
         </button>
       </figcaption>
       <div ref={wrapRef} className="px-3 pb-3">
-        {spec.kind === "donut" ? <Donut spec={spec} /> : <Bars spec={spec} />}
+        {spec.kind === "donut" ? <Donut spec={spec} /> : spec.kind === "line" ? <Line spec={spec} /> : <Bars spec={spec} />}
       </div>
     </figure>
   );
