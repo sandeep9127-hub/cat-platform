@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { geoPath } from "d3-geo";
 import { gsap } from "gsap";
 import { makeIndiaProjection, PROJECTION_VIEWBOX as VB } from "@/components/map/projection";
@@ -414,13 +415,23 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               food systems work for people and the land. Explore any landscape in depth, or
               meet the partners delivering them on the ground.
             </p>
-            <Link
-              href="/map"
-              className="group mt-7 inline-flex w-fit items-center gap-2 rounded-full border border-line text-ink px-6 py-3 text-[14px] font-medium hover:border-deep-teal hover:text-deep-teal transition-colors"
-            >
-              See the Solutions Atlas
-              <span className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5">&rarr;</span>
-            </Link>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <a
+                href="/publications/cat-landscape-factsheets.pdf"
+                download
+                className="group inline-flex w-fit items-center gap-2 rounded-full bg-deep-teal text-paper px-6 py-3 text-[14px] font-medium hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo"
+              >
+                <Download size={16} strokeWidth={1.9} className="transition-transform duration-200 ease-out-expo group-hover:translate-y-0.5" />
+                Download the factsheets
+              </a>
+              <Link
+                href="/map"
+                className="group inline-flex w-fit items-center gap-2 rounded-full border border-line text-ink px-6 py-3 text-[14px] font-medium hover:border-deep-teal hover:text-deep-teal transition-colors"
+              >
+                See the Solutions Atlas
+                <span className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5">&rarr;</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
