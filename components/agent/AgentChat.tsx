@@ -350,7 +350,7 @@ export function AgentChat({
           <div className="pt-4 pb-2">
             <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-teal font-semibold inline-flex items-center gap-2">
               <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" />
-              The assistant
+              Powered by AI
             </span>
             <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[18ch]">
               What would you like to <span className="text-teal">know?</span>
@@ -612,10 +612,9 @@ function Composer({
         </div>
       </form>
 
-      {/* Microcopy — AI disclaimer + source scope */}
+      {/* Microcopy — proud AI framing, kept honest by the grounding + citations */}
       <p className="font-mono italic text-[10.5px] uppercase tracking-[0.14em] text-muted mt-3 text-center sm:text-left">
-        Powered by AI, which can make mistakes. Answers come from curated content, not the
-        web. Check the cited sources.
+        Powered by AI — grounded in the Hub&apos;s cited sources, not the open web. Check the citations.
       </p>
     </div>
   );
