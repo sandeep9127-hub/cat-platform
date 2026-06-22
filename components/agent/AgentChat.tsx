@@ -345,27 +345,51 @@ export function AgentChat({
     [scope, scopeLabel]
   );
 
+  // One Composer instance, placed as the centered hero in the empty state and
+  // at the bottom during a conversation (only one branch renders at a time).
+  const composerEl = (
+    <Composer
+      input={input}
+      setInput={setInput}
+      send={send}
+      busy={busy}
+      charCount={charCount}
+      remaining={remaining}
+      scope={scope}
+      setScope={setScope}
+      scopeLabel={scopeLabel}
+      scopeOptions={scopeOptions}
+      placeholder={scopePlaceholder}
+      inputRef={inputRef}
+    />
+  );
+
   return (
     <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
       {messages.length === 0 ? (
-        // ─── Landing state ─────────────────────────────────────────────
-        <>
-          <div className="pt-4 pb-2">
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-teal font-semibold inline-flex items-center gap-2">
-              <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" />
-              Powered by AI
-            </span>
-            <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[18ch]">
-              What would you like to <span className="text-teal">know?</span>
-            </h1>
-            <p className="text-[16px] sm:text-[17px] text-ink-soft leading-[1.6] max-w-[54ch] mt-5 tracking-[-0.01em]">
-              Use a prompt below or write your own. Answers come only from the curated
-              library — published solutions plus ingested landscape plans — each with its sources.
-            </p>
-          </div>
+        // ─── Landing (minimal, composer-first — Gemini/ChatGPT style) ───
+        <div className="relative min-h-[54vh] flex flex-col items-center justify-center text-center py-12">
+          {/* Soft warm focal glow behind the composer */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10"
+            style={{
+              background:
+                "radial-gradient(56% 44% at 50% 40%, rgba(46,117,115,0.09), transparent 70%)",
+            }}
+          />
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-teal font-semibold inline-flex items-center gap-2">
+            <Sparkles size={11} strokeWidth={1.8} className="text-amber-deep" />
+            Powered by AI
+          </span>
+          <h1 className="font-serif text-[clamp(24px,3.2vw,36px)] tracking-[-0.02em] leading-[1.08] text-ink mt-3">
+            What would you like to <span className="text-teal italic">know?</span>
+          </h1>
 
-          {/* Prompt cells · hairline grid (Equals) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line mt-8">
+          <div className="w-full max-w-[640px] mt-7">{composerEl}</div>
+
+          {/* Prompt suggestions — light pills */}
+          <div className="flex flex-wrap justify-center gap-2 mt-5 max-w-[700px]">
             {cards.map((c) => {
               const Icon = c.Icon;
               return (
@@ -376,16 +400,10 @@ export function AgentChat({
                     setInput(c.prompt);
                     void send(c.prompt);
                   }}
-                  className="group bg-paper p-5 sm:p-6 text-left hover:bg-cream transition-colors active:scale-[0.99]"
+                  className="group inline-flex items-center gap-2 rounded-full border border-line bg-paper/70 hover:border-deep-teal hover:bg-cream px-3.5 py-2 transition-colors active:scale-[0.98]"
                 >
-                  <span
-                    className="inline-flex items-center gap-2 mb-3 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold"
-                    style={{ color: c.tint.chipFg }}
-                  >
-                    <Icon size={16} strokeWidth={1.8} style={{ color: c.tint.bar }} aria-hidden />
-                    {c.label}
-                  </span>
-                  <span className="block font-sans text-[15.5px] leading-[1.45] text-ink tracking-[-0.01em] max-w-[34ch]">
+                  <Icon size={13} strokeWidth={1.8} style={{ color: c.tint.bar }} aria-hidden />
+                  <span className="font-sans text-[12.5px] text-ink-soft group-hover:text-deep-teal leading-tight max-w-[30ch] truncate">
                     {c.prompt}
                   </span>
                 </button>
@@ -396,12 +414,12 @@ export function AgentChat({
           <button
             type="button"
             onClick={() => setCards(sampleFour())}
-            className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal hover:text-deep-teal transition-colors mt-5"
+            className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted hover:text-deep-teal transition-colors mt-5"
           >
             <RefreshCw size={12} strokeWidth={1.8} />
             Refresh prompts
           </button>
-        </>
+        </div>
       ) : (
         // ─── Conversation state ────────────────────────────────────────
         <div
@@ -438,21 +456,9 @@ export function AgentChat({
         </div>
       )}
 
-      {/* Composer */}
-      <Composer
-        input={input}
-        setInput={setInput}
-        send={send}
-        busy={busy}
-        charCount={charCount}
-        remaining={remaining}
-        scope={scope}
-        setScope={setScope}
-        scopeLabel={scopeLabel}
-        scopeOptions={scopeOptions}
-        placeholder={scopePlaceholder}
-        inputRef={inputRef}
-      />
+      {/* Composer at the bottom during a conversation; the empty state renders
+          it as the centered hero above. */}
+      {messages.length > 0 && composerEl}
 
       {error && (
         <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber-deep">
