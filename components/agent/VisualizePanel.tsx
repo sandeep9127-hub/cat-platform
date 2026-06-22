@@ -1,51 +1,78 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, Loader2 } from "lucide-react";
+import { BarChart3, Loader2, Sparkles } from "lucide-react";
 import { VizChart, type VizSpec } from "./VizChart";
 
 const pretty = (slug: string) =>
   slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+const chipBase =
+  "font-mono text-[9.5px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-full border transition-colors inline-flex items-center gap-1.5";
+const chipOn = "border-deep-teal bg-teal-wash text-deep-teal";
+const chipOff = "border-line text-muted hover:text-deep-teal hover:border-deep-teal";
+
 /**
- * Visualize (Phase 1). When an answer cites one or more landscapes, offer to
- * chart that landscape's REAL budget data (fetched from /api/agent/visualize —
- * deterministic, never AI-invented). User picks a landscape (if several) and a
- * chart type; the chart renders inline and is downloadable as PNG.
+ * Visualize. Phase 1: chart a cited landscape's REAL budget data (deterministic,
+ * /api/agent/visualize GET). Phase 2: an "AI-suggested" option that charts the
+ * figures stated in this answer (POST → LLM extraction, flagged + verify note).
  */
-export function VisualizePanel({ slugs }: { slugs: string[] }) {
+export function VisualizePanel({ slugs, answerText }: { slugs: string[]; answerText: string }) {
   const [open, setOpen] = useState(false);
-  const [activeSlug, setActiveSlug] = useState<string | null>(slugs.length === 1 ? slugs[0] : null);
-  const [loading, setLoading] = useState(false);
-  const [charts, setCharts] = useState<VizSpec[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [dbCharts, setDbCharts] = useState<Record<string, VizSpec[]>>({});
+  const [dbLoading, setDbLoading] = useState(false);
+  const [aiCharts, setAiCharts] = useState<VizSpec[] | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [shown, setShown] = useState<VizSpec | null>(null);
 
-  async function load(slug: string) {
-    setActiveSlug(slug);
-    setCharts(null);
-    setShown(null);
-    setError(null);
-    setLoading(true);
+  async function loadDb() {
+    if (slugs.length === 0 || Object.keys(dbCharts).length > 0) return;
+    setDbLoading(true);
+    const acc: Record<string, VizSpec[]> = {};
+    await Promise.all(
+      slugs.map(async (slug) => {
+        try {
+          const r = await fetch(`/api/agent/visualize?slug=${encodeURIComponent(slug)}`);
+          const j = (await r.json()) as { charts?: VizSpec[] };
+          acc[slug] = j.charts ?? [];
+        } catch {
+          acc[slug] = [];
+        }
+      })
+    );
+    setDbCharts(acc);
+    setDbLoading(false);
+    // Auto-show the first available chart so the panel never feels empty.
+    const first = slugs.flatMap((s) => acc[s] ?? [])[0];
+    if (first) setShown(first);
+  }
+
+  async function loadAi() {
+    if (aiCharts !== null || aiLoading) return;
+    setAiLoading(true);
     try {
-      const res = await fetch(`/api/agent/visualize?slug=${encodeURIComponent(slug)}`);
-      const j = (await res.json()) as { charts?: VizSpec[] };
-      const list = j.charts ?? [];
-      setCharts(list);
-      if (list.length === 1) setShown(list[0]);
-      if (list.length === 0) setError("No chartable budget data for this landscape yet.");
+      const r = await fetch("/api/agent/visualize", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: answerText }),
+      });
+      const j = (await r.json()) as { charts?: VizSpec[] };
+      setAiCharts(j.charts ?? []);
     } catch {
-      setError("Couldn't load the data. Try again.");
+      setAiCharts([]);
     } finally {
-      setLoading(false);
+      setAiLoading(false);
     }
   }
 
   function toggle() {
     const next = !open;
     setOpen(next);
-    if (next && slugs.length === 1 && !charts && !loading) load(slugs[0]);
+    if (next) loadDb();
   }
+
+  const hasDbOptions = slugs.some((s) => (dbCharts[s] ?? []).length > 0);
+  const aiEmpty = aiCharts !== null && aiCharts.length === 0;
 
   return (
     <div className="mt-3">
@@ -61,63 +88,63 @@ export function VisualizePanel({ slugs }: { slugs: string[] }) {
 
       {open && (
         <div className="mt-3 rounded-[10px] border border-line-soft bg-cream/40 p-3.5">
-          {/* Landscape chooser (only when more than one cited) */}
-          {slugs.length > 1 && (
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Landscape</span>
-              {slugs.map((s) => (
+          <div className="flex flex-wrap items-center gap-2">
+            {dbLoading && (
+              <span className="inline-flex items-center gap-1.5 text-muted font-mono text-[9.5px] uppercase tracking-[0.14em]">
+                <Loader2 size={12} className="animate-spin" /> Reading the data
+              </span>
+            )}
+
+            {/* Phase 1 — deterministic, from the landscape's real data */}
+            {slugs.map((slug) =>
+              (dbCharts[slug] ?? []).map((c) => (
                 <button
-                  key={s}
+                  key={`${slug}-${c.id}`}
                   type="button"
-                  onClick={() => load(s)}
-                  className={`font-mono text-[9.5px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-full border transition-colors ${
-                    activeSlug === s
-                      ? "border-deep-teal bg-teal-wash text-deep-teal"
-                      : "border-line text-muted hover:text-deep-teal hover:border-deep-teal"
-                  }`}
+                  onClick={() => setShown(c)}
+                  className={`${chipBase} ${shown === c ? chipOn : chipOff}`}
                 >
-                  {pretty(s)}
+                  {slugs.length > 1 ? `${pretty(slug)} · ` : ""}
+                  {c.kind === "donut" ? "Funding mix" : "By theme"}
                 </button>
-              ))}
-            </div>
-          )}
+              ))
+            )}
 
-          {!activeSlug && slugs.length > 1 && (
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-              Pick a landscape to chart its data.
-            </p>
-          )}
-
-          {loading && (
-            <div className="inline-flex items-center gap-2 text-muted">
-              <Loader2 size={13} className="animate-spin" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em]">Reading the data</span>
-            </div>
-          )}
-
-          {error && (
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-amber-deep">{error}</p>
-          )}
-
-          {/* Chart-type options — "what's possible" */}
-          {!loading && charts && charts.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Chart</span>
-              {charts.map((c) => (
+            {/* Phase 2 — AI-suggested from the answer's own figures */}
+            {aiCharts === null ? (
+              <button
+                type="button"
+                onClick={loadAi}
+                disabled={aiLoading}
+                className={`${chipBase} ${chipOff} disabled:opacity-50`}
+              >
+                {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} strokeWidth={1.9} className="text-amber-deep" />}
+                AI-suggest
+              </button>
+            ) : (
+              aiCharts.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => setShown(c)}
-                  className={`font-mono text-[9.5px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-full border transition-colors ${
-                    shown?.id === c.id
-                      ? "border-deep-teal bg-teal-wash text-deep-teal"
-                      : "border-line text-muted hover:text-deep-teal hover:border-deep-teal"
-                  }`}
+                  className={`${chipBase} ${shown === c ? chipOn : chipOff}`}
                 >
-                  {c.kind === "donut" ? "Funding mix" : "By theme"}
+                  <Sparkles size={10} strokeWidth={1.9} className="text-amber-deep" />
+                  {c.title.replace(/\s*[—·-].*$/, "").slice(0, 22) || "Suggested"}
                 </button>
-              ))}
-            </div>
+              ))
+            )}
+          </div>
+
+          {!dbLoading && !hasDbOptions && aiCharts === null && slugs.length > 0 && (
+            <p className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+              No chartable budget data — try AI-suggest.
+            </p>
+          )}
+          {aiEmpty && (
+            <p className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+              AI found no chartable figures in this answer.
+            </p>
           )}
 
           {shown && <VizChart spec={shown} />}

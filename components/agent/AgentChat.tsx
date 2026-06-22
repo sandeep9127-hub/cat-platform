@@ -672,7 +672,9 @@ function MessageBubble({ msg, mid }: { msg: Msg; mid: number }) {
 
       {msg.content.length > 0 && !msg.refused && <AnswerActions text={msg.content} />}
 
-      {landscapeSlugs.length > 0 && <VisualizePanel slugs={landscapeSlugs} />}
+      {msg.content.length > 0 && !msg.refused && (
+        <VisualizePanel slugs={landscapeSlugs} answerText={msg.content} />
+      )}
 
       {msg.citations && msg.citations.length > 0 && (
         <CitationTray citations={msg.citations} mid={mid} />
