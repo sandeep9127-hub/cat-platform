@@ -471,7 +471,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Poverty, malnutrition, gendered literacy gaps, and a low sex ratio deepen household-level vulnerability.",
       "Uneven access to health services, credit, and markets constrains livelihood upgrading and enterprise growth.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/rajnagar/01.jpg",
