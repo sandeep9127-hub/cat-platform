@@ -24,6 +24,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { VisualizePanel } from "./VisualizePanel";
 
 type Citation = {
   index: number;
@@ -639,6 +640,18 @@ function MessageBubble({ msg, mid }: { msg: Msg; mid: number }) {
     );
   }
   // Assistant — answer flows on the page (no bubble), broadsheet-style.
+  // Landscapes cited in this answer → chartable with their real budget data.
+  const landscapeSlugs =
+    msg.content.length > 0 && !msg.refused && msg.citations
+      ? Array.from(
+          new Set(
+            msg.citations
+              .filter((c) => c.type === "landscape")
+              .map((c) => (c.url.match(/\/landscape\/([^/?#]+)/) || [])[1])
+              .filter(Boolean) as string[]
+          )
+        )
+      : [];
   return (
     <div className="mb-8 reveal-stagger">
       <span
@@ -658,6 +671,8 @@ function MessageBubble({ msg, mid }: { msg: Msg; mid: number }) {
       </div>
 
       {msg.content.length > 0 && !msg.refused && <AnswerActions text={msg.content} />}
+
+      {landscapeSlugs.length > 0 && <VisualizePanel slugs={landscapeSlugs} />}
 
       {msg.citations && msg.citations.length > 0 && (
         <CitationTray citations={msg.citations} mid={mid} />
