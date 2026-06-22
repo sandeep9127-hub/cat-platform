@@ -264,6 +264,17 @@ body::before {
   border-radius: 2px;
 }
 
+/* Flash a citation source card when its inline [n] chip is clicked. */
+@keyframes citeFlash {
+  0% { box-shadow: 0 0 0 0 rgba(46, 117, 115, 0); }
+  12% { box-shadow: 0 0 0 3px rgba(46, 117, 115, 0.55); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 117, 115, 0); }
+}
+.cite-flash { animation: citeFlash 1.5s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .cite-flash { animation: none; box-shadow: 0 0 0 3px rgba(46, 117, 115, 0.45); }
+}
+
 /* Skip-to-content link for keyboard navigation */
 .skip-to-content {
   position: absolute;

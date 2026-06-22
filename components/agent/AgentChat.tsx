@@ -21,6 +21,8 @@ import {
   MapPin,
   Compass,
   Sprout,
+  Copy,
+  Check,
 } from "lucide-react";
 
 type Citation = {
@@ -406,7 +408,7 @@ export function AgentChat({
           className="pt-4 pb-2 max-h-[55vh] overflow-y-auto"
         >
           {messages.map((m, i) => (
-            <MessageBubble key={i} msg={m} />
+            <MessageBubble key={i} msg={m} mid={i} />
           ))}
           {/* Spinner only while we're waiting on the FIRST token. Once
               the assistant message has any content, the streaming text
@@ -417,11 +419,17 @@ export function AgentChat({
               const last = messages[messages.length - 1];
               const stillWaiting =
                 !last || last.role !== "assistant" || last.content.length === 0;
+              // Staged: before the retrieval meta arrives we're searching; once
+              // citations land (but no answer text yet) we're reading those sources.
+              const n =
+                last && last.role === "assistant" ? last.citations?.length ?? 0 : 0;
               return stillWaiting ? (
                 <div className="inline-flex items-center gap-2 mt-3 mb-2 text-muted">
                   <Loader2 size={14} className="animate-spin" />
                   <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
-                    Reading the library
+                    {n > 0
+                      ? `Reading ${n} source${n === 1 ? "" : "s"}`
+                      : "Searching the library"}
                   </span>
                 </div>
               ) : null;
@@ -620,7 +628,7 @@ function Composer({
   );
 }
 
-function MessageBubble({ msg }: { msg: Msg }) {
+function MessageBubble({ msg, mid }: { msg: Msg; mid: number }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end mb-4 reveal-stagger">
@@ -646,11 +654,13 @@ function MessageBubble({ msg }: { msg: Msg }) {
         {msg.refused ? "Honest answer — not in the library" : "Answered from the library"}
       </span>
       <div className="font-sans text-[16px] text-ink leading-[1.7] mt-2.5 whitespace-pre-wrap max-w-[68ch]">
-        {renderInlineMarkdown(msg.content)}
+        {renderInlineMarkdown(msg.content, { mid, maxCite: msg.citations?.length ?? 0 })}
       </div>
 
+      {msg.content.length > 0 && !msg.refused && <AnswerActions text={msg.content} />}
+
       {msg.citations && msg.citations.length > 0 && (
-        <CitationTray citations={msg.citations} />
+        <CitationTray citations={msg.citations} mid={mid} />
       )}
     </div>
   );
@@ -666,7 +676,7 @@ const CITE_META: Record<
   entry: { Icon: FileText, tag: "Source", fg: "#946616" },
 };
 
-function CitationTray({ citations }: { citations: Citation[] }) {
+function CitationTray({ citations, mid }: { citations: Citation[]; mid: number }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? citations : citations.slice(0, 4);
   const hidden = Math.max(0, citations.length - 4);
@@ -720,7 +730,7 @@ function CitationTray({ citations }: { citations: Citation[] }) {
             </>
           );
           return (
-            <li key={c.index}>
+            <li key={c.index} id={`cite-${mid}-${c.index}`} className="scroll-mt-24 rounded-[2px]">
               {isExternal && linkProps ? (
                 <a {...linkProps} className={sharedClass}>
                   {inner}
@@ -738,19 +748,78 @@ function CitationTray({ citations }: { citations: Citation[] }) {
   );
 }
 
+// Clickable inline citation chip. The model emits [1], [2] markers (system
+// prompt); we render them as superscript chips that scroll to + flash the
+// matching source card in the tray below.
+function CiteChip({ n, mid }: { n: number; mid: number }) {
+  return (
+    <a
+      href={`#cite-${mid}-${n}`}
+      onClick={(e) => {
+        e.preventDefault();
+        const el = document.getElementById(`cite-${mid}-${n}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.remove("cite-flash");
+        void el.offsetWidth; // restart the flash animation if re-clicked
+        el.classList.add("cite-flash");
+        window.setTimeout(() => el.classList.remove("cite-flash"), 1500);
+      }}
+      className="align-super ml-0.5 inline-flex items-center justify-center min-w-[15px] px-1 py-px rounded-[3px] bg-teal-wash text-teal hover:bg-teal hover:text-paper no-underline font-mono text-[10px] leading-none font-semibold transition-colors"
+      aria-label={`Source ${n}`}
+    >
+      {n}
+    </a>
+  );
+}
+
+// Copy-the-answer action row under each completed assistant reply.
+function AnswerActions({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="mt-3.5 flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard
+            ?.writeText(text)
+            .then(() => {
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1800);
+            })
+            .catch(() => {});
+        }}
+        className="inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted hover:text-deep-teal active:scale-[0.97] transition-[transform,color] duration-150 ease-out-expo"
+      >
+        {copied ? (
+          <Check size={12} strokeWidth={2.2} className="text-teal" />
+        ) : (
+          <Copy size={12} strokeWidth={1.8} />
+        )}
+        {copied ? "Copied" : "Copy answer"}
+      </button>
+    </div>
+  );
+}
+
 // Safety-net inline markdown renderer. The system prompt forbids
 // markdown formatting in agent replies, but when the model slips a
 // **bold** through it should not render as literal asterisks to the
-// reader. Only bold and italic; no headings, lists, links or code.
-function renderInlineMarkdown(text: string): React.ReactNode[] {
+// reader. Bold + italic, plus [n] citation markers rendered as chips.
+function renderInlineMarkdown(
+  text: string,
+  opts?: { mid?: number; maxCite?: number }
+): React.ReactNode[] {
   if (!text) return [];
-  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|_[^_\n]+_)/g;
+  const mid = opts?.mid ?? 0;
+  const maxCite = opts?.maxCite ?? 0;
+  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|_[^_\n]+_|\[\d+\])/g;
   const out: React.ReactNode[] = [];
   let last = 0;
-  let m: RegExpExecArray | null;
   let key = 0;
-  while ((m = re.exec(text)) !== null) {
-    if (m.index > last) out.push(text.slice(last, m.index));
+  for (const m of text.matchAll(re)) {
+    const idx = m.index ?? 0;
+    if (idx > last) out.push(text.slice(last, idx));
     const tok = m[0];
     if (tok.startsWith("**")) {
       out.push(
@@ -758,6 +827,13 @@ function renderInlineMarkdown(text: string): React.ReactNode[] {
           {tok.slice(2, -2)}
         </strong>
       );
+    } else if (tok.startsWith("[")) {
+      const n = parseInt(tok.slice(1, -1), 10);
+      if (maxCite > 0 && n >= 1 && n <= maxCite) {
+        out.push(<CiteChip key={`c-${key++}`} n={n} mid={mid} />);
+      } else {
+        out.push(tok); // not a real citation index — leave as literal text
+      }
     } else {
       out.push(
         <em key={`i-${key++}`} className="italic">
@@ -765,7 +841,7 @@ function renderInlineMarkdown(text: string): React.ReactNode[] {
         </em>
       );
     }
-    last = m.index + tok.length;
+    last = idx + tok.length;
   }
   if (last < text.length) out.push(text.slice(last));
   return out;
