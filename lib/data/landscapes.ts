@@ -375,7 +375,7 @@ export const LANDSCAPES: Record<string, LandscapeProfile> = {
       "Weak physical connectivity, fragile embankments, small marketable surpluses, and limited storage and processing restrict market access and income potential.",
       "Persistent poverty, marginal landholdings, and gendered vulnerabilities constrain households' capacity to adapt and invest in resilient livelihoods.",
     ],
-    lipStatus: "in_preparation",
+    lipStatus: "published",
     photos: [
       {
         src: "/images/landscapes/patharpratima/01.jpg",
