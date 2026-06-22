@@ -504,7 +504,7 @@ function Composer({
           e.preventDefault();
           send(input);
         }}
-        className="relative overflow-hidden rounded-[10px] border border-line bg-paper transition-shadow focus-within:shadow-[0_1px_2px_rgba(26,38,37,0.04),0_12px_32px_-16px_rgba(46,117,115,0.30),0_0_0_3px_rgba(46,117,115,0.10)]"
+        className="relative rounded-[10px] border border-line bg-paper transition-shadow focus-within:shadow-[0_1px_2px_rgba(26,38,37,0.04),0_12px_32px_-16px_rgba(46,117,115,0.30),0_0_0_3px_rgba(46,117,115,0.10)]"
         style={{
           boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 22px -16px rgba(46,117,115,0.18)",
         }}
@@ -626,11 +626,6 @@ function Composer({
           </button>
         </div>
       </form>
-
-      {/* Microcopy — proud AI framing, kept honest by the grounding + citations */}
-      <p className="font-mono italic text-[10.5px] uppercase tracking-[0.14em] text-muted mt-3 text-center sm:text-left">
-        Powered by AI — grounded in the Hub&apos;s cited sources, not the open web. Check the citations.
-      </p>
     </div>
   );
 }
