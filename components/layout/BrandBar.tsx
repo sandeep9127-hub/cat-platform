@@ -138,6 +138,16 @@ export function BrandBar() {
             <MessageCircle size={12} strokeWidth={2} aria-hidden />
             Ask the Hub
           </Link>
+          {/* Compact Ask — phones only (<640px). The full green pill above is
+              hidden below sm; this keeps Ask one tap away in the bar while
+              everything else lives in the drawer. Tablet/desktop unchanged. */}
+          <Link
+            href="/agent"
+            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[9.5px] tracking-mono-mid uppercase px-3 py-1.5 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
+          >
+            <MessageCircle size={11} strokeWidth={2} aria-hidden />
+            Ask
+          </Link>
           {/* Mobile + tablet hamburger */}
           <button
             type="button"
@@ -182,14 +192,6 @@ export function BrandBar() {
                 <span>{label}</span>
               </Link>
             ))}
-            <Link
-              href="/agent"
-              onClick={() => setOpen(false)}
-              className="mt-3 inline-flex font-mono text-[11px] tracking-mono-mid uppercase px-5 py-2.5 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo w-fit items-center gap-2"
-            >
-              <MessageCircle size={14} strokeWidth={2} aria-hidden />
-              Ask the Hub
-            </Link>
             {/* Parent organisation — clearly external, new tab. Not "Home". */}
             <a
               href={PARENT_SITE}
