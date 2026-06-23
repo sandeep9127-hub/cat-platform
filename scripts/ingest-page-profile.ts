@@ -106,6 +106,66 @@ function chunksFor(slug: string): { text: string; section: string }[] {
 async function ingestSlug(slug: string): Promise<number> {
   const chunks = chunksFor(slug);
   if (!chunks.length) return 0;
+
+  // Budget overview from the structured Budget-tab data (landscape_budget_lines)
+  // — gives the assistant the headline numbers + full funding mix + reach in one
+  // retrievable chunk, complementing the per-package budget_summary chunks.
+  const name = LANDSCAPES[slug].name;
+  const b = await pool.query(
+    `SELECT round(COALESCE(SUM(total_intervention_cost_inr),0)/1e7,2) total_cr,
+            round(COALESCE(SUM(govt_inr),0)/1e7,2) govt, round(COALESCE(SUM(community_inr),0)/1e7,2) comm,
+            round(COALESCE(SUM(investment_required_inr),0)/1e7,2) inv,
+            round(COALESCE(SUM(grants_inr),0)/1e7,2) grants, round(COALESCE(SUM(returnable_grant_inr),0)/1e7,2) rg,
+            round(COALESCE(SUM(debt_inr),0)/1e7,2) debt, round(COALESCE(SUM(outcome_finance_inr),0)/1e7,2) outcome,
+            COALESCE(SUM(impact_households),0)::bigint hh, COALESCE(SUM(impact_hectares),0)::bigint ha,
+            COALESCE(SUM(impact_animals),0)::bigint animals, count(*)::int lines
+     FROM "cat".landscape_budget_lines WHERE landscape_slug = $1`,
+    [slug]
+  );
+  const r = b.rows[0];
+  if (r && Number(r.total_cr) > 0) {
+    const tot = Number(r.total_cr);
+    const pct = (v: unknown) => (tot > 0 ? Math.round((Number(v) / tot) * 100) : 0);
+    const cats = await pool.query(
+      `SELECT category, round(SUM(total_intervention_cost_inr)/1e7,2) t
+       FROM "cat".landscape_budget_lines WHERE landscape_slug = $1 AND category IS NOT NULL
+       GROUP BY category ORDER BY 2 DESC NULLS LAST LIMIT 3`,
+      [slug]
+    );
+    const top = cats.rows.map((c) => `${c.category} ₹${c.t} cr`).join(", ");
+    // Only list instruments / reach metrics that actually have values.
+    const instruments = (
+      [
+        ["grants", r.grants],
+        ["returnable grants", r.rg],
+        ["debt", r.debt],
+        ["outcome finance", r.outcome],
+      ] as [string, unknown][]
+    )
+      .filter(([, v]) => Number(v) > 0)
+      .map(([k, v]) => `${k} ₹${v} cr`)
+      .join(", ");
+    const reach = (
+      [
+        [r.hh, "household engagements"],
+        [r.ha, "hectares"],
+        [r.animals, "animals"],
+      ] as [unknown, string][]
+    )
+      .filter(([v]) => Number(v) > 0)
+      .map(([v, k]) => `${Number(v).toLocaleString("en-IN")} ${k}`)
+      .join(", ");
+    chunks.push({
+      section: `Landscape page · ${name} / Budget overview`,
+      text:
+        `${name} — investment plan budget. Total plan size ₹${r.total_cr} crore across ${r.lines} costed intervention lines. ` +
+        `Funding mix: government convergence ₹${r.govt} cr (${pct(r.govt)}%), community contribution ₹${r.comm} cr (${pct(r.comm)}%), external investment to be mobilised ₹${r.inv} cr (${pct(r.inv)}%).` +
+        (instruments ? ` Catalytic instruments within the external investment: ${instruments}.` : "") +
+        (top ? ` Largest investment areas: ${top}.` : "") +
+        (reach ? ` Estimated reach across interventions: ${reach}.` : ""),
+    });
+  }
+
   // Idempotent: clear this projection's prior doc(s) for the slug (chunks cascade).
   await pool.query(
     `DELETE FROM "cat".landscape_documents WHERE landscape_slug = $1 AND type = 'dataset' AND title = $2`,
