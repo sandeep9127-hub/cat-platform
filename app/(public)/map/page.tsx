@@ -220,6 +220,11 @@ export default async function MapPage({
             <span className="text-amber-deep">●</span> includes routed discovery records:
             government, NGO and collaborations led programmes pulled from public sources
           </p>
+          <p className="font-mono text-[9.5px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
+            The Solutions Atlas is updated at regular intervals as new programmes are verified and
+            added. It does not yet capture every food-systems initiative across India, and will keep
+            growing over time.
+          </p>
         </aside>
       </section>
 
