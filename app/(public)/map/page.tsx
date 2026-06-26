@@ -223,7 +223,8 @@ export default async function MapPage({
           <p className="font-mono text-[9.5px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
             The Solutions Atlas is updated at regular intervals as new programmes are verified and
             added. It does not yet capture every food-systems initiative across India, and will keep
-            growing over time.
+            growing over time. Each programme is drawn from public references; we&apos;d gently
+            suggest reconfirming details against the original source before relying on them.
           </p>
         </aside>
       </section>
