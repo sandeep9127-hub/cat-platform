@@ -292,9 +292,15 @@ async function extractBudget(filePath) {
     }
     return out;
   };
-  const hhCols = findCols(/^impact no household/);
-  const haCols = findCols(/^impact no hectares/);
-  const anCols = findCols(/^impact no animals/);
+  // Header text varies: some exports write a bare "Impact no Household", others
+  // prefix a phase marker ("P1 _Impact no Household", "P2 _Impact no Household")
+  // and embed newlines ("Impact no \nHousehold"). norm() collapses the newline to
+  // a space, so match "impact no <metric>" ANYWHERE in the header (not anchored at
+  // ^) — otherwise the "P1 _/P2 _" prefix makes the impact columns silently miss
+  // and the on-the-ground impact totals come through as NULL.
+  const hhCols = findCols(/impact no household/);
+  const haCols = findCols(/impact no hectares/);
+  const anCols = findCols(/impact no animals/);
   const projTotalCol = findCol(/total intervention cost for project period/);
   if (projTotalCol) {
     const col = {
