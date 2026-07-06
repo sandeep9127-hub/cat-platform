@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Globe, MapPin } from "lucide-react";
 import { GeographyPicker } from "@/components/geo/GeographyPicker";
+import { DomainPicker } from "@/components/organizations/DomainPicker";
 import type { GeoHit } from "@/lib/db/geo";
 
 /** Map a picked canonical place to the legacy state/district/block fields (+ id).
@@ -523,7 +524,6 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
     name: editTarget?.name ?? "",
     orgType: editTarget?.orgType ?? "",
     website: editTarget?.website ?? "",
-    domains: editTarget?.domains.join(", ") ?? "",
     comments: "",
     contactPerson: "",
     contactEmail: "",
@@ -534,6 +534,8 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
   const [locations, setLocations] = useState<LocRow[]>([
     { state: "", district: "", block: "", geographyId: "" },
   ]);
+  // Domains as a canonical multi-select (curated library + reviewed custom terms).
+  const [domainList, setDomainList] = useState<string[]>(editTarget?.domains ?? []);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
@@ -566,7 +568,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
           name: f.name,
           orgType: f.orgType,
           website: f.website,
-          domains: f.domains.split(",").map((d) => d.trim()).filter(Boolean),
+          domains: domainList,
           locations: cleanLocations,
           comments: f.comments,
           contactPerson: f.contactPerson,
@@ -607,7 +609,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                 <select value={targetId} onChange={(e) => {
                   setTargetId(e.target.value);
                   const o = orgs.find((x) => x.id === e.target.value);
-                  if (o) setF((s) => ({ ...s, name: o.name, orgType: o.orgType, domains: o.domains.join(", ") }));
+                  if (o) { setF((s) => ({ ...s, name: o.name, orgType: o.orgType })); setDomainList(o.domains); }
                 }}>
                   <option value="">Select…</option>
                   {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -690,8 +692,8 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               <button type="button" className="og-add-loc" onClick={addLoc}>Add another location</button>
             </div>
 
-            <label className="og-field"><span>Domains (comma-separated)</span>
-              <input value={f.domains} onChange={(e) => up("domains", e.target.value)} placeholder="Livelihoods, Soil conservation, Seed management" /></label>
+            <div className="og-field"><span>Domains</span>
+              <DomainPicker value={domainList} onChange={setDomainList} /></div>
             <label className="og-field"><span>Anything else</span>
               <textarea rows={2} value={f.comments} onChange={(e) => up("comments", e.target.value)} /></label>
 

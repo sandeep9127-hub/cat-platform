@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { writeAudit } from "@/lib/audit";
+import { isLibraryDomain } from "@/lib/data/domains";
 
 export const dynamic = "force-dynamic";
 
@@ -169,7 +170,29 @@ export default async function SubmissionsPage() {
 
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-4 text-[13px]">
                 {s.domains && s.domains.length > 0 && (
-                  <Field label="Domains" value={s.domains.join(", ")} wide />
+                  <div className="sm:col-span-2">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Domains</dt>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {s.domains.map((d) => {
+                        const custom = !isLibraryDomain(d);
+                        return (
+                          <span
+                            key={d}
+                            className={`inline-flex items-center gap-1.5 text-[12px] px-2 py-0.5 rounded-full border ${
+                              custom
+                                ? "border-amber-deep/40 bg-amber-deep/10 text-amber-deep"
+                                : "border-line bg-black/[0.03] text-ink"
+                            }`}
+                          >
+                            {d}
+                            {custom && (
+                              <span className="font-mono text-[8.5px] uppercase tracking-[0.08em]">review</span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </dd>
+                  </div>
                 )}
                 {s.contact_person && <Field label="Contact" value={s.contact_person} />}
                 {s.contact_email && <Field label="Email" value={s.contact_email} />}
