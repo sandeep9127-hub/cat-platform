@@ -39,6 +39,7 @@ type Loc = { orgId: string; lat: number; lng: number; state: string | null; dist
 const TYPE_ORDER = [
   "NGO",
   "Civil Society (CSO/CBO)",
+  "Community",
   "Non-profit",
   "Farmer / FPO",
   "Market player",
