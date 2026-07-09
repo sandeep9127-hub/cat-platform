@@ -1,14 +1,21 @@
 import "server-only";
 
 /**
- * Kimi K2 (Moonshot AI) via NVIDIA's hosted API — OpenAI-compatible chat completions.
- * Free tier; primary LLM for the Transformation Hub agent preview and draft writer.
+ * Hub LLM via NVIDIA's hosted API — OpenAI-compatible chat completions. Free tier;
+ * primary model for the Transformation Hub "Ask the Hub" agent and draft writer.
+ *
+ * Model: GLM 5.2 (z-ai/glm-5.2). Swapped from moonshotai/kimi-k2.6 after NVIDIA
+ * de-provisioned that hosted function for this account (chat calls 404'd with
+ * "Function ... Not found for account" while it still appeared in /models). GLM
+ * 5.2 returns clean, citation-disciplined output; any reasoning is emitted in a
+ * separate `reasoning_content` field, so the content stream never leaks <think>.
+ * The KIMI_MODEL / kimiChat export names are kept to avoid touching call sites.
  *
  * Auth: NVIDIA_API_KEY (nvapi-...) from https://build.nvidia.com.
  */
 
 const NVIDIA_BASE = "https://integrate.api.nvidia.com/v1";
-export const KIMI_MODEL = "moonshotai/kimi-k2.6";
+export const KIMI_MODEL = process.env.AGENT_MODEL || "z-ai/glm-5.2";
 
 export function kimiEnabled(): boolean {
   return !!process.env.NVIDIA_API_KEY;
