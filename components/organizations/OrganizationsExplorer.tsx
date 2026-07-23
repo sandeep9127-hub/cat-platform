@@ -161,6 +161,25 @@ export function OrganizationsExplorer() {
         maxZoom: 12,
         zoomControl: true,
       }).setView([22.5, 80], 5);
+      // Real administrative basemap: CoRE Stack's Survey-of-India tehsil layer,
+      // served as WMS image tiles (light, so pins stay legible on top). Survey of
+      // India source keeps international borders correct — the reason we still
+      // avoid OpenStreetMap tiles. Toggleable, on by default so the map reads as
+      // real geography rather than a flat outline.
+      const tehsilLayer = L.tileLayer.wms(
+        "https://geoserver.core-stack.org:8443/geoserver/wms",
+        {
+          layers: "pan_india_asset:SOI_tehsil_pan_india_dataset",
+          format: "image/png",
+          transparent: true,
+          version: "1.1.1",
+          opacity: 0.35,
+          attribution: "Tehsil boundaries: Survey of India via CoRE Stack",
+        }
+      ).addTo(map);
+      L.control
+        .layers(null, { "Tehsil boundaries": tehsilLayer }, { collapsed: true, position: "topright" })
+        .addTo(map);
       // India outline from our own border-correct GeoJSON (the same geometry
       // the Solutions Atlas uses — 36 states/UTs incl. J&K, Ladakh, Arunachal),
       // instead of OpenStreetMap tiles which draw disputed international borders.

@@ -63,7 +63,7 @@ export async function getDirectory(): Promise<{
   const orgR = await db.execute(sql`
     SELECT o.id, o.name, o.org_type AS "orgType", o.domains, o.website,
            count(l.id)::int AS "locationCount",
-           coalesce(array_agg(DISTINCT l.state) FILTER (WHERE l.state IS NOT NULL), '{}') AS states
+           coalesce(array_agg(DISTINCT initcap(coalesce(l.geo_state, l.state))) FILTER (WHERE coalesce(l.geo_state, l.state) IS NOT NULL), '{}') AS states
     FROM "cat".directory_orgs o
     LEFT JOIN "cat".directory_locations l ON l.org_id = o.id
     WHERE o.is_published
@@ -71,7 +71,9 @@ export async function getDirectory(): Promise<{
     ORDER BY o.name
   `);
   const locR = await db.execute(sql`
-    SELECT org_id AS "orgId", latitude AS lat, longitude AS lng, state, district
+    SELECT org_id AS "orgId", latitude AS lat, longitude AS lng,
+           initcap(coalesce(geo_state, state)) AS state,
+           initcap(coalesce(geo_district, district)) AS district
     FROM "cat".directory_locations
     WHERE latitude IS NOT NULL AND longitude IS NOT NULL
   `);
