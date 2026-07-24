@@ -158,14 +158,22 @@ export function OrganizationsExplorer() {
         scrollWheelZoom: true,
         attributionControl: true,
         minZoom: 4,
-        maxZoom: 12,
+        maxZoom: 16,
         zoomControl: true,
       }).setView([22.5, 80], 5);
-      // Real administrative basemap: CoRE Stack's Survey-of-India tehsil layer,
-      // served as WMS image tiles (light, so pins stay legible on top). Survey of
-      // India source keeps international borders correct — the reason we still
-      // avoid OpenStreetMap tiles. Toggleable, on by default so the map reads as
-      // real geography rather than a flat outline.
+      // Base maps. Satellite (Esri World Imagery) is the familiar default — the
+      // "Google Maps" look anyone can relate to. Crucially, imagery carries NO
+      // drawn international borders, so we still render our own Survey-of-India
+      // correct boundaries on top (below) rather than an OpenStreetMap-style tile
+      // that would draw disputed borders. "Clean" is the minimal cream + outline.
+      const esriSat = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { maxZoom: 18, attribution: "Imagery: Esri, Maxar, Earthstar Geographics" }
+      );
+      const cleanBase = L.layerGroup(); // no tiles → the cream container shows through
+      esriSat.addTo(map); // default view
+      // CoRE Stack's Survey-of-India tehsil boundaries, as a light overlay you can
+      // switch on for administrative context. Off by default so satellite reads clean.
       const tehsilLayer = L.tileLayer.wms(
         "https://geoserver.core-stack.org:8443/geoserver/wms",
         {
@@ -173,12 +181,16 @@ export function OrganizationsExplorer() {
           format: "image/png",
           transparent: true,
           version: "1.1.1",
-          opacity: 0.35,
+          opacity: 0.5,
           attribution: "Tehsil boundaries: Survey of India via CoRE Stack",
         }
-      ).addTo(map);
+      );
       L.control
-        .layers(null, { "Tehsil boundaries": tehsilLayer }, { collapsed: true, position: "topright" })
+        .layers(
+          { Satellite: esriSat, Clean: cleanBase },
+          { "Tehsil boundaries": tehsilLayer },
+          { collapsed: true, position: "topright" }
+        )
         .addTo(map);
       // India outline from our own border-correct GeoJSON (the same geometry
       // the Solutions Atlas uses — 36 states/UTs incl. J&K, Ladakh, Arunachal),
@@ -187,12 +199,23 @@ export function OrganizationsExplorer() {
         .then((r) => r.json())
         .then((gj) => {
           const india = L.geoJSON(gj, {
-            // Match the Solutions Atlas / Landscapes basemap: barely-tinted teal
-            // states defined mostly by a thin teal stroke, over the cream
-            // gradient set on the container. og-country adds the soft lift shadow.
-            style: { color: "#2e7573", weight: 0.6, opacity: 0.32, fillColor: "#2e7573", fillOpacity: 0.07, className: "og-country" },
+            // Correct international + state borders drawn ON TOP of any base. Stroke
+            // is strong enough to read over satellite imagery; fill stays barely
+            // tinted so the imagery shows through (and gives the "Clean" base its
+            // soft teal landmass). interactive:false so it never intercepts a pin.
+            style: { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04, className: "og-country" },
+            interactive: false,
           }).addTo(map);
           india.bringToBack();
+          // The outline reads differently on each base: a light admin line over
+          // satellite imagery, a teal landmass over the cream "Clean" base.
+          map.on("baselayerchange", (e: any) => {
+            india.setStyle(
+              e?.name === "Clean"
+                ? { color: "#2e7573", weight: 0.7, opacity: 0.5, fillColor: "#2e7573", fillOpacity: 0.08 }
+                : { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04 }
+            );
+          });
           // Fit to where the data actually is (mainland) rather than the full
           // GeoJSON — the Andaman/Lakshadweep islands would otherwise force a
           // zoom-out that shrinks mainland India. Loosen the pan boundary to
