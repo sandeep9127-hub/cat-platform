@@ -27,6 +27,10 @@ const nextConfig = {
       // beforeFiles so it intercepts real pages (/, /map, ...) on the old host
       // before Next serves them. /api, /_next and /moved are excluded.
       beforeFiles: [
+        // CAT Learn: the induction course lives in its own Vercel project (cat-learn).
+        // The hub only forwards /learn to it, so a deploy on either side cannot affect the other.
+        { source: "/learn", destination: "https://cat-learn.vercel.app/learn/" },
+        { source: "/learn/:path*", destination: "https://cat-learn.vercel.app/learn/:path*" },
         {
           source: "/:path((?!api/|_next/|moved).*)",
           has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
