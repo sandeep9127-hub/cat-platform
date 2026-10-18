@@ -31,6 +31,9 @@ const nextConfig = {
         // The hub only forwards /learn to it, so a deploy on either side cannot affect the other.
         { source: "/learn", destination: "https://cat-learn.vercel.app/learn/" },
         { source: "/learn/:path*", destination: "https://cat-learn.vercel.app/learn/:path*" },
+        // CAT Decks: the list of presentation decks, served by the same cat-learn project.
+        { source: "/decks", destination: "https://cat-learn.vercel.app/decks/" },
+        { source: "/decks/:path*", destination: "https://cat-learn.vercel.app/decks/:path*" },
         {
           source: "/:path((?!api/|_next/|moved).*)",
           has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
