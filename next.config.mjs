@@ -34,6 +34,9 @@ const nextConfig = {
         // CAT Decks: the list of presentation decks, served by the same cat-learn project.
         { source: "/decks", destination: "https://cat-learn.vercel.app/decks/" },
         { source: "/decks/:path*", destination: "https://cat-learn.vercel.app/decks/:path*" },
+        // Team Flow (HR: leave, approvals, people): CAT's own deployment, built with basePath /hr.
+        { source: "/hr", destination: "https://cat-teamflow.vercel.app/hr" },
+        { source: "/hr/:path*", destination: "https://cat-teamflow.vercel.app/hr/:path*" },
         {
           source: "/:path((?!api/|_next/|moved).*)",
           has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
@@ -58,7 +61,8 @@ const nextConfig = {
       `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' https://unpkg.com https://static.cloudflareinsights.com${devScriptToken}; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self' data:; ${connectSrc}; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:`;
     return [
       {
-        source: "/(.*)",
+        // /hr is Team Flow, which sends its own security headers (it loads its own fonts).
+        source: "/((?!hr(?:/|$)).*)",
         headers: [
           { key: "Content-Security-Policy", value: csp },
           {
