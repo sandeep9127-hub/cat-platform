@@ -22,6 +22,14 @@ const nextConfig = {
   // rewritten to a branded "we have moved" notice that forwards to the custom
   // domain (deep link preserved via ?from). /api stays live so Vercel cron and
   // the API keep working; /_next and /moved are excluded so the page renders.
+  // Team Flow (HR, leave, travel) moved off the hub to its own address. Old /hr links
+  // (invites, guest travel links, bookmarks) are sent on to the same page there.
+  async redirects() {
+    return [
+      { source: "/hr", destination: "https://cat-teamflow.vercel.app/", permanent: false },
+      { source: "/hr/:path*", destination: "https://cat-teamflow.vercel.app/:path*", permanent: false },
+    ];
+  },
   async rewrites() {
     return {
       // beforeFiles so it intercepts real pages (/, /map, ...) on the old host
@@ -34,9 +42,6 @@ const nextConfig = {
         // CAT Decks: the list of presentation decks, served by the same cat-learn project.
         { source: "/decks", destination: "https://cat-learn.vercel.app/decks/" },
         { source: "/decks/:path*", destination: "https://cat-learn.vercel.app/decks/:path*" },
-        // Team Flow (HR: leave, approvals, people): CAT's own deployment, built with basePath /hr.
-        { source: "/hr", destination: "https://cat-teamflow.vercel.app/hr" },
-        { source: "/hr/:path*", destination: "https://cat-teamflow.vercel.app/hr/:path*" },
         {
           source: "/:path((?!api/|_next/|moved).*)",
           has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
