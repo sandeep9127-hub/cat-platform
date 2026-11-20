@@ -32,7 +32,9 @@ async function callVoyage(input: string[], inputType: InputType): Promise<number
   if (!key) throw new Error("VOYAGE_API_KEY missing");
 
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(ENDPOINT, {
+    let res: Response;
+    try {
+      res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
       body: JSON.stringify({
@@ -43,6 +45,14 @@ async function callVoyage(input: string[], inputType: InputType): Promise<number
         truncation: true,
       }),
     });
+    } catch (e) {
+      // Dropped connection / DNS / reset: retry with backoff like a 5xx.
+      if (attempt < MAX_RETRIES) {
+        await sleep(2000 * 2 ** attempt);
+        continue;
+      }
+      throw new Error(`Voyage embed network error: ${(e as Error).message} ${String((e as { cause?: unknown }).cause ?? "")}`);
+    }
     if (res.ok) {
       const data = (await res.json()) as { data: { index: number; embedding: number[] }[] };
       return data.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);

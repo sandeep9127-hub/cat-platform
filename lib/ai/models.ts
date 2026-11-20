@@ -35,7 +35,9 @@ export type AiTask =
   | "visualize"
   | "factsheet"
   | "discovery"
-  | "draft_writer";
+  | "draft_writer"
+  | "chunk_context"
+  | "version_diff";
 
 export type TaskConfig = {
   model: ModelId;
@@ -57,6 +59,14 @@ const DEFAULTS: Record<AiTask, TaskConfig> = {
   factsheet: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
   discovery: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
   draft_writer: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 0 },
+
+  // Document ingestion.
+  // One call per section: a 1–2 line "where this sits" context for each chunk
+  // (contextual retrieval). Bulk and mechanical, so Haiku at low effort.
+  chunk_context: { model: MODELS.haiku, effort: "low", maxTokens: 4000, pool: "ingestion", maxWebSearches: 0 },
+  // "What changed" between two versions of a document, from the changed
+  // passages only. Judgement matters (which changes are material), so Sonnet.
+  version_diff: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 0 },
 };
 
 export function taskConfig(task: AiTask): TaskConfig {
