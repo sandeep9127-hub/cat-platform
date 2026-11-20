@@ -43,9 +43,10 @@ export function Footer() {
             />
           </a>
 
-          <h3 className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[24ch] text-ink">
+          {/* A statement, not a heading: keeps the page outline clean. */}
+          <p className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[24ch] text-ink">
             A <span className="text-teal">repository</span> of food systems initiatives, landscapes, and learning from across India.
-          </h3>
+          </p>
           <p className="mt-4 text-[13.5px] leading-[1.6] text-ink-soft max-w-[42ch]">
             Run by the Consortium for Agroecological Transformations. Every entry is compiled
             from public sources and checked before it goes up. Missing a programme?{" "}
@@ -74,16 +75,16 @@ export function Footer() {
             { href: "/about", label: "About CAT" },
             { href: "/contact", label: "Contact" },
           ]}
-          external={[
-            { href: "https://www.agroecologyindia.org", label: "agroecologyindia.org" },
-          ]}
         />
       </div>
 
       <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10">
         {/* Left-aligned so the bottom-right corner is free for the goat signature. */}
-        <p className="font-mono text-[11px] tracking-[0.05em] text-muted">
-          Copyright © 2026 Consortium for Agroecological Transformations
+        <p className="font-mono text-[11px] tracking-[0.05em] text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>Copyright © 2026 Consortium for Agroecological Transformations</span>
+          <span aria-hidden className="text-line">·</span>
+          <Link href="/privacy" className="hover:text-teal transition-colors py-2">Privacy</Link>
+          <Link href="/terms" className="hover:text-teal transition-colors py-2">Terms</Link>
         </p>
       </div>
 
@@ -105,16 +106,17 @@ function FooterCol({
   return (
     // lg:text-right — right-align the Explore / About columns (Option 1)
     <div className="lg:text-right">
-      <h4 className="font-mono text-[11px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
+      <h2 className="font-mono text-[11px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
         {Icon ? <Icon size={12} strokeWidth={1.8} aria-hidden /> : <span className="w-3 h-px bg-amber-deep" />}
         {title}
-      </h4>
-      <ul className="space-y-2.5 list-none p-0">
+      </h2>
+      {/* 40px tap rows on phones; the tighter rhythm returns on desktop. */}
+      <ul className="lg:space-y-2.5 list-none p-0">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="footer-link relative inline-block text-[13.5px] text-ink-soft hover:text-teal transition-colors"
+              className="footer-link relative inline-flex items-center min-h-10 lg:min-h-0 text-[14px] text-ink-soft hover:text-teal transition-colors"
             >
               {l.label}
             </Link>
