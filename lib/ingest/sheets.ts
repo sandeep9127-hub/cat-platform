@@ -173,6 +173,13 @@ export async function stageInterventions(opts: {
 
   await db.transaction(async (tx) => {
     const record = async (rowKey: string, type: "add" | "update" | "remove", before: unknown, after: unknown, fields: string[]) => {
+      // The daily sync re-reads unchanged sheets: an identical pending change
+      // is left alone (no churn, no duplicate triage items).
+      const same = rows<{ id: string }>(await tx.execute(sql`
+        SELECT id FROM "cat".intervention_changes
+        WHERE landscape_slug = ${opts.landscapeSlug} AND row_key = ${rowKey} AND status = 'pending'
+          AND change_type = ${type} AND after IS NOT DISTINCT FROM ${after === null ? null : JSON.stringify(after)}::jsonb`))[0];
+      if (same) return;
       // A newer sync supersedes an older pending change for the same row.
       await tx.execute(sql`UPDATE "cat".intervention_changes SET status = 'superseded'
         WHERE landscape_slug = ${opts.landscapeSlug} AND row_key = ${rowKey} AND status = 'pending'`);

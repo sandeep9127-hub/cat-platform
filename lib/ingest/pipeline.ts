@@ -116,15 +116,33 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   const { sections, chunks } = buildSectionsAndChunks(input.parsed.blocks);
   log(`  ${sections.length} sections, ${chunks.length} chunks, pages ${reliable ? `reliable (${input.parsed.pageCount})` : "not available (section citations)"}`);
 
-  // Document row: one per Drive file lineage.
-  const doc = rows<{ id: string }>(
+  // Document row. A landscape has one LIP lineage: a revised file that
+  // replaces the August report (different Drive file) continues the same
+  // document as a new version, so it gets a change summary and the old
+  // version is removed. Lookup order: same Drive file, else the landscape's
+  // existing synced document of this type.
+  const existing = rows<{ id: string }>(
     await db.execute(sql`
-      INSERT INTO "cat".documents (landscape_slug, title, doc_type, source, drive_file_id, drive_path)
-      VALUES (${input.landscapeSlug}, ${input.title}, ${input.docType}, 'drive', ${input.drive.fileId}, ${input.drive.path})
-      ON CONFLICT (drive_file_id) WHERE drive_file_id IS NOT NULL
-      DO UPDATE SET title = EXCLUDED.title, drive_path = EXCLUDED.drive_path, updated_at = now()
-      RETURNING id`),
+      SELECT id FROM "cat".documents
+      WHERE drive_file_id = ${input.drive.fileId}
+         OR (source = 'drive' AND landscape_slug = ${input.landscapeSlug} AND doc_type = ${input.docType})
+      ORDER BY (drive_file_id = ${input.drive.fileId}) DESC
+      LIMIT 1`),
   )[0];
+  const doc = existing
+    ? rows<{ id: string }>(
+        await db.execute(sql`
+          UPDATE "cat".documents
+          SET title = ${input.title}, drive_file_id = ${input.drive.fileId}, drive_path = ${input.drive.path}, updated_at = now()
+          WHERE id = ${existing.id}
+          RETURNING id`),
+      )[0]
+    : rows<{ id: string }>(
+        await db.execute(sql`
+          INSERT INTO "cat".documents (landscape_slug, title, doc_type, source, drive_file_id, drive_path)
+          VALUES (${input.landscapeSlug}, ${input.title}, ${input.docType}, 'drive', ${input.drive.fileId}, ${input.drive.path})
+          RETURNING id`),
+      )[0];
 
   const prevInDb = rows<{ id: string; version_no: number; label: string | null; r2_original_key: string; r2_parsed_key: string | null }>(
     await db.execute(sql`
