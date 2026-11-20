@@ -79,7 +79,7 @@ export default function ContactPage() {
               <li>Generic press release submissions</li>
             </ul>
           </div>
-          <aside className="bg-paper border border-line rounded-[10px] p-6 self-start">
+          <aside className="bg-paper border border-line rounded-card p-6 self-start">
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
               Response time
             </span>

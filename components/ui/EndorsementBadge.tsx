@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 type Tier = "cat_authored" | "cat_endorsed" | "cat_listed";
 
 const LABELS: Record<Tier, string> = {
@@ -24,7 +25,7 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
         : "border-line text-muted bg-paper";
   return (
     <span
-      className={`group relative font-mono text-[11px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-[3px] whitespace-nowrap cursor-help inline-block ${cls}`}
+      className={`group relative font-mono text-[11px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-tight whitespace-nowrap cursor-help inline-block ${cls}`}
       tabIndex={0}
       aria-describedby={`tier-${tier}`}
     >
@@ -32,7 +33,7 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
       <span
         id={`tier-${tier}`}
         role="tooltip"
-        className="pointer-events-none absolute right-0 bottom-full z-[60] mb-2.5 w-[260px] text-left normal-case font-sans font-normal text-[12.5px] leading-[1.5] tracking-normal text-paper rounded-[6px] px-3.5 py-3 opacity-0 translate-y-1 transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
+        className="pointer-events-none absolute right-0 bottom-full z-[60] mb-2.5 w-[260px] text-left normal-case font-sans font-normal text-[12.5px] leading-[1.5] tracking-normal text-paper rounded-card px-3.5 py-3 opacity-0 translate-y-1 transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0"
         style={{
           background:
             "linear-gradient(135deg, #1A2625 0%, #2C4544 60%, #334B4A 100%)",
@@ -69,29 +70,29 @@ const LEGEND_ITEMS: LegendItem[] = [
   {
     label: "CAT Authored",
     copy: "Researched and written by CAT editors. Highest editorial weight.",
-    bar: "#C68C2E",
+    bar: palette.ochre,
     soft: "rgba(248,202,124,0.14)",
     glow: "rgba(248,202,124,0.26)",
     iconBg: "rgba(248,202,124,0.22)",
-    iconFg: "#C68C2E",
+    iconFg: palette.amberDeep,
   },
   {
     label: "CAT Endorsed",
     copy: "Self-submitted by the lead organisation, reviewed and endorsed.",
-    bar: "#2E7573",
+    bar: palette.teal,
     soft: "rgba(46,117,115,0.10)",
     glow: "rgba(46,117,115,0.18)",
     iconBg: "rgba(46,117,115,0.12)",
-    iconFg: "#2E7573",
+    iconFg: palette.teal,
   },
   {
     label: "CAT Listed",
     copy: "The programme is documented. CAT has not done deep editorial work.",
-    bar: "#929CC5",
+    bar: palette.periwinkle,
     soft: "rgba(146,156,197,0.10)",
     glow: "rgba(146,156,197,0.20)",
     iconBg: "rgba(146,156,197,0.14)",
-    iconFg: "#5C6796",
+    iconFg: palette.periwinkleText,
   },
 ];
 
@@ -109,7 +110,7 @@ export function EndorsementLegend({ className }: { className?: string }) {
         {LEGEND_ITEMS.map((it) => (
           <div
             key={it.label}
-            className="group relative overflow-hidden rounded-[6px] border border-line bg-paper p-4 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
+            className="group relative overflow-hidden rounded-card border border-line bg-paper p-4 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
             style={{
               boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 6px 16px -10px ${it.glow}`,
               backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${it.soft} 100%)`,
@@ -125,7 +126,7 @@ export function EndorsementLegend({ className }: { className?: string }) {
             <div className="relative flex items-center gap-2 mb-2">
               <span
                 aria-hidden
-                className="w-5 h-5 rounded-[3px] inline-flex items-center justify-center font-mono text-[11px] font-bold"
+                className="w-5 h-5 rounded-tight inline-flex items-center justify-center font-mono text-[11px] font-bold"
                 style={{ background: it.iconBg, color: it.iconFg }}
               >
                 {it.label.split(" ")[1]?.[0] ?? "·"}

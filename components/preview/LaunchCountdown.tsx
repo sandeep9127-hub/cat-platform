@@ -33,7 +33,7 @@ export function LaunchCountdown({ target }: { target: string }) {
 
   if (t?.done) {
     return (
-      <div className="mt-7 rounded-[12px] border border-line bg-paper px-5 py-4 text-center">
+      <div className="mt-7 rounded-panel border border-line bg-paper px-5 py-4 text-center">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-teal font-semibold">
           The Hub is live
         </span>
@@ -57,7 +57,7 @@ export function LaunchCountdown({ target }: { target: string }) {
         {cells.map(([v, label]) => (
           <div
             key={label}
-            className="rounded-[11px] border border-line bg-paper py-3.5 flex flex-col items-center"
+            className="rounded-card border border-line bg-paper py-3.5 flex flex-col items-center"
             style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04)" }}
           >
             <span className="font-sans text-[26px] sm:text-[30px] font-semibold leading-none tracking-[-0.02em] text-deep-teal tabular-nums">

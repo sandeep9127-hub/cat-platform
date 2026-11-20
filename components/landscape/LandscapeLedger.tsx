@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import Image from "next/image";
 import { Mountain, Users, Coins, type LucideIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -55,7 +56,7 @@ export function LandscapeLedger(props: LedgerProps) {
       Icon: Mountain,
       // CAT illustrated stat icon (periwinkle — matches the Land accent).
       iconSrc: "/icons/stats/area.png",
-      accent: "#5e6990",
+      accent: palette.periwinkleDeep,
       rows: [
         { label: "Geographical area", value: props.area },
         { label: "Inhabited villages", value: props.villages },
@@ -68,7 +69,7 @@ export function LandscapeLedger(props: LedgerProps) {
       Icon: Users,
       // CAT illustrated stat icon (teal — matches the People accent).
       iconSrc: "/icons/stats/population.png",
-      accent: "#2e7573",
+      accent: palette.teal,
       rows: [
         { label: "Population", value: props.population },
         { label: "Households", value: props.households },
@@ -79,7 +80,7 @@ export function LandscapeLedger(props: LedgerProps) {
       key: "money",
       label: "Investment",
       Icon: Coins,
-      accent: "#946616",
+      accent: palette.amberDeep,
       rows: hasMoney
         ? [
             { label: "Total plan size", value: formatMoney(props.totalCostInr!, currency) },
@@ -99,7 +100,7 @@ export function LandscapeLedger(props: LedgerProps) {
         </h2>
       </div>
 
-      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[14px] overflow-hidden border border-line list-none p-0 m-0">
+      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-panel overflow-hidden border border-line list-none p-0 m-0">
         {groups.map((g) => (
           <li key={g.key} className="relative bg-paper px-6 py-6 sm:px-7 sm:py-7">
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: g.accent }} />

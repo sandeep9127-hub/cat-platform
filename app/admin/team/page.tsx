@@ -85,7 +85,7 @@ export default async function TeamPage({
     .where(inArray(schema.users.role, ["admin", "editor"]));
 
   const input =
-    "px-3 py-2 rounded-[8px] bg-paper border border-line text-[14px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
+    "px-3 py-2 rounded-card bg-paper border border-line text-[14px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
 
   return (
     <div className="space-y-6 max-w-[860px]">
@@ -99,13 +99,13 @@ export default async function TeamPage({
       </header>
 
       {sp.ok ? (
-        <div className="rounded-[8px] border border-teal/30 bg-teal/10 text-deep-teal px-4 py-3 text-[13.5px]">
+        <div className="rounded-card border border-teal/30 bg-teal/10 text-deep-teal px-4 py-3 text-[13.5px]">
           {sp.ok === "added" ? "Member added. Share their temporary password so they can sign in." :
            sp.ok === "reset" ? "Password reset." : "Member removed."}
         </div>
       ) : null}
       {sp.error ? (
-        <div className="rounded-[8px] border border-red-alert/30 bg-red-alert/10 text-red-alert px-4 py-3 text-[13.5px]">
+        <div className="rounded-card border border-red-alert/30 bg-red-alert/10 text-red-alert px-4 py-3 text-[13.5px]">
           {sp.error === "weak" ? "Password must be at least 8 characters." :
            sp.error === "email" ? "Enter a valid email." :
            sp.error === "self" ? "You can't remove your own access." : "Invalid role."}
@@ -113,7 +113,7 @@ export default async function TeamPage({
       ) : null}
 
       {/* Add member */}
-      <form action={addMember} className="rounded-[10px] border border-line p-5 flex flex-col sm:flex-row sm:items-end gap-3 flex-wrap">
+      <form action={addMember} className="rounded-card border border-line p-5 flex flex-col sm:flex-row sm:items-end gap-3 flex-wrap">
         <label className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
           <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Email</span>
           <input type="email" name="email" required placeholder="editor@organisation.org" className={input} />
@@ -135,7 +135,7 @@ export default async function TeamPage({
       </form>
 
       {/* Member list */}
-      <div className="rounded-[10px] border border-line overflow-x-auto">
+      <div className="rounded-card border border-line overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-[13.5px]">
           <thead>
             <tr className="bg-cream text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
@@ -155,7 +155,7 @@ export default async function TeamPage({
                 <td className="px-4 py-3">
                   <form action={resetMemberPassword} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={m.id} />
-                    <input type="text" name="password" required minLength={8} placeholder="new password" className="px-2.5 py-1.5 rounded-[6px] bg-paper border border-line text-[13px] w-[150px] focus:outline-none focus:border-teal" />
+                    <input type="text" name="password" required minLength={8} placeholder="new password" className="px-2.5 py-1.5 rounded-card bg-paper border border-line text-[13px] w-[150px] focus:outline-none focus:border-teal" />
                     <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Set</button>
                   </form>
                 </td>

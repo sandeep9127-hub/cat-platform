@@ -126,14 +126,14 @@ export function LandscapeInterventions({
       <div
         data-int-card
         key={k}
-        className="relative overflow-hidden rounded-[11px] border border-line bg-paper"
+        className="relative overflow-hidden rounded-card border border-line bg-paper"
         style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 14px 32px -26px rgba(26,38,37,0.22)" }}
       >
         <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
         <div className="p-5 sm:p-6">
           <div className="flex items-center gap-3 mb-4">
             <span
-              className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] shrink-0 border border-line/70"
+              className="inline-flex items-center justify-center w-12 h-12 rounded-card shrink-0 border border-line/70"
               style={{ background: `${colour}12` }}
             >
               <Image

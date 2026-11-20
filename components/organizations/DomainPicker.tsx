@@ -152,13 +152,13 @@ export function DomainPicker({ value, onChange, placeholder }: Props) {
           color: var(--muted, #6b675d); padding: 0 2px; }
         .dp-chip button:hover { color: var(--ink, #1f261f); }
         .dp-input { display: flex; align-items: center; gap: 8px; padding: 11px 13px;
-          border: 1px solid var(--line, #e2ddd1); border-radius: 12px; background: rgba(31,38,31,.02); color: var(--muted, #6b675d); }
+          border: 1px solid var(--line, #e2ddd1); border-radius: var(--radius-panel); background: rgba(31,38,31,.02); color: var(--muted, #6b675d); }
         .dp-input:focus-within { border-color: rgba(46,117,115,.55); background: #fff; }
         .dp-input input { flex: 1; border: 0; outline: 0; background: none; font-size: 14.5px; color: var(--ink, #1f261f); min-width: 0; }
         .dp-list { position: absolute; z-index: 40; left: 0; right: 0; margin-top: 6px; padding: 5px;
-          list-style: none; background: #fff; border: 1px solid var(--line, #e2ddd1); border-radius: 12px;
+          list-style: none; background: #fff; border: 1px solid var(--line, #e2ddd1); border-radius: var(--radius-panel);
           box-shadow: 0 14px 40px -20px rgba(26,38,37,.35); max-height: 300px; overflow-y: auto; }
-        .dp-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px;
+        .dp-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: var(--radius-card);
           cursor: pointer; font-size: 14px; color: var(--ink, #1f261f); }
         .dp-list li.on { background: rgba(46,117,115,.09); }
         .dp-list li .dp-group { margin-left: auto; font-size: 11px; text-transform: uppercase;

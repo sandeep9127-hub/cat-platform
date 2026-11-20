@@ -108,7 +108,7 @@ export default async function EntryDetailPage({ params }: Props) {
           <NarrativeBlock label="What worked">{entry.whatWorked}</NarrativeBlock>
           {entry.whatDidNotWork && (
             <div
-              className="relative rounded-[8px] border border-line p-6 my-10"
+              className="relative rounded-card border border-line p-6 my-10"
               style={{ background: "var(--red-alert-wash)" }}
             >
               <span

@@ -50,7 +50,7 @@ export default async function SignInPage({
   const linkMode = sp?.link === "1";
 
   const input =
-    "w-full px-5 py-3.5 rounded-[12px] bg-paper border border-line text-[15px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
+    "w-full px-5 py-3.5 rounded-panel bg-paper border border-line text-[15px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
   const primaryBtn =
     "w-full rounded-full bg-deep-teal text-paper px-5 py-3.5 text-[14px] font-medium hover:bg-teal active:scale-[0.99] transition-[transform,background-color] duration-150 ease-out-expo";
 

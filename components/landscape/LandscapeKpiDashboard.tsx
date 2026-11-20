@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Mountain,
@@ -165,7 +166,7 @@ function LensSlicer({
     <div
       role="tablist"
       aria-label="Switch dashboard lens"
-      className="inline-flex border border-line rounded-[3px] overflow-hidden self-start sm:self-end bg-paper shadow-[0_1px_0_rgba(0,0,0,0.02)]"
+      className="inline-flex border border-line rounded-tight overflow-hidden self-start sm:self-end bg-paper shadow-[0_1px_0_rgba(0,0,0,0.02)]"
     >
       {items.map(({ id, label, Icon, disabled, hint }) => {
         const active = lens === id;
@@ -210,18 +211,18 @@ function KpiTile({
   const tone =
     accent === "money"
       ? {
-          bar: "#946616",
+          bar: palette.amberDeep,
           soft: "rgba(248,202,124,0.14)",
           glow: "rgba(248,202,124,0.28)",
         }
       : accent === "people"
         ? {
-            bar: "#2E7573",
+            bar: palette.teal,
             soft: "rgba(46,117,115,0.09)",
             glow: "rgba(46,117,115,0.18)",
           }
         : {
-            bar: "#929CC5",
+            bar: palette.periwinkle,
             soft: "rgba(146,156,197,0.12)",
             glow: "rgba(146,156,197,0.22)",
           };
@@ -247,7 +248,7 @@ function KpiTile({
       ref={ref}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="group relative overflow-hidden rounded-[6px] border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
+      className="group relative overflow-hidden rounded-card border border-line bg-paper py-5 px-4 sm:px-5 flex flex-col gap-2 min-h-[116px] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
       style={{
         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -12px ${tone.glow}`,
         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${tone.soft} 100%)`,
@@ -332,7 +333,7 @@ function TopCategoriesBar({
               <div className="font-serif text-[14px] text-ink leading-tight truncate">
                 {c.category}
               </div>
-              <div className="mt-1.5 h-[6px] bg-line-soft rounded-[1px] overflow-hidden">
+              <div className="mt-1.5 h-[6px] bg-line-soft rounded-tight overflow-hidden">
                 <div
                   ref={(el) => {
                     barsRef.current[i] = el;

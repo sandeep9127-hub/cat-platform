@@ -33,7 +33,7 @@ export type EntryListItemData = {
 export function EntryListItem({ data }: { data: EntryListItemData }) {
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
   const wrapperClass =
-    "block group border-b border-line transition-colors hover:bg-[#e1ede8]/45 focus-visible:bg-[#e1ede8]/45 focus-visible:outline-none";
+    "block group border-b border-line transition-colors hover:bg-teal-wash/45 focus-visible:bg-teal-wash/45 focus-visible:outline-none";
   const body = (
     <article className="grid grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[80px_minmax(0,1fr)_auto] gap-x-5 sm:gap-x-7 py-7 sm:py-8 items-start">
         {/* Index — "No." sits on the eyebrow line, the numeral aligns to the title */}

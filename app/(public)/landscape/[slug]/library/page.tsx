@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import { notFound } from "next/navigation";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
@@ -97,15 +98,15 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                 const isLip = d.type === "lip";
                 const isBudget = d.type === "budget";
                 const accent = isLip
-                  ? { bar: "#C68C2E", soft: "rgba(248,202,124,0.16)", glow: "rgba(248,202,124,0.28)", chipBg: "rgba(248,202,124,0.22)", chipFg: "#C68C2E" }
+                  ? { bar: palette.ochre, soft: "rgba(248,202,124,0.16)", glow: "rgba(248,202,124,0.28)", chipBg: "rgba(248,202,124,0.22)", chipFg: palette.amberDeep }
                   : isBudget
-                    ? { bar: "#2E7573", soft: "rgba(46,117,115,0.09)", glow: "rgba(46,117,115,0.20)", chipBg: "rgba(46,117,115,0.12)", chipFg: "#2E7573" }
-                    : { bar: "#929CC5", soft: "rgba(146,156,197,0.10)", glow: "rgba(146,156,197,0.20)", chipBg: "rgba(146,156,197,0.14)", chipFg: "#5C6796" };
+                    ? { bar: palette.teal, soft: "rgba(46,117,115,0.09)", glow: "rgba(46,117,115,0.20)", chipBg: "rgba(46,117,115,0.12)", chipFg: palette.teal }
+                    : { bar: palette.periwinkle, soft: "rgba(146,156,197,0.10)", glow: "rgba(146,156,197,0.20)", chipBg: "rgba(146,156,197,0.14)", chipFg: palette.periwinkleText };
                 const ext = guessExtension(d.type);
                 return (
                   <li key={d.id}>
                     <article
-                      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
+                      className="group relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6 h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
                       style={{
                         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -14px ${accent.glow}`,
                         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
@@ -138,7 +139,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
 
                       <div className="relative flex items-start gap-3">
                         <span
-                          className="shrink-0 w-10 h-10 rounded-[6px] inline-flex items-center justify-center"
+                          className="shrink-0 w-10 h-10 rounded-card inline-flex items-center justify-center"
                           style={{ background: accent.chipBg, color: accent.chipFg }}
                           aria-hidden
                         >
@@ -169,7 +170,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                         </div>
                         {ext && (
                           <span
-                            className="inline-flex items-center font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-2 py-1 rounded-[3px]"
+                            className="inline-flex items-center font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-2 py-1 rounded-tight"
                             style={{ background: accent.chipBg, color: accent.chipFg }}
                           >
                             {ext}
@@ -185,7 +186,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
         )}
 
         <aside
-          className="mt-12 relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 max-w-[58ch]"
+          className="mt-12 relative overflow-hidden rounded-card border border-line bg-paper p-5 max-w-[58ch]"
           style={{
             boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 20px -14px rgba(46,117,115,0.20)",
             backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(46,117,115,0.08) 100%)",

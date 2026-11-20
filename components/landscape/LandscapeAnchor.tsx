@@ -71,7 +71,7 @@ export function LandscapeAnchor({ photo }: Props) {
   }, []);
 
   return (
-    <figure ref={figRef} className="relative overflow-hidden rounded-[10px] border border-line">
+    <figure ref={figRef} className="relative overflow-hidden rounded-card border border-line">
       <div
         className="relative w-full bg-deep-teal overflow-hidden"
         style={{ aspectRatio: "5 / 2" }}

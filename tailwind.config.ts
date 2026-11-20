@@ -40,6 +40,9 @@ const config: Config = {
         "line-soft": "var(--line-soft)",
         rule: "var(--rule)",
         "red-alert": "var(--red-alert)",
+        ochre: "var(--ochre)",
+        leaf: "var(--leaf)",
+        "periwinkle-text": "var(--periwinkle-text)",
       },
       fontFamily: {
         // Legacy token: resolves to Inter (--font-fraunces is remapped in
@@ -59,6 +62,11 @@ const config: Config = {
         "mono-tight": "0.10em",
         "mono-mid": "0.14em",
         "mono-wide": "0.18em",
+      },
+      borderRadius: {
+        tight: "var(--radius-tight)",
+        card: "var(--radius-card)",
+        panel: "var(--radius-panel)",
       },
       maxWidth: {
         page: "1200px",

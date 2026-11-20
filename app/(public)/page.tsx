@@ -210,7 +210,7 @@ export default async function LandingPage() {
               className={`flex items-start gap-3 ${i > 0 ? "sm:border-l sm:border-line/60 sm:pl-8" : ""}`}
             >
               <span
-                className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
+                className="w-7 h-7 rounded-card inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
                 aria-hidden
                 style={{
                   background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",

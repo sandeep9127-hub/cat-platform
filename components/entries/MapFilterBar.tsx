@@ -152,7 +152,7 @@ export function MapFilterBar({
         createPortal(
           <div className="lg:hidden fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Filter the Atlas">
             <div className="absolute inset-0 bg-ink/40 backdrop-blur-[1px]" onClick={() => setSheetOpen(false)} />
-            <div className="absolute inset-x-0 bottom-0 max-h-[86vh] flex flex-col rounded-t-[20px] bg-paper border-t border-line animate-slide-up">
+            <div className="absolute inset-x-0 bottom-0 max-h-[86vh] flex flex-col rounded-t-panel bg-paper border-t border-line animate-slide-up">
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line-soft">
                 <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal font-semibold">
                   Filter the Atlas
@@ -267,7 +267,7 @@ function Dropdown({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-30 mt-2 w-[266px] max-h-[58vh] overflow-y-auto rounded-[12px] border border-line bg-paper p-1.5 animate-scope-pop"
+          className="absolute right-0 z-30 mt-2 w-[266px] max-h-[58vh] overflow-y-auto rounded-panel border border-line bg-paper p-1.5 animate-scope-pop"
           style={{
             transformOrigin: "top right",
             boxShadow: "0 18px 44px -18px rgba(26,38,37,0.40), 0 2px 6px rgba(26,38,37,0.08)",
@@ -300,13 +300,13 @@ function Row({
       aria-checked={on}
       onClick={onClick}
       className={
-        "w-full flex items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[13px] transition-colors " +
+        "w-full flex items-center gap-2.5 rounded-card px-2.5 py-2 text-left text-[13px] transition-colors " +
         (on ? "bg-teal-wash/70 text-deep-teal" : "text-ink-soft hover:bg-cream")
       }
     >
       <span
         className={
-          "shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors " +
+          "shrink-0 w-4 h-4 rounded-tight border flex items-center justify-center transition-colors " +
           (on ? "bg-deep-teal border-deep-teal" : "border-line")
         }
       >

@@ -104,7 +104,7 @@ export function AtlasSection({
       <div className="flex flex-col" ref={listTopRef}>
         {/* Filter-clear chip — sits above the list whenever a state is active */}
         {filterState && (
-          <div className="mb-2 flex items-center justify-between gap-3 py-3 px-4 bg-amber/30 border border-amber-deep/40 rounded-[2px] reveal-in">
+          <div className="mb-2 flex items-center justify-between gap-3 py-3 px-4 bg-amber/30 border border-amber-deep/40 rounded-tight reveal-in">
             <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal">
               Showing{" "}
               <strong className="text-amber-deep font-semibold">
@@ -141,7 +141,7 @@ export function AtlasSection({
             {shouldCap && (
               <Link
                 href={readMoreHref}
-                className="group mt-3 self-start inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] text-deep-teal font-semibold font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
+                className="group mt-3 self-start inline-flex items-center gap-2.5 px-5 py-3 rounded-tight text-deep-teal font-semibold font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
               >
                 <span>
                   Read all {filtered.length} in the Solutions Atlas

@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -203,7 +204,7 @@ export function OrganizationsExplorer() {
             // is strong enough to read over satellite imagery; fill stays barely
             // tinted so the imagery shows through (and gives the "Clean" base its
             // soft teal landmass). interactive:false so it never intercepts a pin.
-            style: { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04, className: "og-country" },
+            style: { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: palette.teal, fillOpacity: 0.04, className: "og-country" },
             interactive: false,
           }).addTo(map);
           india.bringToBack();
@@ -212,8 +213,8 @@ export function OrganizationsExplorer() {
           map.on("baselayerchange", (e: any) => {
             india.setStyle(
               e?.name === "Clean"
-                ? { color: "#2e7573", weight: 0.7, opacity: 0.5, fillColor: "#2e7573", fillOpacity: 0.08 }
-                : { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04 }
+                ? { color: palette.teal, weight: 0.7, opacity: 0.5, fillColor: palette.teal, fillOpacity: 0.08 }
+                : { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: palette.teal, fillOpacity: 0.04 }
             );
           });
           // Fit to where the data actually is (mainland) rather than the full
@@ -264,7 +265,7 @@ export function OrganizationsExplorer() {
         radius: 5,
         color: "#fbf8f2",
         weight: 1.4,
-        fillColor: "#2e7573",
+        fillColor: palette.teal,
         fillOpacity: 0.9,
         className: "og-dot",
       });
@@ -774,7 +775,7 @@ function Styles() {
       .og-sub { font-size:15px; color:var(--ink-soft); max-width:70ch; }
       .og-add { flex:0 0 auto; font-size:13px; font-weight:500; letter-spacing:-.01em;
         padding:11px 20px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:transform .15s, background .15s; }
-      .og-add:hover { background:var(--teal-2,#2e7573); opacity:.94; }
+      .og-add:hover { background:var(--teal); opacity:.94; }
       .og-add:active { transform:scale(.97); }
       .og-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; max-width:1280px; margin:0 auto; padding:10px 24px 16px; }
       .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:0; background:#fff; color:var(--ink); }
@@ -788,13 +789,14 @@ function Styles() {
       /* flex-shrink:0 — the list is a fixed-height flex column; without this the
          cards squash to fit and overflow:hidden clips them into cramped, overlapping
          rows. Keep each card at its natural height and let the list scroll. */
-      .og-card { flex:0 0 auto; position:relative; overflow:hidden; border:1px solid var(--line); border-top:0; border-radius:0; padding:16px; background:var(--paper); cursor:pointer; transition:background .2s; }
-      .og-card::before { content:""; position:absolute; top:0; left:0; right:0; height:2px; background:#2e7573; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.2,.8,.2,1); }
-      .og-card:hover::before { transform:scaleX(1); }
+      /* List rows share the Solutions Atlas row language (EntryListItem):
+         open rows on hairline dividers, teal-wash hover, title turns teal. */
+      .og-card { flex:0 0 auto; position:relative; overflow:hidden; border-bottom:1px solid var(--line); padding:18px 12px; background:transparent; cursor:pointer; transition:background .2s; }
       .og-list > .og-card:first-child { border-top:1px solid var(--line); }
-      .og-card:hover { background:rgba(225,237,232,.45); }
+      .og-card:hover, .og-card:focus-within { background:color-mix(in srgb, var(--teal-wash) 45%, transparent); }
+      .og-card:hover .og-card-name { color:var(--teal); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-      .og-card-name { font-family:var(--font-inter), system-ui, sans-serif; font-size:16.5px; font-weight:600; line-height:1.25; min-width:0;
+      .og-card-name { font-family:var(--font-inter), system-ui, sans-serif; font-size:17px; font-weight:600; line-height:1.22; letter-spacing:-0.015em; min-width:0; transition:color .2s;
         display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
         color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
@@ -823,16 +825,16 @@ function Styles() {
       .og-loc-head > span:first-child { font-size:12.5px; font-weight:600; color:var(--ink); }
       .og-loc-hint { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
       .og-loc-row { display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center; }
-      .og-loc-in { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--cream); transition:background .15s, border-color .15s; }
+      .og-loc-in { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius: var(--radius-card); font-size:14px; background:var(--cream); transition:background .15s, border-color .15s; }
       .og-loc-in:focus { outline:none; border-color:var(--td); background:#fff; }
-      .og-loc-del { width:34px; height:34px; flex:0 0 auto; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
-      .og-loc-del:hover:not(:disabled) { color:#B85042; border-color:#B85042; }
+      .og-loc-del { width:34px; height:34px; flex:0 0 auto; border:1px solid var(--line); border-radius: var(--radius-card); background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
+      .og-loc-del:hover:not(:disabled) { color:var(--red-alert); border-color:var(--red-alert); }
       .og-loc-del:disabled { opacity:.35; cursor:not-allowed; }
       /* Quiet ghost action (Skiff "Skip for now" register). */
       .og-add-loc { font-family:inherit; font-size:13px; color:var(--td); background:none; border:0; padding:6px 0; cursor:pointer; transition:color .15s; }
       .og-add-loc:hover { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
       /* detail panel */
-      .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius:12px; padding:14px 16px; margin:6px 0 16px; }
+      .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius: var(--radius-panel); padding:14px 16px; margin:6px 0 16px; }
       .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
       .og-dc-row { font-size:15px; }
       .og-dc-desig { color:var(--muted); }
@@ -842,15 +844,15 @@ function Styles() {
       .og-where li { font-size:13.5px; line-height:1.4; }
       .og-detail-actions { display:flex; gap:10px; margin-top:6px; }
       .og-detail-edit { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
-        padding:0 16px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+        padding:0 16px; border-radius: var(--radius-card); border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
       .og-detail-edit:hover { border-color:var(--td); color:var(--td); }
       .og-empty { color:var(--muted); padding:30px 0; }
       .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
-      .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+      .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius: var(--radius-card); background:#fff; cursor:pointer; }
       .og-pager button:disabled { opacity:.4; cursor:default; }
       /* ── Map styled to match the Landscapes / Solutions Atlas basemap ── */
       .og-mapwrap { position:relative; height:100%; min-height:520px; }
-      .og-map { border:1px solid var(--line); border-radius:10px; overflow:hidden; height:100%; min-height:520px; z-index:0;
+      .og-map { border:1px solid var(--line); border-radius: var(--radius-card); overflow:hidden; height:100%; min-height:520px; z-index:0;
         box-shadow: 0 1px 2px rgba(26,38,37,.04), 0 12px 32px -16px rgba(46,117,115,.20); }
       .og-map .leaflet-container { height:100%; width:100%;
         background: radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,.65), transparent 70%),
@@ -859,22 +861,22 @@ function Styles() {
       .og-map .leaflet-overlay-pane path.og-country { filter: drop-shadow(0 5px 12px rgba(26,38,37,.10)); }
       .og-map .leaflet-overlay-pane path.og-dot { filter: drop-shadow(0 0 4px rgba(46,117,115,.55)); }
       /* dashed inner frame, echoing the Landscapes map */
-      .og-map-frame { position:absolute; inset:11px; border:1px dashed var(--line); border-radius:6px; pointer-events:none; z-index:650; }
+      .og-map-frame { position:absolute; inset:11px; border:1px dashed var(--line); border-radius: var(--radius-card); pointer-events:none; z-index:650; }
       /* teal counter badge, top-right */
       .og-map-badge { position:absolute; top:14px; right:14px; z-index:660; display:flex; align-items:center; gap:6px;
         font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.13em; color:#f3efe6;
-        background: linear-gradient(135deg,#334B4A 0%,#2E7573 60%,#334B4A 100%); padding:8px 12px; border-radius:8px;
+        background: linear-gradient(135deg,#334B4A 0%,#2E7573 60%,#334B4A 100%); padding:8px 12px; border-radius: var(--radius-card);
         border:1px solid rgba(251,248,242,.12); box-shadow:0 10px 28px -12px rgba(26,38,37,.45), inset 0 1px 0 rgba(255,255,255,.10); }
       .og-map-badge .n { color:#f8ca7c; font-size:12px; font-weight:600; }
       .og-map-badge .dot { opacity:.45; }
       /* legend, bottom-left */
       .og-map-legend { position:absolute; bottom:14px; left:14px; z-index:660; display:flex; flex-direction:column; gap:6px;
         font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
-        background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:8px; padding:9px 11px;
+        background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius: var(--radius-card); padding:9px 11px;
         box-shadow:0 6px 16px -10px rgba(26,38,37,.20); }
       .og-map-legend > div { display:flex; align-items:center; gap:7px; }
       .lg-dot { width:10px; height:10px; border-radius:999px; flex:0 0 auto; }
-      .lg-dot.t { background:#2e7573; box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      .lg-dot.t { background:var(--teal); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
       .lg-dot.c { background:linear-gradient(135deg,#2E7573,#1F5957); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
       /* cluster bubbles → teal halo to match the dot language */
       .og .marker-cluster { background:transparent; }
@@ -888,19 +890,19 @@ function Styles() {
 
       /* modal */
       .og-modal { position:fixed; inset:0; background:rgba(26,38,37,.5); display:flex; align-items:flex-start; justify-content:center; z-index:1000; padding:40px 16px; overflow-y:auto; }
-      .og-sheet { background:var(--paper); border-radius:16px; max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
+      .og-sheet { background:var(--paper); border-radius: var(--radius-panel); max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
       .og-close { position:absolute; top:14px; right:16px; width:32px; height:32px; border-radius:999px; border:1px solid var(--line); background:none; cursor:pointer; font-size:20px; color:var(--muted); }
       .og-sheet-title { font-family:var(--font-inter), system-ui, sans-serif; font-size:24px; font-weight:600; margin:0 0 14px; }
-      .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius:10px; padding:4px; margin-bottom:16px; }
-      .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius:7px; background:none; cursor:pointer; color:var(--muted); }
+      .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius: var(--radius-card); padding:4px; margin-bottom:16px; }
+      .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius: var(--radius-card); background:none; cursor:pointer; color:var(--muted); }
       .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
       .og-field { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
       .og-field > span { font-size:11.5px; color:var(--muted); }
       /* Soft, calm form inputs (Skiff register) — distinct from the sharp data inputs. */
-      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius:11px; background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
+      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
       .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:#fff; }
       /* Inline affix input (https:// prefix). */
-      .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius:11px; background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
+      .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
       .og-affix:focus-within { border-color:var(--td); background:#fff; }
       .og-affix-pre { display:inline-flex; align-items:center; padding:0 4px 0 13px; font-size:14px; color:var(--muted); }
       .og-affix-in { flex:1; min-width:0; border:0; background:transparent; padding:11px 13px 11px 2px; font-family:inherit; font-size:14px; color:var(--ink); }
@@ -911,7 +913,7 @@ function Styles() {
       .og-err { color:#b3261e; font-size:13px; margin:4px 0; }
       .og-submit { width:100%; margin-top:12px; font-family:inherit; font-size:14px; font-weight:500; letter-spacing:-.01em;
         padding:13px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:background .15s, transform .15s; }
-      .og-submit:hover:not(:disabled) { background:#2e7573; }
+      .og-submit:hover:not(:disabled) { background:var(--teal); }
       .og-submit:active:not(:disabled) { transform:scale(.99); }
       .og-submit:disabled { opacity:.5; }
       .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }

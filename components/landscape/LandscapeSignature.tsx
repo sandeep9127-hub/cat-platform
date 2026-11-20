@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 /**
  * Procedural topo-line signature for a landscape page. Each slug deterministically
  * seeds a unique combination of wave frequency, amplitude, and phase, so every
@@ -75,7 +76,7 @@ export function LandscapeSignature({
       d,
       opacity: 0.35 + (i / lineCount) * 0.45,
       strokeWidth: isAccent ? 1.4 : 0.85,
-      color: isAccent ? "#C68C2E" : accent,
+      color: isAccent ? palette.ochre : accent,
     });
   }
 

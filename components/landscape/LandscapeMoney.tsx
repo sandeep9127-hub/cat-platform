@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
@@ -42,10 +43,10 @@ function compact(n: number): string {
 // Funding instruments, in the official CAT palette (distinguishable tones).
 const FUND_COLOURS: Record<string, string> = {
   Government: "#334b4a",
-  Community: "#2e7573",
-  Grants: "#946616",
-  "Returnable grant": "#5e6990",
-  "Outcome finance": "#929cc5",
+  Community: palette.teal,
+  Grants: palette.amberDeep,
+  "Returnable grant": palette.periwinkleDeep,
+  "Outcome finance": palette.periwinkle,
   Debt: "#95b1af",
 };
 
@@ -99,7 +100,7 @@ export function LandscapeMoney(props: MoneyProps) {
   return (
     <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-14 lg:mt-20">
       <div
-        className="relative overflow-hidden rounded-[16px] border border-line"
+        className="relative overflow-hidden rounded-panel border border-line"
         style={{
           background:
             "radial-gradient(ellipse 70% 60% at 100% 0%, rgba(248,202,124,0.12), transparent 60%), linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(244,237,221,0.6) 100%)",
@@ -141,7 +142,7 @@ export function LandscapeMoney(props: MoneyProps) {
             <ul className="mt-3.5 flex flex-wrap gap-x-6 gap-y-2 list-none p-0 m-0">
               {sources.map((s) => (
                 <li key={s.label} className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft">
-                  <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ background: FUND_COLOURS[s.label] ?? "#95b1af" }} />
+                  <span className="inline-block w-2.5 h-2.5 rounded-tight" style={{ background: FUND_COLOURS[s.label] ?? "#95b1af" }} />
                   {s.label}
                   <span className="text-muted">· {pct(s.value, fundTotal)}%</span>
                 </li>

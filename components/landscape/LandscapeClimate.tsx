@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useRef, useState } from "react";
 import { useCurrency, formatMoney } from "./currency";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -51,9 +52,9 @@ function useInView<T extends HTMLElement>(threshold = 0.3) {
 
 // The three climate tracks, in the official CAT palette.
 const TRACKS = [
-  { key: "resilience", label: "Resilience", colour: "#2E7573", note: "Income protected when a climate shock hits" },
-  { key: "adaptation", label: "Adaptation", colour: "#5E6990", note: "Lower costs, better yields, healthier farms" },
-  { key: "mitigation", label: "Carbon", colour: "#946616", note: "Greenhouse gas removed, reduced and avoided" },
+  { key: "resilience", label: "Resilience", colour: palette.teal, note: "Income protected when a climate shock hits" },
+  { key: "adaptation", label: "Adaptation", colour: palette.periwinkleDeep, note: "Lower costs, better yields, healthier farms" },
+  { key: "mitigation", label: "Carbon", colour: palette.amberDeep, note: "Greenhouse gas removed, reduced and avoided" },
 ] as const;
 
 /**
@@ -101,10 +102,10 @@ export function LandscapeClimate(props: ClimateProps) {
   return (
     <section className="mt-16 lg:mt-20 max-w-page mx-auto px-5 sm:px-7 lg:px-10">
       <div
-        className="rounded-[14px] border border-line bg-paper overflow-hidden"
+        className="rounded-panel border border-line bg-paper overflow-hidden"
         style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.25)" }}
       >
-        <span aria-hidden className="block h-[3px]" style={{ background: "linear-gradient(90deg,#2E7573,#5E6990,#946616)" }} />
+        <span aria-hidden className="block h-[3px]" style={{ background: "linear-gradient(90deg,var(--teal),var(--periwinkle-deep),var(--amber-deep))" }} />
         <div className="p-6 sm:p-8 lg:p-9">
           {/* Header + headline */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
@@ -136,7 +137,7 @@ export function LandscapeClimate(props: ClimateProps) {
 
           {/* Investment-to-return hero — the headline comparison, animated on scroll */}
           {ratio > 0 && (
-            <div ref={barRef} className="mt-7 rounded-[12px] border border-line bg-line-soft p-5 sm:p-6">
+            <div ref={barRef} className="mt-7 rounded-panel border border-line bg-line-soft p-5 sm:p-6">
               <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
                 <div className="font-serif text-[clamp(40px,7vw,68px)] leading-none text-teal tracking-[-0.03em]">
                   <AnimatedNumber value={ratioLabel} duration={1100} />
@@ -155,8 +156,8 @@ export function LandscapeClimate(props: ClimateProps) {
               {/* Two proportional bars: the plan, and what it returns */}
               <div className="mt-5 space-y-3">
                 {[
-                  { lab: "What it costs · the plan", w: planPct, val: props.planCostInr, c: "#5E6990" },
-                  { lab: "What it's worth · climate value", w: 100, val: props.total, c: "#2E7573" },
+                  { lab: "What it costs · the plan", w: planPct, val: props.planCostInr, c: palette.periwinkleDeep },
+                  { lab: "What it's worth · climate value", w: 100, val: props.total, c: palette.teal },
                 ].map((r) => (
                   <div key={r.lab}>
                     <div className="flex items-baseline justify-between font-mono text-[11px] uppercase tracking-[0.12em] text-muted mb-1.5">
@@ -204,7 +205,7 @@ export function LandscapeClimate(props: ClimateProps) {
           </div>
 
           {/* Three track cards — interactive, linked to the bar + headline */}
-          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[10px] overflow-hidden border border-line list-none p-0">
+          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-card overflow-hidden border border-line list-none p-0">
             {segs.map((s) => {
               const active = focus === s.key;
               const dimmed = focus && !active;
@@ -235,7 +236,7 @@ export function LandscapeClimate(props: ClimateProps) {
           {/* Co-benefit disclosure — value the same interventions throw off in their
               NON-primary tracks. Kept out of the headline to avoid double-counting. */}
           {props.cobenefitInr > 0 && (
-            <div className="mt-6 rounded-[10px] border border-line bg-line-soft px-5 py-4">
+            <div className="mt-6 rounded-card border border-line bg-line-soft px-5 py-4">
               <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                 Also generated · not in the headline
               </div>

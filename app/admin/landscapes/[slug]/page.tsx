@@ -79,7 +79,7 @@ export default async function LandscapeAdminDetail({
             </p>
           </div>
         ) : (
-          <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+          <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
             {docs.map((d) => (
               <li key={d.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">

@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { and, eq, sql } from "drizzle-orm";
@@ -125,13 +126,13 @@ export default async function LandscapeDetailPage({ params }: Props) {
           <FactRow label="Investment plan">
             {p.lipStatus === "published" ? (
               <span className="inline-flex items-center gap-1.5 text-ink-soft">
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#2e7573" }} />
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: palette.teal }} />
                 <strong className="text-deep-teal">Published</strong>
                 <span className="text-muted">· See report</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5" style={{ color: "#5e6990" }}>
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#929cc5" }} />
+              <span className="inline-flex items-center gap-1.5" style={{ color: palette.periwinkleDeep }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: palette.periwinkle }} />
                 In preparation
               </span>
             )}
@@ -255,7 +256,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
               plan, its costing, and the metrics.
             </p>
           </div>
-          <div className="border border-line rounded-[10px] p-5 bg-paper">
+          <div className="border border-line rounded-card p-5 bg-paper">
             <span className="eyebrow block mb-3.5">How CAT works here</span>
             <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[13.5px] text-ink-soft leading-[1.45]">
               <li className="flex gap-2.5 items-baseline">

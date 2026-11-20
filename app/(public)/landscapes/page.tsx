@@ -142,7 +142,7 @@ export default async function LandscapesPage() {
               <li key={g.id}>
                 <Link href={`/landscape/${g.slug}`} className="group block">
                   <div
-                    className="relative overflow-hidden rounded-[10px] border border-line bg-paper aspect-[800/1131]"
+                    className="relative overflow-hidden rounded-card border border-line bg-paper aspect-[800/1131]"
                     style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(26,38,37,0.45)" }}
                   >
                     <Image
@@ -155,7 +155,7 @@ export default async function LandscapesPage() {
                     />
                     <span
                       aria-hidden
-                      className="absolute inset-0 ring-1 ring-inset ring-black/0 group-hover:ring-teal/30 transition-[box-shadow] duration-300 rounded-[10px] pointer-events-none"
+                      className="absolute inset-0 ring-1 ring-inset ring-black/0 group-hover:ring-teal/30 transition-[box-shadow] duration-300 rounded-card pointer-events-none"
                     />
                   </div>
                   <div className="mt-3 flex items-baseline justify-between gap-2">
@@ -179,7 +179,7 @@ export default async function LandscapesPage() {
           <li>
             <Link href="/map" className="group block">
               <div
-                className="relative overflow-hidden rounded-[10px] aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"
+                className="relative overflow-hidden rounded-card aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"
                 style={{
                   background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
                   boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(46,117,115,0.5)",

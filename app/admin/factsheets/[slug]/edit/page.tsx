@@ -12,7 +12,7 @@ const SCALE_BANDS = [
 
 const labelClass = "block font-mono text-[11px] uppercase tracking-[0.12em] text-muted mb-1.5";
 const inputClass =
-  "w-full bg-cream border border-line rounded-[6px] px-3 py-2 text-[13.5px] text-ink font-serif focus:outline-none focus:border-deep-teal";
+  "w-full bg-cream border border-line rounded-card px-3 py-2 text-[13.5px] text-ink font-serif focus:outline-none focus:border-deep-teal";
 
 function Field({
   name, label, defaultValue, type = "text",
@@ -119,7 +119,7 @@ export default async function EditFactSheet({
             {CATEGORIES.map((c) => (
               <label
                 key={c.slug}
-                className="flex items-center gap-2 bg-cream border border-line rounded-[6px] px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
+                className="flex items-center gap-2 bg-cream border border-line rounded-card px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
               >
                 <input
                   type="checkbox"
@@ -142,7 +142,7 @@ export default async function EditFactSheet({
             {PRINCIPLES.map((p) => (
               <label
                 key={p.slug}
-                className="flex items-center gap-2 bg-cream border border-line rounded-[6px] px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
+                className="flex items-center gap-2 bg-cream border border-line rounded-card px-3 py-2 text-[13px] text-ink cursor-pointer hover:border-deep-teal has-[:checked]:border-deep-teal has-[:checked]:bg-deep-teal/5"
               >
                 <input
                   type="checkbox"
@@ -160,7 +160,7 @@ export default async function EditFactSheet({
           </p>
         </div>
 
-        <fieldset className="space-y-4 border border-line rounded-[8px] p-4">
+        <fieldset className="space-y-4 border border-line rounded-card p-4">
           <legend className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted px-2">
             Insight
           </legend>
@@ -189,7 +189,7 @@ export default async function EditFactSheet({
         <div className="flex items-center gap-4 pt-2">
           <button
             type="submit"
-            className="font-mono text-[11px] uppercase tracking-[0.12em] bg-deep-teal text-cream px-4 py-2 rounded-[6px] hover:bg-teal"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] bg-deep-teal text-cream px-4 py-2 rounded-card hover:bg-teal"
           >
             Save
           </button>

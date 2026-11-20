@@ -56,7 +56,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
       <div className="max-w-[1080px] mx-auto px-6 py-8">
         <div className="no-print flex items-center justify-between gap-3 mb-8 flex-wrap">
           <a href="/map" className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted hover:text-teal no-underline">← Solutions Atlas</a>
-          <a href={`/factsheet/${slug}/download`} className="font-mono text-[11px] uppercase tracking-[0.12em] px-4 py-2 rounded-[6px] bg-deep-teal text-paper hover:bg-teal transition-colors no-underline">
+          <a href={`/factsheet/${slug}/download`} className="font-mono text-[11px] uppercase tracking-[0.12em] px-4 py-2 rounded-card bg-deep-teal text-paper hover:bg-teal transition-colors no-underline">
             ↓ Download fact sheet (PDF)
           </a>
         </div>
@@ -82,7 +82,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
               <Section title="At a glance">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {insightCards.map((c) => (
-                    <div key={c.k} className="rounded-[10px] border border-line bg-cream p-4">
+                    <div key={c.k} className="rounded-card border border-line bg-cream p-4">
                       <div className="font-mono text-[11px] uppercase tracking-[0.13em] text-teal mb-1.5">{c.k}</div>
                       <p className="text-[13.5px] leading-[1.5] text-ink">{c.v}</p>
                     </div>
@@ -118,7 +118,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
           {/* SIDEBAR */}
           <aside className="lg:border-l lg:border-line lg:pl-8 space-y-7">
             <div className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted leading-[1.6]">
-              <div className="inline-block px-2.5 py-1 rounded-[4px] bg-teal/10 text-deep-teal mb-2">Auto-compiled · verified from public sources</div>
+              <div className="inline-block px-2.5 py-1 rounded-tight bg-teal/10 text-deep-teal mb-2">Auto-compiled · verified from public sources</div>
               <div>Updated {new Date(s.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
             </div>
 
@@ -141,7 +141,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
                 <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mb-2.5">Themes</div>
                 <div className="flex flex-wrap gap-1.5">
                   {s.themes.map((t) => (
-                    <span key={t} className="font-mono text-[11px] uppercase tracking-[0.08em] px-2 py-1 rounded-[4px] bg-teal/10 text-deep-teal">{t.replace(/-/g, " ")}</span>
+                    <span key={t} className="font-mono text-[11px] uppercase tracking-[0.08em] px-2 py-1 rounded-tight bg-teal/10 text-deep-teal">{t.replace(/-/g, " ")}</span>
                   ))}
                 </div>
               </div>

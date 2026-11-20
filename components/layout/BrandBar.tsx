@@ -56,7 +56,7 @@ export function BrandBar() {
           pointer-events: the transparent gutter passes clicks through; the bar itself
           re-enables them. */}
       <div
-        className={`max-w-page mx-auto rounded-[18px] pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
+        className={`max-w-page mx-auto rounded-panel pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
           scrolled
             ? "shadow-[0_10px_30px_-18px_rgba(26,38,37,0.22)]"
             : "shadow-none"
@@ -110,11 +110,7 @@ export function BrandBar() {
                 {/* Animated underline — grows from left on hover */}
                 <span
                   aria-hidden
-                  className="absolute left-0 -bottom-1 h-[1.5px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #2E7573 0%, #C68C2E 100%)",
-                  }}
+                  className="absolute left-0 -bottom-1 h-[1.5px] w-full bg-teal origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
                 />
               </span>
             </Link>
@@ -176,7 +172,7 @@ export function BrandBar() {
 
       {/* Disclosure sheet */}
       {open && (
-        <div className="xl:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-[18px] overflow-hidden">
+        <div className="xl:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-panel overflow-hidden">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
             {NAV_LINKS.map(({ href, label, Icon }) => (
               // No per-item stagger — the parent drawer already animates

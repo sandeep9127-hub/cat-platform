@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -20,9 +21,9 @@ export type Pin = {
   lipStatus: "published" | "in_preparation";
 };
 
-const TEAL = "#2e7573";
-const SLATE = "#5e6990";
-const AMBER = "#946616";
+const TEAL = palette.teal;
+const SLATE = palette.periwinkleDeep;
+const AMBER = palette.amberDeep;
 const ZOOM = 3.6;
 const CX = VB.width / 2;
 const CY = VB.height / 2;
@@ -193,7 +194,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
         {/* Map spine — sticky on desktop */}
         <div className="lg:sticky lg:top-[10vh] self-start order-1 lg:order-none mt-8 lg:mt-16">
           <div
-            className="relative rounded-[12px] border border-line overflow-hidden"
+            className="relative rounded-panel border border-line overflow-hidden"
             style={{
               background:
                 "radial-gradient(ellipse 70% 55% at 50% 8%, rgba(208,218,239,0.45), transparent 70%), linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(244,237,221,0.85) 100%)",
@@ -252,7 +253,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
 
             {/* Persistent "you are here" locator — only during the dive */}
             {isLandscape(active) && (
-              <div className="absolute bottom-3 right-3 w-[64px] sm:w-[76px] rounded-[6px] border border-line/80 bg-paper/90 backdrop-blur-sm p-1 transition-opacity duration-300">
+              <div className="absolute bottom-3 right-3 w-[64px] sm:w-[76px] rounded-card border border-line/80 bg-paper/90 backdrop-blur-sm p-1 transition-opacity duration-300">
                 <svg viewBox={`0 0 ${VB.width} ${VB.height}`} className="w-full h-auto block" aria-hidden>
                   {paths.map((d, i) => (
                     <path key={i} d={d} fill="rgba(94,103,144,0.10)" stroke="rgba(94,103,144,0.35)" strokeWidth={0.5} />
@@ -320,7 +321,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 <div className={"transition-opacity duration-500 " + (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")}>
                   {profile?.photos?.[0] && (
                     <figure
-                      className="relative mb-6 overflow-hidden rounded-[11px] border border-line"
+                      className="relative mb-6 overflow-hidden rounded-card border border-line"
                       style={{
                         aspectRatio: "16 / 10",
                         boxShadow:
@@ -368,7 +369,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                       <div>
                         <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
                         <div className="mt-1.5 flex items-center gap-2.5">
-                          <span className="inline-flex items-center justify-center w-12 h-12 rounded-[7px] bg-paper border border-line p-1">
+                          <span className="inline-flex items-center justify-center w-12 h-12 rounded-card bg-paper border border-line p-1">
                             <Image src={anchor.logo} alt={anchor.name} width={40} height={40} className="w-full h-full object-contain" />
                           </span>
                           <span className="font-sans text-[13px] text-ink leading-tight max-w-[18ch]">{anchor.short}</span>

@@ -88,7 +88,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("approve")}
           disabled={busy}
-          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 bg-deep-teal text-paper rounded-[2px] hover:bg-teal transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 bg-deep-teal text-paper rounded-tight hover:bg-teal transition-colors disabled:opacity-50"
         >
           Approve · a
         </button>
@@ -96,7 +96,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("return")}
           disabled={busy}
-          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-amber-deep text-amber-deep rounded-[2px] hover:bg-amber/30 transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-amber-deep text-amber-deep rounded-tight hover:bg-amber/30 transition-colors disabled:opacity-50"
         >
           Return · r
         </button>
@@ -104,7 +104,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("save")}
           disabled={busy}
-          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-line text-ink-soft rounded-[2px] hover:border-teal hover:text-teal transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-line text-ink-soft rounded-tight hover:border-teal hover:text-teal transition-colors disabled:opacity-50"
         >
           Save · s
         </button>
@@ -162,7 +162,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
                     setValues((v) => ({ ...v, [f.key]: e.target.value }))
                   }
                   rows={f.long ? 6 : 2}
-                  className="w-full px-3 py-2 bg-cream border border-line rounded-[2px] font-serif text-[15px] leading-[1.55] text-ink focus:outline-2 focus:outline-teal focus:bg-paper transition-colors"
+                  className="w-full px-3 py-2 bg-cream border border-line rounded-tight font-serif text-[15px] leading-[1.55] text-ink focus:outline-2 focus:outline-teal focus:bg-paper transition-colors"
                 />
               </label>
             ))}

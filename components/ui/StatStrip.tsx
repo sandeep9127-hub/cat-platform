@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 type Stat = {
@@ -9,7 +10,7 @@ type Stat = {
 
 // One restrained accent per metric — a small tick, not a card. Editorial, not
 // the "four identical gradient cards" template.
-const TICK = ["#2E7573", "#C68C2E", "#5C6796", "#5C8C2E"];
+const TICK = [palette.teal, palette.ochre, palette.periwinkleText, palette.leaf];
 
 export function StatStrip({ stats }: { stats: Stat[] }) {
   return (
@@ -19,12 +20,12 @@ export function StatStrip({ stats }: { stats: Stat[] }) {
       </div>
       {/* Single framed panel; hairline dividers via 1px gap over the line colour
           (works cleanly at both 2-col and 4-col). No boxed cards. */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-[10px] overflow-hidden border border-line">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-card overflow-hidden border border-line">
         {stats.map((s, i) => (
           <div key={s.label} className="bg-paper px-6 py-7 sm:px-7 flex flex-col gap-3.5">
             <div className="flex items-center gap-2">
               <span
-                className="w-2.5 h-2.5 rounded-[3px] shrink-0"
+                className="w-2.5 h-2.5 rounded-tight shrink-0"
                 style={{ background: TICK[i % TICK.length] }}
                 aria-hidden
               />

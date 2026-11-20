@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useMemo, useState } from "react";
 import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -36,25 +37,25 @@ type Accent = {
 
 const ACCENTS = {
   amber: {
-    bar: "#C68C2E",
+    bar: palette.ochre,
     soft: "rgba(248,202,124,0.14)",
     glow: "rgba(248,202,124,0.30)",
     iconBg: "rgba(248,202,124,0.22)",
-    iconFg: "#C68C2E",
+    iconFg: palette.amberDeep,
   } as Accent,
   teal: {
-    bar: "#2E7573",
+    bar: palette.teal,
     soft: "rgba(46,117,115,0.08)",
     glow: "rgba(46,117,115,0.20)",
     iconBg: "rgba(46,117,115,0.12)",
-    iconFg: "#2E7573",
+    iconFg: palette.teal,
   } as Accent,
   periwinkle: {
-    bar: "#929CC5",
+    bar: palette.periwinkle,
     soft: "rgba(146,156,197,0.12)",
     glow: "rgba(146,156,197,0.24)",
     iconBg: "rgba(146,156,197,0.18)",
-    iconFg: "#5C6796",
+    iconFg: palette.periwinkleText,
   } as Accent,
   deepTeal: {
     bar: "#334B4A",
@@ -246,7 +247,7 @@ export function BudgetExplorer({
           {filtered.length === lines.length ? "All intervention lines" : "Filtered lines"}
         </div>
         <div
-          className="overflow-x-auto rounded-[8px] border border-line"
+          className="overflow-x-auto rounded-card border border-line"
           style={{
             boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.18)",
           }}
@@ -322,7 +323,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
+      className="group relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
       style={{
         boxShadow: highlighted
           ? `0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -14px ${accent.glow}`
@@ -343,7 +344,7 @@ function StatCard({
           {label}
         </span>
         <span
-          className="shrink-0 w-9 h-9 rounded-[6px] inline-flex items-center justify-center"
+          className="shrink-0 w-9 h-9 rounded-card inline-flex items-center justify-center"
           style={{ background: accent.iconBg, color: accent.iconFg }}
           aria-hidden
         >
@@ -384,11 +385,11 @@ function FundingMix({
   const { currency } = useCurrency();
   const inr = inrFor(currency);
   const segments = [
-    { label: "Government", value: totals.govt, color: "#2E7573" },
-    { label: "Community", value: totals.community, color: "#929CC5" },
-    { label: "Grants", value: totals.grants, color: "#C68C2E" },
+    { label: "Government", value: totals.govt, color: palette.teal },
+    { label: "Community", value: totals.community, color: palette.periwinkle },
+    { label: "Grants", value: totals.grants, color: palette.ochre },
     { label: "Returnable", value: totals.returnable, color: "#F8CA7C" },
-    { label: "Outcome-based", value: totals.outcome, color: "#5C6796" },
+    { label: "Outcome-based", value: totals.outcome, color: palette.periwinkleText },
     { label: "Debt", value: totals.debt, color: "#334B4A" },
   ].filter((s) => s.value > 0);
 
@@ -397,7 +398,7 @@ function FundingMix({
 
   return (
     <section
-      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 mt-4"
+      className="relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6 mt-4"
       style={{
         boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.20)",
         backgroundImage:
@@ -481,7 +482,7 @@ function FilterDropdown({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
+        className="px-3.5 py-2.5 bg-paper border border-line rounded-card font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
       >
         <option value="">All</option>
         {options.map((o) => (
@@ -509,7 +510,7 @@ function BreakdownCard({
   const inr = inrFor(currency);
   return (
     <div
-      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6"
+      className="relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6"
       style={{
         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px ${accent.glow}`,
         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,

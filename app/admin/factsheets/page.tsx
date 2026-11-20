@@ -57,7 +57,7 @@ export default async function AdminFactSheets() {
       {sheets.length === 0 ? (
         <p className="text-[13.5px] text-muted py-6">No fact sheets yet. Generate one above, or let the weekly discovery agent populate them.</p>
       ) : (
-        <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+        <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
           {sheets.map((s) => (
             <li key={s.slug} className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 px-4 py-3.5">
               <div className="min-w-0 flex-1">

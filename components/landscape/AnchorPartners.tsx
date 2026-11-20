@@ -45,7 +45,7 @@ export function AnchorPartners() {
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-10 sm:gap-x-12 lg:gap-x-16 gap-y-14 sm:gap-y-16 list-none p-0 rounded-[14px] bg-white border border-line/60 px-8 sm:px-12 lg:px-14 py-14 sm:py-16"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-10 sm:gap-x-12 lg:gap-x-16 gap-y-14 sm:gap-y-16 list-none p-0 rounded-panel bg-white border border-line/60 px-8 sm:px-12 lg:px-14 py-14 sm:py-16"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {items.map(({ slug, a, landscape }, i) => (

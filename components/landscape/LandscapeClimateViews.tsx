@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useCurrency, formatMoney } from "./currency";
@@ -19,19 +20,19 @@ const LENSES = [
   {
     key: "resilience" as const,
     label: "Resilience donor",
-    colour: "#2E7573",
+    colour: palette.teal,
     blurb: "The safety net — household income protected when a climate shock hits.",
   },
   {
     key: "adaptation" as const,
     label: "Adaptation finance",
-    colour: "#5E6990",
+    colour: palette.periwinkleDeep,
     blurb: "The farm economy — lower costs, better yields, steadier margins.",
   },
   {
     key: "carbon" as const,
     label: "Carbon investor",
-    colour: "#946616",
+    colour: palette.amberDeep,
     blurb: "The tradeable carbon — greenhouse gas removed, reduced and avoided.",
   },
 ];
@@ -93,7 +94,7 @@ export function LandscapeClimateViews({
           return (
             <div
               key={lens.key}
-              className="rounded-[12px] border border-line bg-paper overflow-hidden transition-shadow"
+              className="rounded-panel border border-line bg-paper overflow-hidden transition-shadow"
               style={{ boxShadow: isOpen ? "0 1px 2px rgba(26,38,37,0.04), 0 14px 34px -26px rgba(26,38,37,0.3)" : "0 1px 2px rgba(26,38,37,0.04)" }}
             >
               {/* Always-visible header — name, share, value, toggle */}
@@ -146,11 +147,11 @@ export function LandscapeClimateViews({
                             </div>
                             <div className="flex items-center gap-4 mt-2 font-mono text-[11px] uppercase tracking-[0.1em]">
                               <span className="flex items-center gap-1.5" style={{ color: lens.colour }}>
-                                <span className="inline-block w-2 h-2 rounded-sm" style={{ background: lens.colour }} />
+                                <span className="inline-block w-2 h-2 rounded-tight" style={{ background: lens.colour }} />
                                 {creditablePct}% creditable today
                               </span>
                               <span className="flex items-center gap-1.5 text-muted">
-                                <span className="inline-block w-2 h-2 rounded-sm" style={{ background: `${lens.colour}33` }} />
+                                <span className="inline-block w-2 h-2 rounded-tight" style={{ background: `${lens.colour}33` }} />
                                 {shadowPct}% shadow price
                               </span>
                             </div>
@@ -180,7 +181,7 @@ export function LandscapeClimateViews({
                                 </span>
                               ) : null}
                               {l.tier && (
-                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted border border-line rounded px-1 py-0.5">
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted border border-line rounded-tight px-1 py-0.5">
                                   {l.tier}
                                 </span>
                               )}
@@ -204,7 +205,7 @@ export function LandscapeClimateViews({
       </div>
 
       {/* How the value is graded — collapsed by default to keep the page light */}
-      <div className="mt-10 rounded-[12px] border border-line bg-paper overflow-hidden">
+      <div className="mt-10 rounded-panel border border-line bg-paper overflow-hidden">
         <button
           type="button"
           onClick={() => setMethodOpen((o) => !o)}
@@ -229,7 +230,7 @@ export function LandscapeClimateViews({
                 Each intervention is counted once, in the track it mainly serves — so nothing is double-counted.
                 Carbon is priced at benchmark rates. Every figure carries an evidence grade:
               </p>
-              <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[10px] overflow-hidden border border-line list-none p-0">
+              <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-card overflow-hidden border border-line list-none p-0">
                 {[
                   { tier: "T1", label: "Primary · local", body: "Programme data, baseline surveys and impact evaluations from the landscape itself — the strongest evidence." },
                   { tier: "T2", label: "Secondary · national", body: "ICAR institutes, government datasets and peer-reviewed Indian studies — used where local data isn't available yet." },

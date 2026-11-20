@@ -15,7 +15,7 @@ export function LandscapeAnchorPartner({ slug }: { slug: string }) {
         Anchor partner
       </span>
       <div className="mt-2 flex items-center gap-3">
-        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-[8px] bg-paper border border-line p-1.5">
+        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-card bg-paper border border-line p-1.5">
           <Image
             src={a.logo}
             alt={`${a.name} logo`}

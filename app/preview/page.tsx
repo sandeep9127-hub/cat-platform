@@ -42,7 +42,7 @@ export default async function PreviewPage({
         <form
           method="POST"
           action="/api/preview/unlock"
-          className="mt-8 rounded-[14px] border border-line bg-paper p-6 sm:p-7 flex flex-col gap-4"
+          className="mt-8 rounded-panel border border-line bg-paper p-6 sm:p-7 flex flex-col gap-4"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 22px 48px -30px rgba(26,38,37,0.3)" }}
         >
           <input type="hidden" name="from" value={from} />
@@ -56,7 +56,7 @@ export default async function PreviewPage({
               type="text"
               autoComplete="organization"
               placeholder="e.g. Rockefeller Foundation"
-              className="w-full rounded-[9px] border border-line bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none focus:border-teal transition-colors"
+              className="w-full rounded-card border border-line bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none focus:border-teal transition-colors"
             />
           </label>
 
@@ -69,14 +69,14 @@ export default async function PreviewPage({
               autoFocus
               autoComplete="off"
               className={
-                "w-full rounded-[9px] border bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition-colors focus:border-teal " +
-                (error ? "border-[#b85042]" : "border-line")
+                "w-full rounded-card border bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition-colors focus:border-teal " +
+                (error ? "border-red-alert" : "border-line")
               }
             />
           </label>
 
           {error && (
-            <p className="font-sans text-[13px] text-[#b85042] -mt-1">
+            <p className="font-sans text-[13px] text-red-alert -mt-1">
               That code wasn&apos;t right. Try again, or ask your CAT contact.
             </p>
           )}

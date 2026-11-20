@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoPath } from "d3-geo";
 import { CATEGORIES } from "@/lib/data/categories";
@@ -60,15 +61,15 @@ const THEME_PALETTE: Record<string, string> = {
   // Cool family (teals + periwinkles) for the prominent themes; a hint of the
   // warm accents (rose / coral) for two small themes so the tour gets a touch
   // of warmth without the off-brand gold. All from the CAT palette.
-  "agri-horti-agroforestry": "#2E7573", // teal (primary)
-  "technical-assistance": "#5E6990", // deep periwinkle
-  market: "#929CC5", // periwinkle
+  "agri-horti-agroforestry": palette.teal, // teal (primary)
+  "technical-assistance": palette.periwinkleDeep, // deep periwinkle
+  market: palette.periwinkle, // periwinkle
   biodiversity: "#334B4A", // deep teal
   nrm: "#95B1AF", // sage teal
   nutrition: "#F8A07B", // coral (warm hint)
   livestock: "#C68F95", // dusty rose (warm hint)
   "forestry-ntfp": "#AFBADC", // soft periwinkle
-  fisheries: "#5E6990", // deep periwinkle (reused; single-state)
+  fisheries: palette.periwinkleDeep, // deep periwinkle (reused; single-state)
   energy: "#B8CCCA", // pale teal (kept cool — no gold)
 };
 
@@ -153,7 +154,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       .map((c) => ({
         slug: c.slug,
         short: c.short,
-        color: THEME_PALETTE[c.slug] ?? "#2E7573",
+        color: THEME_PALETTE[c.slug] ?? palette.teal,
         count: counts.get(c.slug) ?? 0,
       }))
       .sort((a, b) => b.count - a.count);
@@ -221,7 +222,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       className={
         (bare
           ? "map-bare relative p-0 aspect-[4/5] overflow-visible"
-          : "relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-[10px] overflow-hidden") +
+          : "relative border border-line p-3 sm:p-5 lg:p-6 aspect-[4/5] rounded-card overflow-hidden") +
         ` ${className ?? ""}`
       }
       style={
@@ -235,13 +236,13 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       }
     >
       {!bare && (
-        <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none rounded-[6px]" />
+        <div className="absolute inset-2 sm:inset-3 lg:inset-3.5 border border-dashed border-line pointer-events-none rounded-card" />
       )}
 
       {/* Counter */}
       {!bare && (
       <div
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-[8px] font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-card font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
         style={{
           background: "linear-gradient(135deg, #334B4A 0%, #2E7573 60%, #334B4A 100%)",
           boxShadow:
@@ -265,7 +266,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Filter chip */}
       {activeState && (
         <div
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 px-3 py-2 rounded-[8px] font-mono text-[11px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 text-deep-teal"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 px-3 py-2 rounded-card font-mono text-[11px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 text-deep-teal"
           style={{
             background: "linear-gradient(135deg, rgba(248,202,124,0.95), rgba(248,202,124,0.75))",
             boxShadow:
@@ -290,14 +291,14 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Legend */}
       {!bare && (
       <div
-        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
+        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] text-ink-soft rounded-card backdrop-blur-md border border-line/80"
         style={{
           background: "rgba(251,248,242,0.92)",
           boxShadow: "0 6px 16px -10px rgba(26,38,37,0.20), 0 1px 2px rgba(26,38,37,0.04)",
         }}
       >
         <div className="flex gap-2 items-center">
-          <span className="w-2.5 h-2.5 rounded-full shadow-[0_0_0_3px_rgba(94,103,144,0.22)]" style={{ background: "#5e6990" }} />
+          <span className="w-2.5 h-2.5 rounded-full shadow-[0_0_0_3px_rgba(94,103,144,0.22)]" style={{ background: palette.periwinkleDeep }} />
           Solution
         </div>
       </div>
@@ -309,7 +310,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         <div className="absolute left-3 bottom-3 sm:left-4 sm:bottom-4 z-10 flex flex-col gap-2 pointer-events-none select-none max-w-[calc(100%-2rem)]">
           <div
             key={activeTheme.slug}
-            className="inline-flex items-center gap-2.5 px-3 py-2 rounded-[10px] backdrop-blur-md border border-line/70 animate-scope-pop w-fit"
+            className="inline-flex items-center gap-2.5 px-3 py-2 rounded-card backdrop-blur-md border border-line/70 animate-scope-pop w-fit"
             style={{
               background: "rgba(251,248,242,0.92)",
               boxShadow: "0 8px 22px -12px rgba(26,38,37,0.30), 0 1px 2px rgba(26,38,37,0.04)",
@@ -447,7 +448,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                   className="cursor-pointer dot-group"
                   style={
                     {
-                      color: isAmber ? "#5e6990" : "var(--teal)",
+                      color: isAmber ? palette.periwinkleDeep : "var(--teal)",
                       opacity: dim ? 0.12 : 1,
                       transition: "opacity 0.6s ease",
                       "--pop-delay": popDelay,
@@ -460,7 +461,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     cy={y}
                     r={halo}
                     className="dot-halo"
-                    fill={isAmber ? "#5e6990" : "var(--teal)"}
+                    fill={isAmber ? palette.periwinkleDeep : "var(--teal)"}
                     opacity={isAmber ? 0.18 : 0.15}
                   />
                   <circle
@@ -468,7 +469,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                     cy={y}
                     r={core}
                     className="dot-core"
-                    fill={isAmber ? "#5e6990" : "var(--teal)"}
+                    fill={isAmber ? palette.periwinkleDeep : "var(--teal)"}
                   />
                 </g>
               );
@@ -480,7 +481,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute z-20 pointer-events-none text-cream px-3.5 py-3 min-w-[200px] rounded-[8px] border border-paper/10 animate-scope-pop"
+          className="absolute z-20 pointer-events-none text-cream px-3.5 py-3 min-w-[200px] rounded-card border border-paper/10 animate-scope-pop"
           style={{
             left: tooltip.x,
             top: tooltip.y,

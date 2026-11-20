@@ -51,7 +51,7 @@ function Banner({ gen, slug }: { gen?: string; slug?: string }) {
       : m.tone === "warn"
         ? "bg-amber/20 text-deep-teal border-amber/40"
         : "bg-red-alert/10 text-red-alert border-red-alert/30";
-  return <div className={`rounded-[8px] border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
+  return <div className={`rounded-card border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
 }
 
 function DiscoveryBanner({ disc, found }: { disc?: string; found?: string }) {
@@ -70,7 +70,7 @@ function DiscoveryBanner({ disc, found }: { disc?: string; found?: string }) {
       : m.tone === "warn"
         ? "bg-amber/20 text-deep-teal border-amber/40"
         : "bg-red-alert/10 text-red-alert border-red-alert/30";
-  return <div className={`rounded-[8px] border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
+  return <div className={`rounded-card border px-4 py-3 text-[13.5px] ${tone}`}>{m.text}</div>;
 }
 
 function DupeBadge({ matches }: { matches: DuplicateMatch[] }) {
@@ -78,7 +78,7 @@ function DupeBadge({ matches }: { matches: DuplicateMatch[] }) {
   const top = matches[0];
   return (
     <div className="flex items-center gap-2 flex-wrap mt-1.5">
-      <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-amber/15 border border-amber/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-deep-teal">
+      <span className="inline-flex items-center gap-1.5 rounded-tight bg-amber/15 border border-amber/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-deep-teal">
         <span>⚠</span>
         <span>
           Possible match:{" "}
@@ -149,14 +149,14 @@ export default async function AdminCandidates({
           <div className="flex items-center gap-3 flex-wrap">
             <Link
               href={showScan ? "/admin/candidates" : "/admin/candidates?scan=1"}
-              className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-[8px] border border-line px-4 py-2.5 text-ink-soft hover:text-ink hover:border-ink/30 transition-colors"
+              className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-card border border-line px-4 py-2.5 text-ink-soft hover:text-ink hover:border-ink/30 transition-colors"
             >
               {showScan ? "Hide Atlas scan" : "Scan Atlas for duplicates"}
             </Link>
             <form action="/api/admin/discovery/run" method="post" className="flex items-center gap-2">
               <button
                 type="submit"
-                className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
+                className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-card bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
               >
                 Run discovery now
               </button>
@@ -175,7 +175,7 @@ export default async function AdminCandidates({
           Nothing in the queue. The discovery agent runs weekly and drops new candidates here.
         </p>
       ) : (
-        <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+        <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
           {cands.map((c, i) => {
             const sources = Array.isArray(c.sourceUrls) ? c.sourceUrls : [];
             const matches = candMatches[i];
@@ -200,14 +200,14 @@ export default async function AdminCandidates({
                   <div className="flex items-center gap-3 shrink-0">
                     {!hasDupe && (
                       <form action={`/api/admin/candidates/${c.id}/factsheet`} method="post">
-                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-paper bg-deep-teal hover:bg-teal px-3 py-2 rounded-[6px] transition-colors">
+                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-paper bg-deep-teal hover:bg-teal px-3 py-2 rounded-card transition-colors">
                           Generate → Atlas
                         </button>
                       </form>
                     )}
                     {hasDupe && (
                       <form action={`/api/admin/candidates/${c.id}/factsheet`} method="post">
-                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted border border-line hover:border-deep-teal hover:text-deep-teal px-3 py-2 rounded-[6px] transition-colors">
+                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted border border-line hover:border-deep-teal hover:text-deep-teal px-3 py-2 rounded-card transition-colors">
                           Generate anyway
                         </button>
                       </form>
@@ -262,7 +262,7 @@ export default async function AdminCandidates({
               No likely duplicates found among {published.length} published fact sheets.
             </p>
           ) : (
-            <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+            <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
               {atlasPairs.map((pair, i) => (
                 <li key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3">
                   <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-amber-600 shrink-0 w-[40px]">

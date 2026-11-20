@@ -51,7 +51,7 @@ function renderHighlight(headline: string): React.ReactNode[] {
     const match = seg.match(/^<mark>(.*?)<\/mark>$/);
     if (match) {
       parts.push(
-        <mark key={i} className="bg-amber/40 text-ink rounded-[1px] px-0.5">
+        <mark key={i} className="bg-amber/40 text-ink rounded-tight px-0.5">
           {match[1]}
         </mark>
       );

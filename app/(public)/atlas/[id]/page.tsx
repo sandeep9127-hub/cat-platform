@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight, ExternalLink, MapPin, Calendar, Building2 } from "lucide-react";
@@ -14,14 +15,14 @@ export const revalidate = 3600;
 const THEME_COLOURS: Record<string, string> = {
   "soil-and-land": "#8C7A5C",
   water: "#2C7BD0",
-  "seeds-and-biodiversity": "#5C8C2E",
-  "farmer-livelihoods": "#C68C2E",
+  "seeds-and-biodiversity": palette.leaf,
+  "farmer-livelihoods": palette.ochre,
   nutrition: "#C24A2E",
-  "climate-resilience": "#2E7573",
+  "climate-resilience": palette.teal,
   "markets-and-value-chains": "#2EA37A",
   "policy-and-finance": "#334B4A",
-  "knowledge-and-capacity": "#5C6796",
-  "women-and-collectives": "#929CC5",
+  "knowledge-and-capacity": palette.periwinkleText,
+  "women-and-collectives": palette.periwinkle,
 };
 
 const STATE_NAMES: Record<string, string> = {
@@ -161,7 +162,7 @@ export default async function AtlasRecordPage({ params }: Props) {
               href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
+              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-tight font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
             >
               <span>{sourceCtaLabel}</span>
               <span className="font-normal normal-case tracking-normal text-amber-deep/80">
@@ -249,7 +250,7 @@ export default async function AtlasRecordPage({ params }: Props) {
 
       {/* Editorial note — what this kind of page is, why CAT routes it */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
-        <div className="rounded-[8px] border border-line bg-paper p-6 sm:p-8 max-w-[68ch]">
+        <div className="rounded-card border border-line bg-paper p-6 sm:p-8 max-w-[68ch]">
           <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
             Why this is on the Hub
           </span>

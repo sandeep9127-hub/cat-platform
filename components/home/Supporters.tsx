@@ -67,7 +67,7 @@ export function Supporters() {
           blend seamlessly — no mismatched boxes on the cream/sage section. */}
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-8 sm:gap-y-10 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-8 sm:gap-y-10 list-none p-0 rounded-panel bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {LOGOS.map((logo, i) => (

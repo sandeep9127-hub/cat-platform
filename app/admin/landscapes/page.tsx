@@ -29,7 +29,7 @@ export default async function AdminLandscapesPage() {
         </p>
       </header>
 
-      <div className="rounded-[10px] border border-line overflow-x-auto">
+      <div className="rounded-card border border-line overflow-x-auto">
         <table className="w-full min-w-[620px] border-collapse text-[13.5px]">
           <thead>
             <tr className="bg-cream text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">

@@ -95,7 +95,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
                 type="button"
                 onClick={() => setOpen(i)}
                 aria-label={`Enlarge photograph: ${p.caption}`}
-                className="group relative block w-full text-left overflow-hidden rounded-[8px] border border-line bg-paper transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 active:scale-[0.99] cursor-zoom-in"
+                className="group relative block w-full text-left overflow-hidden rounded-card border border-line bg-paper transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 active:scale-[0.99] cursor-zoom-in"
                 style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -16px rgba(46,117,115,0.20)" }}
               >
                 <div className="relative w-full bg-cream overflow-hidden" style={{ aspectRatio: aspect }}>
@@ -174,7 +174,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
               <img
                 src={active.src}
                 alt={active.alt ?? active.caption}
-                className="max-h-[78vh] w-auto max-w-full object-contain rounded-[8px]"
+                className="max-h-[78vh] w-auto max-w-full object-contain rounded-card"
                 style={{ boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6)" }}
               />
             </div>

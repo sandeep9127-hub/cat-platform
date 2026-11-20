@@ -80,7 +80,7 @@ export function Donut({
         {segments.map((s, i) => (
           <li key={i} className="flex items-center gap-2.5 text-[13px]">
             <span
-              className="w-3 h-3 rounded-[3px] shrink-0"
+              className="w-3 h-3 rounded-tight shrink-0"
               style={{ background: s.color }}
               aria-hidden
             />

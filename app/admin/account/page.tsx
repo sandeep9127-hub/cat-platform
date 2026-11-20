@@ -54,7 +54,7 @@ export default async function AccountPage({
   const hasPassword = Boolean(u?.passwordHash);
 
   const input =
-    "w-full px-4 py-2.5 rounded-[8px] bg-paper border border-line text-[14px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
+    "w-full px-4 py-2.5 rounded-card bg-paper border border-line text-[14px] text-ink placeholder:text-muted focus:outline-none focus:border-teal transition-colors";
 
   return (
     <div className="space-y-6 max-w-[440px]">
@@ -67,12 +67,12 @@ export default async function AccountPage({
       </header>
 
       {sp.ok ? (
-        <div className="rounded-[8px] border border-teal/30 bg-teal/10 text-deep-teal px-4 py-3 text-[13.5px]">
+        <div className="rounded-card border border-teal/30 bg-teal/10 text-deep-teal px-4 py-3 text-[13.5px]">
           Password updated. Use it next time you sign in.
         </div>
       ) : null}
       {sp.error ? (
-        <div className="rounded-[8px] border border-red-alert/30 bg-red-alert/10 text-red-alert px-4 py-3 text-[13.5px]">
+        <div className="rounded-card border border-red-alert/30 bg-red-alert/10 text-red-alert px-4 py-3 text-[13.5px]">
           {sp.error === "match"
             ? "The two passwords do not match."
             : sp.error === "weak"

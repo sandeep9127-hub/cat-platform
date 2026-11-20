@@ -53,7 +53,7 @@ export function LandscapeUpload({ slug }: { slug: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-[10px] border border-line bg-cream p-5 space-y-3">
+    <form onSubmit={onSubmit} className="rounded-card border border-line bg-cream p-5 space-y-3">
       <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-teal">Add a report</div>
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
         <input
@@ -61,26 +61,26 @@ export function LandscapeUpload({ slug }: { slug: string }) {
           type="file"
           name="file"
           accept=".pdf,.docx"
-          className="text-[13px] text-ink file:mr-3 file:py-2 file:px-3 file:rounded-[6px] file:border-0 file:bg-deep-teal file:text-paper file:font-mono file:text-[11px] file:uppercase file:tracking-[0.1em]"
+          className="text-[13px] text-ink file:mr-3 file:py-2 file:px-3 file:rounded-card file:border-0 file:bg-deep-teal file:text-paper file:font-mono file:text-[11px] file:uppercase file:tracking-[0.1em]"
         />
         <input
           type="number"
           name="year"
           placeholder="Year"
-          className="w-24 px-3 py-2 rounded-[6px] border border-line bg-paper text-[13px]"
+          className="w-24 px-3 py-2 rounded-card border border-line bg-paper text-[13px]"
         />
       </div>
       <input
         type="text"
         name="title"
         placeholder="Document title (optional — defaults to file name)"
-        className="w-full px-3 py-2 rounded-[6px] border border-line bg-paper text-[13px]"
+        className="w-full px-3 py-2 rounded-card border border-line bg-paper text-[13px]"
       />
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={busy}
-          className="px-4 py-2.5 rounded-[6px] bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.12em] hover:bg-teal transition-colors disabled:opacity-60"
+          className="px-4 py-2.5 rounded-card bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.12em] hover:bg-teal transition-colors disabled:opacity-60"
         >
           {busy ? "Ingesting…" : "Upload & ingest"}
         </button>
