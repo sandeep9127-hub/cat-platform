@@ -57,7 +57,8 @@ export type DriveFile = {
   md5Checksum?: string;
   size?: string;
   parents?: string[];
-  path: string; // "Final folder/Landscape report - final/…/name"
+  path: string; // display only: "Final folder/Landscape report - final/…/name" (names may contain "/")
+  folders: string[]; // exact folder names from the root down to the file's parent
 };
 
 const FIELDS = "nextPageToken,files(id,name,mimeType,modifiedTime,md5Checksum,size,parents)";
@@ -80,14 +81,13 @@ async function listChildren(folderId: string): Promise<Omit<DriveFile, "path">[]
 /** All files (not folders) under a folder, recursively, with readable paths. */
 export async function listTree(folderId: string, rootName: string): Promise<DriveFile[]> {
   const files: DriveFile[] = [];
-  const walk = async (id: string, path: string) => {
+  const walk = async (id: string, folders: string[]) => {
     for (const f of await listChildren(id)) {
-      const p = `${path}/${f.name}`;
-      if (f.mimeType === GOOGLE_FOLDER) await walk(f.id, p);
-      else files.push({ ...f, path: p });
+      if (f.mimeType === GOOGLE_FOLDER) await walk(f.id, [...folders, f.name]);
+      else files.push({ ...f, folders, path: [...folders, f.name].join("/") });
     }
   };
-  await walk(folderId, rootName);
+  await walk(folderId, [rootName]);
   return files;
 }
 

@@ -23,10 +23,18 @@ concurrency:
 
 jobs:
   sync:
+    # Secrets live in the protected "production" environment (Settings ->
+    # Environments): restrict it to the main branch and, if wanted, require a
+    # reviewer for manual runs. Never runs for other branches.
+    if: github.ref == 'refs/heads/main'
+    environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22

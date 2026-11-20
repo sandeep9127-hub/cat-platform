@@ -121,14 +121,20 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   // document as a new version, so it gets a change summary and the old
   // version is removed. Lookup order: same Drive file, else the landscape's
   // existing synced document of this type.
-  const existing = rows<{ id: string }>(
+  const existing = rows<{ id: string; landscape_slug: string | null }>(
     await db.execute(sql`
-      SELECT id FROM "cat".documents
-      WHERE drive_file_id = ${input.drive.fileId}
-         OR (source = 'drive' AND landscape_slug = ${input.landscapeSlug} AND doc_type = ${input.docType})
-      ORDER BY (drive_file_id = ${input.drive.fileId}) DESC
+      SELECT id, landscape_slug FROM "cat".documents
+      WHERE source = 'drive' AND landscape_slug = ${input.landscapeSlug} AND doc_type = ${input.docType}
+      ORDER BY (drive_file_id = ${input.drive.fileId}) DESC, updated_at DESC
       LIMIT 1`),
   )[0];
+  // The same Drive file must never be attached to another landscape's document.
+  const clash = rows<{ landscape_slug: string | null }>(
+    await db.execute(sql`SELECT landscape_slug FROM "cat".documents WHERE drive_file_id = ${input.drive.fileId}`),
+  )[0];
+  if (clash && clash.landscape_slug !== input.landscapeSlug) {
+    throw new Error(`Drive file ${input.drive.fileId} already belongs to ${clash.landscape_slug}, not ${input.landscapeSlug}`);
+  }
   const doc = existing
     ? rows<{ id: string }>(
         await db.execute(sql`

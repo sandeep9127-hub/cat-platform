@@ -24,15 +24,30 @@ export const slugOf = (name: string): string | undefined =>
 export type ReportPlan = { slug: string; current: DriveFile; baseline?: DriveFile; isRevision: boolean };
 export type SheetPlan = { slug: string; file: DriveFile };
 
+const REPORTS = "Landscape report - final";
+const REVISED = "New updated reports";
+const AUGUST = "Report as on 25/08/2026";
+const SHEETS_PARENT = "5.2 data - final";
+const LIVE_SHEETS = "Live Google Sheets";
+
+/** Exact folder chain under the root: ["Final folder", a, b] -> [a, b]. */
+const under = (f: DriveFile) => f.folders.slice(1);
+const inFolder = (f: DriveFile, ...chain: string[]) => {
+  const u = under(f);
+  return u.length === chain.length && chain.every((c, i) => u[i] === c);
+};
+/** "<Landscape> LIP", "<Landscape> 25-08-2026 Report.docx", "<Landscape> Report.docx". */
+const REPORT_NAME = /^[A-Za-z–-]+(?:\s+[A-Za-z–-]+)?\s+(?:LIP|(?:\d{1,2}-\d{1,2}-\d{4}\s+)?Report)(?:\.docx)?$/i;
+
 export function planFinalFolder(files: DriveFile[]): { reports: ReportPlan[]; sheets: SheetPlan[]; unmatched: string[] } {
   const unmatched: string[] = [];
   const reports = new Map<string, ReportPlan>();
   for (const f of files) {
-    if (!f.path.includes("/Landscape report - final/")) continue;
+    const isRevision = inFolder(f, REPORTS, REVISED);
+    if (!isRevision && !inFolder(f, REPORTS, AUGUST)) continue;
     if (f.mimeType !== DOCX && f.mimeType !== GOOGLE_DOC) continue;
     const slug = slugOf(f.name);
-    if (!slug) { unmatched.push(f.path); continue; }
-    const isRevision = f.path.includes("/New updated reports/");
+    if (!slug || !REPORT_NAME.test(f.name.trim().replace(/\s+/g, " "))) { unmatched.push(f.path); continue; }
     const p = reports.get(slug);
     if (!p) reports.set(slug, { slug, current: f, isRevision });
     else if (isRevision && !p.isRevision) reports.set(slug, { slug, current: f, baseline: p.current, isRevision: true });
@@ -41,7 +56,7 @@ export function planFinalFolder(files: DriveFile[]): { reports: ReportPlan[]; sh
   }
   const sheets: SheetPlan[] = [];
   for (const f of files) {
-    if (!f.path.includes("/Live Google Sheets/") || f.mimeType !== GOOGLE_SHEET) continue;
+    if (!inFolder(f, SHEETS_PARENT, LIVE_SHEETS) || f.mimeType !== GOOGLE_SHEET) continue;
     const slug = slugOf(f.name);
     if (slug) sheets.push({ slug, file: f });
     else unmatched.push(f.path);
@@ -55,5 +70,5 @@ export function planFinalFolder(files: DriveFile[]): { reports: ReportPlan[]; sh
 
 export function versionLabel(p: ReportPlan): string {
   const d = new Date(p.current.modifiedTime).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  return p.isRevision ? `Revised ${d}` : p.current.path.includes("/Report as on 25/08/2026/") ? "Report as on 25 Aug 2026" : `Updated ${d}`;
+  return p.isRevision ? `Revised ${d}` : under(p.current)[1] === AUGUST ? "Report as on 25 Aug 2026" : `Updated ${d}`;
 }
