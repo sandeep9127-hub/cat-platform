@@ -1,5 +1,7 @@
 -- Drive folder sync + version retention policy (decided 20 Nov 2026).
 -- Apply after 2026-11-20_v2_core.sql and 2026-11-20_v2_hardening.sql. Idempotent.
+-- apply-sql sends the file as one query, so it runs in a single transaction:
+-- it applies fully or not at all.
 --
 -- Policy:
 --   * The Drive "Final folder" is the source of truth for synced documents.
@@ -8,8 +10,11 @@
 --     summary survives.
 --   * Documents added by hand (e.g. Pangi, HLPE) are kept outside the sync.
 
--- Where a document comes from.
-ALTER TABLE "cat".documents ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'drive';
+-- Where a document comes from. Default is 'manual' (never touched by the
+-- sync); only rows that actually carry a Drive file id are marked 'drive'.
+-- The sync sets source='drive' explicitly when it creates a document.
+ALTER TABLE "cat".documents ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'manual';
+ALTER TABLE "cat".documents ALTER COLUMN source SET DEFAULT 'manual';
 DO $$ BEGIN
   ALTER TABLE "cat".documents ADD CONSTRAINT documents_source_check CHECK (source IN ('drive','manual'));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -19,6 +24,10 @@ ALTER TABLE "cat".documents ADD COLUMN IF NOT EXISTS drive_file_id text;
 ALTER TABLE "cat".documents ADD COLUMN IF NOT EXISTS drive_path text;   -- "Final folder/Landscape report - final/…"
 CREATE UNIQUE INDEX IF NOT EXISTS documents_drive_file_uniq
   ON "cat".documents (drive_file_id) WHERE drive_file_id IS NOT NULL;
+-- Backfill from the data, then clean anything inconsistent, so the
+-- constraint below can always be added.
+UPDATE "cat".documents SET source = 'drive'  WHERE drive_file_id IS NOT NULL AND source <> 'drive';
+UPDATE "cat".documents SET source = 'manual' WHERE drive_file_id IS NULL     AND source = 'drive';
 DO $$ BEGIN
   ALTER TABLE "cat".documents ADD CONSTRAINT documents_drive_has_id
     CHECK (source <> 'drive' OR drive_file_id IS NOT NULL);
@@ -48,6 +57,19 @@ BEGIN
   EXCEPTION WHEN duplicate_object THEN NULL;
   END;
 END $$;
+
+-- A summary must always say which version it came from, even after that
+-- version is deleted; and there is one summary per (document, from, to).
+UPDATE "cat".version_diffs d SET from_label = coalesce(d.from_label, v.label, 'v' || v.version_no),
+                                 from_version_no = coalesce(d.from_version_no, v.version_no)
+FROM "cat".document_versions v WHERE v.id = d.from_version_id;
+DO $$ BEGIN
+  ALTER TABLE "cat".version_diffs ADD CONSTRAINT version_diffs_from_recorded
+    CHECK (from_version_no IS NOT NULL AND from_label IS NOT NULL);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+ALTER TABLE "cat".version_diffs DROP CONSTRAINT IF EXISTS version_diffs_from_version_id_to_version_id_key;
+CREATE UNIQUE INDEX IF NOT EXISTS version_diffs_doc_from_to_uniq
+  ON "cat".version_diffs (document_id, from_version_no, to_version_id);
 
 -- Sync bookkeeping: one row per run, for the admin and the health check.
 CREATE TABLE IF NOT EXISTS "cat".drive_sync_runs (
