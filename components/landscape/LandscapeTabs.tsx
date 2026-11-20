@@ -43,7 +43,7 @@ export function LandscapeTabs({
               ? "border-amber-deep text-deep-teal font-semibold"
               : t.available
                 ? "border-transparent text-muted hover:text-deep-teal"
-                : "border-transparent text-muted/70 cursor-not-allowed"
+                : "border-transparent text-muted/60 cursor-not-allowed"
           }`;
           return (
             <li key={t.href}>

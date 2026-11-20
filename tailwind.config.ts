@@ -1,5 +1,13 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Colours are CSS custom properties (app/globals.css). Wrapping them in
+ * color-mix with Tailwind's <alpha-value> placeholder makes opacity modifiers
+ * (bg-teal/10, border-line/80) work; with a plain var() they compiled to
+ * nothing and silently fell back to the default colour.
+ */
+const c = (v: string) => `color-mix(in srgb, var(${v}) calc(<alpha-value> * 100%), transparent)`;
+
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx,mdx}",
@@ -12,37 +20,37 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "deep-teal": "var(--deep-teal)",
-        teal: "var(--teal)",
-        "teal-soft": "var(--teal-soft)",
-        "teal-pale": "var(--teal-pale)",
-        "teal-wash": "var(--teal-wash)",
-        "navy-teal": "var(--navy-teal)",
-        "wordmark-navy": "var(--wordmark-navy)",
-        sage: "var(--sage)",
-        "sage-soft": "var(--sage-soft)",
-        "sage-wash": "var(--sage-wash)",
-        "periwinkle-deep": "var(--periwinkle-deep)",
-        periwinkle: "var(--periwinkle)",
-        "periwinkle-soft": "var(--periwinkle-soft)",
-        "periwinkle-pale": "var(--periwinkle-pale)",
-        "periwinkle-wash": "var(--periwinkle-wash)",
-        rose: "var(--rose)",
-        peach: "var(--peach)",
-        amber: "var(--amber)",
-        "amber-deep": "var(--amber-deep)",
-        cream: "var(--cream)",
-        paper: "var(--paper)",
-        ink: "var(--ink)",
-        "ink-soft": "var(--ink-soft)",
-        muted: "var(--muted)",
-        line: "var(--line)",
-        "line-soft": "var(--line-soft)",
-        rule: "var(--rule)",
-        "red-alert": "var(--red-alert)",
-        ochre: "var(--ochre)",
-        leaf: "var(--leaf)",
-        "periwinkle-text": "var(--periwinkle-text)",
+        "deep-teal": c("--deep-teal"),
+        teal: c("--teal"),
+        "teal-soft": c("--teal-soft"),
+        "teal-pale": c("--teal-pale"),
+        "teal-wash": c("--teal-wash"),
+        "navy-teal": c("--navy-teal"),
+        "wordmark-navy": c("--wordmark-navy"),
+        sage: c("--sage"),
+        "sage-soft": c("--sage-soft"),
+        "sage-wash": c("--sage-wash"),
+        "periwinkle-deep": c("--periwinkle-deep"),
+        periwinkle: c("--periwinkle"),
+        "periwinkle-soft": c("--periwinkle-soft"),
+        "periwinkle-pale": c("--periwinkle-pale"),
+        "periwinkle-wash": c("--periwinkle-wash"),
+        rose: c("--rose"),
+        peach: c("--peach"),
+        amber: c("--amber"),
+        "amber-deep": c("--amber-deep"),
+        cream: c("--cream"),
+        paper: c("--paper"),
+        ink: c("--ink"),
+        "ink-soft": c("--ink-soft"),
+        muted: c("--muted"),
+        line: c("--line"),
+        "line-soft": c("--line-soft"),
+        rule: c("--rule"),
+        "red-alert": c("--red-alert"),
+        ochre: c("--ochre"),
+        leaf: c("--leaf"),
+        "periwinkle-text": c("--periwinkle-text"),
       },
       fontFamily: {
         // Legacy token: resolves to Inter (--font-fraunces is remapped in
