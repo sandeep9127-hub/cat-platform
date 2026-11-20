@@ -5,15 +5,7 @@ import { SectionOpener } from "@/components/ui/SectionOpener";
 
 export function Sdgs() {
   return (
-    <section className="relative overflow-hidden py-16 lg:py-24">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,240,234,0.55), transparent 70%)",
-        }}
-      />
+    <section className="relative overflow-hidden border-t border-line py-16 lg:py-24">
       <Sprig
         variant="fern"
         className="absolute top-4 -left-4 opacity-55 select-none pointer-events-none hidden md:block"

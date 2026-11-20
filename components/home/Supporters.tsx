@@ -21,24 +21,9 @@ const LOGOS: { file: string; name: string }[] = [
 
 export function Supporters() {
   return (
-    <section
-      className="relative overflow-hidden border-y border-line py-16 lg:py-24"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(232,240,234,0.50) 0%, rgba(232,240,234,0.20) 100%)",
-      }}
-    >
-      {/* Soft sage edge fades — top and bottom of section dissolve into paper */}
-      <div
-        aria-hidden
-        className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(180deg, rgba(251,248,242,0.65) 0%, transparent 100%)" }}
-      />
-      <div
-        aria-hidden
-        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(0deg, rgba(251,248,242,0.65) 0%, transparent 100%)" }}
-      />
+    // Same paper canvas as the rest of the page: no sage gradient band or edge
+    // fades, just a hairline to open the section.
+    <section className="relative overflow-hidden border-t border-line py-16 lg:py-24">
 
       {/* Ambient sprigs at corners */}
       <Sprig
