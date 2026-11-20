@@ -23,6 +23,8 @@ export function CatLogo({
       height={size}
       className={className}
       style={{ width: size, height: size, objectFit: "contain" }}
+      // Always above the fold (header, sign-in, moved page): load eagerly.
+      priority
     />
   );
 }
