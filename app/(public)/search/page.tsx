@@ -163,6 +163,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             </FilterGroup>
 
             <FilterGroup label="Endorsement">
+              {/* "Any" lets a chosen endorsement be cleared (radios can't untick). */}
+              <FilterChip name="endorsement" value="" active={!endorsement} radio>
+                Any
+              </FilterChip>
               {(["cat_authored", "cat_endorsed", "cat_listed"] as const).map((tier) => (
                 <FilterChip
                   key={tier}
@@ -281,23 +285,22 @@ function FilterChip({
   colour?: string;
   radio?: boolean;
 }) {
+  // State is shown from the input itself (:has(:checked)), so a chip answers
+  // the click straight away instead of waiting for Search; the hidden input's
+  // keyboard focus shows as a ring on the chip. 40px tall for touch.
   return (
     <label
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer font-mono text-[11px] uppercase tracking-[0.12em] transition-colors ${
-        active
-          ? "bg-deep-teal text-paper border-deep-teal"
-          : "bg-cream text-ink-soft border-line hover:border-teal"
-      }`}
+      className="inline-flex items-center gap-1.5 min-h-10 px-3.5 rounded-full border cursor-pointer text-[13px] transition-colors bg-cream text-ink-soft border-line hover:border-teal has-[:checked]:bg-deep-teal has-[:checked]:text-paper has-[:checked]:border-deep-teal has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-teal"
     >
       <input
         type={radio ? "radio" : "checkbox"}
         name={name}
         value={value}
         defaultChecked={active}
-        className="sr-only"
+        className="sr-only peer"
       />
-      {colour && !active && (
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: colour }} aria-hidden />
+      {colour && (
+        <span className="w-1.5 h-1.5 rounded-full peer-checked:hidden" style={{ background: colour }} aria-hidden />
       )}
       {children}
     </label>
