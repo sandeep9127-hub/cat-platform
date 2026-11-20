@@ -825,13 +825,15 @@ function Styles() {
       .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
-      .og-card-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:11px; align-items:center; }
+      .og-card-actions { display:flex; flex-wrap:wrap; gap:0 18px; margin-top:4px; align-items:center; }
       .og-card-actions > * { white-space:nowrap; }
-      .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; padding:6px 0; min-height:32px; display:inline-flex; align-items:center;
+      /* Actions in sentence case at reading size (Refero review: co2.is chevron
+         links), with a 44px touch height. */
+      .og-view, .og-edit { font-family:inherit; font-size:14px; letter-spacing:0; min-height:44px; display:inline-flex; align-items:center;
         background:none; border:0; cursor:pointer; padding:0; }
-      .og-view { color:var(--td); font-weight:600; }
+      .og-view { color:var(--td); font-weight:500; }
       .og-edit { color:var(--muted); }
-      .og-card-web { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--td); text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
+      .og-card-web { font-family:inherit; font-size:14px; letter-spacing:0; min-height:44px; color:var(--td); text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
       .og-view:hover, .og-edit:hover, .og-card-web:hover { text-decoration:underline; }
       /* website in detail */
       /* contact links — stacked with breathing room, icon-led */

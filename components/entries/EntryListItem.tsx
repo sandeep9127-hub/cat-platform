@@ -71,7 +71,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <p className="text-[14.5px] text-ink-soft leading-[1.55] max-w-[60ch] tracking-[-0.01em] mt-2">
             {data.tagline}
           </p>
-          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-sans text-[13px] text-muted">
             {data.themes.slice(0, 2).map((t) => {
               const Icon = categoryIconFor(t.slug);
               return (
