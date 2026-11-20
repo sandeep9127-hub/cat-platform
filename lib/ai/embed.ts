@@ -86,3 +86,31 @@ export async function embedDocuments(texts: string[]): Promise<number[][]> {
 export function toVectorLiteral(v: number[]): string {
   return `[${v.join(",")}]`;
 }
+
+export const RERANK_MODEL = process.env.RERANK_MODEL?.trim() || "rerank-3";
+
+/** Rerank candidate passages for a query (Voyage). Returns indexes into `documents`, best first. */
+export async function rerank(query: string, documents: string[], topK: number): Promise<{ index: number; score: number }[]> {
+  const key = process.env.VOYAGE_API_KEY;
+  if (!key) throw new Error("VOYAGE_API_KEY missing");
+  if (!documents.length) return [];
+  for (let attempt = 0; ; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch("https://api.voyageai.com/v1/rerank", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({ query: query.slice(0, 2000), documents, model: RERANK_MODEL, top_k: topK, truncation: true }),
+      });
+    } catch (e) {
+      if (attempt < MAX_RETRIES) { await sleep(1000 * 2 ** attempt); continue; }
+      throw e;
+    }
+    if (res.ok) {
+      const data = (await res.json()) as { data: { index: number; relevance_score: number }[] };
+      return data.data.map((d) => ({ index: d.index, score: d.relevance_score }));
+    }
+    if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) { await sleep(1000 * 2 ** attempt); continue; }
+    throw new Error(`Voyage rerank failed: ${res.status} ${(await res.text().catch(() => "")).slice(0, 200)}`);
+  }
+}

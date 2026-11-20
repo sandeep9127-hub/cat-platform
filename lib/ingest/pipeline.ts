@@ -25,6 +25,19 @@ const BATCH = 50; // rows per INSERT (one round trip each; the DB is in Singapor
 
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 
+/**
+ * Fingerprint of a parse: block kinds, heading levels, page markers and text.
+ * Null for an empty parse, so it can never match by accident.
+ */
+export function contentFingerprint(blocks: Block[]): string | null {
+  if (!blocks.length) return null;
+  const shape = blocks.map((b) =>
+    b.kind === "heading" ? ["h", b.level, b.page, b.text]
+    : b.kind === "table" ? ["t", b.pageStart, b.pageEnd, b.rows]
+    : ["p", b.pageStart, b.pageEnd, b.list, b.text]);
+  return createHash("sha256").update(JSON.stringify(shape)).digest("hex");
+}
+
 /** Word's saved page markers are missing in Google-Docs-authored files. */
 export function pagesReliable(blocks: Block[], pageCount: number): boolean {
   const chars = blocks.reduce((n, b) => n + (b.kind === "table" ? b.rows.flat().join(" ").length : b.text.length), 0);
@@ -76,20 +89,21 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   const log = input.log ?? (() => {});
   const sha256 = createHash("sha256").update(input.bytes).digest("hex");
 
-  // Idempotent: the same content is never ingested twice. Exact bytes, or the
-  // same Drive file whose checksum (binary files) or parsed-text fingerprint
-  // (Google-native exports, which differ byte-wise every time) is unchanged.
-  const contentHash = createHash("sha256")
-    .update(JSON.stringify(input.parsed.blocks.map((b) => (b.kind === "table" ? b.rows : b.text))))
-    .digest("hex");
+  // Idempotent: the same content is never ingested twice. Either the exact
+  // bytes, or the same Drive file with an unchanged modifiedTime AND matching
+  // content (Drive md5 for binary files; parsed-structure fingerprint for
+  // Google-native exports, which differ byte-wise every time). A newer
+  // modifiedTime always re-ingests; an empty parse never counts as a match.
+  const contentHash = contentFingerprint(input.parsed.blocks);
   const dup = rows<{ id: string; document_id: string; version_no: number }>(
     await db.execute(sql`
       SELECT v.id, v.document_id, v.version_no
       FROM "cat".document_versions v JOIN "cat".documents d ON d.id = v.document_id
       WHERE v.sha256 = ${sha256}
          OR (d.drive_file_id = ${input.drive.fileId} AND v.is_current
+             AND v.drive_modified_time = ${input.drive.modifiedTime}::timestamptz
              AND ((${input.drive.md5 ?? null}::text IS NOT NULL AND v.drive_md5 = ${input.drive.md5 ?? null})
-                  OR v.content_hash = ${contentHash}))
+                  OR (${contentHash}::text IS NOT NULL AND v.content_hash = ${contentHash})))
       ORDER BY (v.sha256 = ${sha256}) DESC
       LIMIT 1`),
   )[0];
