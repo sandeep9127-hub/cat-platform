@@ -89,6 +89,15 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   const log = input.log ?? (() => {});
   const sha256 = createHash("sha256").update(input.bytes).digest("hex");
 
+  // Guard first, before any lookup can return: the same Drive file must never
+  // be attached to another landscape's document.
+  const clash = rows<{ landscape_slug: string | null }>(
+    await db.execute(sql`SELECT landscape_slug FROM "cat".documents WHERE drive_file_id = ${input.drive.fileId}`),
+  )[0];
+  if (clash && clash.landscape_slug !== input.landscapeSlug) {
+    throw new Error(`Drive file ${input.drive.fileId} already belongs to ${clash.landscape_slug}, not ${input.landscapeSlug}`);
+  }
+
   // Idempotent: the same content is never ingested twice. Either the exact
   // bytes, or the same Drive file with an unchanged modifiedTime AND matching
   // content (Drive md5 for binary files; parsed-structure fingerprint for
@@ -99,11 +108,12 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
     await db.execute(sql`
       SELECT v.id, v.document_id, v.version_no
       FROM "cat".document_versions v JOIN "cat".documents d ON d.id = v.document_id
-      WHERE v.sha256 = ${sha256}
+      WHERE d.landscape_slug = ${input.landscapeSlug} AND d.doc_type = ${input.docType}
+        AND (v.sha256 = ${sha256}
          OR (d.drive_file_id = ${input.drive.fileId} AND v.is_current
              AND v.drive_modified_time = ${input.drive.modifiedTime}::timestamptz
              AND ((${input.drive.md5 ?? null}::text IS NOT NULL AND v.drive_md5 = ${input.drive.md5 ?? null})
-                  OR (${contentHash}::text IS NOT NULL AND v.content_hash = ${contentHash})))
+                  OR (${contentHash}::text IS NOT NULL AND v.content_hash = ${contentHash}))))
       ORDER BY (v.sha256 = ${sha256}) DESC
       LIMIT 1`),
   )[0];
@@ -128,13 +138,7 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
       ORDER BY (drive_file_id = ${input.drive.fileId}) DESC, updated_at DESC
       LIMIT 1`),
   )[0];
-  // The same Drive file must never be attached to another landscape's document.
-  const clash = rows<{ landscape_slug: string | null }>(
-    await db.execute(sql`SELECT landscape_slug FROM "cat".documents WHERE drive_file_id = ${input.drive.fileId}`),
-  )[0];
-  if (clash && clash.landscape_slug !== input.landscapeSlug) {
-    throw new Error(`Drive file ${input.drive.fileId} already belongs to ${clash.landscape_slug}, not ${input.landscapeSlug}`);
-  }
+
   const doc = existing
     ? rows<{ id: string }>(
         await db.execute(sql`
