@@ -50,7 +50,7 @@ function arcStroke(cx: number, cy: number, r: number, a0: number, a1: number) {
   return `M ${p0.x.toFixed(2)} ${p0.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
 }
 
-const SERIF = "var(--font-fraunces), Georgia, serif";
+const SERIF = "var(--font-inter), system-ui, sans-serif";
 const MONO = "var(--font-jetbrains), ui-monospace, monospace";
 
 export function PrincipleWheel({

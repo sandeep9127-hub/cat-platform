@@ -543,7 +543,7 @@ function Styles() {
         flex: 0 0 auto; width: 52px; height: 52px; border-radius: 999px;
         border: 1px solid rgba(31,38,31,.18); background: #fbf8f2; color: var(--ae-forest);
         font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center;
-        font-family: var(--font-fraunces), Georgia, serif;
+        font-family: var(--font-inter), system-ui, sans-serif;
         box-shadow: 0 1px 2px rgba(31,38,31,.06); transition-property: background-color, border-color, color, transform; transition-duration: 180ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1);
       }
       .ae-rotate:hover { border-color: var(--ae-forest); background: var(--ae-forest); color: #fbf8f2; transform: scale(1.06); }
@@ -562,8 +562,8 @@ function Styles() {
       .ae-detail-level { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; flex-wrap: wrap; }
       .ae-chip-dot { width: 9px; height: 9px; border-radius: 999px; flex: 0 0 auto; }
       .ae-detail-op { color: rgba(31,38,31,.5); font-weight: 600; letter-spacing: .3px; text-transform: none; }
-      .ae-detail-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 32px; font-weight: 600; letter-spacing: -.6px; margin: 0 0 18px; line-height: 1.05; }
-      .ae-detail-def { font-family: var(--font-fraunces), Georgia, serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
+      .ae-detail-title { font-family: var(--font-inter), system-ui, sans-serif; font-size: 32px; font-weight: 600; letter-spacing: -.6px; margin: 0 0 18px; line-height: 1.05; }
+      .ae-detail-def { font-family: var(--font-inter), system-ui, sans-serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
       .ae-detail-body { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.78); margin: 0 0 22px; }
       .ae-detail-india { border-top: 1px solid rgba(31,38,31,.12); padding-top: 18px; margin-bottom: 24px; }
       .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
@@ -608,7 +608,7 @@ function Styles() {
       /* empty state */
       .ae-detail--empty { display: flex; flex-direction: column; }
       .ae-eyebrow { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ae-forest); margin-bottom: 14px; }
-      .ae-detail-intro-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 30px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 0 0 18px; }
+      .ae-detail-intro-title { font-family: var(--font-inter), system-ui, sans-serif; font-size: 30px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 0 0 18px; }
       .ae-intro-lead { font-size: 15.5px; line-height: 1.55; color: rgba(31,38,31,.8); margin: 0 0 16px; }
       .ae-intro-hint { font-size: 14px; color: var(--ae-forest); font-weight: 500; margin: 0 0 30px; }
       .ae-intro-groups { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid rgba(31,38,31,.12); padding-top: 22px; }

@@ -19,7 +19,7 @@ needs something the marketing site does not.
 | Pill radius `50px` | Adopt. CTAs are `rounded-full`. |
 | Motion `200 / 300 / 500ms` | Adopt. Paired with `ease-out-expo`. |
 | Tone: concise, confident, implementation-focused | Adopt verbatim. |
-| Primary font **Afacad** | **Do not adopt.** The Hub is all-**Inter** (broadsheet consistency across data-dense surfaces). |
+| Primary font **Afacad** | **Do not adopt.** The Hub is all-**Inter** (broadsheet consistency across data-dense surfaces); only the header wordmark is serif. |
 | Surface base `#000000` (pure black) | **Do not adopt.** The Hub is built on warm cream / near-black ink, never pure black or pure white. |
 
 Cross-linking is intentional and reciprocal: the Hub links out to
@@ -48,13 +48,24 @@ to the parent brand teal; amber is held back as the one highlight/alert fill.
 
 ## Typography
 
-- **All Inter.** `--font-inter` is loaded locally; `--font-fraunces` and
-  `--font-jetbrains` are remapped to Inter. No serif revival.
+- **One typeface: Inter**, for body, UI, headings and figures. Served locally
+  as subset WOFF2 (`public/fonts/inter/*.woff2`, ~220 KB each for roman and
+  italic): Latin, Latin Extended (transliterated Indian names), punctuation,
+  currency (₹ €), arrows and maths. `tnum` is kept for `tabular-nums`.
+- **The one exception is the header wordmark** ("Transformation *Hub*"), set
+  in Fraunces via the `font-wordmark` token. That file is pinned to opsz 18,
+  weight 400-500 and basic Latin (~26 KB) and is not preloaded. Do not use
+  Fraunces anywhere else.
+- `font-serif` and `font-mono` are legacy tokens. Both resolve to Inter
+  (`--font-fraunces` and `--font-jetbrains` are remapped in `app/layout.tsx`),
+  so older markup still renders in the one typeface. Prefer `font-sans` in new
+  code. Pull-quotes stay Inter too (the parent brand's Spectral is not used on
+  the Hub).
 - Headings: `font-semibold`, tight tracking (`-0.03em` to `-0.04em`), short
   measures (`max-w-[15ch]` on the hero).
 - Body capped at 60–70ch. Hierarchy via scale + weight (≥1.25 ratio).
-- Mono (`--font-jetbrains` → Inter) only for eyebrows / meta / counts, uppercase
-  with `0.14em`–`0.18em` tracking.
+- Mono-style labels (eyebrows / meta / counts) are uppercase Inter with
+  `0.14em`–`0.18em` tracking.
 
 ## Layout & motion
 

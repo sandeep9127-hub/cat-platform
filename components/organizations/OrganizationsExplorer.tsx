@@ -794,7 +794,7 @@ function Styles() {
       .og-list > .og-card:first-child { border-top:1px solid var(--line); }
       .og-card:hover { background:rgba(225,237,232,.45); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-      .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.25; min-width:0;
+      .og-card-name { font-family:var(--font-inter), system-ui, sans-serif; font-size:16.5px; font-weight:600; line-height:1.25; min-width:0;
         display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
         color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
@@ -890,7 +890,7 @@ function Styles() {
       .og-modal { position:fixed; inset:0; background:rgba(26,38,37,.5); display:flex; align-items:flex-start; justify-content:center; z-index:1000; padding:40px 16px; overflow-y:auto; }
       .og-sheet { background:var(--paper); border-radius:16px; max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
       .og-close { position:absolute; top:14px; right:16px; width:32px; height:32px; border-radius:999px; border:1px solid var(--line); background:none; cursor:pointer; font-size:20px; color:var(--muted); }
-      .og-sheet-title { font-family:var(--font-fraunces),Georgia,serif; font-size:24px; font-weight:600; margin:0 0 14px; }
+      .og-sheet-title { font-family:var(--font-inter), system-ui, sans-serif; font-size:24px; font-weight:600; margin:0 0 14px; }
       .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius:10px; padding:4px; margin-bottom:16px; }
       .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius:7px; background:none; cursor:pointer; color:var(--muted); }
       .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
@@ -916,7 +916,7 @@ function Styles() {
       .og-submit:disabled { opacity:.5; }
       .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }
       .og-thanks { text-align:center; padding:20px 0; }
-      .og-thanks h2 { font-family:var(--font-fraunces),Georgia,serif; font-size:26px; margin-bottom:8px; }
+      .og-thanks h2 { font-family:var(--font-inter), system-ui, sans-serif; font-size:26px; margin-bottom:8px; }
       .og-thanks p { color:var(--muted); font-size:14px; margin-bottom:18px; }
 
       @media (max-width: 900px) {

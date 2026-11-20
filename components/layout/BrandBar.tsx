@@ -92,7 +92,7 @@ export function BrandBar() {
               collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
             }`}
           >
-            <span className="font-serif font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
+            <span className="font-wordmark font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
           </span>

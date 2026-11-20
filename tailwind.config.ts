@@ -42,7 +42,10 @@ const config: Config = {
         "red-alert": "var(--red-alert)",
       },
       fontFamily: {
-        serif: ["var(--font-fraunces)", "Georgia", "serif"],
+        // Legacy token: resolves to Inter (--font-fraunces is remapped in
+        // app/layout.tsx). Only the header wordmark uses a serif.
+        serif: ["var(--font-fraunces)", "system-ui", "sans-serif"],
+        wordmark: ["var(--font-wordmark)", "Georgia", "serif"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
       },
