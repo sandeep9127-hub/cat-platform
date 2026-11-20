@@ -13,14 +13,14 @@ export const dynamic = "force-static";
 export const revalidate = 3600;
 
 const THEME_COLOURS: Record<string, string> = {
-  "soil-and-land": "#8C7A5C",
-  water: "#2C7BD0",
+  "soil-and-land": palette.amberDeep,
+  water: palette.periwinkleDeep,
   "seeds-and-biodiversity": palette.leaf,
   "farmer-livelihoods": palette.ochre,
-  nutrition: "#C24A2E",
+  nutrition: palette.redAlert,
   "climate-resilience": palette.teal,
-  "markets-and-value-chains": "#2EA37A",
-  "policy-and-finance": "#334B4A",
+  "markets-and-value-chains": palette.tealSoft,
+  "policy-and-finance": palette.deepTeal,
   "knowledge-and-capacity": palette.periwinkleText,
   "women-and-collectives": palette.periwinkle,
 };
@@ -99,7 +99,7 @@ export default async function AtlasRecordPage({ params }: Props) {
     ? Number(record.publishedAt.slice(0, 4))
     : null;
   const primaryThemeColour =
-    THEME_COLOURS[record.themes[0] ?? ""] ?? "#334B4A";
+    THEME_COLOURS[record.themes[0] ?? ""] ?? palette.deepTeal;
   const provenanceLabel = record.provenance
     ? PROVENANCE_LABEL[record.provenance] ?? record.provenance
     : "Listed programme";
@@ -239,7 +239,7 @@ export default async function AtlasRecordPage({ params }: Props) {
                   key={slug}
                   slug={slug}
                   name={prettyTheme(slug)}
-                  colourHex={THEME_COLOURS[slug] ?? "#334B4A"}
+                  colourHex={THEME_COLOURS[slug] ?? palette.deepTeal}
                   asLink={false}
                 />
               ))}

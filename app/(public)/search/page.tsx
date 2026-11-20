@@ -5,9 +5,9 @@ import { searchEntries, type SearchHit } from "@/lib/db/search";
 import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
 import { Reveal } from "@/components/ui/Reveal";
 
+// Results depend on the query string, so render per request (a revalidate
+// window alongside force-dynamic was contradictory and ignored).
 export const dynamic = "force-dynamic";
-
-export const revalidate = 30;
 export const metadata = {
   title: "Search",
   description: "Search the library across programmes, themes, states, and years.",
