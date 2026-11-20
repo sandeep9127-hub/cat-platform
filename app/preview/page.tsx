@@ -2,7 +2,7 @@ import { safeFrom, LAUNCH_DATE } from "@/lib/preview";
 import { LaunchCountdown } from "@/components/preview/LaunchCountdown";
 
 export const metadata = {
-  title: "Private preview · Transformation Hub",
+  title: "Private preview",
   robots: { index: false, follow: false },
 };
 

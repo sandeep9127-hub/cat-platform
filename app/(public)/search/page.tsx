@@ -86,9 +86,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   return (
     <>
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8" delay={0}>
-        <span className="eyebrow">Search the library</span>
+        <span className="eyebrow">Full-text search</span>
         <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
-          Ask the <span className="text-teal">library</span>.
+          Search the <span className="text-teal">library</span>.
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[44ch] mt-5">
           Full-text search across every published entry. Filters narrow by theme, scale, and

@@ -159,7 +159,7 @@ export default async function MapPage({
     total: combinedTotal,
     title: f.title,
     tagline: f.one_liner ?? f.summary ?? "",
-    stateName: STATE_NAMES[f.state_code ?? ""] ?? f.district ?? f.state_code ?? "—",
+    stateName: STATE_NAMES[f.state_code ?? ""] ?? f.district ?? f.state_code ?? "",
     startYear: f.start_year ?? new Date(f.updated_at).getFullYear(),
     endYear: null,
     scaleBand: f.scale_band ?? "multi_district",

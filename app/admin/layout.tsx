@@ -8,7 +8,7 @@ import { signOut } from "@/auth";
  * the same on the edge). The login page lives at /signin, outside this layout,
  * so there's no redirect loop.
  */
-export const metadata = { title: "Admin · Transformation Hub" };
+export const metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

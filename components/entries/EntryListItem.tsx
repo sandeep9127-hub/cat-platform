@@ -31,6 +31,15 @@ export type EntryListItemData = {
 };
 
 export function EntryListItem({ data }: { data: EntryListItemData }) {
+  // Where it runs: the state when we have one; "All India" for national
+  // programmes without a single state; otherwise the segment is left out
+  // (never a bare dash).
+  const hasState = !!data.stateName && data.stateName !== "—";
+  const place = hasState
+    ? { label: "State", value: data.stateName }
+    : data.scaleBand === "national" || data.scaleBand === "multi_state"
+      ? { label: "Scope", value: data.scaleBand === "national" ? "All India" : "Multi-state" }
+      : null;
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
   const wrapperClass =
     "block group border-b border-line transition-colors hover:bg-teal-wash/45 focus-visible:bg-teal-wash/45 focus-visible:outline-none";
@@ -46,12 +55,14 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
-            <span>State</span>
-            <span className="text-line">/</span>
-            <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
-              {data.stateName}
-            </span>
-            <span className="text-line">·</span>
+            {place && (
+              <>
+                <span>{place.label}</span>
+                <span className="text-line">/</span>
+                <span className="text-ink-soft normal-case font-normal tracking-mono-mid">{place.value}</span>
+                <span className="text-line">·</span>
+              </>
+            )}
             <span className="font-normal tracking-mono-mid">{yearRange}</span>
           </div>
           <h3 className="font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.14] tracking-[-0.025em] text-ink mt-2.5 group-hover:text-teal transition-colors">

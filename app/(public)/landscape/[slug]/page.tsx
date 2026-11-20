@@ -86,21 +86,25 @@ export default async function LandscapeDetailPage({ params }: Props) {
       {/* One currency control for the whole page — sits top-right, drives the
           ledger, the plan and every figure below it (INR / USD / EUR). */}
       <CurrencyProvider>
+      {/* On phones the hero photo leads and the currency control follows it;
+          from md up the control sits top-right above the hero. */}
+      <div className="flex flex-col">
       {money && money.totalCostInr > 0 && (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex justify-end mb-4">
+        <div className="order-2 md:order-1 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 flex justify-end mb-6 md:mb-4">
           <CurrencyControl />
         </div>
       )}
       {/* Hero visual anchor: photograph when available, procedural signature otherwise */}
       {p.photos && p.photos.length > 0 ? (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-6">
+        <div className="order-1 md:order-2 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 mb-6">
           <LandscapeAnchor photo={p.photos[0]} />
         </div>
       ) : (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center">
+        <div className="order-1 md:order-2 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center">
           <LandscapeSignature slug={slug} width={480} />
         </div>
       )}
+      </div>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
         <div>
           <div className="flex items-center gap-3 mb-5 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
