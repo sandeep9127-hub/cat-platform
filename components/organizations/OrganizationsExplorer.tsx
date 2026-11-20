@@ -497,6 +497,45 @@ function esc(s: string) {
 
 // Render a modal at the document root so it escapes any ancestor stacking
 // context (the sticky header was otherwise painting over the sheet's top).
+/**
+ * Dialog behaviour for the Organisations sheets: Escape closes, Tab stays
+ * inside the sheet, focus moves in on open and returns to the opener on close.
+ */
+function useDialog(onClose: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    const sheet = ref.current;
+    const focusables = () =>
+      sheet
+        ? Array.from(
+            sheet.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+    (focusables()[1] ?? focusables()[0] ?? sheet)?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === "Tab") {
+        const els = focusables();
+        if (!els.length) return;
+        const first = els[0], last = els[els.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
+  }, [onClose]);
+  return ref;
+}
+
 function portal(node: ReactNode) {
   if (typeof document === "undefined") return null;
   return createPortal(node, document.body);
@@ -517,13 +556,22 @@ function OrgDetail({
     byState.set(st, arr);
   }
   const states = Array.from(byState.keys()).sort();
+  const sheetRef = useDialog(onClose);
 
   return portal(
     <div className="og-modal" onClick={onClose}>
-      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className="og-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="og-detail-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
         <span className="og-type" style={{ display: "inline-block", marginBottom: 8 }}>{org.orgType}</span>
-        <h2 className="og-sheet-title">{org.name}</h2>
+        <h2 id="og-detail-title" className="og-sheet-title">{org.name}</h2>
 
         <div className="og-detail-contact">
           <div className="og-dc-label">Contact</div>
@@ -603,6 +651,9 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  // Which field the current error belongs to, so it can be announced on it.
+  const [errField, setErrField] = useState<"name" | "email" | null>(null);
+  const sheetRef = useDialog(onClose);
 
   const up = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
   const addLoc = () =>
@@ -611,9 +662,13 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
     setLocations((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
 
   async function submit() {
-    if (!f.name.trim()) { setErr("Organisation name is required."); return; }
-    if (!f.contactEmail.trim()) { setErr("Your email is required so we can verify the entry."); return; }
-    setBusy(true); setErr("");
+    if (!f.name.trim()) { setErr("Enter the organisation's name."); setErrField("name"); return; }
+    if (!/^\S+@\S+\.\S+$/.test(f.contactEmail.trim())) {
+      setErr("Enter your email, like name@organisation.org, so we can verify the entry.");
+      setErrField("email");
+      return;
+    }
+    setBusy(true); setErr(""); setErrField(null);
     try {
       const cleanLocations = locations
         .map((l) => ({
@@ -651,20 +706,28 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
 
   return portal(
     <div className="og-modal" onClick={onClose}>
-      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className="og-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="og-form-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
         {done ? (
           <div className="og-thanks">
-            <h2>Thank you</h2>
+            <h2 id="og-form-title">Thank you</h2>
             <p>Your submission has been received and will be reviewed before it appears in the directory.</p>
             <button className="og-submit" onClick={onClose}>Close</button>
           </div>
         ) : (
           <>
-            <h2 className="og-sheet-title">Add or update an organisation</h2>
-            <div className="og-toggle">
-              <button className={mode === "new" ? "on" : ""} onClick={() => setMode("new")}>New organisation</button>
-              <button className={mode === "edit" ? "on" : ""} onClick={() => setMode("edit")}>Suggest an edit</button>
+            <h2 id="og-form-title" className="og-sheet-title">Add or update an organisation</h2>
+            <div className="og-toggle" role="group" aria-label="What would you like to do?">
+              <button type="button" aria-pressed={mode === "new"} className={mode === "new" ? "on" : ""} onClick={() => setMode("new")}>New organisation</button>
+              <button type="button" aria-pressed={mode === "edit"} className={mode === "edit" ? "on" : ""} onClick={() => setMode("edit")}>Suggest an edit</button>
             </div>
 
             {mode === "edit" && (
@@ -681,8 +744,15 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               </label>
             )}
 
-            <label className="og-field"><span>Organisation name *</span>
-              <input value={f.name} onChange={(e) => up("name", e.target.value)} /></label>
+            <label className="og-field"><span>Organisation name <em className="og-req">(required)</em></span>
+              <input
+                value={f.name}
+                onChange={(e) => { up("name", e.target.value); if (errField === "name") { setErr(""); setErrField(null); } }}
+                autoComplete="organization"
+                aria-required="true"
+                aria-invalid={errField === "name" || undefined}
+                aria-describedby={errField === "name" ? "og-form-err" : undefined}
+              /></label>
             <div className="og-row">
               <label className="og-field"><span>Type</span>
                 <select value={f.orgType} onChange={(e) => up("orgType", e.target.value)}>
@@ -765,13 +835,22 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               <div className="og-pii-label">Your details (not published, used only to verify the entry)</div>
               <div className="og-row">
                 <label className="og-field"><span>Your name</span>
-                  <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} /></label>
-                <label className="og-field"><span>Your email *</span>
-                  <input value={f.contactEmail} onChange={(e) => up("contactEmail", e.target.value)} /></label>
+                  <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} autoComplete="name" /></label>
+                <label className="og-field"><span>Your email <em className="og-req">(required)</em></span>
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={f.contactEmail}
+                    onChange={(e) => { up("contactEmail", e.target.value); if (errField === "email") { setErr(""); setErrField(null); } }}
+                    aria-required="true"
+                    aria-invalid={errField === "email" || undefined}
+                    aria-describedby={errField === "email" ? "og-form-err" : undefined}
+                  /></label>
               </div>
             </div>
 
-            {err && <p className="og-err">{err}</p>}
+            <p id="og-form-err" className="og-err" role="alert" aria-live="assertive">{err}</p>
             <button className="og-submit" onClick={submit} disabled={busy}>
               {busy ? "Submitting…" : mode === "new" ? "Submit new organisation" : "Submit edit"}
             </button>
@@ -942,10 +1021,12 @@ function Styles() {
       .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius: var(--radius-card); background:none; cursor:pointer; color:var(--muted); }
       .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
       .og-field { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
-      .og-field > span { font-size:11.5px; color:var(--muted); }
+      .og-field > span { font-size:13px; color:var(--ink-soft); }
+      .og-req { font-style:normal; color:var(--muted); }
+      .og-field [aria-invalid="true"] { border-color:var(--red-alert); box-shadow:0 0 0 2px color-mix(in srgb, var(--red-alert) 18%, transparent); }
       /* Soft, calm form inputs (Skiff register) — distinct from the sharp data inputs. */
       .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
-      .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:#fff; }
+      .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:var(--paper); box-shadow:0 0 0 2px color-mix(in srgb, var(--teal) 25%, transparent); }
       /* Inline affix input (https:// prefix). */
       .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
       .og-affix:focus-within { border-color:var(--td); background:#fff; }
@@ -954,8 +1035,9 @@ function Styles() {
       .og-affix-in:focus { outline:none; }
       .og-row { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
       .og-pii { border-top:1px solid var(--line); margin-top:10px; padding-top:16px; }
-      .og-pii-label { font-size:11.5px; color:#b5793a; margin-bottom:8px; }
-      .og-err { color:#b3261e; font-size:13px; margin:4px 0; }
+      .og-pii-label { font-size:13px; color:var(--amber-deep); margin-bottom:8px; }
+      .og-err { color:var(--red-alert); font-size:13px; margin:4px 0; min-height:0; }
+      .og-err:empty { margin:0; }
       .og-submit { width:100%; margin-top:12px; font-family:inherit; font-size:14px; font-weight:500; letter-spacing:-.01em;
         padding:13px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:background .15s, transform .15s; }
       .og-submit:hover:not(:disabled) { background:var(--teal); }
@@ -983,6 +1065,8 @@ function Styles() {
         .og-mapwrap { height:420px; min-height:0; margin-top:12px; }
         .og-map { height:420px; min-height:0; }
         .og-row { grid-template-columns:1fr; }
+        /* 16px stops iOS Safari zooming the page when a field gets focus. */
+        .og-field input,.og-field select,.og-field textarea,.og-affix-pre,.og-affix-in,.og-loc-in { font-size:16px; }
       }
     `}</style>
   );
