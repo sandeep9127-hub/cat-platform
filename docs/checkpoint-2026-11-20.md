@@ -31,7 +31,12 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
   - A plain-text digest goes to editors, but only when `SYNC_EMAIL=on`.
   - The GitHub Actions schedule runs at 02:30 IST and only from `main`, in a protected "production" environment.
 
-## Next
+## Next (tomorrow morning: "continue working")
+0. **Solutions Atlas map (agreed 20 Nov):** dot density plus zoomable clusters, no three.js.
+   - The drawing was briefed to the UI session (branch `feat/ui-refresh`; it covers only `/map` and the home-page Atlas, not the Organisations map).
+   - My side is the data. Download datameet `Districts/Census_2011/2011_Dist` (.shp ~10.3 MB + .dbf ~55 KB, public domain) **once Sandeep says yes**.
+   - Then compute district centroids, store them in `cat.geographies` (CAT DB), and add `geo_precision` ('district' | 'state' | 'national'), lat/lon and a points list to `solution_factsheets`.
+   - National and multi-state programmes go off the map into a "Nationwide (N)" strip.
 1. Run `npx tsx scripts/drive-sync.ts --dry-run`. It should report nothing changed.
 2. Ask v2: Claude answers with page/section citations over `hybridSearch`, conversations, stop/new chat.
 3. Admin: triage screen (approve intervention changes, discovery candidates, org submissions), full investment table with private share links, quality dashboard, daily model health check.
