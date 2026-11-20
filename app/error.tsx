@@ -18,26 +18,32 @@ export default function GlobalError({
   return (
     <main className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 pb-24 min-h-[60vh]">
       <div className="max-w-[60ch]">
-        <span className="eyebrow text-red-alert">Something broke</span>
+        <span className="eyebrow text-red-alert">Something went wrong</span>
         <h1 className="font-sans font-semibold text-[clamp(36px,4.6vw,56px)] leading-[1.0] tracking-[-0.04em] text-ink mt-5">
-          We couldn&apos;t render this page.
+          This page didn&apos;t load.
         </h1>
         <p className="text-[17px] text-ink-soft leading-[1.55] mt-5">
-          The error has been logged. Try again, or head back to the landing. If this keeps
-          happening on the same page, please tell the editors.
+          We&apos;ve logged the problem. Try again, or go back to the home page. If it keeps
+          happening on this page, let the editors know through the contact page.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3.5">
+        <div className="mt-8 flex flex-wrap gap-3">
           <button
             onClick={reset}
-            className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
+            className="inline-flex items-center min-h-11 px-5 rounded-full bg-deep-teal text-paper text-[14px] font-medium hover:bg-teal active:scale-[0.98] transition-[transform,background-color] duration-150"
           >
-            ↻ Try again
+            Try again
           </button>
           <Link
             href="/"
-            className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
+            className="inline-flex items-center min-h-11 px-5 rounded-full border border-line text-ink text-[14px] hover:border-teal hover:text-teal transition-colors"
           >
-            ← Back to the landing
+            Home
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex items-center min-h-11 px-5 rounded-full border border-line text-ink text-[14px] hover:border-teal hover:text-teal transition-colors"
+          >
+            Contact the editors
           </Link>
         </div>
         {error.digest && (
