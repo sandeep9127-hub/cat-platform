@@ -162,7 +162,7 @@ export function BrandBar() {
               everything else lives in the drawer. Tablet/desktop unchanged. */}
           <Link
             href="/agent"
-            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3 py-1.5 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3.5 min-h-9 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
           >
             <MessageCircle size={11} strokeWidth={2} aria-hidden />
             Ask
@@ -173,7 +173,7 @@ export function BrandBar() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="lg:hidden p-2 -mr-2 text-ink hover:text-teal transition-colors"
+            className="lg:hidden inline-flex items-center justify-center w-11 h-11 -mr-2.5 text-ink hover:text-teal transition-colors"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               {open ? (

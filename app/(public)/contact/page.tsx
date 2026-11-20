@@ -119,10 +119,12 @@ function Channel({
         href={href}
         {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
         className={
-          "group mt-auto pt-6 inline-flex items-center gap-1.5 self-start font-mono text-[11px] uppercase tracking-[0.14em] pb-1 border-b-2 transition-colors " +
+          // Reading size and normal case so an email address is easy to read
+          // and copy; 44px tall for touch.
+          "group mt-auto pt-4 inline-flex items-center gap-1.5 self-start min-h-11 text-[15px] font-medium underline decoration-2 underline-offset-[6px] break-all transition-colors " +
           (accent === "amber"
-            ? "text-deep-teal border-amber hover:border-amber-deep"
-            : "text-teal border-line-soft hover:border-teal")
+            ? "text-deep-teal decoration-amber hover:decoration-amber-deep"
+            : "text-teal decoration-line hover:decoration-teal")
         }
       >
         {cta}

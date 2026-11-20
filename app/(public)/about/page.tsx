@@ -198,13 +198,13 @@ export default function AboutPage() {
           <div className="mt-6 flex gap-3.5 flex-wrap">
             <Link
               href="/landscapes"
-              className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
+              className="inline-flex items-center min-h-11 text-[15px] font-medium text-deep-teal underline decoration-2 decoration-amber underline-offset-[6px] hover:decoration-amber-deep transition-colors"
             >
               The CAT Landscapes →
             </Link>
             <a
               href="#editorial-process"
-              className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
+              className="inline-flex items-center min-h-11 text-[15px] font-medium text-teal underline decoration-2 decoration-line underline-offset-[6px] hover:decoration-teal transition-colors"
             >
               Editorial process →
             </a>
