@@ -9,6 +9,9 @@ ALTER TABLE "cat".chunks ALTER COLUMN is_current SET DEFAULT false;
 
 -- Non-document chunks never point at a document or version, so the
 -- version guard below can't be sidestepped by relabelling source_kind.
+-- Clean up first so adding the constraint can never fail and abort the rest.
+UPDATE "cat".chunks SET document_id = NULL, version_id = NULL, is_current = false
+WHERE source_kind <> 'document' AND (document_id IS NOT NULL OR version_id IS NOT NULL);
 DO $$ BEGIN
   ALTER TABLE "cat".chunks ADD CONSTRAINT chunks_non_document_unlinked
     CHECK (source_kind = 'document' OR (document_id IS NULL AND version_id IS NULL));
@@ -59,20 +62,18 @@ CREATE TRIGGER versions_unpublish_chunks
 
 -- ─── 2. Conversations store only a hash of the session token ─────────
 
--- Only renames an old raw-token column. If that column already holds rows,
--- it is left untouched with a warning (tokens need an explicit migration);
--- everything above has still been applied.
+-- Renames an old raw-token column after hashing any existing values in
+-- place, so no raw token can survive this migration (fail closed).
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns
              WHERE table_schema = 'cat' AND table_name = 'conversations' AND column_name = 'session_token') THEN
-    IF EXISTS (SELECT 1 FROM "cat".conversations) THEN
-      RAISE WARNING 'cat.conversations has rows with raw session tokens: migrate them to sha256 hashes explicitly';
-    ELSE
-      DROP INDEX IF EXISTS "cat".conversations_session_idx;
-      ALTER TABLE "cat".conversations RENAME COLUMN session_token TO session_token_hash;
-      ALTER TABLE "cat".conversations ADD CONSTRAINT conversations_token_hash_format
-        CHECK (session_token_hash ~ '^[0-9a-f]{64}$');
-    END IF;
+    UPDATE "cat".conversations
+      SET session_token = encode(sha256(convert_to(session_token, 'UTF8')), 'hex')
+      WHERE session_token !~ '^[0-9a-f]{64}$';
+    DROP INDEX IF EXISTS "cat".conversations_session_idx;
+    ALTER TABLE "cat".conversations RENAME COLUMN session_token TO session_token_hash;
+    ALTER TABLE "cat".conversations ADD CONSTRAINT conversations_token_hash_format
+      CHECK (session_token_hash ~ '^[0-9a-f]{64}$');
   END IF;
 END $$;
 
