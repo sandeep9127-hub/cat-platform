@@ -73,8 +73,7 @@ export function Supporters() {
           {LOGOS.map((logo, i) => (
             <li
               key={logo.file}
-              className="group flex items-center justify-center reveal-stagger"
-              style={{ animationDelay: `${i * 35}ms` }}
+              className="group flex items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

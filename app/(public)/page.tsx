@@ -112,29 +112,27 @@ export default async function LandingPage() {
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             {hasLastUpdate && (
-              <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+              <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted">
                 <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
                 Updated {fmtDateUTC(lastUpdate)}
               </div>
             )}
 
             <h1
-              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
-              style={{ animationDelay: "100ms" }}
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)]"
             >
               What&apos;s actually working in India&apos;s{" "}
               <span className="text-teal">food systems</span>
             </h1>
 
             <p
-              className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
-              style={{ animationDelay: "240ms" }}
+              className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em]"
             >
               A living atlas of pioneer programmes from across the country, each compiled
               and verified from public sources before it goes up.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 href="/map"
                 className="group inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
@@ -158,7 +156,7 @@ export default async function LandingPage() {
 
           {/* Right — the live Solutions Atlas (pins animate in on load), with
               its stat ledger docked underneath so map + numbers read as one. */}
-          <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "200ms" }}>
+          <div className="order-1 lg:order-2">
             <IndiaMap
               entries={mapEntries}
               totalProgrammes={combinedTotal}

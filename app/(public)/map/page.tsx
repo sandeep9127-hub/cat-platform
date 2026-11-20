@@ -181,7 +181,7 @@ export default async function MapPage({
   return (
     <>
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
-        <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+        <div>
           <span className="eyebrow">The open library</span>
           <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4">
             Solutions <span className="text-teal">Atlas</span>
@@ -200,7 +200,7 @@ export default async function MapPage({
             and programmes.
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">In the Solutions Atlas</span>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
             <div>

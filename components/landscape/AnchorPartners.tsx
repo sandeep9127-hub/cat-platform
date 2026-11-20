@@ -51,8 +51,7 @@ export function AnchorPartners() {
           {items.map(({ slug, a, landscape }, i) => (
             <li
               key={slug}
-              className="group flex items-center justify-center reveal-stagger"
-              style={{ animationDelay: `${i * 35}ms` }}
+              className="group flex items-center justify-center"
             >
               <Link
                 href={`/landscape/${slug}`}

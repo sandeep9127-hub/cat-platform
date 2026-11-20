@@ -69,7 +69,7 @@ export default async function LandscapesPage() {
   return (
     <>
       <Reveal as="section" delay={0} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
-        <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+        <div>
           <span className="eyebrow">Current Focus · Lighthouses of Transformation</span>
           <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
             CAT <span className="text-teal">Landscapes</span>
@@ -90,7 +90,7 @@ export default async function LandscapesPage() {
             .
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">Investment plans</span>
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
             Each landscape has a Landscape Investment Plan — a place-based costing and
@@ -139,7 +139,7 @@ export default async function LandscapesPage() {
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
             return (
-              <li key={g.id} className="reveal-stagger" style={{ animationDelay: `${i * 40}ms` }}>
+              <li key={g.id}>
                 <Link href={`/landscape/${g.slug}`} className="group block">
                   <div
                     className="relative overflow-hidden rounded-[10px] border border-line bg-paper aspect-[800/1131]"
@@ -176,7 +176,7 @@ export default async function LandscapesPage() {
             );
           })}
 
-          <li className="reveal-stagger" style={{ animationDelay: `${rows.length * 40}ms` }}>
+          <li>
             <Link href="/map" className="group block">
               <div
                 className="relative overflow-hidden rounded-[10px] aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"

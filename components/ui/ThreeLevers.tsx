@@ -58,9 +58,8 @@ export function ThreeLevers() {
         return (
           <article
             key={l.name}
-            className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-6 sm:p-7 reveal-stagger transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
+            className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-6 sm:p-7 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
             style={{
-              animationDelay: `${i * 80}ms`,
               boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 12px 28px -16px ${l.glow}`,
               backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${l.soft} 100%)`,
             }}

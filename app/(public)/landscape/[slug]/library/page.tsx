@@ -103,7 +103,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                     : { bar: "#929CC5", soft: "rgba(146,156,197,0.10)", glow: "rgba(146,156,197,0.20)", chipBg: "rgba(146,156,197,0.14)", chipFg: "#5C6796" };
                 const ext = guessExtension(d.type);
                 return (
-                  <li key={d.id} className="reveal-stagger" style={{ animationDelay: `${i * 60}ms` }}>
+                  <li key={d.id}>
                     <article
                       className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
                       style={{

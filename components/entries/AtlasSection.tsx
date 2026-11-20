@@ -134,8 +134,6 @@ export function AtlasSection({
             {visibleEntries.map((data, i) => (
               <div
                 key={data.id}
-                className="reveal-stagger"
-                style={{ animationDelay: `${i * 60}ms` }}
               >
                 <EntryListItem data={data} />
               </div>

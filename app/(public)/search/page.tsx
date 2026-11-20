@@ -85,7 +85,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   return (
     <>
-      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 reveal-stagger" delay={0}>
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8" delay={0}>
         <span className="eyebrow">Search the library</span>
         <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
           Ask the <span className="text-teal">library</span>.
@@ -210,8 +210,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 function SearchResult({ hit, index }: { hit: SearchHit; index: number }) {
   return (
     <li
-      className="reveal-stagger border-b border-line-soft"
-      style={{ animationDelay: `${index * 40}ms` }}
+      className="border-b border-line-soft"
     >
       <Link
         href={`/entry/${hit.slug}`}

@@ -5,7 +5,7 @@ export const metadata = { title: "Not found" };
 export default function NotFound() {
   return (
     <main className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 sm:pt-24 lg:pt-32 pb-32 min-h-[60vh]">
-      <div className="reveal-stagger max-w-[60ch]">
+      <div className="max-w-[60ch]">
         <span className="eyebrow">404 · Not in the library</span>
         <h1 className="font-sans font-semibold text-[clamp(40px,5vw,72px)] leading-[1.0] tracking-[-0.04em] text-ink mt-5">
           We don&apos;t have this <span className="text-teal">page</span> in the library.

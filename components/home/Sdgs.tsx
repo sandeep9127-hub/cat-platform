@@ -40,8 +40,7 @@ export function Sdgs() {
         {SDGS.map((g, i) => (
           <li
             key={g.number}
-            className="group reveal-stagger"
-            style={{ animationDelay: `${i * 40}ms` }}
+            className="group"
           >
             <span
               className="relative block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow,border-color] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)] group-hover:border-[color:var(--c)]"

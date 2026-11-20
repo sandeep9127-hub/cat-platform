@@ -14,10 +14,10 @@ export default function ContactPage() {
       {/* Header — broadsheet, all-Inter */}
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10" delay={0}>
         <span className="eyebrow">Contact</span>
-        <h1 className="font-sans font-semibold text-[clamp(38px,5vw,72px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[16ch] reveal-stagger">
+        <h1 className="font-sans font-semibold text-[clamp(38px,5vw,72px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[16ch]">
           Write to us, <span className="text-teal">say what you need</span>.
         </h1>
-        <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-6 max-w-[56ch] reveal-stagger" style={{ animationDelay: "120ms" }}>
+        <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-6 max-w-[56ch]">
           Plain emails, no contact forms, no chatbots. We read everything that lands in
           this inbox.
         </p>

@@ -423,6 +423,9 @@ body::before {
 .reveal-in {
   animation: fade-in-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+/* Legacy load-time fade. Public pages no longer use it (it hid heroes for up
+   to a second before and after JS loaded); kept only for the Ask chat, which
+   is owned by the RAG rebuild. Do not add new uses: use <Reveal> instead. */
 .reveal-stagger {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

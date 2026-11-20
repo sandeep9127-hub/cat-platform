@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode, type ElementType } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type ElementType } from "react";
+
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type StaggerRevealProps = {
   children: ReactNode;
@@ -17,39 +19,37 @@ type StaggerRevealProps = {
  * (no wrapper between grid and cells).
  *
  * Stagger delays live in globals.css under `.sg-in > *:nth-child(n)`.
- * Respects prefers-reduced-motion: children render fully visible, no motion.
+ * Server HTML is always visible; a grid already on screen at mount never
+ * animates. Respects prefers-reduced-motion: children render fully visible.
  */
 export function StaggerReveal({ children, as, className }: StaggerRevealProps) {
   const Tag = (as ?? "div") as ElementType;
   const ref = useRef<HTMLElement | null>(null);
-  const [shown, setShown] = useState(false);
-  const [reduced, setReduced] = useState(false);
+  // "static": rendered visible (server, reduced motion, or already on screen).
+  const [phase, setPhase] = useState<"static" | "hidden" | "shown">("static");
 
-  useEffect(() => {
-    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
-
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     const el = ref.current;
-    if (!el || shown || reduced) return;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.9) return; // already in view
+    setPhase("hidden");
     const io = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-            break;
-          }
+        if (entries.some((e) => e.isIntersecting)) {
+          setPhase("shown");
+          io.disconnect();
         }
       },
       { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [shown, reduced]);
+  }, []);
 
+  const cls = phase === "hidden" ? "sg" : phase === "shown" ? "sg sg-in" : "";
   return (
-    <Tag ref={ref} className={`${reduced ? "" : "sg"} ${shown ? "sg-in" : ""} ${className ?? ""}`}>
+    <Tag ref={ref} className={`${cls} ${className ?? ""}`}>
       {children}
     </Tag>
   );
