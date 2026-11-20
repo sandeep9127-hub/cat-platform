@@ -170,8 +170,33 @@ export async function verifyUpload(key: string, expectedType: string, expectedBy
     size === expectedBytes &&
     size > 0 &&
     size <= MAX_UPLOAD_BYTES;
-  if (!ok) {
+  if (!ok || !(await contentMatches(key, type))) {
     await deleteObject(key);
     throw new Error(`Upload rejected: type=${type} size=${size}`);
+  }
+}
+
+/** The declared type is the client's claim; check the file's first bytes. */
+async function contentMatches(key: string, type: string): Promise<boolean> {
+  const res = await s3().send(new GetObjectCommand({ Bucket: bucket(), Key: key, Range: "bytes=0-4095" }));
+  if (!res.Body) return false;
+  const head = await res.Body.transformToByteArray();
+  const starts = (sig: number[]) => sig.every((b, i) => head[i] === b);
+  switch (type) {
+    case "application/pdf":
+      return starts([0x25, 0x50, 0x44, 0x46, 0x2d]); // %PDF-
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      return starts([0x50, 0x4b, 0x03, 0x04]); // zip (OOXML); parsers validate the rest
+    case "text/csv":
+      if (head.includes(0)) return false;
+      try {
+        new TextDecoder("utf-8", { fatal: true }).decode(head.subarray(0, Math.max(0, head.length - 4)));
+        return true;
+      } catch {
+        return false;
+      }
+    default:
+      return false;
   }
 }
