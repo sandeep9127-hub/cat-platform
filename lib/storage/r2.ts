@@ -96,6 +96,7 @@ export const UPLOAD_TYPES = {
   "text/csv": "csv",
 } as const;
 export type UploadType = keyof typeof UPLOAD_TYPES;
+const ALLOWED_UPLOAD_TYPES: ReadonlySet<string> = new Set(Object.keys(UPLOAD_TYPES));
 export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 /** Whitelist a download filename; never pass user text into a header verbatim. */
@@ -131,8 +132,9 @@ export async function signedGetUrl(
 
 /**
  * Short-lived upload link so editors' browsers upload straight to R2.
- * Bound to an allowed document type and the exact declared size (both are
- * part of the signature, so the browser can't send anything else).
+ * Restricted to an allowed document type and a declared size, which are
+ * signed headers. That is not treated as the enforcement point: every upload
+ * must pass verifyUpload() before the app uses it.
  */
 export async function signedPutUrl(
   key: string,
@@ -141,7 +143,7 @@ export async function signedPutUrl(
   seconds = 900,
 ): Promise<string> {
   assertSafeKey(key);
-  if (!(contentType in UPLOAD_TYPES)) throw new Error(`Upload type not allowed: ${contentType}`);
+  if (!ALLOWED_UPLOAD_TYPES.has(contentType)) throw new Error(`Upload type not allowed: ${contentType}`);
   if (!Number.isInteger(bytes) || bytes <= 0 || bytes > MAX_UPLOAD_BYTES) {
     throw new Error(`Upload size not allowed: ${bytes}`);
   }
@@ -150,4 +152,26 @@ export async function signedPutUrl(
     new PutObjectCommand({ Bucket: bucket(), Key: key, ContentType: contentType, ContentLength: bytes }),
     { expiresIn: Math.min(Math.max(seconds, 60), 3600), signableHeaders: new Set(["content-type", "content-length"]) },
   );
+}
+
+/**
+ * Check an uploaded object server-side before the app uses it: it must exist,
+ * be an allowed type, match the declared size and stay under the cap.
+ * Anything else is deleted and rejected.
+ */
+export async function verifyUpload(key: string, expectedType: string, expectedBytes: number): Promise<void> {
+  assertSafeKey(key);
+  const head = await s3().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
+  const size = head.ContentLength ?? -1;
+  const type = (head.ContentType ?? "").split(";")[0].trim();
+  const ok =
+    ALLOWED_UPLOAD_TYPES.has(type) &&
+    type === expectedType &&
+    size === expectedBytes &&
+    size > 0 &&
+    size <= MAX_UPLOAD_BYTES;
+  if (!ok) {
+    await deleteObject(key);
+    throw new Error(`Upload rejected: type=${type} size=${size}`);
+  }
 }
