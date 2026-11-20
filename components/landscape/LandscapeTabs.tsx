@@ -25,7 +25,8 @@ export function LandscapeTabs({
   ];
 
   return (
-    <div className="sticky top-[57px] z-30 border-b border-line bg-paper/85 backdrop-blur-md">
+    // Pinned directly under the header: --header-h is measured live by BrandBar.
+    <div className="sticky top-[var(--header-h,72px)] z-30 border-b border-line bg-paper/85 backdrop-blur-md">
       <nav
         aria-label="Landscape sections"
         className="max-w-page mx-auto px-5 sm:px-7 lg:px-10"
@@ -42,7 +43,7 @@ export function LandscapeTabs({
               ? "border-amber-deep text-deep-teal font-semibold"
               : t.available
                 ? "border-transparent text-muted hover:text-deep-teal"
-                : "border-transparent text-line cursor-not-allowed"
+                : "border-transparent text-muted/70 cursor-not-allowed"
           }`;
           return (
             <li key={t.href}>
@@ -51,7 +52,15 @@ export function LandscapeTabs({
                   {t.label}
                 </Link>
               ) : (
-                <span className={cls} title="Available when the investment plan is published">
+                <span
+                  className={cls}
+                  aria-disabled="true"
+                  title={
+                    t.label === "Climate"
+                      ? "Available when the climate valuation is published"
+                      : "Available when the investment plan is published"
+                  }
+                >
                   {t.label} <span className="text-[11px] tracking-[0.14em] ml-1">soon</span>
                 </span>
               )}

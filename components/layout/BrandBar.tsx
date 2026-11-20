@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Layers,
   Map as MapIcon,
@@ -35,6 +35,24 @@ export function BrandBar() {
   const [scrolled, setScrolled] = useState(false);
   const [reduce, setReduce] = useState(false);
   const pathname = usePathname() ?? "/";
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Publish the header's real height as --header-h so sticky bars below it
+  // (the landscape tabs) sit exactly underneath instead of a guessed offset.
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const set = () =>
+      document.documentElement.style.setProperty("--header-h", `${row.offsetTop + row.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(row);
+    window.addEventListener("resize", set);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", set);
+    };
+  }, []);
 
   useEffect(() => {
     function onScroll() {
@@ -77,10 +95,11 @@ export function BrandBar() {
           backgroundColor: "var(--paper)",
         }}
       >
+        {/* Constant height: no padding animation (DESIGN.md: never animate
+            layout), so the header and the bars pinned under it stay steady. */}
         <div
-          className={`px-4 sm:px-6 lg:px-7 flex items-center gap-3 sm:gap-5 lg:gap-7 transition-[padding] duration-300 ease-out ${
-            scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"
-          }`}
+          ref={rowRef}
+          className="px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3 flex items-center gap-3 sm:gap-5 lg:gap-7"
         >
         <Link
           href="/"

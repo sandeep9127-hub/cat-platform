@@ -165,9 +165,9 @@ export default async function LandscapeDetailPage({ params }: Props) {
         </aside>
       </header>
 
-      <div className="mt-8 lg:mt-12">
-        <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
-      </div>
+      {/* Spacer, not a wrapper: a wrapping div would stop the tabs sticking. */}
+      <div className="mt-8 lg:mt-12" aria-hidden />
+      <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
 
       {/* ORIENT + MONEY — share the page currency control above */}
         <LandscapeLedger
