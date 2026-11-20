@@ -230,6 +230,22 @@ The advisor tool (Anthropic beta, `advisor-tool-2026-03-01`) lets a cheap, fast 
 | Quality dashboard | AI spend per task and day, test-set scores over time, unanswered questions, model health |
 | Daily health check | A cron calls each model with a tiny request; email if anything fails or reports retirement |
 
+### 6.2 Full investment table (decided 20 Nov 2026)
+
+- **Public Budget page:** keeps today's summary view.
+- **Full table, private:** every row and all 46 columns, opened **only through share links**. An editor creates a link for a named recipient (e.g. "Funder X, due diligence"), chooses whether downloads are allowed, and sets an expiry (maximum 1 year). Links can be revoked at any time, and every view and download is logged. Only a hash of each link's token is stored.
+- **Table features:**
+  - frozen intervention column;
+  - column groups for Phase 1, Phase 2, totals and tags, each of which can be hidden or shown;
+  - sort, filter and search;
+  - grouping by category or thematic investment, with subtotals;
+  - row details showing the cost build-up and government scheme;
+  - INR, USD or EUR;
+  - Excel export, if the link allows it;
+  - a "changed in latest update" marker on rows that changed.
+- **Data:** `interventions` holds the approved rows. The Drive sync compares each live sheet with them, and differences become `intervention_changes` that wait in the triage queue for one-click approval.
+- **Monday.com:** an internal working board for the CAT team, fed **one-way** from the approved data, so it can never disagree with the Hub. Edits continue to happen in the Google Sheets.
+
 ## 7. UI/UX
 
 *From a read-only audit of the live site at desktop and mobile widths, 20 Nov 2026.*
