@@ -22,3 +22,6 @@ tsconfig.tsbuildinfo
 
 # Bulky source illustration set (only the optimised copies in public/illustrations are tracked)
 public/cat. hub illustration/
+
+# Local credentials (service-account keys etc.) — never commit
+.secrets/
