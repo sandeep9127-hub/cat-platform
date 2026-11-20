@@ -93,18 +93,35 @@ export async function listTree(folderId: string, rootName: string): Promise<Driv
 
 const MAX_DOWNLOAD_BYTES = 150 * 1024 * 1024;
 
+/** Read a response body, aborting once it exceeds the cap (metadata sizes are optional). */
+async function readCapped(res: Response): Promise<Uint8Array> {
+  if (!res.body) return new Uint8Array();
+  const reader = res.body.getReader();
+  const parts: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.length;
+    if (total > MAX_DOWNLOAD_BYTES) {
+      await reader.cancel();
+      throw new Error(`File too large to import (> ${MAX_DOWNLOAD_BYTES} bytes)`);
+    }
+    parts.push(value);
+  }
+  return new Uint8Array(Buffer.concat(parts));
+}
+
 /** Bytes of a file. Google Docs export as DOCX, Google Sheets as XLSX. Capped at 150 MB. */
 export async function downloadFile(f: Pick<DriveFile, "id" | "mimeType"> & { size?: string }): Promise<{ bytes: Uint8Array; mime: string }> {
   if (f.size && Number(f.size) > MAX_DOWNLOAD_BYTES) throw new Error(`File too large to import: ${f.size} bytes`);
   if (f.mimeType === GOOGLE_DOC || f.mimeType === GOOGLE_SHEET) {
     const mime = f.mimeType === GOOGLE_DOC ? DOCX : XLSX;
     const res = await api(`https://www.googleapis.com/drive/v3/files/${f.id}/export?mimeType=${encodeURIComponent(mime)}`);
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    if (bytes.length > MAX_DOWNLOAD_BYTES) throw new Error(`Export too large to import: ${bytes.length} bytes`);
-    return { bytes, mime };
+    return { bytes: await readCapped(res), mime };
   }
   const res = await api(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&supportsAllDrives=true`);
-  return { bytes: new Uint8Array(await res.arrayBuffer()), mime: f.mimeType };
+  return { bytes: await readCapped(res), mime: f.mimeType };
 }
 
 /** Cell values (as displayed) of one sheet tab, e.g. "Data". */

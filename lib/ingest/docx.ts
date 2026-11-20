@@ -84,17 +84,47 @@ function readStyles(xml: string | undefined): Map<string, StyleInfo> {
   return map;
 }
 
+/**
+ * Inflate one zip entry as text, aborting as soon as more than MAX_XML_BYTES
+ * have been produced (declared sizes in the zip directory can lie).
+ */
+async function readEntryCapped(zip: JSZip, name: string): Promise<string | undefined> {
+  const entry = zip.file(name);
+  if (!entry) return undefined;
+  return new Promise<string>((resolve, reject) => {
+    const parts: Uint8Array[] = [];
+    let total = 0;
+    // internalStream is part of JSZip's runtime API but missing from its typings.
+    type ZipStream = {
+      on(ev: "data", cb: (chunk: Uint8Array) => void): ZipStream;
+      on(ev: "error", cb: (e: Error) => void): ZipStream;
+      on(ev: "end", cb: () => void): ZipStream;
+      pause(): ZipStream;
+      resume(): ZipStream;
+    };
+    const stream = (entry as unknown as { internalStream(type: "uint8array"): ZipStream }).internalStream("uint8array");
+    stream
+      .on("data", (chunk: Uint8Array) => {
+        total += chunk.length;
+        if (total > MAX_XML_BYTES) {
+          stream.pause();
+          reject(new Error(`DOCX part ${name} too large when unpacked (> ${MAX_XML_BYTES} bytes)`));
+          return;
+        }
+        parts.push(chunk);
+      })
+      .on("error", reject)
+      .on("end", () => resolve(new TextDecoder().decode(Buffer.concat(parts))))
+      .resume();
+  });
+}
+
 export async function parseDocx(bytes: Uint8Array): Promise<{ blocks: Block[]; pageCount: number }> {
   if (bytes.length > MAX_DOCX_BYTES) throw new Error(`DOCX too large: ${bytes.length} bytes`);
   const zip = await JSZip.loadAsync(bytes);
-  for (const name of ["word/document.xml", "word/styles.xml"]) {
-    // Reject decompression bombs before inflating (size from the zip directory).
-    const size = (zip.file(name) as unknown as { _data?: { uncompressedSize?: number } } | null)?._data?.uncompressedSize ?? 0;
-    if (size > MAX_XML_BYTES) throw new Error(`DOCX part ${name} too large when unpacked: ${size} bytes`);
-  }
-  const docXml = await zip.file("word/document.xml")?.async("string");
+  const docXml = await readEntryCapped(zip, "word/document.xml");
   if (!docXml) throw new Error("Not a DOCX: word/document.xml missing");
-  const styles = readStyles(await zip.file("word/styles.xml")?.async("string"));
+  const styles = readStyles(await readEntryCapped(zip, "word/styles.xml"));
 
   const root = parser.parse(docXml) as Node[];
   const doc = root.find((n) => tagOf(n) === "w:document");
