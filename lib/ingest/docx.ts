@@ -21,6 +21,9 @@ export type Block =
 
 type Node = Record<string, unknown>;
 
+const MAX_DOCX_BYTES = 150 * 1024 * 1024; // the largest CAT report is ~34 MB, mostly images
+const MAX_XML_BYTES = 60 * 1024 * 1024;   // document.xml text + markup, unpacked
+
 const parser = new XMLParser({
   preserveOrder: true,
   ignoreAttributes: false,
@@ -82,7 +85,13 @@ function readStyles(xml: string | undefined): Map<string, StyleInfo> {
 }
 
 export async function parseDocx(bytes: Uint8Array): Promise<{ blocks: Block[]; pageCount: number }> {
+  if (bytes.length > MAX_DOCX_BYTES) throw new Error(`DOCX too large: ${bytes.length} bytes`);
   const zip = await JSZip.loadAsync(bytes);
+  for (const name of ["word/document.xml", "word/styles.xml"]) {
+    // Reject decompression bombs before inflating (size from the zip directory).
+    const size = (zip.file(name) as unknown as { _data?: { uncompressedSize?: number } } | null)?._data?.uncompressedSize ?? 0;
+    if (size > MAX_XML_BYTES) throw new Error(`DOCX part ${name} too large when unpacked: ${size} bytes`);
+  }
   const docXml = await zip.file("word/document.xml")?.async("string");
   if (!docXml) throw new Error("Not a DOCX: word/document.xml missing");
   const styles = readStyles(await zip.file("word/styles.xml")?.async("string"));

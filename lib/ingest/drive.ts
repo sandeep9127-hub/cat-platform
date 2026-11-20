@@ -91,12 +91,17 @@ export async function listTree(folderId: string, rootName: string): Promise<Driv
   return files;
 }
 
-/** Bytes of a file. Google Docs export as DOCX, Google Sheets as XLSX. */
-export async function downloadFile(f: Pick<DriveFile, "id" | "mimeType">): Promise<{ bytes: Uint8Array; mime: string }> {
+const MAX_DOWNLOAD_BYTES = 150 * 1024 * 1024;
+
+/** Bytes of a file. Google Docs export as DOCX, Google Sheets as XLSX. Capped at 150 MB. */
+export async function downloadFile(f: Pick<DriveFile, "id" | "mimeType"> & { size?: string }): Promise<{ bytes: Uint8Array; mime: string }> {
+  if (f.size && Number(f.size) > MAX_DOWNLOAD_BYTES) throw new Error(`File too large to import: ${f.size} bytes`);
   if (f.mimeType === GOOGLE_DOC || f.mimeType === GOOGLE_SHEET) {
     const mime = f.mimeType === GOOGLE_DOC ? DOCX : XLSX;
     const res = await api(`https://www.googleapis.com/drive/v3/files/${f.id}/export?mimeType=${encodeURIComponent(mime)}`);
-    return { bytes: new Uint8Array(await res.arrayBuffer()), mime };
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (bytes.length > MAX_DOWNLOAD_BYTES) throw new Error(`Export too large to import: ${bytes.length} bytes`);
+    return { bytes, mime };
   }
   const res = await api(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&supportsAllDrives=true`);
   return { bytes: new Uint8Array(await res.arrayBuffer()), mime: f.mimeType };
