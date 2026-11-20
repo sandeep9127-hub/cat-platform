@@ -368,7 +368,12 @@ export async function POST(req: NextRequest) {
   // becomes a polite refusal instead of a broken stream.
   let modelStream: AsyncGenerator<StreamEvent, void, unknown>;
   try {
-    modelStream = await claudeStream("ask_hub", { system: SYSTEM_PROMPT, messages: chatTurns });
+    modelStream = await claudeStream("ask_hub", {
+      system: SYSTEM_PROMPT,
+      messages: chatTurns,
+      // Reader closes the tab -> upstream Claude request is cancelled too.
+      signal: req.signal,
+    });
   } catch (e) {
     if (e instanceof BudgetExceededError) {
       return NextResponse.json(
@@ -393,8 +398,14 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
       function send(obj: unknown) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+        } catch {
+          closed = true; // reader went away
+        }
       }
       // Meta first so the citation tray can render immediately, even before
       // the first token arrives.
@@ -450,7 +461,7 @@ export async function POST(req: NextRequest) {
           type: "error",
           message: "The assistant is temporarily unavailable.",
         });
-        controller.close();
+        if (!closed) controller.close();
         return;
       }
 
@@ -475,7 +486,12 @@ export async function POST(req: NextRequest) {
       }
 
       send({ type: "done", refused: wasRefused });
-      controller.close();
+      if (!closed) controller.close();
+    },
+    // Reader disconnected: end the generator so its finally block aborts the
+    // Claude stream and still logs the usage against the daily budget.
+    async cancel() {
+      await modelStream.return(undefined);
     },
   });
 

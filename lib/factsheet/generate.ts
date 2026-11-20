@@ -165,6 +165,19 @@ function extractSheetJson(text: string): Record<string, unknown> | null {
   return null;
 }
 
+/** A model-supplied link, accepted only as an absolute http(s) URL with a real host. */
+function safeHttpUrl(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 2000) return null;
+  try {
+    const u = new URL(value.trim());
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    if (!u.hostname.includes(".") || u.username || u.password) return null;
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
 /** Claude + web search → raw model text (expected to be one JSON object). */
 async function searchAndExtract(
   query: string,
@@ -213,11 +226,26 @@ export async function generateFactSheet(
   // label) line up with the census codes.
   const stateCode = rawStateCode ? STATE_ALIASES[rawStateCode] ?? rawStateCode : null;
   const geo = geocodeState(stateCode, slugify(String(raw.title || query)));
-  const outcomes = Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [];
-  const citations = Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [];
+  // Every URL here came from the model, which read untrusted web pages: keep
+  // only well-formed http(s) links and drop any entry whose link fails.
+  const outcomes = (Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [])
+    .flatMap((o) => {
+      const url = safeHttpUrl(o?.source_url);
+      return o && o.claim && url ? [{ claim: String(o.claim), figure: o.figure ? String(o.figure) : null, source_url: url }] : [];
+    });
+  const citations = (Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [])
+    .flatMap((c) => {
+      const url = safeHttpUrl(c?.url);
+      return url ? [{ url, passage: String(c.passage ?? "").slice(0, 600) }] : [];
+    });
   const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
   const metrics = (Array.isArray(raw.metrics) ? (raw.metrics as FactSheet["metrics"]) : [])
-    .filter((m) => m && m.value && m.label)
+    .flatMap((m) => {
+      const url = safeHttpUrl(m?.source_url);
+      return m && m.value && m.label && url
+        ? [{ label: String(m.label), value: String(m.value), source_url: url }]
+        : [];
+    })
     .slice(0, 4);
   const rawInsight = (raw.insight ?? {}) as Record<string, unknown>;
   const insight = {
@@ -248,7 +276,7 @@ export async function generateFactSheet(
     outcomes,
     citations,
     source_name: raw.source_name ? String(raw.source_name) : null,
-    source_url: raw.source_url ? String(raw.source_url) : null,
+    source_url: safeHttpUrl(raw.source_url),
     confidence,
   };
 

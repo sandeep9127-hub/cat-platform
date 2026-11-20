@@ -56,8 +56,18 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   try {
     const q = await embedQuery(lastUserMessage);
     chunks = await searchLandscapeChunks(slug, q, MAX_CONTEXT_HITS);
-  } catch {
-    // Continue — the model will degrade gracefully with no context
+  } catch (e) {
+    console.error("landscape/ask retrieval failed:", (e as Error).message);
+  }
+
+  // No passages, no model call: answering without retrieved context would let
+  // the model fall back on its own knowledge. Same guarantee as /api/agent.
+  if (chunks.length === 0) {
+    return NextResponse.json({
+      text: `Not in the ${profile.name} investment plan yet. Try asking about a specific section, such as budgets, water, soil or livelihoods.`,
+      citations: [],
+      refused: true,
+    });
   }
 
   const contextBlock = chunks.length

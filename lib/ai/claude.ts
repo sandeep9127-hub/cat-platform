@@ -258,20 +258,43 @@ export async function claudeStream(
   );
 
   async function* run(): AsyncGenerator<StreamEvent, void, unknown> {
+    // Track usage from stream events so a stream that is cancelled (reader
+    // disconnects) or fails part-way is still logged and counts toward the
+    // daily budget.
+    let usage: UsageLike = { ...EMPTY_USAGE };
+    let model: string = cfg.model;
+    let stopReason: string | null = null;
+    let error: string | null = null;
+    let finished = false;
     try {
       for await (const event of stream) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        if (event.type === "message_start") {
+          usage = { ...(event.message.usage as UsageLike) };
+          model = event.message.model;
+        } else if (event.type === "message_delta") {
+          usage = { ...usage, output_tokens: event.usage.output_tokens };
+          stopReason = event.delta.stop_reason ?? stopReason;
+        } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
           yield { type: "delta", text: event.delta.text };
         }
       }
       const final = await stream.finalMessage();
-      const usage = final.usage as UsageLike;
-      const cost = costUsd(final.model, usage);
-      await logUsage({ task, pool: cfg.pool, model: final.model, usage, cost, stopReason: final.stop_reason, runId: opts.runId });
-      yield { type: "done", inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, costUsd: cost, stopReason: final.stop_reason };
+      usage = final.usage as UsageLike;
+      model = final.model;
+      stopReason = final.stop_reason;
+      finished = true;
+      const cost = costUsd(model, usage);
+      yield { type: "done", inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, costUsd: cost, stopReason };
     } catch (e) {
-      await logUsage({ task, pool: cfg.pool, model: cfg.model, usage: EMPTY_USAGE, cost: 0, stopReason: null, error: (e as Error).message.slice(0, 500), runId: opts.runId });
+      error = (e as Error).message.slice(0, 500);
       throw e;
+    } finally {
+      if (!finished) stream.abort(); // stop generating (and billing) once nobody is reading
+      await logUsage({
+        task, pool: cfg.pool, model, usage, cost: costUsd(model, usage),
+        stopReason: finished ? stopReason : stopReason ?? "cancelled",
+        error, runId: opts.runId,
+      });
     }
   }
   return run();
