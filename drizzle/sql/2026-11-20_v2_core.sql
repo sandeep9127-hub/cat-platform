@@ -113,7 +113,9 @@ CREATE TABLE IF NOT EXISTS "cat".chunks (
   embedding_model text,
   created_at      timestamptz NOT NULL DEFAULT now(),
   CHECK (source_kind <> 'document' OR (document_id IS NOT NULL AND version_id IS NOT NULL)),
-  CHECK (source_kind = 'document' OR source_ref IS NOT NULL)
+  CHECK (source_kind = 'document' OR source_ref IS NOT NULL),
+  CONSTRAINT chunks_non_document_unlinked
+    CHECK (source_kind = 'document' OR (document_id IS NULL AND version_id IS NULL))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS chunks_version_order
   ON "cat".chunks (version_id, chunk_index) WHERE version_id IS NOT NULL;
