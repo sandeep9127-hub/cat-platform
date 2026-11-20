@@ -967,7 +967,7 @@ function Styles() {
       /* Phones: an even two-column grid instead of wrapped controls of
          uneven widths. Search and domain span the full row. */
       @media (max-width: 640px) {
-        .og-filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 16px 14px; }
+        .og-filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 24px 14px; }
         .og-input, .og-select-wide { grid-column:1 / -1; min-width:0; }
         .og-select { width:100%; min-width:0; }
         .og-count { grid-column:1 / -1; margin-left:0; }
