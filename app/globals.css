@@ -310,6 +310,21 @@ body::before {
   top: 1rem;
 }
 
+/* Big figures: the unit (cr, M, ha, x) and money decimals sit lighter and
+   smaller than the value so the number reads first. Colour derives from the
+   figure's own colour (72%), which keeps large-text contrast above 3:1. */
+.fig-unit {
+  font-weight: 400;
+  font-size: 0.56em;
+  letter-spacing: 0;
+  margin-left: 0.16em;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+}
+.fig-dec {
+  font-weight: 400;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+}
+
 /* Map state styling — shared between landing atlas and /map deep view. */
 .map-state {
   fill: rgba(46, 117, 115, 0.07);

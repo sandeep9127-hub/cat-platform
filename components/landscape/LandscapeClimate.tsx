@@ -3,7 +3,7 @@
 import { palette } from "@/lib/design/palette";
 import { useEffect, useRef, useState } from "react";
 import { useCurrency, formatMoney } from "./currency";
-import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { AnimatedNumber, FigureText } from "@/components/ui/AnimatedNumber";
 
 export type ClimateProps = {
   landscapeName: string;
@@ -127,7 +127,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 className="font-serif text-[clamp(36px,5vw,60px)] leading-none tracking-[-0.02em] tabular-nums mt-1 transition-colors"
                 style={{ color: focusSeg ? focusSeg.colour : "var(--teal, #2E7573)" }}
               >
-                {formatMoney(displayValue, currency)}
+                <FigureText value={formatMoney(displayValue, currency)} />
               </div>
               <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-2">
                 {focusSeg ? `${pct(focusSeg.value, total)}% of the headline` : "across all three tracks"}
