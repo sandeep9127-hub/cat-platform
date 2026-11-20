@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 /**
  * Supporter organisations as shown on agroecologyindia.org.
  *
@@ -36,7 +37,7 @@ export const SUPPORTERS: Supporter[] = [
     name: "Bharat Agroecology Fund",
     short: "Bharat Agroecology Fund",
     monogram: "BAF",
-    tint: "#C68C2E",
+    tint: palette.ochre,
     category: "Fund",
   },
   {
@@ -52,7 +53,7 @@ export const SUPPORTERS: Supporter[] = [
     name: "Centre for Sustainable Agriculture",
     short: "CSA",
     monogram: "CSA",
-    tint: "#2E7573",
+    tint: palette.teal,
     category: "Practitioner",
   },
   {
@@ -84,7 +85,7 @@ export const SUPPORTERS: Supporter[] = [
     name: "EarthON Foundation",
     short: "EarthON",
     monogram: "EON",
-    tint: "#2E7573",
+    tint: palette.teal,
     category: "Foundation",
   },
   {
@@ -132,7 +133,7 @@ export const SUPPORTERS: Supporter[] = [
     name: "Climateworks Foundation",
     short: "Climateworks",
     monogram: "CW",
-    tint: "#5C8C2E",
+    tint: palette.leaf,
     category: "Foundation",
   },
 ];
