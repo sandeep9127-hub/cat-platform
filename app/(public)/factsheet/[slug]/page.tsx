@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFactSheet } from "@/lib/factsheet/generate";
 import { CATEGORY_BY_SLUG } from "@/lib/data/categories";
+import { solutionHeroWeb, glanceIconWeb, type GlanceKey } from "@/lib/design/solution-art";
 
 export const dynamic = "force-dynamic";
 
@@ -26,24 +27,17 @@ const STATE_NAMES: Record<string, string> = {
 };
 
 /**
- * Field-guide illustrations (line-and-wash, CAT colours), one per Solutions
- * Atlas theme, in public/illustrations/solutions. Sources and how to re-render
- * them: docs/illustrations/solution-heroes/README.md.
+ * Source links come from model-compiled data. Only http(s) URLs become links,
+ * so a stray javascript: or data: URL can never run on click.
  */
-const HERO_THEMES = new Set([
-  "agri-horti-agroforestry", "forestry-ntfp", "livestock", "fisheries", "nrm",
-  "biodiversity", "nutrition", "market", "energy", "technical-assistance",
-]);
-const heroFor = (themes: string[]) =>
-  `/illustrations/solutions/${themes.find((t) => HERO_THEMES.has(t)) ?? "agri-horti-agroforestry"}.webp`;
-
-// Hand-drawn markers for the four-part "at a glance" frame (CAT pathway drawings).
-const GLANCE_ICON: Record<string, string> = {
-  "What's working": "research",
-  "What's hard": "markets",
-  "Why it matters": "nutrition",
-  "What's next": "landscape",
-};
+function safeHref(u?: string | null): string | undefined {
+  try {
+    const p = new URL(u ?? "");
+    return p.protocol === "https:" || p.protocol === "http:" ? p.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 // Existing CAT intervention illustrations, reused on the theme list.
 const themeIcon = (slug: string) => `/icons/interventions/${slug}.png`;
@@ -69,7 +63,9 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
     { k: "What's next", v: s.insight?.whats_next },
   ].filter((c) => c.v);
 
-  const lead = s.outcomes.find((o) => o.figure) ?? null;
+  // Lead outcome as a standfirst; guard the shape since it is compiled data.
+  const lead =
+    s.outcomes.find((o) => o && typeof o.claim === "string" && typeof o.figure === "string" && o.figure) ?? null;
 
   return (
     <article className="fs bg-paper text-ink">
@@ -117,7 +113,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
           </div>
           <div className="relative w-full aspect-[16/8] lg:aspect-[16/9]">
             <Image
-              src={heroFor(s.themes)}
+              src={solutionHeroWeb(s.themes)}
               alt=""
               aria-hidden
               fill
@@ -138,7 +134,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
               >
                 <dt className="sr-only">{m.label}</dt>
                 <dd className="m-0">
-                  <a href={m.source_url} target="_blank" rel="noreferrer" className="group no-underline">
+                  <a href={safeHref(m.source_url)} target="_blank" rel="noreferrer" className="group no-underline">
                     <span className="block font-sans font-medium text-[clamp(26px,3vw,34px)] leading-none tracking-[-0.02em] text-ink tabular-nums group-hover:text-teal transition-colors">
                       {m.value}
                     </span>
@@ -155,8 +151,8 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
             {lead && (
               <p className="text-[clamp(22px,2.4vw,28px)] italic font-light leading-[1.35] text-deep-teal max-w-[34ch] [text-wrap:balance]">
                 {lead.figure} {lead.claim.charAt(0).toLowerCase() + lead.claim.slice(1)}
-                {lead.source_url && (
-                  <a href={lead.source_url} target="_blank" rel="noreferrer" className="not-italic text-[13px] text-teal align-super ml-1.5">
+                {safeHref(lead.source_url) && (
+                  <a href={safeHref(lead.source_url)} target="_blank" rel="noreferrer" className="not-italic text-[13px] text-teal align-super ml-1.5">
                     source
                   </a>
                 )}
@@ -175,7 +171,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
                   {insightCards.map((c) => (
                     <div key={c.k} className="rounded-card border border-line bg-paper p-5 flex gap-4 items-start">
                       <Image
-                        src={`/illustrations/solutions/icons/${GLANCE_ICON[c.k]}.webp`}
+                        src={glanceIconWeb(c.k as GlanceKey)}
                         alt=""
                         aria-hidden
                         width={72}
@@ -195,14 +191,14 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
             {s.outcomes.length > 0 && (
               <Section title="Outcomes and evidence">
                 <ul className="list-none p-0 m-0 border-t border-line">
-                  {s.outcomes.map((o, i) => (
+                  {s.outcomes.filter((o) => o && typeof o.claim === "string").map((o, i) => (
                     <li key={i} className="py-3.5 border-b border-line text-[15.5px] leading-[1.55] text-ink flex gap-4 items-baseline">
                       <span className="min-w-0 flex-1">
                         {o.figure && <strong className="font-semibold">{o.figure} </strong>}
                         {o.claim}
                       </span>
-                      {o.source_url && (
-                        <a href={o.source_url} target="_blank" rel="noreferrer" className="shrink-0 text-[13px] text-teal hover:text-deep-teal">
+                      {safeHref(o.source_url) && (
+                        <a href={safeHref(o.source_url)} target="_blank" rel="noreferrer" className="shrink-0 text-[13px] text-teal hover:text-deep-teal">
                           Source ↗
                         </a>
                       )}
@@ -217,9 +213,13 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
                 <ol className="space-y-2 text-[13.5px] text-ink-soft pl-5">
                   {s.citations.map((c, i) => (
                     <li key={i}>
-                      <a href={c.url} target="_blank" rel="noreferrer" className="text-teal break-words">
-                        {c.url}
-                      </a>
+                      {safeHref(c.url) ? (
+                        <a href={safeHref(c.url)} target="_blank" rel="noreferrer" className="text-teal break-words">
+                          {c.url}
+                        </a>
+                      ) : (
+                        <span className="break-words">{String(c.url ?? "")}</span>
+                      )}
                     </li>
                   ))}
                 </ol>
@@ -266,9 +266,9 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
               </div>
             )}
 
-            {s.source_url && (
+            {safeHref(s.source_url) && (
               <a
-                href={s.source_url}
+                href={safeHref(s.source_url)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center min-h-11 text-[14px] font-medium text-teal hover:text-deep-teal"
