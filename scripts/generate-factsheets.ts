@@ -68,7 +68,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   const { generateFactSheet } = await import("../lib/factsheet/generate");
+  const { runCapUsd } = await import("../lib/ai/models");
   const results = { published: 0, flagged: 0, refused: 0, error: 0 };
+  // Per-run spend ceiling (INGESTION_RUN_USD_CEILING). The daily ingestion
+  // pool is also enforced inside every Claude call.
+  const cap = runCapUsd();
+  let spent = 0;
   const total = PROGRAMMES.length;
 
   // Sequential with exponential backoff on 429 — web search has a tight
@@ -90,8 +95,13 @@ async function main() {
 
   for (let i = 0; i < total; i++) {
     const q = PROGRAMMES[i];
+    if (spent >= cap) {
+      console.log(`\nStopping: run spend $${spent.toFixed(2)} reached the $${cap} run ceiling.`);
+      break;
+    }
     try {
       const r = await genWithRetry(q);
+      spent += r.costUsd ?? 0;
       if (r.ok) {
         results[r.status === "published" ? "published" : "flagged"]++;
         console.log(`[${i + 1}/${total}] ${r.status.toUpperCase().padEnd(9)} ${r.sheet.title.slice(0, 60)}`);
@@ -106,7 +116,7 @@ async function main() {
     await sleep(2000);
   }
 
-  console.log(`\nDONE. published=${results.published} flagged=${results.flagged} refused=${results.refused} error=${results.error}`);
+  console.log(`\nDONE. published=${results.published} flagged=${results.flagged} refused=${results.refused} error=${results.error} spent=$${spent.toFixed(2)}`);
   process.exit(0);
 }
 main().catch((e) => { console.error("FATAL:", e.message); process.exit(1); });

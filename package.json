@@ -16,7 +16,7 @@
     "geo:download": "node scripts/download-geojson.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.0",
+    "@anthropic-ai/sdk": "^0.135.0",
     "@auth/drizzle-adapter": "^1.7.0",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { landscapeInsights } from "@/lib/db/landscape-kb";
-import { kimiChat, kimiEnabled, safeJsonParse, type ChatMessage } from "@/lib/ai/kimi";
+import { claudeEnabled, claudeMessage } from "@/lib/ai/claude";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 
 /**
@@ -106,7 +106,38 @@ const AI_VIZ_SYSTEM = `You turn an analytical answer into chart specifications. 
 - Give each chart a short "title" and a "unit" (e.g. "₹ crore", "%", "households", "" if unitless).
 - If the answer has no chartable numeric figures, return {"charts": []}.
 - If the user gives an instruction, honour it (chart type, which figures, ordering) — but still only use numbers present in the text.
-Return ONLY JSON: {"charts":[{"kind":"bar","title":"...","unit":"...","series":[{"label":"...","value":12.3}]}]}`;
+Return {"charts": [...]} where each chart is {"kind","title","unit","series":[{"label","value"}]}.`;
+
+// Structured output: the API guarantees the reply matches this schema.
+const CHARTS_SCHEMA = {
+  type: "object",
+  properties: {
+    charts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          kind: { type: "string", enum: ["donut", "bar", "line"] },
+          title: { type: "string" },
+          unit: { type: "string" },
+          series: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { label: { type: "string" }, value: { type: "number" } },
+              required: ["label", "value"],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["kind", "title", "unit", "series"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["charts"],
+  additionalProperties: false,
+};
 
 const AI_RAMP = [
   "#2E7573", "#5E6990", "#C68C2E", "#95B1AF", "#929CC5",
@@ -116,7 +147,7 @@ const AI_RAMP = [
 type AiChart = { kind?: string; title?: string; unit?: string; series?: { label?: string; value?: number }[] };
 
 export async function POST(req: NextRequest) {
-  if (!kimiEnabled()) return NextResponse.json({ charts: [] });
+  if (!claudeEnabled()) return NextResponse.json({ charts: [] });
   const ip = getClientIp(req);
   const limited = await rateLimit({ key: "visualize", ip, limit: 20, windowSec: 60 });
   if (!limited.ok) return NextResponse.json({ charts: [] }, { status: 429 });
@@ -129,15 +160,16 @@ export async function POST(req: NextRequest) {
   const userContent = instruction
     ? `ANSWER:\n${text}\n\nUSER INSTRUCTION: ${instruction}`
     : text;
-  const messages: ChatMessage[] = [
-    { role: "system", content: AI_VIZ_SYSTEM },
-    { role: "user", content: userContent },
-  ];
   let parsed: { charts?: AiChart[] } | null = null;
   try {
-    const { text: out } = await kimiChat(messages, { jsonMode: true, temperature: 0.1, maxTokens: 900 });
-    parsed = safeJsonParse<{ charts?: AiChart[] }>(out);
+    const { text: out } = await claudeMessage("visualize", {
+      system: AI_VIZ_SYSTEM,
+      messages: [{ role: "user", content: userContent }],
+      jsonSchema: CHARTS_SCHEMA,
+    });
+    parsed = JSON.parse(out) as { charts?: AiChart[] };
   } catch {
+    // Budget spent, API error or unparseable output: no charts, never an error to the reader.
     return NextResponse.json({ charts: [] });
   }
 

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { sql } from "drizzle-orm";
-import { kimiChat, kimiEnabled, kimiCostUsd, type ChatMessage } from "@/lib/ai/kimi";
+import { BudgetExceededError, claudeEnabled, claudeMessage, type ChatTurn } from "@/lib/ai/claude";
+import { embedQuery } from "@/lib/ai/embed";
 import { searchLandscapeChunks } from "@/lib/db/landscape-kb";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
@@ -12,27 +13,6 @@ export const dynamic = "force-dynamic";
 const MAX_TURNS = 8;
 const MAX_CONTEXT_HITS = 8;
 
-const NVIDIA_EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
-
-async function embedQuery(text: string): Promise<number[]> {
-  const key = process.env.NVIDIA_API_KEY;
-  if (!key) throw new Error("NVIDIA_API_KEY missing");
-  const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      input: [text.slice(0, 1200)],
-      model: NVIDIA_EMBED_MODEL,
-      input_type: "query",
-      encoding_format: "float",
-      truncate: "END",
-    }),
-  });
-  if (!res.ok) throw new Error(`Embed ${res.status}`);
-  const data = await res.json();
-  return data.data[0].embedding;
-}
-
 type ClientMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
@@ -41,9 +21,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   if (!profile) {
     return NextResponse.json({ error: "Landscape not found" }, { status: 404 });
   }
-  if (!kimiEnabled()) {
+  if (!claudeEnabled()) {
     return NextResponse.json(
-      { error: "Ask is not configured. Set NVIDIA_API_KEY." },
+      { error: "Ask is not configured. Set ANTHROPIC_API_KEY." },
       { status: 503 }
     );
   }
@@ -77,7 +57,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     const q = await embedQuery(lastUserMessage);
     chunks = await searchLandscapeChunks(slug, q, MAX_CONTEXT_HITS);
   } catch {
-    // Continue — Kimi will degrade gracefully with no context
+    // Continue — the model will degrade gracefully with no context
   }
 
   const contextBlock = chunks.length
@@ -96,15 +76,12 @@ You answer questions strictly from the investment plan passages provided in each
 - Cite the passage you used by its [number] in square brackets.
 - Keep answers to 2-3 short paragraphs. Plain language. No em dashes.
 - For budget questions, prefer numbers from passages tagged "budget_summary" and quote them.
-- If the passages don't cover the question, say "Not in the {profile.name} investment plan yet" and suggest a related section the reader could explore.
+- If the passages don't cover the question, say "Not in the ${profile.name} investment plan yet" and suggest a related section the reader could explore.
 - Refuse off-topic questions. This agent only knows about ${profile.name}.
 - Do not invent budget figures or interventions not present in the context.`;
 
-  const kimiMessages: ChatMessage[] = [{ role: "system", content: systemPrompt }];
-  for (const m of messages.slice(0, -1)) {
-    kimiMessages.push({ role: m.role, content: m.content });
-  }
-  kimiMessages.push({
+  const chatTurns: ChatTurn[] = messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
+  chatTurns.push({
     role: "user",
     content: `${contextBlock}\n\n---\n\nReader question: ${lastUserMessage}`,
   });
@@ -112,13 +89,21 @@ You answer questions strictly from the investment plan passages provided in each
   let text = "";
   let inputTokens = 0;
   let outputTokens = 0;
+  let callCostUsd = 0;
   try {
-    const res = await kimiChat(kimiMessages, { temperature: 0.25, maxTokens: 700 });
+    const res = await claudeMessage("ask_landscape", { system: systemPrompt, messages: chatTurns });
     text = res.text;
     inputTokens = res.inputTokens;
     outputTokens = res.outputTokens;
+    callCostUsd = res.costUsd;
   } catch (e) {
-    console.error("landscape/ask kimi call failed:", e);
+    if (e instanceof BudgetExceededError) {
+      return NextResponse.json(
+        { refusal: "Ask has reached today's usage limit. Please try again tomorrow." },
+        { status: 429 }
+      );
+    }
+    console.error("landscape/ask claude call failed:", e);
     return NextResponse.json(
       { error: "The agent service is unavailable right now." },
       { status: 502 }
@@ -132,7 +117,7 @@ You answer questions strictly from the investment plan passages provided in each
       sql`INSERT INTO "cat".landscape_chat_sessions
             (landscape_slug, session_token, turn_count, total_input_tokens, total_output_tokens, cost_usd, cited_chunk_ids)
           VALUES (${slug}, ${sessionToken}, ${messages.filter((m) => m.role === "user").length},
-                  ${inputTokens}, ${outputTokens}, ${kimiCostUsd(inputTokens, outputTokens)},
+                  ${inputTokens}, ${outputTokens}, ${callCostUsd},
                   ${JSON.stringify(chunks.map((c) => c.id))}::jsonb)`
     );
   } catch {

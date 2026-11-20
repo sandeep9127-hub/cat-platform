@@ -19,7 +19,8 @@ export default async function AgentPage({
   searchParams: Promise<Search>;
 }) {
   const sp = await searchParams;
-  const enabled = !!process.env.NVIDIA_API_KEY;
+  // Claude answers; Voyage embeds the question for retrieval. Both are needed.
+  const enabled = !!process.env.ANTHROPIC_API_KEY && !!process.env.VOYAGE_API_KEY;
 
   // The full landscape roster, each flagged with whether it has ingested
   // content yet. Filters render for ALL eleven; the ones without a plan show as
@@ -61,9 +62,10 @@ export default async function AgentPage({
                 Not configured
               </span>
               <p className="font-sans italic text-[18px] text-ink-soft leading-[1.6] mt-3 font-light">
-                The assistant is built and wired, but requires an NVIDIA API key (the one
-                that gives Kimi access) to respond. Set{" "}
-                <code className="font-mono text-[14px] not-italic">NVIDIA_API_KEY</code> in your
+                The assistant is built and wired, but needs two keys to respond: Claude
+                for answers and Voyage for search. Set{" "}
+                <code className="font-mono text-[14px] not-italic">ANTHROPIC_API_KEY</code> and{" "}
+                <code className="font-mono text-[14px] not-italic">VOYAGE_API_KEY</code> in your
                 environment, restart the server, and refresh this page.
               </p>
             </div>

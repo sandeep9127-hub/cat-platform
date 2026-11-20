@@ -4,11 +4,13 @@ import { gte, sql } from "drizzle-orm";
 import { searchEntries } from "@/lib/db/search";
 import { searchLandscapeChunks, getIngestedLandscapeSlugs } from "@/lib/db/landscape-kb";
 import {
-  kimiChatStream,
-  kimiEnabled,
-  kimiCostUsd,
-  type ChatMessage,
-} from "@/lib/ai/kimi";
+  BudgetExceededError,
+  claudeEnabled,
+  claudeStream,
+  type ChatTurn,
+  type StreamEvent,
+} from "@/lib/ai/claude";
+import { embedQuery as embedQueryVector, embeddingsEnabled } from "@/lib/ai/embed";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 
@@ -23,7 +25,6 @@ export const preferredRegion = "bom1";
 
 const MAX_TURNS = 8;
 const MAX_CONTEXT_HITS_PER_SOURCE = 6;
-const NVIDIA_EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
 /**
  * Hard refusal floor — if no entry or chunk meets this normalised score,
  * the model never gets called and the route returns a refusal directly.
@@ -106,31 +107,19 @@ const STARTERS = [
 
 export async function GET() {
   return NextResponse.json({
-    enabled: kimiEnabled(),
+    enabled: claudeEnabled() && embeddingsEnabled(),
     starters: STARTERS,
     maxTurns: MAX_TURNS,
   });
 }
 
 async function embedQuery(text: string): Promise<number[] | null> {
-  const key = process.env.NVIDIA_API_KEY;
-  if (!key) return null;
+  if (!embeddingsEnabled()) return null;
   try {
-    const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        input: [text.slice(0, 1200)],
-        model: NVIDIA_EMBED_MODEL,
-        input_type: "query",
-        encoding_format: "float",
-        truncate: "END",
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.data[0].embedding;
-  } catch {
+    return await embedQueryVector(text);
+  } catch (e) {
+    // Degrade to keyword-only retrieval rather than failing the question.
+    console.error("agent embedQuery failed:", (e as Error).message);
     return null;
   }
 }
@@ -304,9 +293,9 @@ async function retrieve(
 }
 
 export async function POST(req: NextRequest) {
-  if (!kimiEnabled()) {
+  if (!claudeEnabled()) {
     return NextResponse.json(
-      { error: "Agent is not configured. Set NVIDIA_API_KEY to enable the assistant." },
+      { error: "Agent is not configured. Set ANTHROPIC_API_KEY to enable the assistant." },
       { status: 503 }
     );
   }
@@ -368,15 +357,28 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Construct Kimi messages: system + history + final user with context
-  const kimiMessages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }];
-  for (const m of messages.slice(0, -1)) {
-    kimiMessages.push({ role: m.role, content: m.content });
-  }
-  kimiMessages.push({
+  // History + final user turn carrying the retrieved context
+  const chatTurns: ChatTurn[] = messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
+  chatTurns.push({
     role: "user",
     content: `${contextBlock}\n\n---\n\nReader question: ${latestUserMessage}`,
   });
+
+  // Open the model stream before the SSE response so a spent daily budget
+  // becomes a polite refusal instead of a broken stream.
+  let modelStream: AsyncGenerator<StreamEvent, void, unknown>;
+  try {
+    modelStream = await claudeStream("ask_hub", { system: SYSTEM_PROMPT, messages: chatTurns });
+  } catch (e) {
+    if (e instanceof BudgetExceededError) {
+      return NextResponse.json(
+        { refusal: "The assistant has reached today's usage limit. Please browse by theme or search, or try again tomorrow." },
+        { status: 429 }
+      );
+    }
+    console.error("agent stream setup failed:", e);
+    return NextResponse.json({ error: "The assistant is temporarily unavailable." }, { status: 502 });
+  }
 
   // Stream the response. The client subscribes via fetch + getReader and
   // updates the assistant message text as deltas arrive. Each SSE event is
@@ -411,6 +413,7 @@ export async function POST(req: NextRequest) {
       let bufferingDone = false;
       let inputTokens = 0;
       let outputTokens = 0;
+      let callCostUsd = 0;
 
       function flushBuffer() {
         if (bufferingDone) return;
@@ -424,12 +427,7 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        for await (const evt of kimiChatStream(kimiMessages, {
-          temperature: 0.2,
-          // 1200 tokens ≈ 900 words. Was 700 which truncated longer
-          // analyses mid-sentence on broad questions.
-          maxTokens: 1200,
-        })) {
+        for await (const evt of modelStream) {
           if (evt.type === "delta") {
             if (!bufferingDone) {
               buffer += evt.text;
@@ -441,12 +439,13 @@ export async function POST(req: NextRequest) {
           } else if (evt.type === "done") {
             inputTokens = evt.inputTokens;
             outputTokens = evt.outputTokens;
+            callCostUsd = evt.costUsd;
             // If the whole response was shorter than 80 chars, flush now
             if (!bufferingDone) flushBuffer();
           }
         }
       } catch (e) {
-        console.error("agent stream kimi call failed:", e);
+        console.error("agent stream claude call failed:", e);
         send({
           type: "error",
           message: "The assistant is temporarily unavailable.",
@@ -466,7 +465,7 @@ export async function POST(req: NextRequest) {
           turnCount,
           totalInputTokens: inputTokens,
           totalOutputTokens: outputTokens,
-          costUsd: kimiCostUsd(inputTokens, outputTokens),
+          costUsd: callCostUsd,
           wasRefused,
           refusalReason: wasRefused ? "library_insufficient" : null,
           citedEntryIds: [],

@@ -1,19 +1,17 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { getClient } from "@/lib/ai/anthropic";
+import { BudgetExceededError, claudeEnabled, claudeMessage } from "@/lib/ai/claude";
 
 /**
  * Grounded fact-sheet generator for the Solutions Atlas.
  *
- * Uses Claude + the Anthropic web_search tool (allow-listed to trusted domains
- * — no SERP, no SearXNG) to research a programme, then returns a STRUCTURED
+ * Uses Claude + the Anthropic web_search tool (open web minus a short block-list;
+ * model and search cap set by the "factsheet" task in lib/ai/models.ts) to research a programme, then returns a STRUCTURED
  * fact sheet where every populated field must be supported by a cited source.
  * Fields with no support are null ("Not stated"). The confidence gate decides
  * auto-publish vs. flag-for-review, so the confident majority needs no human
  * curation while anything weak is quarantined.
  */
-
-const MODEL = "claude-sonnet-4-6";
 
 // Open web search for COMPREHENSIVE coverage (every programme in India), with
 // trust coming from the grounding guarantees (cite-or-omit + confidence gate +
@@ -98,7 +96,7 @@ export type FactSheet = {
 
 const SYSTEM = `You build a verified fact sheet for ONE Indian food-systems / agroecology programme.
 
-Use the web_search tool (restricted to the allow-listed domains) to find authoritative sources. Then output a SINGLE JSON object — no markdown, no preamble.
+Use the web_search tool to find authoritative sources: government portals, implementing organisations, funders, evaluations and reputable reporting. Prefer primary sources. Then output a SINGLE JSON object — no markdown, no preamble.
 
 INCLUSION TEST: include the programme if it relates to the agroecology principles
 (recycling, input reduction, soil health, animal health, biodiversity, synergy,
@@ -115,7 +113,7 @@ HARD RULES (non-negotiable):
 - Plain language. No marketing words. No em dashes. Never the word "agroecology" in user-facing prose.
 - Use British / Indian English spelling throughout (organisation, programme, colour, centre, -ise endings).
 - India, programme-level only (named, geographically defined, identifiable lead org).
-- If you cannot verify the programme from the allow-listed sources, output {"refused": true, "reason": "..."}.
+- If you cannot verify the programme from credible sources, output {"refused": true, "reason": "..."}.
 
 JSON keys:
   title, one_liner, summary (2-4 sentences),
@@ -135,75 +133,80 @@ function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
 }
 
-type GenResult = { ok: true; sheet: FactSheet; status: string } | { ok: false; reason: string };
+type GenResult =
+  | { ok: true; sheet: FactSheet; status: string; costUsd: number }
+  | { ok: false; reason: string; costUsd?: number };
 
-/** Provider-agnostic search + extraction. Prefers OpenRouter (cheap, no rate
- *  wall) with web grounding via the :online plugin; falls back to Claude's
- *  web_search tool. SAME system prompt + JSON contract for both, so the
- *  fact-sheet format is identical regardless of provider. */
-async function searchAndExtract(query: string): Promise<string | null> {
-  const userPrompt = `Build the fact sheet for this programme: "${query}". Search the web for authoritative sources, then return ONLY the JSON object.`;
-
-  if (process.env.OPENROUTER_API_KEY) {
-    const model = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash:online";
-    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "content-type": "application/json",
-        "HTTP-Referer": "https://cat-platform-fawn.vercel.app",
-        "X-Title": "Transformation Hub",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 4096,
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
-    if (!r.ok) throw new Error(`OpenRouter ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`);
-    const data = await r.json();
-    return (data.choices?.[0]?.message?.content as string) ?? "";
+/**
+ * Pull the fact-sheet object out of model text. With web search the reply can
+ * carry short notes between searches, so a greedy first-"{"-to-last-"}" match
+ * may span prose. Try the whole text, then each object that starts with a
+ * fact-sheet key, last one first.
+ */
+function extractSheetJson(text: string): Record<string, unknown> | null {
+  const tryParse = (s: string) => {
+    try {
+      const v = JSON.parse(s);
+      return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  };
+  const trimmed = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+  const whole = tryParse(trimmed);
+  if (whole) return whole;
+  const end = trimmed.lastIndexOf("}");
+  if (end < 0) return null;
+  const starts = [...trimmed.matchAll(/\{\s*"(?:title|refused)"/g)].map((m) => m.index!).reverse();
+  for (const start of starts) {
+    const obj = tryParse(trimmed.slice(start, end + 1));
+    if (obj) return obj;
   }
-
-  const anthropic = getClient();
-  if (!anthropic) return null;
-  const res = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    system: SYSTEM,
-    tools: [
-      { type: "web_search_20250305" as never, name: "web_search", max_uses: 8, blocked_domains: BLOCKED_DOMAINS } as never,
-    ],
-    messages: [{ role: "user", content: userPrompt }],
-  });
-  return res.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b.type === "text" ? b.text : ""))
-    .join("\n");
+  return null;
 }
 
-export async function generateFactSheet(query: string): Promise<GenResult> {
-  let text: string | null;
+/** Claude + web search → raw model text (expected to be one JSON object). */
+async function searchAndExtract(
+  query: string,
+  runId?: string | null,
+): Promise<{ text: string; costUsd: number; stopReason: string | null }> {
+  const userPrompt = `Build the fact sheet for this programme: "${query}". Search the web for authoritative sources, then return ONLY the JSON object.`;
+  const res = await claudeMessage("factsheet", {
+    system: SYSTEM,
+    messages: [{ role: "user", content: userPrompt }],
+    webSearch: { blockedDomains: BLOCKED_DOMAINS },
+    runId,
+  });
+  return { text: res.text, costUsd: res.costUsd, stopReason: res.stopReason };
+}
+
+export async function generateFactSheet(
+  query: string,
+  opts: { runId?: string | null } = {},
+): Promise<GenResult> {
+  if (!claudeEnabled()) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
+
+  let text: string;
+  let callCost = 0;
   try {
-    text = await searchAndExtract(query);
+    const r = await searchAndExtract(query, opts.runId);
+    text = r.text;
+    callCost = r.costUsd;
+    if (r.stopReason === "refusal") return { ok: false, reason: "Model declined this request", costUsd: callCost };
+    if (r.stopReason === "max_tokens") return { ok: false, reason: "Answer was cut off (token limit)", costUsd: callCost };
   } catch (e) {
+    if (e instanceof BudgetExceededError) return { ok: false, reason: e.message };
     return { ok: false, reason: (e as Error).message.slice(0, 180) };
   }
-  if (text === null) return { ok: false, reason: "No LLM provider configured" };
 
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return { ok: false, reason: "No JSON returned" };
-
-  let raw: Record<string, unknown>;
-  try {
-    raw = JSON.parse(match[0]);
-  } catch {
-    return { ok: false, reason: "Unparseable JSON" };
+  const raw = extractSheetJson(text);
+  if (!raw) {
+    console.error("[factsheet] unparseable output for", query, "—", text.slice(0, 300));
+    return { ok: false, reason: "Unparseable JSON", costUsd: callCost };
   }
-  if (raw.refused) return { ok: false, reason: String(raw.reason || "Could not verify from sources") };
+  if (raw.refused) {
+    return { ok: false, reason: String(raw.reason || "Could not verify from sources"), costUsd: callCost };
+  }
 
   const rawStateCode = raw.state_code ? String(raw.state_code).toUpperCase().slice(0, 2) : null;
   // Normalise common code variants so the centroid lookup (and the Atlas state
@@ -295,7 +298,7 @@ export async function generateFactSheet(query: string): Promise<GenResult> {
     }
   }
 
-  return { ok: true, sheet, status };
+  return { ok: true, sheet, status, costUsd: callCost };
 }
 
 export type FactSheetRow = FactSheet & {

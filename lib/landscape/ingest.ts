@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import mammoth from "mammoth";
 import { db } from "@/lib/db";
+import { embedDocuments } from "@/lib/ai/embed";
 
 // convertToMarkdown exists at runtime but is missing from mammoth's TS types.
 const convertToMarkdown = (
@@ -17,47 +18,13 @@ const convertToMarkdown = (
  * but operates on an in-memory buffer (uploaded via the admin) and APPENDS a
  * document rather than wiping the landscape — so a landscape can hold several
  * reports, and a single one can be removed. Narrative chunks are embedded with
- * NVIDIA nv-embedqa-e5-v5 and stored in landscape_document_chunks (pgvector),
+ * Voyage (lib/ai/embed.ts) and stored in landscape_document_chunks (pgvector),
  * which the chatbot already reads from. No redeploy, no external services.
  */
 
-const EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
 const CHUNK_TARGET_CHARS = 1000;
 const CHUNK_OVERLAP_CHARS = 120;
-const EMBED_CONCURRENCY = 6;
 
-async function embedOne(text: string): Promise<number[]> {
-  const key = process.env.NVIDIA_API_KEY;
-  if (!key) throw new Error("NVIDIA_API_KEY missing");
-  const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      input: [text],
-      model: EMBED_MODEL,
-      input_type: "passage",
-      encoding_format: "float",
-      truncate: "END",
-    }),
-  });
-  if (!res.ok) throw new Error(`NVIDIA embed failed: ${res.status} ${await res.text().catch(() => "")}`);
-  const data = await res.json();
-  return data.data[0].embedding as number[];
-}
-
-/** Embed many strings with bounded concurrency (keeps us well under function limits). */
-async function embedAll(texts: string[]): Promise<number[][]> {
-  const out: number[][] = new Array(texts.length);
-  let cursor = 0;
-  async function worker() {
-    while (cursor < texts.length) {
-      const i = cursor++;
-      out[i] = await embedOne(texts[i]);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(EMBED_CONCURRENCY, texts.length) }, worker));
-  return out;
-}
 
 type Chunk = { text: string; section: string };
 
@@ -171,7 +138,7 @@ export async function ingestLandscapeReport(opts: {
   `);
   const documentId = (inserted as unknown as { rows: { id: string }[] }).rows[0].id;
 
-  const embeddings = await embedAll(chunks.map((c) => c.text));
+  const embeddings = await embedDocuments(chunks.map((c) => c.text));
 
   for (let i = 0; i < chunks.length; i++) {
     const vec = `[${embeddings[i].join(",")}]`;
