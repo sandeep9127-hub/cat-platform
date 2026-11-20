@@ -181,7 +181,7 @@ export async function stageInterventions(opts: {
           (landscape_slug, row_key, change_type, before, after, changed_fields, status, sync_run_id, decided_by, decided_at)
         VALUES (${opts.landscapeSlug}, ${rowKey}, ${type},
                 ${before === null ? null : JSON.stringify(before)}::jsonb, ${after === null ? null : JSON.stringify(after)}::jsonb,
-                ${fields}, ${baseline ? "approved" : "pending"}, ${opts.syncRunId ?? null},
+                ARRAY[${sql.join(fields.map((f) => sql`${f}`), sql`, `)}]::text[], ${baseline ? "approved" : "pending"}, ${opts.syncRunId ?? null},
                 ${baseline ? opts.approvedBy ?? null : null}, ${baseline ? new Date() : null})
         RETURNING id`))[0];
       if (!baseline) {

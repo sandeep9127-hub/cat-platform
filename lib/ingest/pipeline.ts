@@ -76,16 +76,21 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   const log = input.log ?? (() => {});
   const sha256 = createHash("sha256").update(input.bytes).digest("hex");
 
-  // Idempotent: the same file is never ingested twice. Google-native files
-  // (Docs/Sheets) export to different bytes every time, so for those "same"
-  // means the same Drive file at the same modifiedTime.
+  // Idempotent: the same content is never ingested twice. Exact bytes, or the
+  // same Drive file whose checksum (binary files) or parsed-text fingerprint
+  // (Google-native exports, which differ byte-wise every time) is unchanged.
+  const contentHash = createHash("sha256")
+    .update(JSON.stringify(input.parsed.blocks.map((b) => (b.kind === "table" ? b.rows : b.text))))
+    .digest("hex");
   const dup = rows<{ id: string; document_id: string; version_no: number }>(
     await db.execute(sql`
       SELECT v.id, v.document_id, v.version_no
       FROM "cat".document_versions v JOIN "cat".documents d ON d.id = v.document_id
       WHERE v.sha256 = ${sha256}
          OR (d.drive_file_id = ${input.drive.fileId} AND v.is_current
-             AND v.drive_modified_time = ${input.drive.modifiedTime}::timestamptz)
+             AND ((${input.drive.md5 ?? null}::text IS NOT NULL AND v.drive_md5 = ${input.drive.md5 ?? null})
+                  OR v.content_hash = ${contentHash}))
+      ORDER BY (v.sha256 = ${sha256}) DESC
       LIMIT 1`),
   )[0];
   if (dup) {
@@ -171,10 +176,10 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
         await tx.execute(sql`
           INSERT INTO "cat".document_versions
             (document_id, version_no, label, status, r2_original_key, r2_parsed_key, sha256, mime, bytes,
-             page_count, published_on, parser, parser_version, drive_modified_time, drive_md5)
+             page_count, published_on, parser, parser_version, drive_modified_time, drive_md5, content_hash)
           VALUES (${doc.id}, ${versionNo}, ${input.versionLabel}, 'embedding', ${originalKey}, ${parsedKey}, ${sha256},
                   ${input.mime}, ${input.bytes.length}, ${reliable ? input.parsed.pageCount : null}, ${input.publishedOn ?? null},
-                  ${PARSER}, ${PARSER}, ${input.drive.modifiedTime}, ${input.drive.md5 ?? null})
+                  ${PARSER}, ${PARSER}, ${input.drive.modifiedTime}, ${input.drive.md5 ?? null}, ${contentHash})
           RETURNING id`),
       )[0];
 
