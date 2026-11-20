@@ -1,5 +1,6 @@
 "use client";
 
+import { RaisedCount } from "@/components/ui/RaisedCount";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -147,8 +148,8 @@ export function LandscapeInterventions({
             </span>
             <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
               {g.category}
+              <RaisedCount n={g.items.length} srLabel={`, ${g.items.length} interventions`} />
             </h3>
-            <span className="ml-auto font-mono text-[11px] tabular-nums text-muted">{g.items.length}</span>
           </div>
           <ul className="list-none p-0 m-0 flex flex-col">
             {g.items.map((it, i) => (

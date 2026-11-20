@@ -411,7 +411,7 @@ export function OrganizationsExplorer() {
                   {o.domains.slice(0, 4).map((d) => (
                     <span key={d} className="og-domain">{d}</span>
                   ))}
-                  {o.domains.length > 4 && <span className="og-domain-more">+{o.domains.length - 4}</span>}
+                  {o.domains.length > 4 && <span className="og-domain-more">{o.domains.length - 4} more</span>}
                 </div>
               )}
               <div className="og-card-actions">

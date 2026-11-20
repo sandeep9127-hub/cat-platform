@@ -1,5 +1,6 @@
 "use client";
 
+import { RaisedCount } from "@/components/ui/RaisedCount";
 import { palette } from "@/lib/design/palette";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoPath } from "d3-geo";
@@ -322,9 +323,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
             />
             <span className="font-sans text-[13px] sm:text-[13.5px] font-medium text-ink leading-none whitespace-nowrap">
               {activeTheme.short}
-            </span>
-            <span className="font-mono text-[11px] tabular-nums text-muted leading-none">
-              {activeTheme.count}
+              <RaisedCount n={activeTheme.count} srLabel={`, ${activeTheme.count} programmes`} />
             </span>
           </div>
           <div className="flex gap-1 pl-0.5">

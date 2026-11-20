@@ -320,6 +320,17 @@ body::before {
   margin-left: 0.16em;
   color: color-mix(in srgb, currentColor 72%, transparent);
 }
+/* Count lifted beside its label (RaisedCount). */
+.raised-count {
+  font-size: 0.72em;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.3em;
+  vertical-align: 0.5em;
+  line-height: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
 .fig-dec {
   font-weight: 400;
   color: color-mix(in srgb, currentColor 72%, transparent);
