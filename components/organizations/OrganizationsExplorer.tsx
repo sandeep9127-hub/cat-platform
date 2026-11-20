@@ -190,7 +190,9 @@ export function OrganizationsExplorer() {
         .layers(
           { Satellite: esriSat, Clean: cleanBase },
           { "Tehsil boundaries": tehsilLayer },
-          { collapsed: true, position: "topright" }
+          // Bottom-right, so it never collides with the counter badge (top-right),
+          // matching the Solutions Atlas map's corner layout.
+          { collapsed: true, position: "bottomright" }
         )
         .addTo(map);
       // India outline from our own border-correct GeoJSON (the same geometry
@@ -328,10 +330,15 @@ export function OrganizationsExplorer() {
         <div>
           <div className="og-eyebrow">Who’s working where</div>
           <h1 className="og-title">Organisations Atlas</h1>
-          <p className="og-sub">
-            {loading
-              ? "Loading the directory…"
-              : `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations.`}
+          <p className="og-sub" aria-live="polite">
+            {loading ? (
+              <>
+                <span className="og-skel og-skel-line" aria-hidden />
+                <span className="sr-only">Loading the directory</span>
+              </>
+            ) : (
+              `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations.`
+            )}
           </p>
         </div>
         <button className="og-add" onClick={() => { setEditTarget(null); setFormOpen(true); }}>
@@ -343,23 +350,24 @@ export function OrganizationsExplorer() {
       <div className="og-filters">
         <input
           className="og-input"
+          aria-label="Search organisations"
           placeholder="Search organisations…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <select className="og-select" value={stateF} onChange={(e) => setStateF(e.target.value)}>
+        <select className="og-select" aria-label="Filter by state" value={stateF} onChange={(e) => setStateF(e.target.value)}>
           <option value="">All states</option>
           {states.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <select className="og-select" value={typeF} onChange={(e) => setTypeF(e.target.value)}>
+        <select className="og-select" aria-label="Filter by organisation type" value={typeF} onChange={(e) => setTypeF(e.target.value)}>
           <option value="">All types</option>
           {TYPE_ORDER.filter((t) => orgs.some((o) => o.orgType === t)).map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <select className="og-select" value={domainF} onChange={(e) => setDomainF(e.target.value)}>
+        <select className="og-select og-select-wide" aria-label="Filter by domain" value={domainF} onChange={(e) => setDomainF(e.target.value)}>
           <option value="">All domains</option>
           {domains.map((d) => (
             <option key={d} value={d}>{d}</option>
@@ -375,7 +383,19 @@ export function OrganizationsExplorer() {
 
       {/* split: list + map */}
       <div className="og-split">
-        <div className="og-list">
+        <div className="og-list" aria-busy={loading}>
+          {loading &&
+            Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="og-card og-card-skel" aria-hidden>
+                <span className="og-skel" style={{ width: `${62 - (i % 3) * 12}%`, height: 16 }} />
+                <span className="og-skel" style={{ width: "34%", height: 11, marginTop: 10 }} />
+                <span className="og-skel-row">
+                  <span className="og-skel" style={{ width: 84, height: 18 }} />
+                  <span className="og-skel" style={{ width: 110, height: 18 }} />
+                  <span className="og-skel" style={{ width: 70, height: 18 }} />
+                </span>
+              </div>
+            ))}
           {shown.map((o) => (
             <article key={o.id} className="og-card" onClick={() => setDetailOrg(o)}>
               <div className="og-card-top">
@@ -778,8 +798,8 @@ function Styles() {
       .og-add:hover { background:var(--teal); opacity:.94; }
       .og-add:active { transform:scale(.97); }
       .og-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; max-width:1280px; margin:0 auto; padding:10px 24px 16px; }
-      .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:0; background:#fff; color:var(--ink); }
-      .og-input:focus,.og-select:focus { outline:none; border-color:var(--rule); }
+      .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--paper); color:var(--ink); }
+      .og-input:focus,.og-select:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 2px color-mix(in srgb, var(--teal) 25%, transparent); }
       .og-input { min-width:220px; flex:1 1 220px; }
       .og-clear { font-size:12px; color:var(--muted); background:none; border:0; cursor:pointer; text-decoration:underline; }
       .og-count { margin-left:auto; font-family:var(--font-jetbrains),monospace; font-size:11px; color:var(--muted); }
@@ -797,7 +817,7 @@ function Styles() {
       .og-card:hover .og-card-name { color:var(--teal); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
       .og-card-name { font-family:var(--font-inter), system-ui, sans-serif; font-size:17px; font-weight:600; line-height:1.22; letter-spacing:-0.015em; min-width:0; transition:color .2s;
-        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        overflow-wrap:anywhere; } /* full names, never truncated */
       .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
         color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
       .og-card-meta { font-size:12.5px; color:var(--muted); margin-top:5px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
@@ -805,7 +825,8 @@ function Styles() {
       .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
-      .og-card-actions { display:flex; gap:14px; margin-top:11px; align-items:center; }
+      .og-card-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:11px; align-items:center; }
+      .og-card-actions > * { white-space:nowrap; }
       .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; padding:6px 0; min-height:32px; display:inline-flex; align-items:center;
         background:none; border:0; cursor:pointer; padding:0; }
       .og-view { color:var(--td); font-weight:600; }
@@ -847,6 +868,16 @@ function Styles() {
         padding:0 16px; border-radius: var(--radius-card); border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
       .og-detail-edit:hover { border-color:var(--td); color:var(--td); }
       .og-empty { color:var(--muted); padding:30px 0; }
+      /* Loading skeleton: quiet warm bars, pulse only when motion is allowed. */
+      .og-skel { display:block; border-radius: var(--radius-tight); background:var(--line-soft); }
+      .og-skel-line { width:min(340px,80%); height:15px; margin-top:4px; }
+      .og-skel-row { display:flex; gap:6px; margin-top:12px; }
+      .og-card-skel { cursor:default; }
+      .og-card-skel:hover { background:transparent; }
+      @media (prefers-reduced-motion: no-preference) {
+        .og-skel { animation: og-skel-pulse 1.4s ease-in-out infinite; }
+        @keyframes og-skel-pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+      }
       .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
       .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius: var(--radius-card); background:#fff; cursor:pointer; }
       .og-pager button:disabled { opacity:.4; cursor:default; }
@@ -861,23 +892,35 @@ function Styles() {
       .og-map .leaflet-overlay-pane path.og-country { filter: drop-shadow(0 5px 12px rgba(26,38,37,.10)); }
       .og-map .leaflet-overlay-pane path.og-dot { filter: drop-shadow(0 0 4px rgba(46,117,115,.55)); }
       /* dashed inner frame, echoing the Landscapes map */
-      .og-map-frame { position:absolute; inset:11px; border:1px dashed var(--line); border-radius: var(--radius-card); pointer-events:none; z-index:650; }
+      .og-map-frame { position:absolute; inset:14px; border:1px dashed var(--line); border-radius: var(--radius-card); pointer-events:none; z-index:650; }
+      /* Leaflet controls in the same cream, hairline, mono language as the
+         legend and the Solutions Atlas map (no default white Leaflet chrome). */
+      .og-map .leaflet-top.leaflet-left { top:12px; left:12px; }
+      .og-map .leaflet-bottom.leaflet-right { bottom:12px; right:12px; }
+      .og-map .leaflet-bar, .og-map .leaflet-control-layers { border:1px solid var(--line) !important; border-radius: var(--radius-card) !important; overflow:hidden;
+        background:rgba(251,248,242,.92) !important; backdrop-filter:blur(6px); box-shadow:0 6px 16px -10px rgba(26,38,37,.20), 0 1px 2px rgba(26,38,37,.04) !important; }
+      .og-map .leaflet-bar a { background:transparent; color:var(--ink-soft); border-bottom:1px solid var(--line); width:32px; height:32px; line-height:32px; font-weight:400; }
+      .og-map .leaflet-bar a:last-child { border-bottom:0; }
+      .og-map .leaflet-bar a:hover { background:var(--teal-wash); color:var(--teal); }
+      .og-map .leaflet-control-layers-expanded { padding:10px 12px; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-soft); }
+      .og-map .leaflet-control-layers-separator { border-top-color:var(--line); }
+      .og-map .leaflet-control-attribution { background:rgba(251,248,242,.85); color:var(--muted); font-size:11px; border-radius: var(--radius-tight) 0 0 0; }
       /* teal counter badge, top-right */
-      .og-map-badge { position:absolute; top:14px; right:14px; z-index:660; display:flex; align-items:center; gap:6px;
-        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.13em; color:#f3efe6;
-        background: linear-gradient(135deg,#334B4A 0%,#2E7573 60%,#334B4A 100%); padding:8px 12px; border-radius: var(--radius-card);
+      .og-map-badge { position:absolute; top:24px; right:24px; z-index:660; display:flex; align-items:center; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--cream);
+        background: linear-gradient(135deg,var(--deep-teal) 0%,var(--teal) 60%,var(--deep-teal) 100%); padding:8px 12px; border-radius: var(--radius-card);
         border:1px solid rgba(251,248,242,.12); box-shadow:0 10px 28px -12px rgba(26,38,37,.45), inset 0 1px 0 rgba(255,255,255,.10); }
-      .og-map-badge .n { color:#f8ca7c; font-size:12px; font-weight:600; }
+      .og-map-badge .n { color:var(--amber); font-size:12px; font-weight:600; }
       .og-map-badge .dot { opacity:.45; }
       /* legend, bottom-left */
-      .og-map-legend { position:absolute; bottom:14px; left:14px; z-index:660; display:flex; flex-direction:column; gap:6px;
-        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
+      .og-map-legend { position:absolute; bottom:24px; left:24px; z-index:660; display:flex; flex-direction:column; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-soft);
         background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius: var(--radius-card); padding:9px 11px;
         box-shadow:0 6px 16px -10px rgba(26,38,37,.20); }
       .og-map-legend > div { display:flex; align-items:center; gap:7px; }
       .lg-dot { width:10px; height:10px; border-radius:999px; flex:0 0 auto; }
       .lg-dot.t { background:var(--teal); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
-      .lg-dot.c { background:linear-gradient(135deg,#2E7573,#1F5957); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      .lg-dot.c { background:linear-gradient(135deg,var(--teal),var(--navy-teal)); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
       /* cluster bubbles → teal halo to match the dot language */
       .og .marker-cluster { background:transparent; }
       .og .marker-cluster div { background:linear-gradient(135deg, rgba(46,117,115,.94), rgba(31,89,87,.94)); color:#fbf8f2;
@@ -921,6 +964,17 @@ function Styles() {
       .og-thanks h2 { font-family:var(--font-inter), system-ui, sans-serif; font-size:26px; margin-bottom:8px; }
       .og-thanks p { color:var(--muted); font-size:14px; margin-bottom:18px; }
 
+      /* Phones: an even two-column grid instead of wrapped controls of
+         uneven widths. Search and domain span the full row. */
+      @media (max-width: 640px) {
+        .og-filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 16px 14px; }
+        .og-input, .og-select-wide { grid-column:1 / -1; min-width:0; }
+        .og-select { width:100%; min-width:0; }
+        .og-count { grid-column:1 / -1; margin-left:0; }
+        /* Type pill drops below the name so long names get the full width. */
+        .og-card-top { flex-direction:column; align-items:flex-start; gap:6px; }
+        .og-clear { justify-self:start; }
+      }
       @media (max-width: 900px) {
         .og-split { grid-template-columns:1fr; height:auto; }
         .og-list { padding-right:0; max-height:none; }
