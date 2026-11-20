@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ANCHORS } from "@/lib/data/anchors";
 
 /**
@@ -15,11 +16,12 @@ export function LandscapeAnchorPartner({ slug }: { slug: string }) {
       </span>
       <div className="mt-2 flex items-center gap-3">
         <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-[8px] bg-paper border border-line p-1.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={a.logo}
             alt={`${a.name} logo`}
-            className="max-h-full max-w-full object-contain"
+            width={36}
+            height={36}
+            className="w-full h-full object-contain"
           />
         </span>
         <span className="leading-tight">

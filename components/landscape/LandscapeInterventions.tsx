@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { CATEGORIES } from "@/lib/data/categories";
@@ -135,7 +136,7 @@ export function LandscapeInterventions({
               className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] shrink-0 border border-line/70"
               style={{ background: `${colour}12` }}
             >
-              <img
+              <Image
                 src={illustration}
                 alt=""
                 aria-hidden

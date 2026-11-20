@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { SDGS } from "@/lib/data/sdgs";
 import { Sprig } from "@/components/ui/Sprig";
 import { SectionOpener } from "@/components/ui/SectionOpener";
@@ -53,13 +54,12 @@ export function Sdgs() {
                 style={{ background: "var(--c)" }}
               />
               {/* Official UN inverted SDG icon (colour art on white). */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={`/sdg/sdg-${String(g.number).padStart(2, "0")}.png`}
                 alt={`Sustainable Development Goal ${g.number}: ${g.label}`}
-                width={1500}
-                height={1500}
-                loading="lazy"
+                width={400}
+                height={400}
+                sizes="(min-width: 1024px) 180px, (min-width: 640px) 25vw, 33vw"
                 className="w-full h-full object-contain"
               />
             </span>

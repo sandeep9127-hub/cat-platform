@@ -167,6 +167,9 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
           )}
           <figure className="relative max-w-[min(1100px,92vw)] max-h-[88vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
+              {/* Plain <img> on purpose: the lightbox sizes to the photo's own
+                  aspect, which next/image's srcset sizing would shrink. Loads
+                  only on click, and the source JPEGs are capped at 2000px. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={active.src}

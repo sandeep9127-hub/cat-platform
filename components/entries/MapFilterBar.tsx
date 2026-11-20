@@ -88,7 +88,7 @@ export function MapFilterBar({
       icon={
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/images/principle-icons/p${o.n}.png?v=4`}
+          src={`/images/principle-icons/p${o.n}.png?v=5`}
           alt=""
           className="shrink-0 w-4 h-4 object-contain"
           aria-hidden

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Download } from "lucide-react";
@@ -326,11 +327,11 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                           "0 1px 2px rgba(26,38,37,0.05), 0 24px 50px -30px rgba(26,38,37,0.45)",
                       }}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={profile.photos[0].src}
                         alt={profile.photos[0].alt ?? profile.photos[0].caption}
-                        loading="lazy"
+                        fill
+                        sizes="(min-width: 1024px) 560px, 100vw"
                         className={
                           "absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out " +
                           (isActive ? "scale-100" : "scale-[1.04]")
@@ -368,8 +369,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                         <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
                         <div className="mt-1.5 flex items-center gap-2.5">
                           <span className="inline-flex items-center justify-center w-12 h-12 rounded-[7px] bg-paper border border-line p-1">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={anchor.logo} alt={anchor.name} className="max-h-full max-w-full object-contain" />
+                            <Image src={anchor.logo} alt={anchor.name} width={40} height={40} className="w-full h-full object-contain" />
                           </span>
                           <span className="font-sans text-[13px] text-ink leading-tight max-w-[18ch]">{anchor.short}</span>
                         </div>

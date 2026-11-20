@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Mountain, Users, Coins, type LucideIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { useCurrency, formatMoney } from "./currency";
@@ -104,7 +105,7 @@ export function LandscapeLedger(props: LedgerProps) {
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: g.accent }} />
             <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
               {g.iconSrc ? (
-                <img src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
+                <Image src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
               ) : (
                 <g.Icon size={13} strokeWidth={1.9} aria-hidden />
               )}

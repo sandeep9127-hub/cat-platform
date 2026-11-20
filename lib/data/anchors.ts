@@ -10,56 +10,56 @@ export const ANCHORS: Record<string, Anchor> = {
   ahwa: {
     name: "Aga Khan Rural Support Programme",
     short: "AKRSP",
-    logo: "/images/anchors/akrsp.png",
+    logo: "/images/anchors/akrsp.webp",
   },
   "khatarshnong-laitkroh": {
     name: "North East Slow Food & Agrobiodiversity Society",
     short: "NESFAS",
-    logo: "/images/anchors/nesfas.png",
+    logo: "/images/anchors/nesfas.webp",
   },
   patharpratima: {
     name: "Development Research Communication and Services Centre",
     short: "DRCSC",
-    logo: "/images/anchors/drcsc.png",
+    logo: "/images/anchors/drcsc.webp",
   },
   patratu: {
     name: "GSS",
     short: "GSS",
-    logo: "/images/anchors/gss.png",
+    logo: "/images/anchors/gss.webp",
   },
   dharashiv: {
     name: "Swayam Shikshan Prayog",
     short: "SSP",
-    logo: "/images/anchors/ssp.png",
+    logo: "/images/anchors/ssp.webp",
   },
   vempalli: {
     name: "Centre for Sustainable Agriculture",
     short: "CSA",
-    logo: "/images/anchors/csa.png",
+    logo: "/images/anchors/csa.webp",
   },
   chitrakonda: {
     name: "Watershed Support Services and Activities Network",
     short: "WASSAN",
-    logo: "/images/anchors/wassan.png",
+    logo: "/images/anchors/wassan.webp",
   },
   rajnagar: {
     name: "Professional Assistance for Development Action",
     short: "PRADAN",
-    logo: "/images/anchors/pradan.png",
+    logo: "/images/anchors/pradan.webp",
   },
   mau: {
     name: "Self-Reliant Initiatives through Joint Action",
     short: "SRIJAN",
-    logo: "/images/anchors/srijan.jpeg",
+    logo: "/images/anchors/srijan.webp",
   },
   dantewada: {
     name: "Nirmaan Organisation",
     short: "Nirmaan",
-    logo: "/images/anchors/nirmaan.png",
+    logo: "/images/anchors/nirmaan.webp",
   },
   pangi: {
     name: "Revitalising Rainfed Agriculture Network",
     short: "RRAN",
-    logo: "/images/anchors/rran.png",
+    logo: "/images/anchors/rran.webp",
   },
 };

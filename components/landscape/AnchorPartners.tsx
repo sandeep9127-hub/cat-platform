@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { LANDSCAPES } from "@/lib/data/landscapes";
@@ -62,12 +63,13 @@ export function AnchorPartners() {
                     share a baseline per row. max-w caps the wide two-part lockups
                     (Srijan, Pradan) so they can't bleed into the gutter. */}
                 <span className="flex h-[72px] sm:h-[80px] w-full items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={a.logo}
                     alt={a.name}
-                    loading="lazy"
-                    className="max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                    width={240}
+                    height={120}
+                    sizes="200px"
+                    className="h-auto max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
                   />
                 </span>
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">

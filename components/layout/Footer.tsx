@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
 
@@ -19,10 +20,12 @@ export function Footer() {
       <div className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
           {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/cat-logo.png"
             alt="Consortium for Agroecological Transformations"
+            width={996}
+            height={382}
+            sizes="200px"
             className="h-[68px] sm:h-[76px] w-auto"
           />
           <a
