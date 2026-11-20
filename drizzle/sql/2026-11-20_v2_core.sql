@@ -1,5 +1,6 @@
 -- CAT Hub v2 core schema (see docs/hub-v2-design.md §3).
 -- Target: the new CAT Neon project only. Idempotent: safe to re-run.
+-- Always apply 2026-11-20_v2_hardening.sql after this file (triggers, token rules).
 -- Status / kind columns use text + CHECK (easier to evolve than enums).
 
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS "cat".chunks (
   page_start      integer,
   page_end        integer,
   token_count     integer,
-  is_current      boolean NOT NULL DEFAULT true,
+  is_current      boolean NOT NULL DEFAULT false,  -- searchable only once flipped (see trigger below)
   tsv             tsvector GENERATED ALWAYS AS (
                     setweight(to_tsvector('english', coalesce(context, '')), 'A') ||
                     setweight(to_tsvector('english', text), 'B')
@@ -179,7 +180,9 @@ CREATE INDEX IF NOT EXISTS jobs_kind_status_idx ON "cat".jobs (kind, status);
 
 CREATE TABLE IF NOT EXISTS "cat".conversations (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_token   text NOT NULL,
+  -- sha256 (hex) of a server-generated, httpOnly session cookie. Never store
+  -- or accept the raw token; reads must match user_id or this hash.
+  session_token_hash text NOT NULL CHECK (session_token_hash ~ '^[0-9a-f]{64}$'),
   user_id         uuid REFERENCES "cat".users(id) ON DELETE SET NULL,
   mode            text NOT NULL DEFAULT 'text' CHECK (mode IN ('text','voice')),
   language        text NOT NULL DEFAULT 'en',
@@ -189,7 +192,7 @@ CREATE TABLE IF NOT EXISTS "cat".conversations (
   started_at      timestamptz NOT NULL DEFAULT now(),
   last_active_at  timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS conversations_session_idx ON "cat".conversations (session_token, last_active_at DESC);
+CREATE INDEX IF NOT EXISTS conversations_session_idx ON "cat".conversations (session_token_hash, last_active_at DESC);
 
 CREATE TABLE IF NOT EXISTS "cat".messages (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
