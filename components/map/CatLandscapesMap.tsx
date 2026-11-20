@@ -152,7 +152,7 @@ export function CatLandscapesMap({ pins, className }: Props) {
                 onClick={() => {
                   window.location.href = `/landscape/${pin.slug}`;
                 }}
-                className="cursor-pointer dot-group"
+                className={`cursor-pointer dot-group ${isHovered ? "is-live" : ""}`}
                 style={{ color: "var(--periwinkle)" }}
               >
                 <circle

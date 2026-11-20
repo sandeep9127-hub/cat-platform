@@ -124,10 +124,11 @@ export function BudgetExplorer({
       <div className="mt-10 mb-4 flex items-end justify-between gap-4 flex-wrap">
         <SectionOpener number="01" label="Programme scale" />
         <div className="flex items-center gap-2.5 flex-wrap pb-1">
-          <CurrencyToggle />
+          {/* Label sits left of the toggle so the toggle stays put when it appears. */}
           {currency !== "INR" && (
             <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
           )}
+          <CurrencyToggle />
         </div>
       </div>
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">

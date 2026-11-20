@@ -156,12 +156,20 @@ export function CurrencyControl({ className = "" }: { className?: string }) {
 export function CurrencyToggle({ className = "" }: { className?: string }) {
   const { currency, setCurrency } = useCurrency();
   const opts: Currency[] = ["INR", "USD", "EUR"];
+  const idx = Math.max(0, opts.indexOf(currency));
   return (
     <div
       role="group"
       aria-label="Display currency"
-      className={"inline-flex border border-line rounded-full overflow-hidden bg-paper " + className}
+      className={"relative inline-grid grid-cols-3 border border-line rounded-full bg-paper p-[3px] " + className}
     >
+      {/* One indicator that slides to the chosen currency (200ms), so the
+          change reads as a move rather than a flash. Off under reduced motion. */}
+      <span
+        aria-hidden
+        className="absolute top-[3px] bottom-[3px] left-[3px] rounded-full bg-deep-teal transition-transform duration-200 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] motion-reduce:transition-none"
+        style={{ width: "calc((100% - 6px) / 3)", transform: `translateX(${idx * 100}%)` }}
+      />
       {opts.map((c) => {
         const active = currency === c;
         return (
@@ -171,8 +179,8 @@ export function CurrencyToggle({ className = "" }: { className?: string }) {
             onClick={() => setCurrency(c)}
             aria-pressed={active}
             className={
-              "px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] border-r border-line last:border-r-0 transition-colors " +
-              (active ? "bg-deep-teal text-paper font-semibold" : "text-deep-teal hover:bg-line-soft")
+              "relative z-[1] px-3 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-[0.14em] transition-colors duration-200 " +
+              (active ? "text-paper font-semibold" : "text-deep-teal hover:text-teal")
             }
           >
             {c}

@@ -444,7 +444,9 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
                       window.location.href = `/entry/${entry.slug}`;
                     }
                   }}
-                  className="cursor-pointer dot-group"
+                  // Only dots in the state the visitor picked pulse (sparse,
+                  // meaningful motion); the theme tour highlights by dimming.
+                  className={`cursor-pointer dot-group ${activeState && entry.stateCode === activeState ? "is-live" : ""}`}
                   style={
                     {
                       color: isAmber ? palette.periwinkleDeep : "var(--teal)",

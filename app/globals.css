@@ -618,12 +618,18 @@ body::before {
    halos breathe on a livelier ~2.1s cycle, staggered into a travelling wave.
    --pop-delay drives the entrance only; --halo-delay drives the pulse only,
    so the two never clobber each other (a single animation-delay would). */
+/* Halos no longer breathe all at once. Only a highlighted dot (.is-live:
+   in the current theme, the chosen state, or hovered) pulses, slowly (3s),
+   so motion points at something. Refero review: sparse 3s map pings. */
 .dot-group .dot-halo {
   transform-origin: center;
   transform-box: fill-box;
+  animation: dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both;
+}
+.dot-group.is-live .dot-halo {
   animation:
     dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both,
-    dot-pulse 2.1s ease-in-out var(--halo-delay, 0s) infinite;
+    dot-pulse 3s ease-in-out var(--halo-delay, 0s) infinite;
 }
 .dot-group .dot-core {
   transform-origin: center;
@@ -634,7 +640,8 @@ body::before {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .dot-group .dot-halo {
+  .dot-group .dot-halo,
+  .dot-group.is-live .dot-halo {
     animation: dot-pop 0.4s ease both;
   }
 }
