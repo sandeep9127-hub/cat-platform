@@ -228,25 +228,33 @@ export async function generateFactSheet(
   const geo = geocodeState(stateCode, slugify(String(raw.title || query)));
   // Every URL here came from the model, which read untrusted web pages: keep
   // only well-formed http(s) links and drop any entry whose link fails.
-  const outcomes = (Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [])
+  const rawOutcomes = Array.isArray(raw.outcomes) ? (raw.outcomes as FactSheet["outcomes"]) : [];
+  const rawCitations = Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [];
+  const rawMetrics = Array.isArray(raw.metrics) ? (raw.metrics as FactSheet["metrics"]) : [];
+  const outcomes = rawOutcomes
     .flatMap((o) => {
       const url = safeHttpUrl(o?.source_url);
       return o && o.claim && url ? [{ claim: String(o.claim), figure: o.figure ? String(o.figure) : null, source_url: url }] : [];
     });
-  const citations = (Array.isArray(raw.citations) ? (raw.citations as FactSheet["citations"]) : [])
+  const citations = rawCitations
     .flatMap((c) => {
       const url = safeHttpUrl(c?.url);
       return url ? [{ url, passage: String(c.passage ?? "").slice(0, 600) }] : [];
     });
   const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
-  const metrics = (Array.isArray(raw.metrics) ? (raw.metrics as FactSheet["metrics"]) : [])
-    .flatMap((m) => {
+  const metricsAll = rawMetrics.flatMap((m) => {
       const url = safeHttpUrl(m?.source_url);
       return m && m.value && m.label && url
         ? [{ label: String(m.label), value: String(m.value), source_url: url }]
         : [];
-    })
-    .slice(0, 4);
+    });
+  const metrics = metricsAll.slice(0, 4);
+  // Any entry dropped for a bad link means the model produced something we
+  // couldn't verify: never auto-publish that sheet.
+  const droppedLinks =
+    rawOutcomes.length - outcomes.length +
+    rawCitations.length - citations.length +
+    rawMetrics.length - metricsAll.length;
   const rawInsight = (raw.insight ?? {}) as Record<string, unknown>;
   const insight = {
     whats_working: rawInsight.whats_working ? String(rawInsight.whats_working) : null,
@@ -282,8 +290,7 @@ export async function generateFactSheet(
 
   // Confidence gate: auto-publish only when well-sourced; otherwise flag.
   const wellSourced =
-    confidence >= 0.7 && !!sheet.source_url && citations.length >= 1 &&
-    outcomes.every((o) => o.source_url);
+    confidence >= 0.7 && !!sheet.source_url && citations.length >= 1 && droppedLinks === 0;
   const status = wellSourced ? "published" : "flagged";
 
   await db.execute(sql`
