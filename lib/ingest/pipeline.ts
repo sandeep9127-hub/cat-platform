@@ -76,9 +76,17 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   const log = input.log ?? (() => {});
   const sha256 = createHash("sha256").update(input.bytes).digest("hex");
 
-  // Idempotent: the exact same file is never ingested twice.
+  // Idempotent: the same file is never ingested twice. Google-native files
+  // (Docs/Sheets) export to different bytes every time, so for those "same"
+  // means the same Drive file at the same modifiedTime.
   const dup = rows<{ id: string; document_id: string; version_no: number }>(
-    await db.execute(sql`SELECT id, document_id, version_no FROM "cat".document_versions WHERE sha256 = ${sha256}`),
+    await db.execute(sql`
+      SELECT v.id, v.document_id, v.version_no
+      FROM "cat".document_versions v JOIN "cat".documents d ON d.id = v.document_id
+      WHERE v.sha256 = ${sha256}
+         OR (d.drive_file_id = ${input.drive.fileId} AND v.is_current
+             AND v.drive_modified_time = ${input.drive.modifiedTime}::timestamptz)
+      LIMIT 1`),
   )[0];
   if (dup) {
     log("  already ingested (same file), skipping");
