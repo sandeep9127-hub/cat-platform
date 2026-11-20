@@ -100,7 +100,12 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
   useEffect(() => {
     let cancelled = false;
     fetch("/geo/india-states.json")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (!r.ok && process.env.NODE_ENV !== "production") {
+          console.warn("India basemap missing: run `npm run geo:download`.");
+        }
+        return r.ok ? r.json() : null;
+      })
       .then((j) => {
         if (!cancelled && j) setGeojson(j as GeoJSON.FeatureCollection);
       })
@@ -342,6 +347,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         className="w-full h-full block"
         role="img"
         aria-label="Map of India showing food systems programmes by state"
+        aria-busy={paths.length === 0}
       >
         {/* Ground-shadow ellipse: gives the card map a sense of lift. On the
             bare hero map it reads as a floating grey bulb, so omit it there. */}
@@ -356,17 +362,18 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
         )}
 
         {paths.length === 0 ? (
-          <text
-            x={PROJECTION_VIEWBOX.width / 2}
-            y={PROJECTION_VIEWBOX.height / 2}
-            textAnchor="middle"
-            className="font-mono fill-muted"
-            fontSize="9"
-            letterSpacing="0.16em"
-          >
-            <tspan x={PROJECTION_VIEWBOX.width / 2} dy="0">RUN `NPM RUN GEO:DOWNLOAD`</tspan>
-            <tspan x={PROJECTION_VIEWBOX.width / 2} dy="14">TO LOAD THE INDIA BASEMAP</tspan>
-          </text>
+          // Quiet loading skeleton while the basemap streams in (or if it
+          // fails to load): a soft teal wash, no developer text on screen.
+          <g aria-hidden="true" className="motion-safe:animate-pulse">
+            <rect
+              x={PROJECTION_VIEWBOX.width * 0.18}
+              y={PROJECTION_VIEWBOX.height * 0.1}
+              width={PROJECTION_VIEWBOX.width * 0.64}
+              height={PROJECTION_VIEWBOX.height * 0.78}
+              rx={PROJECTION_VIEWBOX.width * 0.2}
+              fill="rgba(46, 117, 115, 0.06)"
+            />
+          </g>
         ) : (
           <g className="map-country">
             {paths.map((p) => {
