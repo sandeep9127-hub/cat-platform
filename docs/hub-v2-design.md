@@ -141,6 +141,14 @@ triage_comments      discussion on an item
 8. **Publish:** the new version becomes current, and the old one is marked superseded. Old chunks stay stored but are no longer searched, so old answers can still be traced.
 9. **Diff:** if a previous version exists, a version diff is generated automatically.
 
+**Drive folder sync (decided 20 Nov 2026).** The CAT documents live in one Google Drive folder, and the Hub keeps itself current from it:
+
+- **Matching:** every file is matched by its Drive file ID, which stays the same through renames and moves. An edited or replaced file therefore becomes a new **version** of the same document.
+- **When it checks:** daily on Vercel Hobby (every few minutes once on Pro), plus a "Sync now" button in the admin.
+- **Change detection:** Drive's `modifiedTime` and checksum. Google Docs are exported to PDF.
+- **Access:** the site reads Drive through a read-only service account that the folder is shared with. It can never write.
+- **Publishing:** text, answers and citations update automatically, and editors get an email with the version diff. **Changed budget-table figures wait for one-click editor approval** in the triage queue before the structured tables on landscape pages change.
+
 Every step is a row in `jobs` with retries, and the admin shows live progress per document. Jobs run on a Vercel cron every minute (Pro plan), in small steps so no function times out.
 
 ## 5. Retrieval and answering
