@@ -310,15 +310,12 @@ body::before {
   top: 1rem;
 }
 
-/* Big figures: the unit (cr, M, ha, x) and money decimals sit lighter and
-   smaller than the value so the number reads first. Colour derives from the
-   figure's own colour (72%), which keeps large-text contrast above 3:1. */
+/* Big figures: the unit (cr, M, ha, x) is set a little smaller in the same
+   colour and weight, like a printed report. No colour games on decimals. */
 .fig-unit {
-  font-weight: 400;
-  font-size: 0.56em;
+  font-size: 0.6em;
   letter-spacing: 0;
-  margin-left: 0.16em;
-  color: color-mix(in srgb, currentColor 72%, transparent);
+  margin-left: 0.14em;
 }
 /* Count lifted beside its label (RaisedCount). */
 .raised-count {
@@ -331,11 +328,6 @@ body::before {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
-.fig-dec {
-  font-weight: 400;
-  color: color-mix(in srgb, currentColor 72%, transparent);
-}
-
 /* Map state styling — shared between landing atlas and /map deep view. */
 .map-state {
   fill: rgba(46, 117, 115, 0.07);

@@ -122,7 +122,7 @@ export function LandscapeLedger(props: LedgerProps) {
                   <dd
                     className={
                       "font-serif tabular-nums tracking-[-0.015em] text-right " +
-                      (r.muted ? "text-[15px] italic text-amber-deep" : "text-[19px] sm:text-[21px] text-deep-teal font-medium")
+                      (r.muted ? "text-[15px] italic text-amber-deep" : "text-[19px] sm:text-[21px] text-ink font-medium")
                     }
                   >
                     {r.muted ? r.value : <AnimatedNumber key={g.key === "money" ? `${currency}` : undefined} value={r.value} />}

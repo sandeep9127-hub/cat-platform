@@ -139,7 +139,7 @@ export function LandscapeClimate(props: ClimateProps) {
           {ratio > 0 && (
             <div ref={barRef} className="mt-7 rounded-panel border border-line bg-line-soft p-5 sm:p-6">
               <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-                <div className="font-serif text-[clamp(40px,7vw,68px)] leading-none text-teal tracking-[-0.03em]">
+                <div className="font-sans font-medium text-[clamp(40px,7vw,64px)] leading-none text-ink tracking-[-0.03em]">
                   <AnimatedNumber value={ratioLabel} duration={1100} />
                 </div>
                 <div className="min-w-[16ch] flex-1">
@@ -224,7 +224,7 @@ export function LandscapeClimate(props: ClimateProps) {
                     {s.label}
                     <span className="ml-auto tabular-nums text-muted">{pct(s.value, total)}%</span>
                   </div>
-                  <div className="font-serif text-[22px] sm:text-[24px] text-deep-teal tabular-nums tracking-[-0.015em] mt-2.5">
+                  <div className="font-sans font-medium text-[22px] sm:text-[24px] text-ink tabular-nums tracking-[-0.015em] mt-2.5">
                     {formatMoney(s.value, currency)}
                   </div>
                   <div className="font-sans text-[12.5px] text-ink-soft leading-[1.45] mt-1.5">{s.note}</div>

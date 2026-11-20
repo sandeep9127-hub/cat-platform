@@ -324,36 +324,24 @@ function StatCard({
 }) {
   return (
     <div
-      className="group relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
-      style={{
-        boxShadow: highlighted
-          ? `0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -14px ${accent.glow}`
-          : `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -14px ${accent.glow}`,
-        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
-      }}
+      // Plain report tile: hairline border, no tinted gradient, coloured stripe,
+      // glow or hover lift. The figure carries the weight, not decoration.
+      className={`relative rounded-card border bg-paper p-5 sm:p-6 ${highlighted ? "border-ink/25" : "border-line"}`}
+      data-accent={accent.bar}
     >
-      <span
-        aria-hidden
-        className="absolute top-0 left-0 right-0"
-        style={{
-          height: highlighted ? 4 : 3,
-          background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
-        }}
-      />
       <div className="relative flex items-start justify-between gap-3">
         <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
           {label}
         </span>
         <span
-          className="shrink-0 w-9 h-9 rounded-card inline-flex items-center justify-center"
-          style={{ background: accent.iconBg, color: accent.iconFg }}
+          className="shrink-0 inline-flex items-center justify-center text-muted"
           aria-hidden
         >
           <Icon size={16} strokeWidth={1.7} />
         </span>
       </div>
       <div
-        className={`relative font-serif font-medium leading-none tracking-[-0.022em] mt-4 text-deep-teal tabular-nums ${
+        className={`relative font-sans font-medium leading-none tracking-[-0.022em] mt-4 text-ink tabular-nums ${
           compact ? "text-[28px] sm:text-[32px]" : "text-[28px] sm:text-[34px] lg:text-[36px]"
         }`}
       >
@@ -361,8 +349,7 @@ function StatCard({
       </div>
       {sub && (
         <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
-          <span className="inline-block w-3 h-px" style={{ background: accent.bar }} />
-          <span style={{ color: accent.iconFg }}>{sub}</span>
+          <span className="text-muted">{sub}</span>
         </div>
       )}
     </div>

@@ -96,22 +96,19 @@ export function AnimatedNumber({ value, duration = 900 }: AnimatedNumberProps) {
 }
 
 /**
- * Renders a formatted figure with the unit set lighter than the value, so the
- * number reads first: "₹170.0 cr" -> "₹170" + lighter ".0" + small " cr".
- * Only a trailing word-like unit (cr, lakh, M, K, ha, x, %) and money
- * decimals are softened; anything else ("10 / 11") renders unchanged.
- * Pattern from the Refero reference review (units lighter than values).
+ * Renders a formatted figure with a trailing unit (cr, lakh, M, K, ha, x, %)
+ * set slightly smaller, in the same colour: "₹170.0 cr". Anything else
+ * ("10 / 11") renders unchanged.
  */
 export function FigureText({ value }: { value: string }) {
   const m = value.match(/^(\D*?)(-?[\d,]+)(\.\d+)?(\s*)([A-Za-z×%][\w×%]*)?$/);
   if (!m) return <>{value}</>;
   const [, prefix, int, dec = "", , unit] = m;
-  const isMoney = /[₹$€]/.test(prefix);
   return (
     <>
       {prefix}
       {int}
-      {dec && (isMoney ? <span className="fig-dec">{dec}</span> : dec)}
+      {dec}
       {unit && <span className="fig-unit">{unit}</span>}
     </>
   );

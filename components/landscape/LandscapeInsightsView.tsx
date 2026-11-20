@@ -95,7 +95,7 @@ export function LandscapeInsightsView({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-card overflow-hidden border border-line bg-line">
           {kpis.map((s, i) => (
             <div key={i} className="bg-paper px-5 py-5">
-              <div className="font-serif text-[26px] sm:text-[30px] leading-none tracking-[-0.02em] text-deep-teal tabular-nums">
+              <div className="font-sans font-medium text-[26px] sm:text-[30px] leading-none tracking-[-0.02em] text-ink tabular-nums">
                 <Counter value={s.v} decimals={s.dec} prefix={s.pre ?? ""} suffix={s.suf} />
               </div>
               <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">

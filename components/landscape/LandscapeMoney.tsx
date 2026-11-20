@@ -118,7 +118,7 @@ export function LandscapeMoney(props: MoneyProps) {
             </div>
             <div className="lg:text-right">
               <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Total plan size · 7-year horizon</div>
-              <div className="font-serif text-[clamp(40px,6vw,68px)] leading-none text-teal tracking-[-0.02em] tabular-nums mt-1">
+              <div className="font-sans font-medium text-[clamp(40px,6vw,64px)] leading-none text-ink tracking-[-0.03em] tabular-nums mt-1">
                 <AnimatedNumber key={currency} value={formatMoney(props.total, currency)} />
               </div>
               <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-amber-deep mt-2">
@@ -185,7 +185,7 @@ export function LandscapeMoney(props: MoneyProps) {
               { n: props.reach.lineCount, label: "Costed interventions", sub: "in the plan" },
             ].map((m) => (
               <div key={m.label}>
-                <div className="font-serif text-[clamp(22px,3vw,32px)] leading-none text-deep-teal font-medium tabular-nums tracking-[-0.02em]">
+                <div className="font-sans text-[clamp(22px,3vw,30px)] leading-none text-ink font-medium tabular-nums tracking-[-0.02em]">
                   <AnimatedNumber value={compact(m.n)} />
                 </div>
                 <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-2.5">{m.label}</div>
