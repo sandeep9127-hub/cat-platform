@@ -148,7 +148,7 @@ export function LandscapeInterventions({
             <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
               {g.category}
             </h3>
-            <span className="ml-auto font-mono text-[10px] tabular-nums text-muted">{g.items.length}</span>
+            <span className="ml-auto font-mono text-[11px] tabular-nums text-muted">{g.items.length}</span>
           </div>
           <ul className="list-none p-0 m-0 flex flex-col">
             {g.items.map((it, i) => (
@@ -177,7 +177,7 @@ export function LandscapeInterventions({
             Priority interventions from the {landscapeName} Landscape Investment Plan, grouped by theme.
           </p>
         </div>
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted pb-1.5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted pb-1.5">
           <strong className="text-deep-teal text-[13px] font-semibold tabular-nums">{total}</strong> interventions
           <span className="text-line"> · </span>
           {groups.length} themes

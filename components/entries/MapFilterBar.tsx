@@ -116,7 +116,7 @@ export function MapFilterBar({
           <button
             type="button"
             onClick={clearAll}
-            className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-ink transition-colors mr-1"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal hover:text-ink transition-colors mr-1"
           >
             Clear ({totalActive}) ×
           </button>
@@ -141,7 +141,7 @@ export function MapFilterBar({
         <SlidersHorizontal size={15} strokeWidth={1.8} aria-hidden />
         Filters
         {totalActive > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-deep-teal text-paper font-mono text-[10px] tabular-nums">
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-deep-teal text-paper font-mono text-[11px] tabular-nums">
             {totalActive}
           </span>
         )}
@@ -176,7 +176,7 @@ export function MapFilterBar({
                   type="button"
                   onClick={clearAll}
                   disabled={totalActive === 0}
-                  className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-deep-teal disabled:opacity-40"
+                  className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal disabled:opacity-40"
                 >
                   Clear all
                 </button>
@@ -199,7 +199,7 @@ export function MapFilterBar({
 function SheetSection({ Icon, label, children }: { Icon: LucideIcon; label: string; children: ReactNode }) {
   return (
     <section>
-      <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mb-1 px-2.5 inline-flex items-center gap-1.5">
+      <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted mb-1 px-2.5 inline-flex items-center gap-1.5">
         <Icon size={11} strokeWidth={1.8} aria-hidden />
         {label}
       </div>
@@ -253,7 +253,7 @@ function Dropdown({
         <Icon size={14} strokeWidth={1.8} aria-hidden />
         <span>{label}</span>
         {active > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-deep-teal text-paper font-mono text-[10px] tabular-nums">
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-deep-teal text-paper font-mono text-[11px] tabular-nums">
             {active}
           </span>
         )}
@@ -314,7 +314,7 @@ function Row({
       </span>
       {icon}
       <span className="flex-1 min-w-0 truncate">{label}</span>
-      <span className="font-mono text-[10.5px] tabular-nums text-muted">{count}</span>
+      <span className="font-mono text-[11px] tabular-nums text-muted">{count}</span>
     </button>
   );
 }

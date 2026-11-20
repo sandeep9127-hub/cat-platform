@@ -66,7 +66,7 @@ export function Sdgs() {
         ))}
       </ul>
 
-      <p className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted text-center">
+      <p className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10 font-mono text-[11px] uppercase tracking-[0.16em] text-muted text-center">
         Icons from the United Nations Sustainable Development Goals framework.
       </p>
     </section>

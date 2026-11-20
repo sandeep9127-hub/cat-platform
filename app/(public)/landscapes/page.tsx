@@ -81,7 +81,7 @@ export default async function LandscapesPage() {
             an administrative block or a cluster of villages within one, chosen because the
             geography, communities and institutions there make focused work possible.
           </p>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
             These are the geographies currently at the heart of CAT&apos;s work. For
             programmes, interventions, and contributed work from across India, see the{" "}
             <Link href="/map" className="text-teal hover:text-teal-soft underline-offset-2 hover:underline">
@@ -98,7 +98,7 @@ export default async function LandscapesPage() {
           </p>
           <div className="mt-4 flex gap-2.5 items-center">
             <span className="w-6 h-px bg-amber-deep" />
-            <span className="font-mono text-[10.5px] uppercase tracking-mono-mid text-ink-soft">
+            <span className="font-mono text-[11px] uppercase tracking-mono-mid text-ink-soft">
               Seven-year horizon
             </span>
           </div>
@@ -124,7 +124,7 @@ export default async function LandscapesPage() {
             </span>
             <a
               href="mailto:programmes@agroecologyindia.org?subject=Request%3A%20detailed%20Landscape%20Investment%20Plan"
-              className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.14em] font-semibold text-paper bg-deep-teal hover:bg-teal rounded-full px-4 py-2 no-underline transition-colors"
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] font-semibold text-paper bg-deep-teal hover:bg-teal rounded-full px-4 py-2 no-underline transition-colors"
             >
               <Mail size={13} strokeWidth={1.9} aria-hidden />
               Email the team
@@ -162,12 +162,12 @@ export default async function LandscapesPage() {
                     <span className="font-sans text-[15px] font-semibold tracking-[-0.01em] text-ink group-hover:text-teal transition-colors">
                       {p?.name ?? g.name}
                     </span>
-                    <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted shrink-0">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted shrink-0">
                       {g.stateCode}
                     </span>
                   </div>
                   {p && (
-                    <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal mt-0.5">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-teal mt-0.5">
                       {p.district}
                     </div>
                   )}
@@ -185,7 +185,7 @@ export default async function LandscapesPage() {
                   boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(46,117,115,0.5)",
                 }}
               >
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
                   Go wider
                 </span>
                 <span>
@@ -193,7 +193,7 @@ export default async function LandscapesPage() {
                     The Solutions Atlas
                   </span>
                   <span
-                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em]"
+                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em]"
                     style={{ color: "#B8CCCA" }}
                   >
                     Every landscape, and beyond

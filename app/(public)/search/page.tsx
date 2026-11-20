@@ -180,7 +180,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       </Reveal>
 
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-6" delay={80}>
-        <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+        <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           <span>{totalLabel}</span>
           {hasAnyFilter && (
             <Link href="/search" className="text-deep-teal hover:text-teal font-semibold">
@@ -217,14 +217,14 @@ function SearchResult({ hit, index }: { hit: SearchHit; index: number }) {
         className="group block py-6 hover:bg-teal-wash/40 transition-colors"
       >
         <div className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 items-start">
-          <div className="font-mono text-[10.5px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
+          <div className="font-mono text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
             <span className="hidden sm:inline">No.</span>
             <span className="text-amber-deep font-semibold">
               {String(index + 1).padStart(2, "0")}
             </span>
           </div>
           <div className="min-w-0">
-            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center mb-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center mb-2 font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
               <span>{hit.themeName}</span>
               <span className="text-line">/</span>
               <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
@@ -283,7 +283,7 @@ function FilterChip({
 }) {
   return (
     <label
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer font-mono text-[11px] uppercase tracking-[0.12em] transition-colors ${
         active
           ? "bg-deep-teal text-paper border-deep-teal"
           : "bg-cream text-ink-soft border-line hover:border-teal"

@@ -133,7 +133,7 @@ export function BrandBar() {
           {/* Ask — single highlighted entry point (replaces the old floating widget) */}
           <Link
             href="/agent"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] tracking-mono-mid uppercase px-4 py-2 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
           >
             <MessageCircle size={12} strokeWidth={2} aria-hidden />
             Ask the Hub
@@ -143,7 +143,7 @@ export function BrandBar() {
               everything else lives in the drawer. Tablet/desktop unchanged. */}
           <Link
             href="/agent"
-            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[9.5px] tracking-mono-mid uppercase px-3 py-1.5 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3 py-1.5 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
           >
             <MessageCircle size={11} strokeWidth={2} aria-hidden />
             Ask

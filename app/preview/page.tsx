@@ -48,7 +48,7 @@ export default async function PreviewPage({
           <input type="hidden" name="from" value={from} />
 
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
               Your name or organisation <span className="text-muted normal-case tracking-normal">(optional)</span>
             </span>
             <input
@@ -61,7 +61,7 @@ export default async function PreviewPage({
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Access code</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Access code</span>
             <input
               name="password"
               type="password"
@@ -89,7 +89,7 @@ export default async function PreviewPage({
           </button>
         </form>
 
-        <p className="text-center font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mt-6">
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted mt-6">
           Consortium for Agroecological Transformations
         </p>
       </div>

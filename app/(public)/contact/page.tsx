@@ -80,7 +80,7 @@ export default function ContactPage() {
             </ul>
           </div>
           <aside className="bg-paper border border-line rounded-[10px] p-6 self-start">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
               Response time
             </span>
             <p className="text-[14px] text-ink-soft leading-[1.55] mt-2.5">
@@ -111,7 +111,7 @@ function Channel({
 }) {
   return (
     <div className="bg-paper p-6 sm:p-8 flex flex-col min-h-[208px]">
-      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
         {label}
       </span>
       <p className="text-[15px] leading-[1.6] text-ink-soft">{body}</p>

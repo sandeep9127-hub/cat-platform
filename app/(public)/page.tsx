@@ -112,7 +112,7 @@ export default async function LandingPage() {
           {/* Left — headline panel */}
           <div className="order-2 lg:order-1">
             {hasLastUpdate && (
-              <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted">
+              <div className="flex items-center gap-2.5 mb-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
                 <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
                 Updated {fmtDateUTC(lastUpdate)}
               </div>
@@ -175,7 +175,7 @@ export default async function LandingPage() {
                   <dt className="font-sans text-[23px] sm:text-[26px] font-semibold text-ink tabular-nums tracking-[-0.025em] leading-none">
                     <AnimatedNumber value={String(s.n)} />
                   </dt>
-                  <dd className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+                  <dd className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                     {s.label}
                   </dd>
                 </div>
@@ -221,7 +221,7 @@ export default async function LandingPage() {
                 <Icon size={13} strokeWidth={1.8} />
               </span>
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+                <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
                   {title}
                 </div>
                 <p className="font-serif text-[13.5px] text-ink-soft leading-[1.5] mt-1.5 max-w-[42ch]">
@@ -237,7 +237,7 @@ export default async function LandingPage() {
       <Reveal as="section" className="bg-paper border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-center">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">
               The approach
             </div>
             <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] leading-[1.04] tracking-[-0.03em] text-ink max-w-[16ch]">
@@ -268,7 +268,7 @@ export default async function LandingPage() {
           from the Atlas; each cell deep-links into the filtered Atlas. */}
       <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten themes
           </div>
           <h2 className="font-sans font-semibold text-[clamp(32px,4vw,52px)] leading-[1.0] tracking-[-0.035em] text-ink max-w-[18ch]">
@@ -312,7 +312,7 @@ export default async function LandingPage() {
                   {t.short}
                 </h3>
                 <span className="relative mt-auto flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                     <strong className="text-ink text-[13px] font-semibold tabular-nums">{t.count}</strong>{" "}
                     {t.count === 1 ? "solution" : "solutions"}
                   </span>

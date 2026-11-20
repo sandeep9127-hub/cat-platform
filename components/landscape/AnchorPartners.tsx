@@ -71,7 +71,7 @@ export function AnchorPartners() {
                     className="h-auto max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
                   />
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">
                   {landscape}
                 </span>
               </Link>

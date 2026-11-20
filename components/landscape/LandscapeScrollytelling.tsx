@@ -263,7 +263,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               </div>
             )}
 
-            <div className="absolute top-3 left-4 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+            <div className="absolute top-3 left-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
               {isLandscape(active) ? (
                 <>
                   <span className="text-amber-deep font-semibold tabular-nums">{String(active + 1).padStart(2, "0")}</span>
@@ -275,7 +275,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               )}
             </div>
             {isLandscape(active) && (
-              <div className="absolute bottom-3 left-4 font-mono text-[9.5px] uppercase tracking-[0.14em] text-deep-teal font-semibold max-w-[55%]">
+              <div className="absolute bottom-3 left-4 font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal font-semibold max-w-[55%]">
                 {mapLabel}
               </div>
             )}
@@ -347,12 +347,12 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                         className="absolute inset-x-0 bottom-0 h-px"
                         style={{ background: "linear-gradient(90deg, transparent 0%, rgba(248,202,124,0.7) 50%, transparent 100%)" }}
                       />
-                      <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-[9px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                      <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                         {profile.photos[0].caption}
                       </figcaption>
                     </figure>
                   )}
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
                     <span className="text-amber-deep tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                     <span className="text-line">/</span>
                     {profile?.region ?? pin.stateCode}
@@ -366,7 +366,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                   <div className="mt-7 flex flex-wrap items-start gap-x-8 gap-y-5">
                     {anchor && (
                       <div>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
+                        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
                         <div className="mt-1.5 flex items-center gap-2.5">
                           <span className="inline-flex items-center justify-center w-12 h-12 rounded-[7px] bg-paper border border-line p-1">
                             <Image src={anchor.logo} alt={anchor.name} width={40} height={40} className="w-full h-full object-contain" />
@@ -376,7 +376,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                       </div>
                     )}
                     <div>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
                       <div className="mt-1.5 font-sans text-[14px] flex items-center min-h-12">
                         {pin.lipStatus === "published" ? (
                           <span className="text-deep-teal font-medium">Published</span>

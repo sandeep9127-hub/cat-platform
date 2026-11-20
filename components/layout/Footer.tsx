@@ -32,7 +32,7 @@ export function Footer() {
             href="https://www.agroecologyindia.org"
             target="_blank"
             rel="noreferrer"
-            className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
+            className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
           >
             <span>agroecologyindia.org</span>
             <ArrowUpRight
@@ -82,7 +82,7 @@ export function Footer() {
 
       <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10">
         {/* Left-aligned so the bottom-right corner is free for the goat signature. */}
-        <p className="font-mono text-[10.5px] tracking-[0.05em] text-muted">
+        <p className="font-mono text-[11px] tracking-[0.05em] text-muted">
           Copyright © 2026 Consortium for Agroecological Transformations
         </p>
       </div>
@@ -105,7 +105,7 @@ function FooterCol({
   return (
     // lg:text-right — right-align the Explore / About columns (Option 1)
     <div className="lg:text-right">
-      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
+      <h4 className="font-mono text-[11px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
         {Icon ? <Icon size={12} strokeWidth={1.8} aria-hidden /> : <span className="w-3 h-px bg-amber-deep" />}
         {title}
       </h4>

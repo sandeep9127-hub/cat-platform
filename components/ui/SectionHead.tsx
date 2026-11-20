@@ -17,7 +17,7 @@ export function SectionHead({
       </h2>
       <span className="flex-1 h-px bg-line mt-[16px] sm:mt-[22px] hidden sm:block" />
       {meta && (
-        <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-muted">{meta}</span>
+        <span className="font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-muted">{meta}</span>
       )}
     </div>
   );

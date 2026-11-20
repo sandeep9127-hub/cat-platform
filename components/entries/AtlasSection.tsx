@@ -105,7 +105,7 @@ export function AtlasSection({
         {/* Filter-clear chip — sits above the list whenever a state is active */}
         {filterState && (
           <div className="mb-2 flex items-center justify-between gap-3 py-3 px-4 bg-amber/30 border border-amber-deep/40 rounded-[2px] reveal-in">
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-deep-teal">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal">
               Showing{" "}
               <strong className="text-amber-deep font-semibold">
                 {STATE_NAMES[filterState] ?? filterState}
@@ -117,7 +117,7 @@ export function AtlasSection({
             </span>
             <button
               onClick={() => setFilterState(null)}
-              className="font-mono text-[10px] uppercase tracking-[0.14em] text-deep-teal hover:text-ink transition-colors font-semibold focus-visible:outline-2 focus-visible:outline-deep-teal focus-visible:outline-offset-2"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal hover:text-ink transition-colors font-semibold focus-visible:outline-2 focus-visible:outline-deep-teal focus-visible:outline-offset-2"
             >
               Show all ×
             </button>
@@ -141,7 +141,7 @@ export function AtlasSection({
             {shouldCap && (
               <Link
                 href={readMoreHref}
-                className="group mt-3 self-start inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] text-deep-teal font-semibold font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
+                className="group mt-3 self-start inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] text-deep-teal font-semibold font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
               >
                 <span>
                   Read all {filtered.length} in the Solutions Atlas
@@ -230,7 +230,7 @@ function Pagination({
 
   return (
     <div className="mt-5 pt-5 border-t border-line-soft flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
         Showing{" "}
         <strong className="text-deep-teal font-semibold tabular-nums">
           {rangeStart}–{rangeEnd}

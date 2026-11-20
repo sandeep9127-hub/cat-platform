@@ -32,9 +32,10 @@
   --amber: #f8ca7c;
   /* --amber-deep is the amber used as TEXT on light surfaces (eyebrow labels,
      source names, bullet dots). The old #d9a655 was only ~2:1 on cream — a
-     WCAG AA fail. Darkened to a deep ochre-amber that clears 4.5:1 on paper.
+     WCAG AA fail. #8a5f14 clears 4.5:1 on paper (5.35), cream (4.98) and
+     teal-wash (4.69); the previous #946616 was 4.45 on cream.
      Bright --amber is still used for amber text on the dark band and for fills. */
-  --amber-deep: #946616;
+  --amber-deep: #8a5f14;
 
   /* Surfaces and ink — Equals-style "broadsheet on warm cream".
      Canvas is a true warm cream; text is near-black for old-media contrast. */
@@ -45,10 +46,11 @@
   /* --ink-2: raised surface used for the tiles inside the dark "Read by theme"
      band. Tokenised so the band isn't carrying a bare hex in component JSX. */
   --ink-2: #22302e;
-  /* --muted: warm-grey for mono labels/captions. Darkened from #807c72 (3.95:1,
-     a WCAG AA fail at the 8–11px label sizes it's used at) to #736f64, which
-     clears 4.5:1 on both --paper and --cream while staying visually "muted". */
-  --muted: #736f64;
+  /* --muted: warm-grey for mono labels/captions. #6b675d clears WCAG AA
+     (4.5:1) on every light surface it sits on: 5.35 on --paper, 4.99 on
+     --cream, 4.69 on --teal-wash. (#807c72 was 3.95, #736f64 was 4.44 on
+     cream.) Pair with the 11px minimum for label text. */
+  --muted: #6b675d;
   /* --line: subtle warm-grey hairline (Equals "fog border").
      --rule: the strong near-black section divider (the spreadsheet grid line). */
   --line: #d7d4cc;
@@ -230,7 +232,7 @@ body::before {
     font-family: var(--font-jetbrains), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--muted);
     font-weight: 500;
   }
@@ -239,7 +241,7 @@ body::before {
     font-family: var(--font-jetbrains), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--teal);
     font-weight: 600;
   }

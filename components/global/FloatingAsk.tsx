@@ -175,11 +175,11 @@ export function FloatingAsk() {
         ) : (
           <Sparkles size={15} strokeWidth={1.8} className="text-amber" aria-hidden />
         )}
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold whitespace-nowrap">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold whitespace-nowrap">
           {open ? "Close" : mode.label}
         </span>
         {!open && (
-          <span className="hidden sm:inline-flex items-center gap-1 ml-1 pl-2 border-l border-paper/25 font-mono text-[9px] uppercase tracking-[0.14em] text-paper/70">
+          <span className="hidden sm:inline-flex items-center gap-1 ml-1 pl-2 border-l border-paper/25 font-mono text-[11px] uppercase tracking-[0.14em] text-paper/70">
             ⌘ K
           </span>
         )}
@@ -216,7 +216,7 @@ export function FloatingAsk() {
                 <h2 className="font-serif text-[15px] leading-none tracking-[-0.01em] font-medium truncate">
                   {mode.label}
                 </h2>
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-paper/70 mt-1 truncate">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/70 mt-1 truncate">
                   {mode.scope !== "all"
                     ? `Scoped to ${mode.landscapeName} library`
                     : "Reads the published library only"}
@@ -243,7 +243,7 @@ export function FloatingAsk() {
                     : "Ask the Hub. Answers come from the published library, with the entries cited."}
                 </p>
                 <div className="mt-5 flex flex-col gap-2">
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
                     Try
                   </span>
                   {mode.starters.map((s) => (
@@ -282,7 +282,7 @@ export function FloatingAsk() {
                   <li className="flex justify-start">
                     <div className="px-4 py-2.5 border border-line rounded-[12px] rounded-bl-[4px] bg-paper inline-flex items-center gap-2 text-muted">
                       <Loader2 size={14} className="animate-spin" aria-hidden />
-                      <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.16em]">
                         Reading the library
                       </span>
                     </div>
@@ -334,7 +334,7 @@ export function FloatingAsk() {
                 <ArrowUp size={14} strokeWidth={2} aria-hidden />
               </button>
             </div>
-            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted text-center">
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted text-center">
               <MessageCircle size={9} className="inline -translate-y-px mr-1" />
               Public preview, scoped to the library
             </p>

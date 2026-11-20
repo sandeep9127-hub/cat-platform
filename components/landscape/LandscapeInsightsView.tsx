@@ -97,7 +97,7 @@ export function LandscapeInsightsView({
               <div className="font-serif text-[26px] sm:text-[30px] leading-none tracking-[-0.02em] text-deep-teal tabular-nums">
                 <Counter value={s.v} decimals={s.dec} prefix={s.pre ?? ""} suffix={s.suf} />
               </div>
-              <div className="mt-2 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+              <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
                 {s.lab}
               </div>
             </div>
@@ -130,7 +130,7 @@ export function LandscapeInsightsView({
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 items-start">
           <div>
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
               Who carries the cost
             </h3>
             <div className="flex h-12 w-full rounded-[6px] overflow-hidden border border-line">
@@ -141,7 +141,7 @@ export function LandscapeInsightsView({
                   style={{ width: `${(s.value / whoTotal) * 100}%`, background: s.color }}
                   title={`${s.label}: ₹${cr(s.value).toFixed(2)} Cr`}
                 >
-                  <span className="font-mono text-[10px] text-paper/95 tabular-nums">
+                  <span className="font-mono text-[11px] text-paper/95 tabular-nums">
                     {Math.round((s.value / whoTotal) * 100)}%
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export function LandscapeInsightsView({
             </ul>
           </div>
           <div>
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
               The blend it&apos;s raising
             </h3>
             <Donut
@@ -183,7 +183,7 @@ export function LandscapeInsightsView({
           <div className="rounded-[12px] border border-line bg-paper p-3 sm:p-5">
             <Scatter points={scatterPoints} xLabel="Investment required (₹ crore)" yLabel="Hectares reached" />
           </div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-muted max-w-[64ch] leading-relaxed">
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted max-w-[64ch] leading-relaxed">
             Household engagements are cumulative across interventions — read as relative
             intensity, not unique people. Unique landscape reach is {profile.households} households.
           </p>
@@ -228,7 +228,7 @@ export function LandscapeInsightsView({
           className="rounded-[12px] border border-line p-6 sm:p-8"
           style={{ backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.6) 100%)" }}
         >
-          <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-2">
+          <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-2">
             Data &amp; methods
           </div>
           <h2 className="font-serif text-[22px] sm:text-[26px] tracking-[-0.015em] text-ink max-w-[36ch] leading-[1.15]">
@@ -242,14 +242,14 @@ export function LandscapeInsightsView({
             <DownloadButton rows={csvRows} filename={`${slug}-investment-plan.csv`} label="Download the dataset (CSV)" />
             <Link
               href={`/landscape/${slug}/budget`}
-              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
             >
               <Layers size={13} strokeWidth={1.9} aria-hidden />
               Explore line-by-line
             </Link>
             <Link
               href={`/landscape/${slug}/ask`}
-              className="inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+              className="inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
             >
               Ask the plan a question
               <ArrowRight size={13} strokeWidth={2} aria-hidden />
@@ -283,7 +283,7 @@ function Section({
 }) {
   return (
     <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-16 lg:mt-20">
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">{eyebrow}</div>
+      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">{eyebrow}</div>
       <h2 className="font-serif text-[28px] sm:text-[34px] leading-[1.06] tracking-[-0.02em] text-ink max-w-[20ch]">
         {title} <span className="italic font-normal text-deep-teal">{italic}</span>
         {tail ? ` ${tail}` : ""}.

@@ -176,7 +176,7 @@ export default function AboutPage() {
             <span className="text-teal">levers</span> for change
           </h2>
           <span className="flex-1 h-px bg-line mt-[14px] sm:mt-[18px] hidden sm:block" />
-          <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-muted">
+          <span className="font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-muted">
             Aligned across every landscape
           </span>
         </div>
@@ -218,7 +218,7 @@ export default function AboutPage() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>

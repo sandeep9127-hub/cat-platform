@@ -125,7 +125,7 @@ export function BudgetExplorer({
         <div className="flex items-center gap-2.5 flex-wrap pb-1">
           <CurrencyToggle />
           {currency !== "INR" && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
           )}
         </div>
       </div>
@@ -204,7 +204,7 @@ export function BudgetExplorer({
 
       {/* Filters */}
       <section className="mt-14 flex flex-wrap gap-3 items-end">
-        <span className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
+        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
           <Filter size={12} strokeWidth={1.8} />
           Filter the plan
         </span>
@@ -212,13 +212,13 @@ export function BudgetExplorer({
         {cat && (
           <button
             onClick={() => setCat("")}
-            className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
           >
             <XIcon size={12} strokeWidth={2} />
             Clear filter
           </button>
         )}
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
           {filtered.length} of {lines.length} lines
         </span>
       </section>
@@ -241,7 +241,7 @@ export function BudgetExplorer({
 
       {/* Line table */}
       <section className="mt-14">
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
+        <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
           <span className="w-4 h-px bg-amber-deep" />
           {filtered.length === lines.length ? "All intervention lines" : "Filtered lines"}
         </div>
@@ -258,7 +258,7 @@ export function BudgetExplorer({
                 background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
               }}
             >
-              <tr className="text-left font-mono uppercase text-[10px] tracking-[0.14em]">
+              <tr className="text-left font-mono uppercase text-[11px] tracking-[0.14em]">
                 <th className="px-4 py-3.5 font-semibold">Category</th>
                 <th className="px-4 py-3.5 font-semibold">Intervention</th>
                 <th className="px-4 py-3.5 font-semibold text-right">Total</th>
@@ -339,7 +339,7 @@ function StatCard({
         }}
       />
       <div className="relative flex items-start justify-between gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
           {label}
         </span>
         <span
@@ -358,7 +358,7 @@ function StatCard({
         <AnimatedNumber value={value} />
       </div>
       {sub && (
-        <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
+        <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
           <span className="inline-block w-3 h-px" style={{ background: accent.bar }} />
           <span style={{ color: accent.iconFg }}>{sub}</span>
         </div>
@@ -405,11 +405,11 @@ function FundingMix({
       }}
     >
       <div className="flex items-center justify-between gap-3 mb-4">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-2">
           <span className="w-4 h-px bg-amber-deep" />
           Funding mix
         </span>
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted tabular-nums">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted tabular-nums">
           {inr(sum)}
         </span>
       </div>
@@ -447,13 +447,13 @@ function FundingMix({
               aria-hidden
             />
             <div className="min-w-0">
-              <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted leading-none">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted leading-none">
                 {s.label}
               </div>
               <div className="font-mono text-[12.5px] text-deep-teal tabular-nums leading-tight mt-1">
                 {inr(s.value)}
               </div>
-              <div className="font-mono text-[9.5px] tabular-nums text-muted leading-none mt-0.5">
+              <div className="font-mono text-[11px] tabular-nums text-muted leading-none mt-0.5">
                 {((s.value / sum) * 100).toFixed(1)}%
               </div>
             </div>
@@ -477,7 +477,7 @@ function FilterDropdown({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{label}</span>
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -522,7 +522,7 @@ function BreakdownCard({
           background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
         }}
       />
-      <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-5 inline-flex items-center gap-2">
+      <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-5 inline-flex items-center gap-2">
         <span className="w-3.5 h-px" style={{ background: accent.bar }} />
         {title}
       </div>
@@ -547,7 +547,7 @@ function BreakdownCard({
                   }}
                 />
               </div>
-              <div className="flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted mt-1.5 tabular-nums">
+              <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-1.5 tabular-nums">
                 <span>{p.toFixed(1)}% of total</span>
                 <span>Investment: {inr(r.investment)}</span>
               </div>

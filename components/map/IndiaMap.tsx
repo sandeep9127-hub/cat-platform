@@ -241,7 +241,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Counter */}
       {!bare && (
       <div
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-[8px] font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-10 px-3 py-2 sm:px-4 sm:py-2.5 rounded-[8px] font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 max-w-[calc(100%-2rem)] text-cream border border-paper/10"
         style={{
           background: "linear-gradient(135deg, #334B4A 0%, #2E7573 60%, #334B4A 100%)",
           boxShadow:
@@ -265,7 +265,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Filter chip */}
       {activeState && (
         <div
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 px-3 py-2 rounded-[8px] font-mono text-[10px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 text-deep-teal"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-10 px-3 py-2 rounded-[8px] font-mono text-[11px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 text-deep-teal"
           style={{
             background: "linear-gradient(135deg, rgba(248,202,124,0.95), rgba(248,202,124,0.75))",
             boxShadow:
@@ -290,7 +290,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
       {/* Legend */}
       {!bare && (
       <div
-        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
+        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[11px] sm:text-[11px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
         style={{
           background: "rgba(251,248,242,0.92)",
           boxShadow: "0 6px 16px -10px rgba(26,38,37,0.20), 0 1px 2px rgba(26,38,37,0.04)",
@@ -492,7 +492,7 @@ export function IndiaMap({ entries, totalProgrammes, totalStates, onFilterState,
           <div className="font-sans text-[13.5px] font-medium text-paper leading-snug">
             {tooltip.entry.title}
           </div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-amber mt-2 flex items-center gap-1.5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-amber mt-2 flex items-center gap-1.5">
             <span className="inline-block w-2.5 h-px bg-amber/70" />
             {stateNameFor(tooltip.entry.stateCode)} · {humaniseScale(tooltip.entry.scaleBand)}
           </div>

@@ -126,7 +126,7 @@ export default async function SubmissionsPage() {
           New organisations and edit suggestions from the public Organisations Atlas. Approving
           publishes straight into the live directory.
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-3">
           {subs.length} pending · {byStatus.approved ?? 0} approved · {byStatus.rejected ?? 0} rejected
         </p>
       </header>
@@ -144,7 +144,7 @@ export default async function SubmissionsPage() {
             <li key={s.id} className="rounded-[10px] border border-line bg-paper p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full bg-amber/25 text-deep-teal">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full bg-amber/25 text-deep-teal">
                     {s.target_org_id ? "Edit suggestion" : "New organisation"}
                   </span>
                   <h2 className="font-serif text-[20px] text-ink mt-2">{s.name || "(no name)"}</h2>
@@ -155,13 +155,13 @@ export default async function SubmissionsPage() {
                 <div className="flex gap-2 shrink-0">
                   <form action={approve}>
                     <input type="hidden" name="id" value={s.id} />
-                    <button className="px-3.5 py-2 rounded-[6px] bg-deep-teal text-paper font-mono text-[10px] uppercase tracking-[0.12em] hover:bg-teal transition-colors">
+                    <button className="px-3.5 py-2 rounded-[6px] bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.12em] hover:bg-teal transition-colors">
                       Approve
                     </button>
                   </form>
                   <form action={reject}>
                     <input type="hidden" name="id" value={s.id} />
-                    <button className="px-3.5 py-2 rounded-[6px] border border-line text-muted font-mono text-[10px] uppercase tracking-[0.12em] hover:text-red-alert hover:border-red-alert transition-colors">
+                    <button className="px-3.5 py-2 rounded-[6px] border border-line text-muted font-mono text-[11px] uppercase tracking-[0.12em] hover:text-red-alert hover:border-red-alert transition-colors">
                       Reject
                     </button>
                   </form>
@@ -171,7 +171,7 @@ export default async function SubmissionsPage() {
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-4 text-[13px]">
                 {s.domains && s.domains.length > 0 && (
                   <div className="sm:col-span-2">
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Domains</dt>
+                    <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Domains</dt>
                     <dd className="mt-1 flex flex-wrap gap-1.5">
                       {s.domains.map((d) => {
                         const custom = !isLibraryDomain(d);
@@ -186,7 +186,7 @@ export default async function SubmissionsPage() {
                           >
                             {d}
                             {custom && (
-                              <span className="font-mono text-[8.5px] uppercase tracking-[0.08em]">review</span>
+                              <span className="font-mono text-[11px] uppercase tracking-[0.08em]">review</span>
                             )}
                           </span>
                         );
@@ -216,7 +216,7 @@ export default async function SubmissionsPage() {
 function Field({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
-      <dt className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">{label}</dt>
+      <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{label}</dt>
       <dd className="text-ink mt-0.5">{value}</dd>
     </div>
   );

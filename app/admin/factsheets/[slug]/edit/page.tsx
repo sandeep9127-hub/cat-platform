@@ -10,7 +10,7 @@ const SCALE_BANDS = [
   "pilot", "block", "district", "multi_district", "state", "multi_state", "national",
 ];
 
-const labelClass = "block font-mono text-[10px] uppercase tracking-[0.12em] text-muted mb-1.5";
+const labelClass = "block font-mono text-[11px] uppercase tracking-[0.12em] text-muted mb-1.5";
 const inputClass =
   "w-full bg-cream border border-line rounded-[6px] px-3 py-2 text-[13.5px] text-ink font-serif focus:outline-none focus:border-deep-teal";
 
@@ -73,7 +73,7 @@ export default async function EditFactSheet({
         <p className="font-serif italic text-[15px] text-ink-soft mt-2 max-w-[64ch] font-light">
           Hand-correct an auto-generated sheet. Saving re-embeds it into Ask and marks it human-edited.
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-3">
           {s.slug} · status {s.status}
         </p>
       </header>
@@ -132,7 +132,7 @@ export default async function EditFactSheet({
               </label>
             ))}
           </div>
-          <p className="font-mono text-[10px] text-muted mt-1.5">
+          <p className="font-mono text-[11px] text-muted mt-1.5">
             These drive the Atlas filter and the landing-page counts. Pick from the list, do not free-type.
           </p>
         </div>
@@ -155,13 +155,13 @@ export default async function EditFactSheet({
               </label>
             ))}
           </div>
-          <p className="font-mono text-[10px] text-muted mt-1.5">
+          <p className="font-mono text-[11px] text-muted mt-1.5">
             Drives the Atlas principle filter. Pick from the list, do not free-type.
           </p>
         </div>
 
         <fieldset className="space-y-4 border border-line rounded-[8px] p-4">
-          <legend className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted px-2">
+          <legend className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted px-2">
             Insight
           </legend>
           <Area name="whats_working" label="What is working" defaultValue={insight.whats_working} rows={2} />
@@ -182,20 +182,20 @@ export default async function EditFactSheet({
           defaultValue={outcomesJson}
           rows={6}
         />
-        <p className="font-mono text-[10px] text-muted">
+        <p className="font-mono text-[11px] text-muted">
           Bad JSON in either box keeps the existing value, it will not blank the field.
         </p>
 
         <div className="flex items-center gap-4 pt-2">
           <button
             type="submit"
-            className="font-mono text-[10px] uppercase tracking-[0.12em] bg-deep-teal text-cream px-4 py-2 rounded-[6px] hover:bg-teal"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] bg-deep-teal text-cream px-4 py-2 rounded-[6px] hover:bg-teal"
           >
             Save
           </button>
           <Link
             href="/admin/factsheets"
-            className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted hover:text-ink no-underline"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-ink no-underline"
           >
             Cancel
           </Link>

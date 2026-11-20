@@ -27,7 +27,7 @@ export default async function MovedPage({
         <div className="flex justify-center mb-7">
           <CatLogo size={44} />
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep">
           New address
         </span>
         <h1 className="font-sans font-semibold text-[clamp(28px,5vw,40px)] tracking-[-0.03em] leading-[1.05] text-ink mt-3">

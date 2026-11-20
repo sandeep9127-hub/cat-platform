@@ -146,13 +146,13 @@ export function DomainPicker({ value, onChange, placeholder }: Props) {
           padding: 4px 6px 4px 10px; border-radius: 999px; background: rgba(46,117,115,.10);
           color: var(--ink, #1f261f); border: 1px solid rgba(46,117,115,.20); }
         .dp-chip-custom { background: rgba(198,140,46,.10); border-color: rgba(198,140,46,.28); }
-        .dp-new { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+        .dp-new { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
           color: #9a6a12; background: rgba(198,140,46,.16); padding: 1px 5px; border-radius: 999px; }
         .dp-chip button { border: 0; background: none; cursor: pointer; font-size: 15px; line-height: 1;
-          color: var(--muted, #736f64); padding: 0 2px; }
+          color: var(--muted, #6b675d); padding: 0 2px; }
         .dp-chip button:hover { color: var(--ink, #1f261f); }
         .dp-input { display: flex; align-items: center; gap: 8px; padding: 11px 13px;
-          border: 1px solid var(--line, #e2ddd1); border-radius: 12px; background: rgba(31,38,31,.02); color: var(--muted, #736f64); }
+          border: 1px solid var(--line, #e2ddd1); border-radius: 12px; background: rgba(31,38,31,.02); color: var(--muted, #6b675d); }
         .dp-input:focus-within { border-color: rgba(46,117,115,.55); background: #fff; }
         .dp-input input { flex: 1; border: 0; outline: 0; background: none; font-size: 14.5px; color: var(--ink, #1f261f); min-width: 0; }
         .dp-list { position: absolute; z-index: 40; left: 0; right: 0; margin-top: 6px; padding: 5px;
@@ -161,7 +161,7 @@ export function DomainPicker({ value, onChange, placeholder }: Props) {
         .dp-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px;
           cursor: pointer; font-size: 14px; color: var(--ink, #1f261f); }
         .dp-list li.on { background: rgba(46,117,115,.09); }
-        .dp-list li .dp-group { margin-left: auto; font-size: 10.5px; text-transform: uppercase;
+        .dp-list li .dp-group { margin-left: auto; font-size: 11px; text-transform: uppercase;
           letter-spacing: .07em; color: var(--muted, #9a968b); }
         .dp-add { color: #9a6a12; }
         .dp-add.on { background: rgba(198,140,46,.10); }

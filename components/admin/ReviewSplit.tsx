@@ -88,7 +88,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("approve")}
           disabled={busy}
-          className="font-mono text-[10px] uppercase tracking-[0.16em] font-semibold px-4 py-2 bg-deep-teal text-paper rounded-[2px] hover:bg-teal transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 bg-deep-teal text-paper rounded-[2px] hover:bg-teal transition-colors disabled:opacity-50"
         >
           Approve · a
         </button>
@@ -96,7 +96,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("return")}
           disabled={busy}
-          className="font-mono text-[10px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-amber-deep text-amber-deep rounded-[2px] hover:bg-amber/30 transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-amber-deep text-amber-deep rounded-[2px] hover:bg-amber/30 transition-colors disabled:opacity-50"
         >
           Return · r
         </button>
@@ -104,7 +104,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
           type="button"
           onClick={() => send("save")}
           disabled={busy}
-          className="font-mono text-[10px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-line text-ink-soft rounded-[2px] hover:border-teal hover:text-teal transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-4 py-2 border border-line text-ink-soft rounded-[2px] hover:border-teal hover:text-teal transition-colors disabled:opacity-50"
         >
           Save · s
         </button>
@@ -116,7 +116,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* SOURCE pane */}
         <section>
-          <h2 className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
             Source passages ({(draft.sourcePassages ?? []).length})
           </h2>
           <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2 border-l-2 border-line pl-4">
@@ -132,7 +132,7 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
                     href={p.source_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal hover:underline block mb-2"
+                    className="font-mono text-[11px] uppercase tracking-[0.14em] text-teal hover:underline block mb-2"
                   >
                     {new URL(p.source_url).hostname} ↗
                   </a>
@@ -147,13 +147,13 @@ export function ReviewSplit({ draft }: { draft: Draft }) {
 
         {/* DRAFT pane */}
         <section>
-          <h2 className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">
             Draft (editable)
           </h2>
           <div className="space-y-5">
             {FIELDS.map((f) => (
               <label key={f.key} className="block">
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted block mb-1.5">
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted block mb-1.5">
                   {f.label}
                 </span>
                 <textarea

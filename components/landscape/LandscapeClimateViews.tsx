@@ -108,7 +108,7 @@ export function LandscapeClimateViews({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2.5 flex-wrap">
                     <h3 className="font-sans text-[17px] sm:text-[18px] font-semibold tracking-[-0.01em] text-ink">{lens.label}</h3>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-muted tabular-nums">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted tabular-nums">
                       {pct(lens.total, grand)}% of value
                     </span>
                   </div>
@@ -135,7 +135,7 @@ export function LandscapeClimateViews({
                     {/* Carbon lens: marketability split */}
                     {lens.key === "carbon" && ghgTotalTco2e > 0 && (
                       <div className="px-5 sm:px-6 py-4 border-b border-line bg-line-soft/40">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-amber-deep">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.13em] text-amber-deep">
                           {groupUS(ghgTotalTco2e)} tCO₂e over 7 years · all tracks
                         </p>
                         {carbonCreditableTco2e > 0 && (
@@ -144,7 +144,7 @@ export function LandscapeClimateViews({
                               <div style={{ width: `${creditablePct}%`, background: lens.colour }} title={`Creditable today · ${creditablePct}%`} />
                               <div style={{ width: `${shadowPct}%`, background: `${lens.colour}33` }} title={`Shadow price · ${shadowPct}%`} />
                             </div>
-                            <div className="flex items-center gap-4 mt-2 font-mono text-[10px] uppercase tracking-[0.1em]">
+                            <div className="flex items-center gap-4 mt-2 font-mono text-[11px] uppercase tracking-[0.1em]">
                               <span className="flex items-center gap-1.5" style={{ color: lens.colour }}>
                                 <span className="inline-block w-2 h-2 rounded-sm" style={{ background: lens.colour }} />
                                 {creditablePct}% creditable today
@@ -172,15 +172,15 @@ export function LandscapeClimateViews({
                             <div className="font-sans text-[14px] text-ink leading-snug">{l.subIntervention}</div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               {l.metric && (
-                                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">{l.metric}</span>
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{l.metric}</span>
                               )}
                               {l.tco2e7yr ? (
-                                <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: lens.colour }}>
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em]" style={{ color: lens.colour }}>
                                   {groupUS(l.tco2e7yr)} tCO₂e
                                 </span>
                               ) : null}
                               {l.tier && (
-                                <span className="font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted border border-line rounded px-1 py-0.5">
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted border border-line rounded px-1 py-0.5">
                                   {l.tier}
                                 </span>
                               )}
@@ -238,7 +238,7 @@ export function LandscapeClimateViews({
                   <li key={t.tier} className="bg-paper p-5">
                     <div className="flex items-baseline gap-2">
                       <span className="font-mono text-[12px] font-semibold tracking-[0.08em] text-deep-teal">{t.tier}</span>
-                      <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">{t.label}</span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{t.label}</span>
                     </div>
                     <p className="font-sans text-[13px] text-ink-soft leading-[1.5] mt-2">{t.body}</p>
                   </li>

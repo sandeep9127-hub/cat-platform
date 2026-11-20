@@ -65,7 +65,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-        <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+        <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
           <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -146,7 +146,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                         </span>
                         <div className="min-w-0 flex-1">
                           <span
-                            className="font-mono text-[9.5px] uppercase tracking-[0.16em] font-semibold"
+                            className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold"
                             style={{ color: accent.chipFg }}
                           >
                             {TYPE_LABELS[d.type] ?? d.type}
@@ -157,7 +157,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                         </div>
                       </div>
 
-                      <div className="relative mt-5 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                      <div className="relative mt-5 flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                         <div className="flex flex-wrap gap-x-4 gap-y-1">
                           {d.publicationYear && <span>{d.publicationYear}</span>}
                           {d.language && <span>{d.language}</span>}
@@ -169,7 +169,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
                         </div>
                         {ext && (
                           <span
-                            className="inline-flex items-center font-mono text-[9.5px] uppercase tracking-[0.16em] font-semibold px-2 py-1 rounded-[3px]"
+                            className="inline-flex items-center font-mono text-[11px] uppercase tracking-[0.16em] font-semibold px-2 py-1 rounded-[3px]"
                             style={{ background: accent.chipBg, color: accent.chipFg }}
                           >
                             {ext}
@@ -196,7 +196,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ slug: 
             className="absolute top-0 left-0 right-0 h-[2px]"
             style={{ background: "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)" }}
           />
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
             How the library is used
           </span>
           <p className="font-sans text-[14.5px] leading-[1.6] text-ink-soft mt-3">

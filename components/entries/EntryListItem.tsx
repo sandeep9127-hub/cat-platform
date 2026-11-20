@@ -38,14 +38,14 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
     <article className="grid grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[80px_minmax(0,1fr)_auto] gap-x-5 sm:gap-x-7 py-7 sm:py-8 items-start">
         {/* Index — "No." sits on the eyebrow line, the numeral aligns to the title */}
         <div className="font-mono tracking-mono-mid text-muted flex flex-col gap-[5px] pt-[3px]">
-          <span className="hidden sm:inline text-[9px]">No.</span>
+          <span className="hidden sm:inline text-[11px]">No.</span>
           <span className="text-amber-deep font-semibold text-[11px] tabular-nums leading-none">
             {String(data.index).padStart(2, "0")}
             <span className="text-muted/70 font-normal"> / {data.total}</span>
           </span>
         </div>
         <div className="min-w-0">
-          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
             <span>State</span>
             <span className="text-line">/</span>
             <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
@@ -60,7 +60,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <p className="text-[14.5px] text-ink-soft leading-[1.55] max-w-[60ch] tracking-[-0.01em] mt-2">
             {data.tagline}
           </p>
-          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
+          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             {data.themes.slice(0, 2).map((t) => {
               const Icon = categoryIconFor(t.slug);
               return (

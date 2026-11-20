@@ -70,7 +70,7 @@ export function CatLandscapesMap({ pins, className }: Props) {
       <div className="absolute inset-3 border border-dashed border-line pointer-events-none rounded-[6px]" />
 
       <div
-        className="absolute top-4 right-4 z-10 text-cream px-3.5 py-2.5 rounded-[8px] font-mono text-[10px] uppercase tracking-[0.14em] flex items-center gap-2 border border-paper/10"
+        className="absolute top-4 right-4 z-10 text-cream px-3.5 py-2.5 rounded-[8px] font-mono text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 border border-paper/10"
         style={{
           background: "linear-gradient(135deg, #334B4A 0%, #2E7573 60%, #334B4A 100%)",
           boxShadow:
@@ -82,7 +82,7 @@ export function CatLandscapesMap({ pins, className }: Props) {
       </div>
 
       <div
-        className="absolute bottom-4 left-4 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
+        className="absolute bottom-4 left-4 z-10 px-3.5 py-3 flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft rounded-[8px] backdrop-blur-md border border-line/80"
         style={{
           background: "rgba(251,248,242,0.92)",
           boxShadow: "0 6px 16px -10px rgba(26,38,37,0.20), 0 1px 2px rgba(26,38,37,0.04)",

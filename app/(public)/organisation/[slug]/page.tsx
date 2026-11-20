@@ -88,7 +88,7 @@ export default async function OrganisationPage({ params }: Props) {
     <>
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 pb-10 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-end">
         <div>
-          <span className="font-mono text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+          <span className="font-mono text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
             Organisation · {org.type.replace("_", " ")}
           </span>
           <h1 className="font-serif text-[clamp(40px,5vw,72px)] font-normal leading-[1.05] tracking-[-0.025em] text-ink mt-4 max-w-[22ch]">
@@ -102,7 +102,7 @@ export default async function OrganisationPage({ params }: Props) {
           <p className="font-serif text-[17px] text-ink-soft leading-[1.6] max-w-[58ch] mt-6">
             {org.description}
           </p>
-          <div className="flex gap-6 mt-6 font-mono text-[10.5px] uppercase tracking-mono-mid text-muted flex-wrap">
+          <div className="flex gap-6 mt-6 font-mono text-[11px] uppercase tracking-mono-mid text-muted flex-wrap">
             {org.foundedYear && <span>Founded {org.foundedYear}</span>}
             {org.website && (
               <a

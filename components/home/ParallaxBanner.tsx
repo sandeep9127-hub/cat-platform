@@ -280,7 +280,7 @@ export function ParallaxBanner({
       )}
 
       {caption && !isHero && (
-        <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+        <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
           <span className="inline-block w-4 h-px bg-amber align-middle mr-2" />
           {caption}
         </span>

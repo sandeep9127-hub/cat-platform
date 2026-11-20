@@ -11,7 +11,7 @@ export function LandscapeAnchorPartner({ slug }: { slug: string }) {
   if (!a) return null;
   return (
     <div>
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
         Anchor partner
       </span>
       <div className="mt-2 flex items-center gap-3">
@@ -27,7 +27,7 @@ export function LandscapeAnchorPartner({ slug }: { slug: string }) {
         <span className="leading-tight">
           <span className="font-sans text-[14px] text-ink">{a.name}</span>
           {a.short && a.short !== a.name ? (
-            <span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-muted mt-0.5">
+            <span className="block font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-0.5">
               {a.short}
             </span>
           ) : null}

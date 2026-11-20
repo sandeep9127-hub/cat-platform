@@ -78,7 +78,7 @@ function DupeBadge({ matches }: { matches: DuplicateMatch[] }) {
   const top = matches[0];
   return (
     <div className="flex items-center gap-2 flex-wrap mt-1.5">
-      <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-amber/15 border border-amber/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-deep-teal">
+      <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-amber/15 border border-amber/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-deep-teal">
         <span>⚠</span>
         <span>
           Possible match:{" "}
@@ -93,7 +93,7 @@ function DupeBadge({ matches }: { matches: DuplicateMatch[] }) {
         </span>
       </span>
       {matches.length > 1 && (
-        <span className="font-mono text-[10px] text-muted">
+        <span className="font-mono text-[11px] text-muted">
           +{matches.length - 1} more
         </span>
       )}
@@ -143,20 +143,20 @@ export default async function AdminCandidates({
           cited fact sheet straight onto the Atlas, or dismiss. Nothing here is public until you act.
         </p>
         <div className="flex items-center justify-between gap-4 flex-wrap mt-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             {cands.length} awaiting triage
           </p>
           <div className="flex items-center gap-3 flex-wrap">
             <Link
               href={showScan ? "/admin/candidates" : "/admin/candidates?scan=1"}
-              className="font-mono text-[10px] uppercase tracking-[0.12em] rounded-[8px] border border-line px-4 py-2.5 text-ink-soft hover:text-ink hover:border-ink/30 transition-colors"
+              className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-[8px] border border-line px-4 py-2.5 text-ink-soft hover:text-ink hover:border-ink/30 transition-colors"
             >
               {showScan ? "Hide Atlas scan" : "Scan Atlas for duplicates"}
             </Link>
             <form action="/api/admin/discovery/run" method="post" className="flex items-center gap-2">
               <button
                 type="submit"
-                className="font-mono text-[10px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
+                className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
               >
                 Run discovery now
               </button>
@@ -186,11 +186,11 @@ export default async function AdminCandidates({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-serif text-[16px] text-ink">{c.proposedTitle}</span>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
                         conf {Math.round((c.confidenceScore ?? 0) * 100)}%
                       </span>
                     </div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-1">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted mt-1">
                       {[c.proposedLeadOrganisationName, c.proposedGeographyName, c.proposedStateCode]
                         .filter(Boolean)
                         .join(" · ") || "location unspecified"}
@@ -200,14 +200,14 @@ export default async function AdminCandidates({
                   <div className="flex items-center gap-3 shrink-0">
                     {!hasDupe && (
                       <form action={`/api/admin/candidates/${c.id}/factsheet`} method="post">
-                        <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-paper bg-deep-teal hover:bg-teal px-3 py-2 rounded-[6px] transition-colors">
+                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-paper bg-deep-teal hover:bg-teal px-3 py-2 rounded-[6px] transition-colors">
                           Generate → Atlas
                         </button>
                       </form>
                     )}
                     {hasDupe && (
                       <form action={`/api/admin/candidates/${c.id}/factsheet`} method="post">
-                        <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted border border-line hover:border-deep-teal hover:text-deep-teal px-3 py-2 rounded-[6px] transition-colors">
+                        <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted border border-line hover:border-deep-teal hover:text-deep-teal px-3 py-2 rounded-[6px] transition-colors">
                           Generate anyway
                         </button>
                       </form>
@@ -216,7 +216,7 @@ export default async function AdminCandidates({
                       {hasDupe && (
                         <input type="hidden" name="reason" value={`duplicate:${matches[0].slug}`} />
                       )}
-                      <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">
+                      <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">
                         {hasDupe ? "Dismiss as duplicate" : "Dismiss"}
                       </button>
                     </form>
@@ -224,7 +224,7 @@ export default async function AdminCandidates({
                 </div>
                 <p className="text-[13px] text-ink-soft leading-[1.55] max-w-[72ch]">{c.proposedSummary}</p>
                 {sources.length > 0 ? (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-muted">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted">
                     {sources.slice(0, 4).map((u, j) => (
                       <a key={j} href={u} target="_blank" rel="noreferrer" className="text-teal hover:underline truncate max-w-[280px]">
                         {u.replace(/^https?:\/\//, "")}
@@ -238,7 +238,7 @@ export default async function AdminCandidates({
         </ul>
       )}
 
-      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+      <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
         Generate takes up to a minute (web search + grounded write). Well-sourced sheets auto-publish;
         weak ones are flagged for your review before going live.
       </p>
@@ -265,7 +265,7 @@ export default async function AdminCandidates({
             <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
               {atlasPairs.map((pair, i) => (
                 <li key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-amber-600 shrink-0 w-[40px]">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-amber-600 shrink-0 w-[40px]">
                     {Math.round(pair.score * 100)}%
                   </span>
                   <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
@@ -276,7 +276,7 @@ export default async function AdminCandidates({
                     >
                       {pair.a.title}
                     </Link>
-                    <span className="font-mono text-[10px] text-muted shrink-0">vs</span>
+                    <span className="font-mono text-[11px] text-muted shrink-0">vs</span>
                     <Link
                       href={`/factsheet/${pair.b.slug}`}
                       target="_blank"
@@ -288,13 +288,13 @@ export default async function AdminCandidates({
                   <div className="flex gap-3 shrink-0">
                     <Link
                       href={`/admin/factsheets/${pair.a.slug}/edit`}
-                      className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-ink"
+                      className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-ink"
                     >
                       Edit A
                     </Link>
                     <Link
                       href={`/admin/factsheets/${pair.b.slug}/edit`}
-                      className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-ink"
+                      className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-ink"
                     >
                       Edit B
                     </Link>

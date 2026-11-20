@@ -24,7 +24,7 @@ export function EndorsementBadge({ tier }: { tier: Tier }) {
         : "border-line text-muted bg-paper";
   return (
     <span
-      className={`group relative font-mono text-[9px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-[3px] whitespace-nowrap cursor-help inline-block ${cls}`}
+      className={`group relative font-mono text-[11px] uppercase tracking-[0.16em] px-2.5 py-1 border rounded-[3px] whitespace-nowrap cursor-help inline-block ${cls}`}
       tabIndex={0}
       aria-describedby={`tier-${tier}`}
     >
@@ -102,7 +102,7 @@ export function EndorsementLegend({ className }: { className?: string }) {
       className={`max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-8 ${className ?? ""}`}
       aria-label="Endorsement tier legend"
     >
-      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
         Endorsement tiers
       </span>
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -125,13 +125,13 @@ export function EndorsementLegend({ className }: { className?: string }) {
             <div className="relative flex items-center gap-2 mb-2">
               <span
                 aria-hidden
-                className="w-5 h-5 rounded-[3px] inline-flex items-center justify-center font-mono text-[10px] font-bold"
+                className="w-5 h-5 rounded-[3px] inline-flex items-center justify-center font-mono text-[11px] font-bold"
                 style={{ background: it.iconBg, color: it.iconFg }}
               >
                 {it.label.split(" ")[1]?.[0] ?? "·"}
               </span>
               <span
-                className="font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold"
+                className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold"
                 style={{ color: it.iconFg }}
               >
                 {it.label}

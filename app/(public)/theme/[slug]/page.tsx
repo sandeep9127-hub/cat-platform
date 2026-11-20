@@ -53,7 +53,7 @@ export default async function ThemePage({ params }: Props) {
             style={{ background: theme.colourHex }}
             aria-hidden
           />
-          <span className="font-mono text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+          <span className="font-mono text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
             Theme
           </span>
         </div>
@@ -63,7 +63,7 @@ export default async function ThemePage({ params }: Props) {
         <p className="font-serif italic text-[19px] text-ink-soft leading-[1.5] max-w-[58ch] mt-6 font-light">
           {theme.description}
         </p>
-        <div className="mt-8 flex gap-4 items-center font-mono text-[10.5px] uppercase tracking-mono-mid text-muted">
+        <div className="mt-8 flex gap-4 items-center font-mono text-[11px] uppercase tracking-mono-mid text-muted">
           <span>
             <strong className="text-deep-teal text-[13px] font-semibold mr-1">{rows.length}</strong>
             programmes published

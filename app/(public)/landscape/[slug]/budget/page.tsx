@@ -33,7 +33,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
     return (
       <>
         <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-          <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+          <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
             <span className="text-line">/</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -58,7 +58,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-        <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+        <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
           <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>

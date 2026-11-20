@@ -124,14 +124,14 @@ export function LandscapeKpiDashboard(props: KpiDashboardProps) {
 
         {/* Land lens extra: challenge intensity ring */}
         {lens === "land" && (
-          <p className="mt-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
+          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
             <span className="text-amber-deep">●</span> Numbers as published in CAT Landscape Profiles, Feb 2026.
           </p>
         )}
 
         {/* People lens extra: */}
         {lens === "people" && (
-          <p className="mt-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
+          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
             <span className="text-teal">●</span> Population and household counts are point-in-time. CAT works
             at landscape scale, not activity scale.
           </p>
@@ -170,7 +170,7 @@ function LensSlicer({
       {items.map(({ id, label, Icon, disabled, hint }) => {
         const active = lens === id;
         const base =
-          "px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] border-r border-line last:border-r-0 transition-colors inline-flex items-center gap-1.5";
+          "px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] border-r border-line last:border-r-0 transition-colors inline-flex items-center gap-1.5";
         const state = disabled
           ? "text-line cursor-not-allowed"
           : active
@@ -271,7 +271,7 @@ function KpiTile({
           transition: "opacity 220ms ease-out",
         }}
       />
-      <span className="relative font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted leading-tight">
+      <span className="relative font-mono text-[11px] uppercase tracking-[0.16em] text-muted leading-tight">
         {label}
       </span>
       <div className="relative font-serif text-[22px] sm:text-[26px] leading-none tracking-[-0.018em] text-deep-teal font-medium tabular-nums">
@@ -322,7 +322,7 @@ function TopCategoriesBar({
 
   return (
     <div ref={wrapRef} className="mt-7 pt-5 border-t border-line">
-      <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold block mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold block mb-3">
         Top intervention categories by spend
       </span>
       <ul className="list-none p-0 m-0 flex flex-col gap-3">
@@ -344,7 +344,7 @@ function TopCategoriesBar({
             </div>
             <div className="font-serif text-[14px] text-deep-teal font-medium tabular-nums">
               {inrShort(c.total)}{" "}
-              <span className="font-mono text-[10px] text-muted tracking-[0.12em]">
+              <span className="font-mono text-[11px] text-muted tracking-[0.12em]">
                 · {pct(c.total, totalCostInr)}
               </span>
             </div>

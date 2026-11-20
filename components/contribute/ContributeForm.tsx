@@ -235,7 +235,7 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
             </Field>
           </div>
           <div className="block mb-5">
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-soft font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft font-semibold">
               Primary district / location
             </span>
             <div className="mt-1.5">
@@ -379,8 +379,8 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
             className="absolute top-0 left-0 right-0 h-[2px]"
             style={{ background: "linear-gradient(90deg, #C68C2E 0%, rgba(198,140,46,0.6) 60%, transparent 100%)" }}
           />
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">Status</span>
-          <p className="font-mono text-[10.5px] text-ink-soft leading-[1.55] mt-2.5">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold">Status</span>
+          <p className="font-mono text-[11px] text-ink-soft leading-[1.55] mt-2.5">
             {savedAt ? `Saved locally · ${savedAt.toLocaleTimeString("en-GB")}` : "Autosaves locally as you type"}
           </p>
         </div>
@@ -396,24 +396,24 @@ export function ContributeForm({ themes, states }: { themes: Theme[]; states: St
             className="absolute top-0 left-0 right-0 h-[2px]"
             style={{ background: "linear-gradient(90deg, #2E7573 0%, rgba(46,117,115,0.6) 60%, transparent 100%)" }}
           />
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
             After you submit
           </span>
           <ul className="list-none p-0 mt-3 flex flex-col gap-2 text-[13.5px] text-ink-soft leading-[1.55]">
             <li className="flex gap-2.5 items-baseline">
-              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">01</span>
+              <span className="font-mono text-[11px] text-amber-deep font-semibold tabular-nums shrink-0">01</span>
               <span>Lands in the editor queue.</span>
             </li>
             <li className="flex gap-2.5 items-baseline">
-              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">02</span>
+              <span className="font-mono text-[11px] text-amber-deep font-semibold tabular-nums shrink-0">02</span>
               <span>A CAT editor reads it against your sources.</span>
             </li>
             <li className="flex gap-2.5 items-baseline">
-              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">03</span>
+              <span className="font-mono text-[11px] text-amber-deep font-semibold tabular-nums shrink-0">03</span>
               <span>We may ask clarifying questions by email.</span>
             </li>
             <li className="flex gap-2.5 items-baseline">
-              <span className="font-mono text-[10px] text-amber-deep font-semibold tabular-nums shrink-0">04</span>
+              <span className="font-mono text-[11px] text-amber-deep font-semibold tabular-nums shrink-0">04</span>
               <span>Decision: approved as CAT-endorsed, listed for transparency, or returned for edits.</span>
             </li>
           </ul>
@@ -441,7 +441,7 @@ function Field({
 }) {
   return (
     <label className="block mb-5 last:mb-0">
-      <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-soft font-semibold flex items-center gap-1.5">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft font-semibold flex items-center gap-1.5">
         {label}
         {required && <span className="text-amber-deep">*</span>}
       </span>
@@ -452,7 +452,7 @@ function Field({
         </span>
       )}
       {error && (
-        <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-red-alert mt-1.5">
+        <span className="block font-mono text-[11px] uppercase tracking-[0.14em] text-red-alert mt-1.5">
           {error}
         </span>
       )}

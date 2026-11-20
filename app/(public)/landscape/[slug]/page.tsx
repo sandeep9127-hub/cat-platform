@@ -102,7 +102,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
       )}
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
         <div>
-          <div className="flex items-center gap-3 mb-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+          <div className="flex items-center gap-3 mb-5 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <Link href="/landscapes" className="hover:text-teal-soft">
               Landscapes
             </Link>
@@ -141,7 +141,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
           {hasLip && (
             <Link
               href={`/landscape/${slug}/ask`}
-              className="group mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out hover:-translate-y-0.5"
+              className="group mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out hover:-translate-y-0.5"
               style={{
                 background: "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
                 boxShadow:
@@ -243,7 +243,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
             <div className="relative flex flex-col gap-2.5">
               <a
                 href={`/api/landscape/${slug}/download?format=pdf`}
-                className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
                 download={`${slug}-investment-brief.pdf`}
               >
                 <FileText size={13} strokeWidth={1.6} aria-hidden />
@@ -311,7 +311,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
       )}
 
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
-        <footer className="mt-16 lg:mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
+        <footer className="mt-16 lg:mt-20 pt-6 border-t border-line font-mono text-[11px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
           <span>
             Source ·{" "}
             <a
@@ -341,7 +341,7 @@ function FactRow({ label, children }: { label: string; children: React.ReactNode
 function NarrativeBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>

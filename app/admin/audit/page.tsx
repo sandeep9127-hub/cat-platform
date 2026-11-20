@@ -41,7 +41,7 @@ export default async function AuditPage() {
         <div className="rounded-[10px] border border-line overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse text-[13px]">
             <thead>
-              <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <tr className="bg-cream text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                 <th className="px-4 py-3 font-medium">When</th>
                 <th className="px-4 py-3 font-medium">Who</th>
                 <th className="px-4 py-3 font-medium">Action</th>

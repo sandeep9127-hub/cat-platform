@@ -41,7 +41,7 @@ export default function GlobalError({
           </Link>
         </div>
         {error.digest && (
-          <p className="font-mono text-[10.5px] text-muted mt-8 tracking-[0.14em] uppercase">
+          <p className="font-mono text-[11px] text-muted mt-8 tracking-[0.14em] uppercase">
             Error reference: {error.digest}
           </p>
         )}

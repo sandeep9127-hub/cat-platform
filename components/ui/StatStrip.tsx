@@ -14,7 +14,7 @@ const TICK = ["#2E7573", "#C68C2E", "#5C6796", "#5C8C2E"];
 export function StatStrip({ stats }: { stats: Stat[] }) {
   return (
     <section className="max-w-page mx-auto pt-16 lg:pt-20 px-5 sm:px-7 lg:px-10">
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-4">
+      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-4">
         The library at a glance
       </div>
       {/* Single framed panel; hairline dividers via 1px gap over the line colour
@@ -28,7 +28,7 @@ export function StatStrip({ stats }: { stats: Stat[] }) {
                 style={{ background: TICK[i % TICK.length] }}
                 aria-hidden
               />
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted leading-tight">
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted leading-tight">
                 {s.label}
               </span>
             </div>
@@ -43,7 +43,7 @@ export function StatStrip({ stats }: { stats: Stat[] }) {
             </div>
 
             {s.delta && (
-              <div className="mt-auto inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+              <div className="mt-auto inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                 <span
                   className="inline-block w-3.5 h-px"
                   style={{ background: TICK[i % TICK.length] }}

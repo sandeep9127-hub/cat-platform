@@ -116,11 +116,11 @@ export function LandscapeMoney(props: MoneyProps) {
               </h2>
             </div>
             <div className="lg:text-right">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Total plan size · 7-year horizon</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Total plan size · 7-year horizon</div>
               <div className="font-serif text-[clamp(40px,6vw,68px)] leading-none text-teal tracking-[-0.02em] tabular-nums mt-1">
                 <AnimatedNumber key={currency} value={formatMoney(props.total, currency)} />
               </div>
-              <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-amber-deep mt-2">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-amber-deep mt-2">
                 {formatMoney(props.investment, currency)} external investment · {pct(props.investment, props.total)}% of plan
               </div>
             </div>
@@ -128,7 +128,7 @@ export function LandscapeMoney(props: MoneyProps) {
 
           {/* Who pays — single stacked bar + legend */}
           <div className="mt-8">
-            <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">Who pays</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-3">Who pays</div>
             <div className="flex w-full h-3.5 rounded-full overflow-hidden border border-line/60">
               {sources.map((s) => (
                 <div
@@ -140,7 +140,7 @@ export function LandscapeMoney(props: MoneyProps) {
             </div>
             <ul className="mt-3.5 flex flex-wrap gap-x-6 gap-y-2 list-none p-0 m-0">
               {sources.map((s) => (
-                <li key={s.label} className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                <li key={s.label} className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft">
                   <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ background: FUND_COLOURS[s.label] ?? "#95b1af" }} />
                   {s.label}
                   <span className="text-muted">· {pct(s.value, fundTotal)}%</span>
@@ -151,7 +151,7 @@ export function LandscapeMoney(props: MoneyProps) {
 
           {/* Delivery packages — bars grow on scroll */}
           <div ref={barsWrap} className="mt-9 pt-7 border-t border-line">
-            <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold mb-1.5">Delivery packages by share of plan</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-1.5">Delivery packages by share of plan</div>
             <p className="font-sans text-[12.5px] text-muted leading-[1.5] mb-4 max-w-[58ch]">
               A package bundles related interventions into one costed workstream: the unit the plan is financed and delivered in.
             </p>
@@ -169,7 +169,7 @@ export function LandscapeMoney(props: MoneyProps) {
                     </div>
                   </div>
                   <div className="font-serif text-[14px] text-deep-teal font-medium tabular-nums whitespace-nowrap">
-                    {formatMoney(p.total, currency)} <span className="font-mono text-[10px] text-muted tracking-[0.1em]">· {pct(p.total, props.total)}%</span>
+                    {formatMoney(p.total, currency)} <span className="font-mono text-[11px] text-muted tracking-[0.1em]">· {pct(p.total, props.total)}%</span>
                   </div>
                 </li>
               ))}
@@ -187,12 +187,12 @@ export function LandscapeMoney(props: MoneyProps) {
                 <div className="font-serif text-[clamp(22px,3vw,32px)] leading-none text-deep-teal font-medium tabular-nums tracking-[-0.02em]">
                   <AnimatedNumber value={compact(m.n)} />
                 </div>
-                <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted mt-2.5">{m.label}</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-2.5">{m.label}</div>
                 <div className="font-serif italic text-[12px] text-muted mt-0.5">{m.sub}</div>
               </div>
             ))}
           </div>
-          <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.13em] text-muted">
             Engagements are summed across interventions, not unique households.
           </p>
 

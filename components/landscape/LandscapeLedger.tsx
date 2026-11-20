@@ -103,7 +103,7 @@ export function LandscapeLedger(props: LedgerProps) {
         {groups.map((g) => (
           <li key={g.key} className="relative bg-paper px-6 py-6 sm:px-7 sm:py-7">
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: g.accent }} />
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
+            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
               {g.iconSrc ? (
                 <Image src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
               ) : (
@@ -117,7 +117,7 @@ export function LandscapeLedger(props: LedgerProps) {
                   key={r.label}
                   className={"flex items-baseline justify-between gap-4 py-2.5" + (i < g.rows.length - 1 ? " border-b border-line/70" : "")}
                 >
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.13em] text-muted">{r.label}</dt>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">{r.label}</dt>
                   <dd
                     className={
                       "font-serif tabular-nums tracking-[-0.015em] text-right " +

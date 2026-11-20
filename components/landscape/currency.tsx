@@ -145,7 +145,7 @@ export function CurrencyControl({ className = "" }: { className?: string }) {
     <div className={"flex flex-col items-end gap-1.5 " + className}>
       <CurrencyToggle />
       {currency !== "INR" && (
-        <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
+        <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">
           {ratesLive ? "Live" : "Indicative"} · 1 {currency} ≈ ₹{rates[currency]}
         </span>
       )}
@@ -171,7 +171,7 @@ export function CurrencyToggle({ className = "" }: { className?: string }) {
             onClick={() => setCurrency(c)}
             aria-pressed={active}
             className={
-              "px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] border-r border-line last:border-r-0 transition-colors " +
+              "px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] border-r border-line last:border-r-0 transition-colors " +
               (active ? "bg-deep-teal text-paper font-semibold" : "text-deep-teal hover:bg-line-soft")
             }
           >

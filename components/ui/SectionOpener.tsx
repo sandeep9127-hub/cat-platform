@@ -25,7 +25,7 @@ export function SectionOpener({ number, label, align = "left" }: Props) {
         }}
       >
         {number && (
-          <span className="font-mono text-[10px] tabular-nums tracking-[0.18em] text-[color:var(--sage)] font-semibold">
+          <span className="font-mono text-[11px] tabular-nums tracking-[0.18em] text-[color:var(--sage)] font-semibold">
             {number}
           </span>
         )}
@@ -36,7 +36,7 @@ export function SectionOpener({ number, label, align = "left" }: Props) {
             style={{ background: "rgba(122,150,131,0.55)" }}
           />
         )}
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--navy-teal)] font-semibold">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[color:var(--navy-teal)] font-semibold">
           {label}
         </span>
       </span>

@@ -84,7 +84,7 @@ export function ThreeLevers() {
                 <Icon size={20} strokeWidth={1.7} />
               </span>
               <div className="flex-1 min-w-0">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted tabular-nums">
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted tabular-nums">
                   {String(i + 1).padStart(2, "0")} · The lever
                 </span>
                 <h3

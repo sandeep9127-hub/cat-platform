@@ -120,7 +120,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
                   <p className="font-sans text-[13.5px] text-[color:var(--navy-teal)] leading-snug">
                     {p.caption}
                   </p>
-                  <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mt-1.5 inline-flex items-center gap-1.5">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted mt-1.5 inline-flex items-center gap-1.5">
                     <span className="inline-block w-3 h-px bg-amber-deep" />
                     {p.credit}{p.date ? ` · ${formatDate(p.date)}` : ""}
                   </p>
@@ -180,7 +180,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
             </div>
             <figcaption className="mt-3 flex items-baseline justify-between gap-4 flex-wrap">
               <p className="font-sans text-[14px] text-paper leading-snug">{active.caption}</p>
-              <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[color:#f8ca7c] inline-flex items-center gap-1.5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:#f8ca7c] inline-flex items-center gap-1.5">
                 <span className="inline-block w-3 h-px bg-[#f8ca7c]" />
                 {active.credit}{active.date ? ` · ${formatDate(active.date)}` : ""}
                 {photos.length > 1 && (

@@ -202,7 +202,7 @@ export default async function MapPage({
         </div>
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">In the Solutions Atlas</span>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
             <div>
               <dt>Programmes</dt>
               <dd className="font-serif text-[26px] text-deep-teal mt-1 leading-none tracking-[-0.02em] tabular-nums">
@@ -216,11 +216,11 @@ export default async function MapPage({
               </dd>
             </div>
           </dl>
-          <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted mt-4 leading-relaxed">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-4 leading-relaxed">
             <span className="text-amber-deep">●</span> includes routed discovery records:
             government, NGO and collaborations led programmes pulled from public sources
           </p>
-          <p className="font-mono text-[9.5px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
+          <p className="font-mono text-[11px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
             The Solutions Atlas is updated at regular intervals as new programmes are verified and
             added. It does not yet capture every food-systems initiative across India, and will keep
             growing over time. Each programme is drawn from public references; we&apos;d gently
@@ -232,7 +232,7 @@ export default async function MapPage({
       {/* Filter bar — three multi-select dropdowns, right-aligned (Intervention
           · Principle · State). Selections live in the URL (deep-linkable). */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           Showing{" "}
           <span className="text-deep-teal font-semibold tabular-nums">{factsheets.length}</span>
           {totalActive > 0 ? (

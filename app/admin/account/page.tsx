@@ -63,7 +63,7 @@ export default async function AccountPage({
         <h1 className="font-serif text-[32px] sm:text-[40px] font-normal tracking-[-0.02em] text-ink mt-2">
           {hasPassword ? "Change password" : "Set a password"}
         </h1>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-2">{email}</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-2">{email}</p>
       </header>
 
       {sp.ok ? (
@@ -84,16 +84,16 @@ export default async function AccountPage({
       <form action={changePassword} className="flex flex-col gap-3">
         {hasPassword ? (
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Current password</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Current password</span>
             <input type="password" name="current" autoComplete="current-password" className={input} />
           </label>
         ) : null}
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">New password</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">New password</span>
           <input type="password" name="next" required minLength={8} autoComplete="new-password" className={input} />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Confirm new password</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Confirm new password</span>
           <input type="password" name="confirm" required minLength={8} autoComplete="new-password" className={input} />
         </label>
         <button className="mt-1 w-fit rounded-full bg-deep-teal text-paper px-6 py-2.5 text-[13px] font-medium hover:bg-teal active:scale-[0.98] transition-[transform,background-color] duration-150">

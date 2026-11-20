@@ -123,7 +123,7 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
           <div className="min-w-0 flex-1">
             <div className="font-sans text-[14px] text-ink leading-tight truncate">{selected.name}</div>
             {selected.path.length > 0 && (
-              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted truncate">
+              <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted truncate">
                 {selected.path.join(" · ")}
                 {!selected.verified && <span className="text-amber-deep ml-2">· pending review</span>}
               </div>
@@ -184,10 +184,10 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
                     >
                       <div className="font-sans text-[14px] text-ink leading-tight">
                         {h.name}
-                        <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted">{h.type}</span>
+                        <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{h.type}</span>
                       </div>
                       {h.path.length > 0 && (
-                        <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted truncate">
+                        <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted truncate">
                           {h.path.join(" · ")}
                         </div>
                       )}

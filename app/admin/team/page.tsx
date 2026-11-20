@@ -115,18 +115,18 @@ export default async function TeamPage({
       {/* Add member */}
       <form action={addMember} className="rounded-[10px] border border-line p-5 flex flex-col sm:flex-row sm:items-end gap-3 flex-wrap">
         <label className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Email</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Email</span>
           <input type="email" name="email" required placeholder="editor@organisation.org" className={input} />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Role</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Role</span>
           <select name="role" className={input} defaultValue="editor">
             <option value="editor">editor</option>
             <option value="admin">admin</option>
           </select>
         </label>
         <label className="flex flex-col gap-1.5 flex-1 min-w-[180px]">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Temporary password</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Temporary password</span>
           <input type="text" name="password" required minLength={8} placeholder="min 8 characters" className={input} />
         </label>
         <button className="rounded-full bg-deep-teal text-paper px-5 py-2.5 text-[13px] font-medium hover:bg-teal active:scale-[0.98] transition-[transform,background-color] duration-150">
@@ -138,7 +138,7 @@ export default async function TeamPage({
       <div className="rounded-[10px] border border-line overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-[13.5px]">
           <thead>
-            <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <tr className="bg-cream text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Password</th>
@@ -156,14 +156,14 @@ export default async function TeamPage({
                   <form action={resetMemberPassword} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={m.id} />
                     <input type="text" name="password" required minLength={8} placeholder="new password" className="px-2.5 py-1.5 rounded-[6px] bg-paper border border-line text-[13px] w-[150px] focus:outline-none focus:border-teal" />
-                    <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Set</button>
+                    <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Set</button>
                   </form>
                 </td>
                 <td className="px-4 py-3 text-right">
                   {m.id === selfId ? null : (
                     <form action={removeMember}>
                       <input type="hidden" name="id" value={m.id} />
-                      <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">Remove</button>
+                      <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">Remove</button>
                     </form>
                   )}
                 </td>
