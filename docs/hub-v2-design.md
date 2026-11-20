@@ -138,8 +138,8 @@ triage_comments      discussion on an item
 5. **Structure:** headings become `sections`. Chunks of about 300–500 tokens are cut at heading and paragraph boundaries, never mid-table, and keep page numbers.
 6. **Enrich (contextual retrieval):** Claude Haiku writes 1–2 lines per chunk saying where it sits ("Rajnagar LIP 2026, §5.2 Water: farm-pond budget"). Prompt caching keeps this cheap.
 7. **Embed:** Voyage in batches; the model name is stored on every row.
-8. **Publish:** the new version becomes current, and the old one is marked superseded. Old chunks stay stored but are no longer searched, so old answers can still be traced.
-9. **Diff:** if a previous version exists, a version diff is generated automatically.
+8. **Publish:** the new version becomes current. The old version is deleted entirely once its change summary is written (step 9).
+9. **Diff:** if a previous version exists, a change summary is generated, and then the previous version is deleted.
 
 **Drive folder sync (decided 20 Nov 2026).** The CAT documents live in one Google Drive folder, and the Hub keeps itself current from it:
 
@@ -148,6 +148,12 @@ triage_comments      discussion on an item
 - **Change detection:** Drive's `modifiedTime` and checksum. Google Docs are exported to PDF.
 - **Access:** the site reads Drive through a read-only service account that the folder is shared with. It can never write.
 - **Publishing:** text, answers and citations update automatically, and editors get an email with the version diff. **Changed budget-table figures wait for one-click editor approval** in the triage queue before the structured tables on landscape pages change.
+- **What syncs:** only the **"Final folder"**. Drafts in "Claude outputs" and "Working folder" are ignored; a file reaches the Hub when it's saved into Final.
+  - `Landscape report - final/New updated reports`: current LIPs.
+  - `Report as on 25/08/2026`: current for landscapes with no newer report.
+  - `5.2 data - final/Live Google Sheets`: the structured intervention and budget data, about 80 rows per landscape with costs, phases, funding split, reach and tags.
+- **Old versions are removed:** when a new version arrives, the Hub writes the change summary, then **deletes the old version completely** (file, pages, sections, chunks). Only the summary is kept, with the old version's label.
+- **Manual documents:** Pangi and the HLPE report aren't in the folder. They're kept as `source = manual` documents outside the sync and never auto-update.
 
 Every step is a row in `jobs` with retries, and the admin shows live progress per document. Jobs run on a Vercel cron every minute (Pro plan), in small steps so no function times out.
 
