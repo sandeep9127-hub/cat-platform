@@ -39,13 +39,13 @@ const PROD_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(PROD_URL),
   title: {
-    default: "Transformation Hub — A dashboard for sustainable food systems",
+    default: "Transformation Hub: a dashboard for sustainable food systems",
     template: "%s · Transformation Hub",
   },
   description:
-    "An edited record of food systems work in India — government missions, NGO programmes, farmer federations and research interventions. Run by the Consortium for Agroecological Transformations. Every entry is read by an editor; what didn't work shows up next to what did.",
+    "An edited record of food systems work in India: government missions, NGO programmes, farmer federations and research interventions. Run by the Consortium for Agroecological Transformations. Every entry is read by an editor; what didn't work shows up next to what did.",
   openGraph: {
-    title: "Transformation Hub — A dashboard for sustainable food systems",
+    title: "Transformation Hub: a dashboard for sustainable food systems",
     description:
       "By the Consortium for Agroecological Transformations. Eleven focus landscapes, plus a Solutions Atlas of programmes from across India.",
     type: "website",

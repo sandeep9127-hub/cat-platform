@@ -93,7 +93,7 @@ export default async function LandscapesPage() {
         <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">Investment plans</span>
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
-            Each landscape has a Landscape Investment Plan — a place-based costing and
+            Each landscape has a Landscape Investment Plan: a place-based costing and
             implementation roadmap developed with its anchor partner.
           </p>
           <div className="mt-4 flex gap-2.5 items-center">
@@ -147,7 +147,7 @@ export default async function LandscapesPage() {
                   >
                     <Image
                       src={`/images/landscapes/${g.slug}/cover.jpg`}
-                      alt={`${p?.name ?? g.name} — Landscape-Based Investment Plan cover`}
+                      alt={`${p?.name ?? g.name}, Landscape-Based Investment Plan cover`}
                       width={800}
                       height={1131}
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"

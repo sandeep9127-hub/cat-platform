@@ -84,7 +84,7 @@ export function DomainPicker({ value, onChange, placeholder }: Props) {
             return (
               <span key={v} className={`dp-chip${custom ? " dp-chip-custom" : ""}`}>
                 {v}
-                {custom && <span className="dp-new" title="Not in the standard list — will be reviewed">new</span>}
+                {custom && <span className="dp-new" title="Not in the standard list. It will be reviewed">new</span>}
                 <button type="button" onClick={() => remove(v)} aria-label={`Remove ${v}`}>×</button>
               </span>
             );
@@ -100,7 +100,7 @@ export function DomainPicker({ value, onChange, placeholder }: Props) {
           onChange={(e) => { setQ(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder={placeholder ?? "Type a domain — pick from the list or add your own"}
+          placeholder={placeholder ?? "Type a domain, then pick from the list or add your own"}
           role="combobox"
           aria-expanded={open}
           aria-controls={listId}

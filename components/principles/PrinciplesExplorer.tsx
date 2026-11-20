@@ -211,7 +211,7 @@ function Detail({
         <div className="ae-eyebrow">The framework</div>
         <h2 className="ae-detail-intro-title">Two scales of transformation</h2>
         <p className="ae-intro-lead">
-          Agroecology applies ecological principles to farming and food systems — a science, a set
+          Agroecology applies ecological principles to farming and food systems: a science, a set
           of practices and a social movement. Its thirteen consolidated principles work at two
           scales: the first seven transform the <strong>agroecosystem</strong>, the last six
           transform the wider <strong>food system</strong>.

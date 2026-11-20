@@ -115,7 +115,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 What the plan is worth to the climate
               </h2>
               <p className="font-sans text-[14.5px] text-ink-soft leading-[1.55] mt-3 max-w-[54ch]">
-                Modelled over seven years — protected income, healthier farms and stored carbon. A sense of
+                Modelled over seven years: protected income, healthier farms and stored carbon. A sense of
                 scale, not cash in hand.
               </p>
             </div>
@@ -187,7 +187,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 <div
                   key={s.key}
                   {...focusFns(s.key)}
-                  aria-label={`${s.label} · ${pct(s.value, total)}% — ${formatMoney(s.value, currency)}`}
+                  aria-label={`${s.label} · ${pct(s.value, total)}%, ${formatMoney(s.value, currency)}`}
                   className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
                   style={{
                     width: `${(s.value / total) * 100}%`,
@@ -245,7 +245,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 <span className="font-serif text-deep-teal text-[16px] tabular-nums">
                   ≈ {formatMoney(props.cobenefitInr, currency)}
                 </span>{" "}
-                in tracks other than their main one — a goat also protects income and stores carbon, for
+                in tracks other than their main one: a goat also protects income and stores carbon, for
                 example. We show it, but keep it out of the headline so nothing is counted twice.
               </p>
             </div>

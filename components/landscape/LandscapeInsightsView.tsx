@@ -185,7 +185,7 @@ export function LandscapeInsightsView({
             <Scatter points={scatterPoints} xLabel="Investment required (₹ crore)" yLabel="Hectares reached" />
           </div>
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted max-w-[64ch] leading-relaxed">
-            Household engagements are cumulative across interventions — read as relative
+            Household engagements are cumulative across interventions, so read them as relative
             intensity, not unique people. Unique landscape reach is {profile.households} households.
           </p>
         </Section>

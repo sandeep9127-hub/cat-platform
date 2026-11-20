@@ -44,7 +44,7 @@ export default async function MovedPage({
           Go to hub.agroecologyindia.org now
         </a>
         <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-          Please update your bookmark to hub.agroecologyindia.org
+          Update your bookmark to hub.agroecologyindia.org
         </p>
       </div>
     </div>

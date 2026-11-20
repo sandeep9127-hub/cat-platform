@@ -84,7 +84,7 @@ export function BrandBar() {
         >
         <Link
           href="/"
-          aria-label="Transformation Hub — home"
+          aria-label="Transformation Hub, home"
           className="flex items-center no-underline text-ink group shrink-0"
         >
           {/* The mark stays put and crisp; only the wordmark folds away. The

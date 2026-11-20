@@ -21,19 +21,19 @@ const LENSES = [
     key: "resilience" as const,
     label: "Resilience donor",
     colour: palette.teal,
-    blurb: "The safety net — household income protected when a climate shock hits.",
+    blurb: "The safety net: household income protected when a climate shock hits.",
   },
   {
     key: "adaptation" as const,
     label: "Adaptation finance",
     colour: palette.periwinkleDeep,
-    blurb: "The farm economy — lower costs, better yields, steadier margins.",
+    blurb: "The farm economy: lower costs, better yields, steadier margins.",
   },
   {
     key: "carbon" as const,
     label: "Carbon investor",
     colour: palette.amberDeep,
-    blurb: "The tradeable carbon — greenhouse gas removed, reduced and avoided.",
+    blurb: "The tradeable carbon: greenhouse gas removed, reduced and avoided.",
   },
 ];
 
@@ -157,7 +157,7 @@ export function LandscapeClimateViews({
                             </div>
                             <p className="font-sans text-[12.5px] text-ink-soft leading-[1.5] mt-2">
                               Only the {creditablePct}% on a registry pathway is creditable today. The rest is real
-                              greenhouse-gas impact with no smallholder MRV pathway yet — a chance for early funders to
+                              greenhouse-gas impact with no smallholder MRV pathway yet, a chance for early funders to
                               help build the method that turns it into creditable supply.
                             </p>
                           </div>
@@ -227,14 +227,14 @@ export function LandscapeClimateViews({
           <div className="overflow-hidden">
             <div className="px-5 sm:px-6 pb-6 border-t border-line pt-5">
               <p className="font-sans text-[14px] text-ink-soft leading-[1.55] max-w-[68ch]">
-                Each intervention is counted once, in the track it mainly serves — so nothing is double-counted.
+                Each intervention is counted once, in the track it mainly serves, so nothing is double-counted.
                 Carbon is priced at benchmark rates. Every figure carries an evidence grade:
               </p>
               <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-card overflow-hidden border border-line list-none p-0">
                 {[
-                  { tier: "T1", label: "Primary · local", body: "Programme data, baseline surveys and impact evaluations from the landscape itself — the strongest evidence." },
-                  { tier: "T2", label: "Secondary · national", body: "ICAR institutes, government datasets and peer-reviewed Indian studies — used where local data isn't available yet." },
-                  { tier: "T3", label: "Global · methodological", body: "IPCC Guidelines & AR6, FAO and international methods — for emission factors and standard conversions." },
+                  { tier: "T1", label: "Primary · local", body: "Programme data, baseline surveys and impact evaluations from the landscape itself, the strongest evidence." },
+                  { tier: "T2", label: "Secondary · national", body: "ICAR institutes, government datasets and peer-reviewed Indian studies, used where local data isn't available yet." },
+                  { tier: "T3", label: "Global · methodological", body: "IPCC Guidelines & AR6, FAO and international methods, for emission factors and standard conversions." },
                 ].map((t) => (
                   <li key={t.tier} className="bg-paper p-5">
                     <div className="flex items-baseline gap-2">
@@ -246,7 +246,7 @@ export function LandscapeClimateViews({
                 ))}
               </ul>
               <p className="font-sans text-[12.5px] text-muted italic leading-[1.5] mt-4 max-w-[68ch]">
-                A tag like “T1+T2” combines a local figure with a national factor. All values are modelled — not a
+                A tag like “T1+T2” combines a local figure with a national factor. All values are modelled, not a
                 cash return.
               </p>
             </div>

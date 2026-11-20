@@ -643,7 +643,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
       if (!res.ok) throw new Error();
       setDone(true);
     } catch {
-      setErr("Could not submit. Please try again.");
+      setErr("Couldn't send that. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
@@ -716,7 +716,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <GeographyPicker
                       key={loc.geographyId || `row-${i}`}
-                      placeholder="Type a district or place — pick the exact one"
+                      placeholder="Type a district or place, then pick the exact one"
                       defaultValue={
                         loc.geographyId
                           ? {

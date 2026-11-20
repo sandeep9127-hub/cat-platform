@@ -24,7 +24,7 @@ export function LandscapePriorities({
           Transformational priorities
         </h2>
         <p className="font-sans text-[15px] text-ink-soft leading-[1.55] mt-3 max-w-[60ch]">
-          What the {landscapeName} plan is steering toward — the strategic shifts that guide every
+          What the {landscapeName} plan is steering toward: the strategic shifts that guide every
           intervention on the ground.
         </p>
       </div>
