@@ -36,7 +36,7 @@ async function main() {
 
   // Old budget totals in the (copied) database, for a sanity comparison.
   const old = new Map(
-    ((await db.execute(sql`SELECT landscape_slug, sum(total_cost)::float AS t FROM "cat".landscape_budget_lines GROUP BY 1`).catch(() => ({ rows: [] }))) as unknown as { rows: { landscape_slug: string; t: number }[] }).rows.map((r) => [r.landscape_slug, r.t]),
+    ((await db.execute(sql`SELECT landscape_slug, sum(total_intervention_cost_inr)::float AS t FROM "cat".landscape_budget_lines GROUP BY 1`).catch(() => ({ rows: [] }))) as unknown as { rows: { landscape_slug: string; t: number }[] }).rows.map((r) => [r.landscape_slug, r.t]),
   );
 
   console.log(`${BASELINE ? "APPROVED BASELINE" : STAGE ? "STAGING CHANGES" : "PREVIEW (no writes)"}\n`);

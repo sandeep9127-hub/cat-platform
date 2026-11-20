@@ -21,6 +21,7 @@ import { deleteObject, putObject } from "@/lib/storage/r2";
  */
 
 export const PARSER = "cat-docx@1";
+const BATCH = 50; // rows per INSERT (one round trip each; the DB is in Singapore)
 
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 
@@ -170,10 +171,10 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
       )[0];
 
       if (reliable) {
-        for (const [pageNo, text] of pagesText(input.parsed.blocks)) {
-          await tx.execute(sql`
-            INSERT INTO "cat".document_pages (version_id, page_no, text, method, char_count)
-            VALUES (${v.id}, ${pageNo}, ${text}, 'docx', ${text.length})`);
+        const pages = [...pagesText(input.parsed.blocks)];
+        for (let i = 0; i < pages.length; i += BATCH) {
+          const values = pages.slice(i, i + BATCH).map(([pageNo, text]) => sql`(${v.id}, ${pageNo}, ${text}, 'docx', ${text.length})`);
+          await tx.execute(sql`INSERT INTO "cat".document_pages (version_id, page_no, text, method, char_count) VALUES ${sql.join(values, sql`, `)}`);
         }
       }
 
@@ -189,15 +190,17 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
         sectionIds.push(r.id);
       }
 
-      for (const c of chunks) {
+      for (let i = 0; i < chunks.length; i += BATCH) {
+        const values = chunks.slice(i, i + BATCH).map((c) => sql`(
+          'document', ${doc.id}, ${v.id}, ${c.sectionOrd === null ? null : sectionIds[c.sectionOrd]}, ${input.landscapeSlug},
+          ${c.index}, ${c.kind}, ${c.text}, ${ctx.contexts[c.index]},
+          ${reliable ? c.pageStart : null}, ${reliable ? c.pageEnd : null}, ${c.tokenCount}, false,
+          ${toVectorLiteral(vectors[c.index])}::vector, ${EMBED_MODEL})`);
         await tx.execute(sql`
           INSERT INTO "cat".chunks
             (source_kind, document_id, version_id, section_id, landscape_slug, chunk_index, kind, text, context,
              page_start, page_end, token_count, is_current, embedding, embedding_model)
-          VALUES ('document', ${doc.id}, ${v.id}, ${c.sectionOrd === null ? null : sectionIds[c.sectionOrd]}, ${input.landscapeSlug},
-                  ${c.index}, ${c.kind}, ${c.text}, ${ctx.contexts[c.index]},
-                  ${reliable ? c.pageStart : null}, ${reliable ? c.pageEnd : null}, ${c.tokenCount}, false,
-                  ${toVectorLiteral(vectors[c.index])}::vector, ${EMBED_MODEL})`);
+          VALUES ${sql.join(values, sql`, `)}`);
       }
 
       if (diff) {
