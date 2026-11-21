@@ -127,6 +127,10 @@ export function IndiaMap({
   const [view, setView] = useState<View>({ k: 1, tx: 0, ty: 0 });
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [tip, setTip] = useState<{ x: number; y: number; members: Placed[] } | null>(null);
+  // Touch has no hover, so a first tap on a single programme pins its preview
+  // (with an Open link); a second tap on the same marker opens it.
+  const [pinned, setPinned] = useState<string | null>(null);
+  const lastPointer = useRef<string>("mouse");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -348,6 +352,7 @@ export function IndiaMap({
         return clampView({ k, tx: (cx - fit.ox) / fit.s - k * px, ty: (cy - fit.oy) / fit.s - k * py });
       });
       setTip(null);
+      setPinned(null);
     },
     [fit, box]
   );
@@ -419,6 +424,12 @@ export function IndiaMap({
     setTip({ x: c.x, y: c.y, members: c.members });
   };
   const hideTip = () => {
+    if (pinned) return; // a pinned (tapped) preview stays until dismissed
+    setEngaged(false);
+    setTip(null);
+  };
+  const unpin = () => {
+    setPinned(null);
     setEngaged(false);
     setTip(null);
   };
@@ -483,6 +494,11 @@ export function IndiaMap({
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onClick={(e) => {
+            // Tapping empty map closes a pinned preview.
+            const t = e.target as HTMLElement;
+            if (pinned && !t.closest("button") && !t.closest("[data-map-tip]")) unpin();
+          }}
           onDoubleClick={(e) => {
             if ((e.target as HTMLElement).closest("button")) return;
             const rect = stageRef.current!.getBoundingClientRect();
@@ -550,10 +566,17 @@ export function IndiaMap({
                 onMouseLeave={hideTip}
                 onFocus={() => showTip(c)}
                 onBlur={hideTip}
+                onPointerDown={(e) => (lastPointer.current = e.pointerType)}
                 onClick={() => {
                   if (dragged()) return;
-                  if (many) zoomAt(view.k >= MAX_K ? 1 : 3, c.x, c.y);
-                  else open(first.entry);
+                  if (many) return zoomAt(view.k >= MAX_K ? 1 : 3, c.x, c.y);
+                  // Touch: first tap previews, second tap (same marker) opens.
+                  if (lastPointer.current === "touch" && pinned !== first.entry.id) {
+                    setPinned(first.entry.id);
+                    showTip(c);
+                    return;
+                  }
+                  open(first.entry);
                 }}
               >
                 {many ? <ClusterChip members={c.members} /> : <SingleMarker colour={first.colour} />}
@@ -564,11 +587,13 @@ export function IndiaMap({
           {/* Tooltip */}
           {tip && (
             <div
-              role="tooltip"
-              className="absolute z-30 pointer-events-none max-w-[260px] min-w-[180px] px-3.5 py-3 rounded-card border border-line bg-paper text-ink shadow-[0_10px_28px_-14px_rgba(26,38,37,0.35)]"
+              role={pinned ? "dialog" : "tooltip"}
+              aria-label={pinned ? "Programme preview" : undefined}
+              data-map-tip
+              className={`absolute z-30 max-w-[260px] min-w-[180px] px-3.5 py-3 rounded-card border border-line bg-paper text-ink shadow-[0_10px_28px_-14px_rgba(26,38,37,0.35)] ${pinned ? "" : "pointer-events-none"}`}
               style={{
                 left: Math.min(tip.x + 14, Math.max(0, box.w - 260)),
-                top: tip.y + 14 > box.h - 120 ? tip.y - 14 - 110 : tip.y + 14,
+                top: tip.y + 14 > box.h - (pinned ? 170 : 120) ? tip.y - 14 - (pinned ? 160 : 110) : tip.y + 14,
               }}
             >
               {tip.members.slice(0, 4).map((m) => (
@@ -582,6 +607,19 @@ export function IndiaMap({
               ))}
               {tip.members.length > 4 && (
                 <div className="text-[12px] text-muted mt-1">and {tip.members.length - 4} more. Click to zoom in.</div>
+              )}
+              {pinned && tip.members.length === 1 && (
+                <div className="mt-2.5 pt-2 border-t border-line flex items-center justify-between gap-3">
+                  <a
+                    href={tip.members[0].entry.internalHref ?? `/entry/${tip.members[0].entry.slug}`}
+                    className="inline-flex items-center min-h-10 text-[14px] font-medium text-teal hover:text-deep-teal"
+                  >
+                    Open fact sheet →
+                  </a>
+                  <button type="button" onClick={unpin} aria-label="Close preview" className="inline-flex items-center justify-center w-10 h-10 -mr-2 text-muted hover:text-ink">
+                    ×
+                  </button>
+                </div>
               )}
             </div>
           )}
