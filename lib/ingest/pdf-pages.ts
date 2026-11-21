@@ -172,7 +172,10 @@ export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null
     const isolate = process.platform === "linux" && process.env.SOFFICE_NO_NETWORK === "1";
     const [cmd, argv] = isolate
       ? ["sudo", ["-n", "unshare", "--net", "--", "sudo", "-n", "-u", userInfo().username, "env", "-i",
-          ...Object.entries(cleanEnv).map(([k, v]) => `${k}=${v}`), soffice, ...args]]
+          ...Object.entries(cleanEnv).map(([k, v]) => `${k}=${v}`),
+          // The limit is enforced inside the sandbox, as the same user as LibreOffice:
+          // Node can't signal the root-owned sudo, so its own timeout isn't enough here.
+          "timeout", "-k", "10", "280", soffice, ...args]]
       : [soffice, args];
     await run(cmd, argv, {
       timeout: 300_000,
