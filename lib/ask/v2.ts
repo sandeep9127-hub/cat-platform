@@ -132,7 +132,12 @@ export function toCitation(h: Hit, index: number): Citation {
     index,
     type: "landscape",
     label,
-    url: h.landscapeSlug ? `/landscape/${h.landscapeSlug}` : "/library",
+    // A page opens the reader-facing PDF at that page; otherwise the landscape page.
+    url: !h.landscapeSlug
+      ? "/library"
+      : h.pageStart != null
+        ? `/landscape/${h.landscapeSlug}/report?page=${h.pageStart}`
+        : `/landscape/${h.landscapeSlug}`,
     preview: preview.length > 240 ? `${preview.slice(0, 238)}…` : preview,
     score: Number(h.score.toFixed(3)),
     document: h.documentTitle,
