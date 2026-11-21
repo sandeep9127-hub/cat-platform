@@ -45,6 +45,9 @@ function getSessionToken(): string {
   return t;
 }
 
+/** Set by the header "Talk" button on click: sessionStorage.setItem(TALK_INTENT_KEY, String(Date.now())). */
+export const TALK_INTENT_KEY = "cat-talk-intent";
+
 const isDesktop = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
 
 export function AgentChat({
@@ -182,6 +185,7 @@ export function AgentChat({
               mode?: Msg["mode"];
               artifact?: Msg["artifact"];
               messageId?: string;
+              endVoice?: boolean;
             };
             try {
               evt = JSON.parse(t.slice(5).trimStart());
@@ -209,7 +213,7 @@ export function AgentChat({
               setAnnounce(refused ? "Not in the library" : "Answer ready");
               answeringRef.current = false;
               setBusy(false); // the composer frees up; follow-ups may still arrive
-              h?.onDone();
+              h?.onDone({ endVoice: evt.endVoice });
             } else if (evt.type === "followups" && Array.isArray(evt.questions)) {
               patchLast((m) => ({ ...m, followUps: evt.questions!.slice(0, 3) }));
             } else if (evt.type === "error") {
@@ -342,7 +346,17 @@ export function AgentChat({
             canPlay = probe.state === "running";
             void probe.close();
           } catch {}
-          if (fromHub && canPlay) {
+          // Auto-start needs the one-time token the header "Talk" button puts in this
+          // tab's sessionStorage on click (valid 10 s, used once). Any other way of
+          // arriving at ?voice=1 (a link, a typed address) gets the tap button, so
+          // the mic never switches on without the reader's own click.
+          let talkIntent = false;
+          try {
+            const t = Number(sessionStorage.getItem(TALK_INTENT_KEY));
+            sessionStorage.removeItem(TALK_INTENT_KEY);
+            talkIntent = t > 0 && Date.now() - t >= 0 && Date.now() - t < 10_000;
+          } catch {}
+          if (talkIntent && canPlay) {
             autoVoiceRef.current = true;
             void voiceStartRef.current?.();
           } else {
@@ -661,7 +675,7 @@ function Answer({
         </p>
       )}
 
-      {msg.phase === "done" && (
+      {msg.phase === "done" && msg.mode !== "chat" && (
         <div className="flex flex-wrap items-center gap-1">
           {msg.content && !msg.refused && !msg.error && !ownText && <CopyButton text={msg.content} />}
           {isLast && !busy && (msg.interrupted || msg.error || msg.content) && (
@@ -704,6 +718,8 @@ function Answer({
 
 function Status({ msg }: { msg: Msg }) {
   const [open, setOpen] = useState(false);
+  // A conversational reply ("You're welcome") didn't search the library.
+  if (msg.mode === "chat") return null;
   const n = msg.citations?.length ?? 0;
   const phase = msg.phase ?? "done";
   const names = (msg.citations ?? [])
