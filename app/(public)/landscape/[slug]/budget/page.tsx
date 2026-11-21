@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { RequestTableCta } from "@/components/landscape/RequestTableCta";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
-import { budgetSummary, listBudgetLines, landscapeHasLip, landscapeHasClimate } from "@/lib/db/landscape-kb";
-import { BudgetExplorer } from "@/components/landscape/BudgetExplorer";
+import { budgetSummary, listBudgetLines, landscapeHasLip, landscapeHasClimate, type BudgetLine } from "@/lib/db/landscape-kb";
+import { BudgetExplorer, type BudgetGroup } from "@/components/landscape/BudgetExplorer";
 import { CurrencyProvider } from "@/components/landscape/currency";
 
 // ISR: cache the rendered page at the edge (revalidate every 5 min). These
@@ -55,6 +55,9 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
   }
 
   const [summary, lines] = await Promise.all([budgetSummary(slug), listBudgetLines(slug)]);
+  // The public page shows totals per theme only. Intervention lines are shared on
+  // request, so they are summed here and never sent to the browser.
+  const groups = groupByCategory(lines);
 
   return (
     <>
@@ -68,8 +71,9 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
           {p.name} · <span className="text-teal">Budget</span>
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
-          Every intervention costed in the {p.name} investment plan, filterable by category. Numbers
-          are 7-year totals across {lines.length} intervention lines unless filtered.
+          What the {p.name} investment plan costs, who funds it and what it reaches on the
+          ground, by theme. Numbers are 7-year totals. The intervention-by-intervention table is
+          shared on request.
         </p>
         <RequestTableCta slug={slug} className="mt-6" />
       </header>
@@ -77,8 +81,33 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
       <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} hasClimate={hasClimate} />
 
       <CurrencyProvider>
-        <BudgetExplorer summary={summary} lines={lines} />
+        <BudgetExplorer summary={summary} groups={groups} slug={slug} />
       </CurrencyProvider>
     </>
   );
+}
+
+function groupByCategory(lines: BudgetLine[]): BudgetGroup[] {
+  const by = new Map<string, BudgetGroup>();
+  const n = (v: string | null) => Number(v ?? 0) || 0;
+  for (const l of lines) {
+    const key = l.category ?? "Other";
+    const g = by.get(key) ?? {
+      category: key, total: 0, govt: 0, community: 0, investment: 0, grants: 0, returnable: 0,
+      outcome: 0, debt: 0, households: 0, hectares: 0, animals: 0,
+    };
+    g.total += n(l.totalCostInr);
+    g.govt += n(l.govtInr);
+    g.community += n(l.communityInr);
+    g.investment += n(l.investmentRequiredInr);
+    g.grants += n(l.grantsInr);
+    g.returnable += n(l.returnableGrantInr);
+    g.outcome += n(l.outcomeFinanceInr);
+    g.debt += n(l.debtInr);
+    g.households += n(l.impactHouseholds);
+    g.hectares += n(l.impactHectares);
+    g.animals += n(l.impactAnimals);
+    by.set(key, g);
+  }
+  return [...by.values()];
 }

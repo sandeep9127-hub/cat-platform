@@ -2,7 +2,8 @@
 
 import { palette } from "@/lib/design/palette";
 import { useMemo, useState } from "react";
-import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
+import type { BudgetSummary } from "@/lib/db/landscape-kb";
+import { RequestTableCta } from "./RequestTableCta";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { useCurrency, formatMoney, countIN, CurrencyToggle, type Currency } from "./currency";
@@ -66,27 +67,38 @@ const ACCENTS = {
   } as Accent,
 };
 
+/** Totals for one theme (category). The public page gets only these, never lines. */
+export type BudgetGroup = {
+  category: string;
+  total: number;
+  govt: number;
+  community: number;
+  investment: number;
+  grants: number;
+  returnable: number;
+  outcome: number;
+  debt: number;
+  households: number;
+  hectares: number;
+  animals: number;
+};
+
 export function BudgetExplorer({
   summary,
-  lines,
+  groups,
+  slug,
 }: {
   summary: BudgetSummary;
-  lines: BudgetLine[];
+  groups: BudgetGroup[];
+  slug: string;
 }) {
   const { currency } = useCurrency();
   const inr = inrFor(currency);
-  const categories = useMemo(() => {
-    return Array.from(new Set(lines.map((l) => l.category).filter(Boolean))) as string[];
-  }, [lines]);
+  const categories = useMemo(() => groups.map((g) => g.category), [groups]);
 
   const [cat, setCat] = useState<string>("");
 
-  const filtered = useMemo(() => {
-    return lines.filter((l) => {
-      if (cat && l.category !== cat) return false;
-      return true;
-    });
-  }, [lines, cat]);
+  const filtered = useMemo(() => groups.filter((g) => !cat || g.category === cat), [groups, cat]);
 
   const t = useMemo(() => {
     const o = {
@@ -102,18 +114,8 @@ export function BudgetExplorer({
       hectares: 0,
       animals: 0,
     };
-    for (const l of filtered) {
-      o.total += Number(l.totalCostInr ?? 0);
-      o.govt += Number(l.govtInr ?? 0);
-      o.community += Number(l.communityInr ?? 0);
-      o.investment += Number(l.investmentRequiredInr ?? 0);
-      o.grants += Number(l.grantsInr ?? 0);
-      o.returnable += Number(l.returnableGrantInr ?? 0);
-      o.outcome += Number(l.outcomeFinanceInr ?? 0);
-      o.debt += Number(l.debtInr ?? 0);
-      o.households += Number(l.impactHouseholds ?? 0);
-      o.hectares += Number(l.impactHectares ?? 0);
-      o.animals += Number(l.impactAnimals ?? 0);
+    for (const g of filtered) {
+      for (const k of Object.keys(o) as (keyof typeof o)[]) o[k] += g[k];
     }
     return o;
   }, [filtered]);
@@ -221,7 +223,7 @@ export function BudgetExplorer({
           </button>
         )}
         <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
-          {filtered.length} of {lines.length} lines
+          {filtered.length} of {groups.length} themes
         </span>
       </section>
 
@@ -241,65 +243,16 @@ export function BudgetExplorer({
         </section>
       )}
 
-      {/* Line table */}
-      <section className="mt-14">
-        <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
-          <span className="w-4 h-px bg-amber-deep" />
-          {filtered.length === lines.length ? "All intervention lines" : "Filtered lines"}
-        </div>
-        <div
-          className="overflow-x-auto rounded-card border border-line"
-          style={{
-            boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.18)",
-          }}
-        >
-          <table className="w-full text-[14px]">
-            <thead
-              className="text-cream"
-              style={{
-                background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
-              }}
-            >
-              <tr className="text-left font-mono uppercase text-[11px] tracking-[0.14em]">
-                <th className="px-4 py-3.5 font-semibold">Category</th>
-                <th className="px-4 py-3.5 font-semibold">Intervention</th>
-                <th className="px-4 py-3.5 font-semibold text-right">Total</th>
-                <th className="px-4 py-3.5 font-semibold text-right">Govt</th>
-                <th className="px-4 py-3.5 font-semibold text-right">Investment</th>
-                <th className="px-4 py-3.5 font-semibold text-right">HH</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((l, i) => (
-                <tr
-                  key={l.id}
-                  className={`border-t border-line-soft hover:bg-cream/60 transition-colors ${
-                    i % 2 === 0 ? "bg-paper" : "bg-cream/30"
-                  }`}
-                >
-                  <td className="px-4 py-3.5 align-top">
-                    <div className="font-sans text-ink leading-snug">{l.category ?? "—"}</div>
-                  </td>
-                  <td className="px-4 py-3.5 align-top">
-                    <div className="font-sans text-ink-soft leading-snug">{l.subintervention ?? l.intervention ?? "—"}</div>
-                  </td>
-                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-deep-teal font-semibold">
-                    {inr(l.totalCostInr)}
-                  </td>
-                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-teal">
-                    {inr(l.govtInr)}
-                  </td>
-                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-amber-deep">
-                    {inr(l.investmentRequiredInr)}
-                  </td>
-                  <td className="px-4 py-3.5 align-top text-right font-mono tabular-nums text-ink-soft">
-                    {l.impactHouseholds ? countIN(Number(l.impactHouseholds)) : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* The intervention-by-intervention table is shared on request only. */}
+      <section className="mt-14 rounded-card border border-line bg-cream/40 p-6 sm:p-8">
+        <h2 className="font-sans font-semibold text-[22px] tracking-[-0.02em] text-ink">
+          Want every intervention, line by line?
+        </h2>
+        <p className="mt-2 text-[15px] text-ink-soft leading-[1.55] max-w-[60ch]">
+          The full investment table lists each intervention with its costs, funding sources and
+          reach. Ask for it and you'll get a personal, view-only link.
+        </p>
+        <RequestTableCta slug={slug} className="mt-5" />
       </section>
     </div>
   );
