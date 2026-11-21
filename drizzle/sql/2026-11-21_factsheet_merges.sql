@@ -7,10 +7,8 @@
 ALTER TABLE "cat".solution_factsheets
   ADD COLUMN IF NOT EXISTS merged_into text;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'solution_factsheets_merged_into_check') THEN
-    ALTER TABLE "cat".solution_factsheets ADD CONSTRAINT solution_factsheets_merged_into_check
-      CHECK ((status = 'merged') = (merged_into IS NOT NULL) AND merged_into IS DISTINCT FROM slug);
-  END IF;
-END $$;
+-- NULL-safe: a sheet is 'merged' exactly when it names the sheet it merged into.
+ALTER TABLE "cat".solution_factsheets DROP CONSTRAINT IF EXISTS solution_factsheets_merged_into_check;
+ALTER TABLE "cat".solution_factsheets ADD CONSTRAINT solution_factsheets_merged_into_check
+  CHECK ((coalesce(status, '') = 'merged') = (merged_into IS NOT NULL)
+         AND merged_into IS DISTINCT FROM slug);

@@ -293,7 +293,7 @@ export async function generateFactSheet(
     confidence >= 0.7 && !!sheet.source_url && citations.length >= 1 && droppedLinks === 0;
   const status = wellSourced ? "published" : "flagged";
 
-  await db.execute(sql`
+  const written = await db.execute(sql`
     INSERT INTO "cat".solution_factsheets
       (slug, title, one_liner, summary, state_code, district, latitude, longitude,
        themes, scale_band, lead_organisation, implementers, funders, principle_alignment,
@@ -321,7 +321,11 @@ export async function generateFactSheet(
       source_url=EXCLUDED.source_url, confidence=EXCLUDED.confidence,
       verified=EXCLUDED.verified, status=EXCLUDED.status, updated_at=now()
     WHERE "cat".solution_factsheets.status <> 'merged' -- a merged duplicate stays merged
+    RETURNING slug
   `);
+  if (!(written as unknown as { rows: unknown[] }).rows.length) {
+    return { ok: false, reason: "This programme was merged into another fact sheet; it was not regenerated.", costUsd: callCost };
+  }
 
   // Embed into the RAG so Ask can answer from it under "All sources".
   // Best-effort: a failed embed must not fail generation.

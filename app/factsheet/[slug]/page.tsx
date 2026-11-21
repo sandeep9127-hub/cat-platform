@@ -1,4 +1,4 @@
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getFactSheet, getMergedFactSheetTarget } from "@/lib/factsheet/generate";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,8 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
   if (!s) {
     // A duplicate merged into another sheet keeps its old link working.
     const target = await getMergedFactSheetTarget(slug);
-    if (target) permanentRedirect(`/factsheet/${encodeURIComponent(target)}`);
+    // Temporary (307) so a mistaken merge can be undone without browsers caching it.
+    if (target) redirect(`/factsheet/${encodeURIComponent(target)}`);
     notFound();
   }
 
