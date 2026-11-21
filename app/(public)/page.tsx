@@ -21,6 +21,7 @@ import {
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { IndiaMap } from "@/components/map/IndiaMap";
+import { AskHubBand } from "@/components/home/AskHubBand";
 import { splitAtlasEntries } from "@/components/map/mapEntries";
 import { ApproachFilm } from "@/components/home/ApproachFilm";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -222,6 +223,12 @@ export default async function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ASK THE HUB (Ask UI spec E3). The example answer will come from
+          exampleForToday() in lib/ask/examples.ts (Ask session, rotates daily
+          between 3 stored answers) once that module lands; until then the
+          band shows its composer only, with no placeholder answer text. */}
+      <AskHubBand example={null} />
 
       {/* THE APPROACH — short film from the Consortium, lazy-loaded facade */}
       <Reveal as="section" className="border-t border-line">
