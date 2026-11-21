@@ -50,7 +50,7 @@ export function toCitation(h: Hit, index: number, factsheetTitle?: string): Cita
       ...base,
       type: "factsheet",
       label: `${title} · Solutions Atlas`,
-      url: h.sourceRef ? `/factsheet/${encodeURIComponent(h.sourceRef)}` : "/atlas",
+      url: h.sourceRef ? `/factsheet/${encodeURIComponent(h.sourceRef)}` : "/search",
       document: title,
       section: "Solutions Atlas",
     };
@@ -70,7 +70,13 @@ export function toCitation(h: Hit, index: number, factsheetTitle?: string): Cita
     label: [doc, section, pages(h)].filter(Boolean).join(" · "),
     // Reports are shared only on request (no download), so citations link to the
     // landscape page and show the page number as text.
-    url: h.landscapeSlug ? `/landscape/${h.landscapeSlug}` : "/library",
+    // Library documents without a landscape (e.g. HLPE Report 14, the basis of the
+    // 13 principles) link to the principles page, anything else to search.
+    url: h.landscapeSlug
+      ? `/landscape/${h.landscapeSlug}`
+      : /\bHLPE\b|principle/i.test(h.documentTitle ?? "")
+        ? "/principles"
+        : "/search",
     document: h.documentTitle,
     section: h.sectionPath,
   };
