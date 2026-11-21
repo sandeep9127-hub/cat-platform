@@ -11,6 +11,9 @@ export type Citation = {
   pageEnd?: number | null;
 };
 
+import type { CompareArtifact } from "./Compare";
+import type { MatchArtifact } from "./Match";
+
 export type Phase = "searching" | "reading" | "writing" | "done";
 
 export type Msg = {
@@ -29,6 +32,9 @@ export type Msg = {
   closest?: { label: string; url: string } | null;
   /** Which request owns this placeholder, so late events never patch a newer answer. */
   reqId?: number;
+  /** Compare and the matchmaker answer with a structured block under the summary. */
+  mode?: "compare" | "match";
+  artifact?: CompareArtifact | MatchArtifact | null;
 };
 
 export type ScopeOption = { slug: string; label: string; ready: boolean };
@@ -53,12 +59,14 @@ export function pageLabel(c: Citation): string | null {
   return c.pageEnd && c.pageEnd !== c.pageStart ? `pages ${c.pageStart}–${c.pageEnd}` : `page ${c.pageStart}`;
 }
 
-/** Citation numbers that appear as [n] markers in the text, in order of first use. */
-export function citedNumbers(text: string, max: number): number[] {
+/** Citation numbers used by an answer, in order of first use: [n] markers, then table cells or match cards. */
+export function citedNumbers(text: string, max: number, artifact?: Msg["artifact"]): number[] {
   const seen: number[] = [];
-  for (const m of text.matchAll(/\[(\d+)\]/g)) {
-    const n = Number(m[1]);
+  const add = (n: number) => {
     if (n >= 1 && n <= max && !seen.includes(n)) seen.push(n);
-  }
+  };
+  for (const m of text.matchAll(/\[(\d+)\]/g)) add(Number(m[1]));
+  if (artifact?.type === "compare") artifact.rows.forEach((r) => r.cells.forEach((c) => c.sources.forEach(add)));
+  if (artifact?.type === "match") artifact.matches.forEach((m) => add(m.citation));
   return seen;
 }

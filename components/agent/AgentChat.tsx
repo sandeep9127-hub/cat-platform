@@ -19,6 +19,8 @@ import { VisualizePanel } from "./VisualizePanel";
 import { Markdown } from "./ask/Markdown";
 import { SourcesPanel, SourcesSheet } from "./ask/Sources";
 import { FirstScreen, type AskExample } from "./ask/FirstScreen";
+import { CompareTable } from "./ask/Compare";
+import { MatchCards } from "./ask/Match";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
 
 /**
@@ -155,6 +157,8 @@ export function AgentChat({
               conversationId?: string;
               questions?: string[];
               closest?: { label: string; url: string } | null;
+              mode?: "compare" | "match";
+              artifact?: Msg["artifact"];
             };
             try {
               evt = JSON.parse(t.slice(5).trimStart());
@@ -164,7 +168,11 @@ export function AgentChat({
             if (evt.type === "meta") {
               if (evt.conversationId) conversationIdRef.current = evt.conversationId;
               const citations = evt.citations ?? [];
-              patchLast((m) => ({ ...m, citations, phase: citations.length ? "reading" : m.phase }));
+              const mode = evt.mode;
+              patchLast((m) => ({ ...m, citations, mode, phase: citations.length ? "reading" : m.phase }));
+            } else if (evt.type === "artifact" && evt.artifact) {
+              const artifact = evt.artifact;
+              patchLast((m) => ({ ...m, artifact }));
             } else if (evt.type === "delta" && evt.text) {
               acc += evt.text;
               patchLast((m) => ({ ...m, content: acc, phase: "writing" }));
@@ -287,7 +295,7 @@ export function AgentChat({
           .pop() ?? -1;
   const panelMsg = panelMid >= 0 ? messages[panelMid] : undefined;
   const panelCites = panelMsg && !panelMsg.refused ? panelMsg.citations ?? [] : [];
-  const panelCited = panelMsg ? citedNumbers(panelMsg.content, panelCites.length) : [];
+  const panelCited = panelMsg ? citedNumbers(panelMsg.content, panelCites.length, panelMsg.artifact) : [];
   const panelActiveN = active && active.mid === panelMid ? active.n : null;
 
   const composer = (
@@ -415,7 +423,7 @@ function Answer({
   onShowSources: () => void;
 }) {
   const cites = msg.citations ?? [];
-  const cited = citedNumbers(msg.content, cites.length);
+  const cited = citedNumbers(msg.content, cites.length, msg.artifact);
   const landscapeSlugs =
     msg.phase === "done" && msg.content && !msg.refused
       ? Array.from(new Set(cites.map((c) => (c.url.match(/\/landscape\/([^/?#]+)/) || [])[1]).filter(Boolean) as string[]))
@@ -464,6 +472,9 @@ function Answer({
           <Markdown text={msg.content} chip={chip} maxCite={cites.length} />
         </div>
       ) : null}
+
+      {!msg.refused && msg.artifact?.type === "compare" && <CompareTable a={msg.artifact} citations={cites} chip={chip} />}
+      {!msg.refused && msg.artifact?.type === "match" && <MatchCards a={msg.artifact} chip={chip} />}
 
       {msg.interrupted && (
         <p className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
@@ -532,11 +543,17 @@ function Status({ msg }: { msg: Msg }) {
   if (phase === "done") {
     if (msg.error) return null;
     const secs = msg.elapsedMs ? ` · ${(msg.elapsedMs / 1000).toFixed(1)} s` : "";
+    const done =
+      msg.mode === "compare" || msg.artifact?.type === "compare"
+        ? "Compared from the library"
+        : msg.mode === "match" || msg.artifact?.type === "match"
+          ? "Matched against the Solutions Atlas"
+          : "Answered from the library";
     const label = msg.refused
       ? `Searched the library${secs}`
       : msg.interrupted
         ? `Stopped while answering${n ? ` · Read ${n} sources` : ""}`
-        : `Answered from the library · Read ${n} source${n === 1 ? "" : "s"}${secs}`;
+        : `${done} · Read ${n} source${n === 1 ? "" : "s"}${secs}`;
     return (
       <div>
         <button
@@ -556,8 +573,17 @@ function Status({ msg }: { msg: Msg }) {
 
   const steps: Array<{ key: string; label: string; state: "done" | "now" | "wait" }> = [
     { key: "s", label: "Searching the library", state: phase === "searching" ? "now" : "done" },
-    { key: "r", label: n ? `Reading ${n} sources` : "Reading sources", state: phase === "searching" ? "wait" : phase === "reading" ? "now" : "done" },
-    { key: "w", label: "Writing the answer", state: phase === "writing" ? "now" : "wait" },
+    {
+      key: "r",
+      label:
+        msg.mode === "compare"
+          ? `Comparing ${n} passages across landscapes`
+          : msg.mode === "match"
+            ? `Weighing ${n} Atlas programmes against your problem`
+            : n ? `Reading ${n} sources` : "Reading sources",
+      state: phase === "searching" ? "wait" : phase === "reading" ? "now" : "done",
+    },
+    { key: "w", label: msg.mode ? "Laying out the result" : "Writing the answer", state: phase === "writing" ? "now" : "wait" },
   ];
   return (
     <div className="inline-grid gap-1 border border-line bg-paper rounded-[8px] px-3 py-2 text-[12.5px] text-ink-soft">

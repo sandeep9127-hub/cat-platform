@@ -52,7 +52,7 @@ const OUT_OF_SCOPE: Array<[string, string | null]> = [
     console.log(`\n== ${label}`);
     for (const [q, scope] of qs) {
       const t = Date.now();
-      const hits = await hybridSearch({ query: q, landscapeSlug: scope, k: 8 });
+      const hits = await hybridSearch({ query: q, landscapeSlug: scope, k: 8, sourceKinds: ["document", "intervention"] });
       const top = hits[0]?.score ?? 0;
       tops.push(top);
       console.log(`${top.toFixed(3)}  ${(hits[1]?.score ?? 0).toFixed(3)}  ${String(Date.now() - t).padStart(5)}ms  ${scope ? `[${scope}] ` : ""}${q}`);

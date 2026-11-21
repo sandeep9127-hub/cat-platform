@@ -14,6 +14,8 @@ import { embedQuery, rerank, toVectorLiteral } from "@/lib/ai/embed";
 export type Hit = {
   chunkId: string;
   sourceKind: string;
+  /** Non-document chunks: e.g. the fact-sheet slug, or "<landscape>:<row>" for interventions. */
+  sourceRef: string | null;
   documentId: string | null;
   versionId: string | null;
   documentTitle: string | null;
@@ -36,10 +38,15 @@ export async function hybridSearch(opts: {
   landscapeSlug?: string | null;
   k?: number;
   candidates?: number;
+  /** Limit to these chunk kinds (e.g. ['document','intervention'] or ['factsheet']). Omitted = all. */
+  sourceKinds?: string[];
 }): Promise<Hit[]> {
   const k = opts.k ?? 8;
   const n = opts.candidates ?? 40;
-  const scope = opts.landscapeSlug ? sql`AND c.landscape_slug = ${opts.landscapeSlug}` : sql``;
+  const kinds = opts.sourceKinds?.length
+    ? sql`AND c.source_kind IN (${sql.join(opts.sourceKinds.map((k) => sql`${k}`), sql`, `)})`
+    : sql``;
+  const scope = sql`${opts.landscapeSlug ? sql`AND c.landscape_slug = ${opts.landscapeSlug}` : sql``} ${kinds}`;
   const qvec = toVectorLiteral(await embedQuery(opts.query));
 
   const [vec, fts] = await Promise.all([
@@ -68,7 +75,7 @@ export async function hybridSearch(opts: {
   if (!ids.length) return [];
 
   const candidates = rows<Omit<Hit, "score">>(await db.execute(sql`
-    SELECT c.id AS "chunkId", c.source_kind AS "sourceKind", c.document_id AS "documentId", c.version_id AS "versionId",
+    SELECT c.id AS "chunkId", c.source_kind AS "sourceKind", c.source_ref AS "sourceRef", c.document_id AS "documentId", c.version_id AS "versionId",
            d.title AS "documentTitle", v.label AS "versionLabel", c.landscape_slug AS "landscapeSlug",
            s.path AS "sectionPath", c.page_start AS "pageStart", c.page_end AS "pageEnd",
            c.kind, c.context, c.text

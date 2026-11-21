@@ -33,7 +33,7 @@ export type StoredMessage = {
   citations: StoredCitation[];
   interrupted: boolean;
   refused: boolean;
-  artifacts: Array<{ type: string; items?: string[] }>;
+  artifacts: Array<{ type: string; items?: string[] } & Record<string, unknown>>;
   createdAt: string;
 };
 
