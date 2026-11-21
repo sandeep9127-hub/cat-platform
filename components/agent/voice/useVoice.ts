@@ -11,7 +11,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Interruption: new speech while the Hub is thinking or speaking stops playback,
  * cancels the TTS stream and the answer, and goes straight back to listening.
  * The Hub's own words are sent to STT as agent text so it doesn't "hear itself".
- * Keys are short-lived and come from /api/agent/voice; the real key stays on the server.
+ * Keys are short-lived and come from the server; the real key never leaves it. The
+ * listening key opens one stream per session; each answer gets its own single-use
+ * speech key (fetched while the Hub is thinking) and its own speech connection.
  */
 
 export type VoiceState = "off" | "connecting" | "listening" | "thinking" | "speaking";
@@ -73,7 +75,8 @@ export function useVoice(opts: {
   const r = useRef({
     stt: null as WebSocket | null,
     tts: null as WebSocket | null,
-    ttsKey: "",
+    session: "",
+    speechKey: null as Promise<string | null> | null,
     ttsQueue: [] as string[],
     media: null as MediaStream | null,
     rec: null as MediaRecorder | null,
@@ -101,7 +104,7 @@ export function useVoice(opts: {
 
   /* ─── speech out ─── */
 
-  /** Send to TTS, (re)connecting with the session key if the socket has closed. */
+  /** Send to this answer's TTS connection, queueing until it opens. */
   const sendTts = (obj: unknown) => {
     const c = r.current;
     const msg = JSON.stringify(obj);
@@ -109,14 +112,16 @@ export function useVoice(opts: {
       c.tts.send(msg);
       return;
     }
-    c.ttsQueue.push(msg);
-    if (!c.tts || c.tts.readyState === WebSocket.CLOSED || c.tts.readyState === WebSocket.CLOSING) connectTts();
+    c.ttsQueue.push(msg); // flushed when this answer's speech connection opens
   };
 
-  const connectTts = () => {
+  /** One speech connection per answer, opened with that answer's single-use key. */
+  const connectTts = (key: string) => {
     const c = r.current;
-    if (!c.ttsKey) return;
-    const ws = new WebSocket(TTS_URL, ["soniox-api-key", c.ttsKey]);
+    try {
+      c.tts?.close();
+    } catch {}
+    const ws = new WebSocket(TTS_URL, ["soniox-api-key", key]);
     c.tts = ws;
     ws.onopen = () => {
       for (const m of c.ttsQueue.splice(0)) ws.send(m);
@@ -155,6 +160,11 @@ export function useVoice(opts: {
   const cancelSpeech = useCallback(() => {
     const { tts, streamId } = r.current;
     if (streamId && tts?.readyState === WebSocket.OPEN) tts.send(JSON.stringify({ stream_id: streamId, cancel: true }));
+    try {
+      tts?.close();
+    } catch {}
+    r.current.tts = null;
+    r.current.speechKey = null;
     r.current.ttsQueue = [];
     r.current.wantSpeech = false;
     r.current.streamId = "";
@@ -222,10 +232,26 @@ export function useVoice(opts: {
 
   const startSpeechStream = () => {
     const c = r.current;
-    c.streamId = `turn-${++c.seq}`;
+    const streamId = `turn-${++c.seq}`;
+    c.streamId = streamId;
     c.audioEnded = false;
-    c.answerDone = false;
     c.textBuf = "";
+    c.ttsQueue = [];
+    // The previous answer's connection used up its single-use key: never reuse it.
+    try {
+      c.tts?.close();
+    } catch {}
+    c.tts = null;
+    const keyPromise = c.speechKey ?? Promise.resolve(null);
+    void keyPromise.then((key) => {
+      if (r.current.streamId !== streamId) return; // interrupted meanwhile
+      if (key) connectTts(key);
+      else {
+        // No speech for this answer (daily limit or expired session): it stays as text.
+        r.current.audioEnded = true;
+        maybeFinished();
+      }
+    });
     sendTts({
       stream_id: c.streamId,
       model: "tts-rt-v2",
@@ -246,6 +272,21 @@ export function useVoice(opts: {
     r.current.wantSpeech = true;
     r.current.answerDone = false;
     r.current.audioEnded = false;
+    // Fetch this answer's speech key while the Hub searches and thinks.
+    r.current.speechKey = fetch("/api/agent/voice/speech", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: r.current.session }),
+    })
+      .then(async (res) => {
+        const j = (await res.json().catch(() => ({}))) as { tts?: string; error?: string };
+        if (!res.ok || !j.tts) {
+          if (j.error) setError(j.error);
+          return null;
+        }
+        return j.tts;
+      })
+      .catch(() => null);
     let said = "";
     optsRef.current.ask(question, {
       onDelta: (t) => {
@@ -303,7 +344,7 @@ export function useVoice(opts: {
     } catch {}
     void c.micCtx?.close().catch(() => {});
     void c.playCtx?.close().catch(() => {});
-    Object.assign(c, { stt: null, tts: null, ttsKey: "", ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, finalText: "", streamId: "" });
+    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, finalText: "", streamId: "" });
     setHeard("");
     setCaption("");
     setLevel(0);
@@ -320,8 +361,9 @@ export function useVoice(opts: {
       // Audio contexts must start inside the click that opened voice.
       c.playCtx = new AudioContext();
       const res = await fetch("/api/agent/voice", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
-      const keys = (await res.json().catch(() => ({}))) as { stt?: string; tts?: string; maxSeconds?: number; error?: string };
-      if (!res.ok || !keys.stt || !keys.tts) throw new Error(keys.error || "Voice is temporarily unavailable.");
+      const keys = (await res.json().catch(() => ({}))) as { stt?: string; session?: string; maxSeconds?: number; error?: string };
+      if (!res.ok || !keys.stt || !keys.session) throw new Error(keys.error || "Voice is temporarily unavailable.");
+      c.session = keys.session;
 
       c.media = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
@@ -342,9 +384,6 @@ export function useVoice(opts: {
       };
       tick();
 
-      // Speech out: one TTS connection per session (reopened if it drops), one stream per answer.
-      c.ttsKey = keys.tts;
-      connectTts();
 
       // Speech in.
       const stt = new WebSocket(STT_URL, ["soniox-api-key", keys.stt]);
