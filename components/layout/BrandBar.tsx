@@ -18,10 +18,13 @@ import { CatLogo } from "./CatLogo";
 
 // `match` lists the route prefixes that count as "inside" a section, so a
 // landscape detail page lights up Landscapes and an entry lights up Solutions.
-const NAV_LINKS = [
+// `full` is the page's own name. The bar shows the short label; the full name
+// appears under the link on hover or keyboard focus (as a small label, so the
+// row never shifts), and is what the phone menu and screen readers use.
+const NAV_LINKS: { href: string; label: string; full?: string; match: string[] }[] = [
   { href: "/landscapes", label: "Landscapes", match: ["/landscapes", "/landscape"] },
-  { href: "/map", label: "Solutions", match: ["/map", "/entry", "/atlas", "/theme", "/factsheet"] },
-  { href: "/organizations", label: "Organisations", match: ["/organizations", "/organisation"] },
+  { href: "/map", label: "Solutions", full: "Solutions Atlas", match: ["/map", "/entry", "/atlas", "/theme", "/factsheet"] },
+  { href: "/organizations", label: "Organisations", full: "Organisations Atlas", match: ["/organizations", "/organisation"] },
   { href: "/principles", label: "Principles", match: ["/principles"] },
   { href: "/about", label: "About", match: ["/about"] },
 ];
@@ -122,18 +125,27 @@ export function BrandBar({ voice = false }: { voice?: boolean }) {
 
           {/* Section links, text only, from 1024px (lg). */}
           <nav aria-label="Main" className="hidden lg:flex items-center gap-5 xl:gap-8 ml-auto">
-            {NAV_LINKS.map(({ href, label, match }) => {
+            {NAV_LINKS.map(({ href, label, full, match }) => {
               const active = isActive(pathname, match);
               return (
                 <Link
                   key={href}
                   href={href}
+                  aria-label={full}
                   aria-current={active ? "page" : undefined}
                   className={`group relative py-1.5 text-[14px] whitespace-nowrap transition-colors hover:text-teal ${
                     active ? "text-ink font-medium" : "text-ink-soft"
                   }`}
                 >
                   {label}
+                  {full && (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 translate-y-[-3px] whitespace-nowrap rounded-tight border border-line bg-paper px-2 py-1 text-[12px] font-medium text-deep-teal shadow-[0_6px_16px_-10px_rgba(26,38,37,0.35)] opacity-0 transition-[opacity,transform] duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0 motion-reduce:transition-none"
+                    >
+                      {full}
+                    </span>
+                  )}
                   {/* Underline: always on the current section, grows in on hover elsewhere. */}
                   <span
                     aria-hidden
@@ -161,17 +173,27 @@ export function BrandBar({ voice = false }: { voice?: boolean }) {
             </Link>
 
             {/* Talk: for people who would rather speak than type. Opens Ask
-                with voice started (/agent?voice=1). Hidden when voice is off. */}
+                with voice started (/agent?voice=1). A full page load, like the other
+                /agent entry points. Hidden when voice is off. */}
             {voice && (
-              <Link
+              <a
                 href="/agent?voice=1"
+                onClick={() => {
+                  // One-time intent token: /agent starts the mic straight away only
+                  // when this button set it in this tab (valid 10 s, read once), so
+                  // no ordinary link can switch the mic on. Same key as
+                  // TALK_INTENT_KEY in components/agent/AgentChat.tsx (Ask branch).
+                  try {
+                    sessionStorage.setItem("cat-talk-intent", String(Date.now()));
+                  } catch {}
+                }}
                 aria-label="Talk to the Hub"
                 title="Talk to the Hub"
                 className="inline-flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 min-[400px]:px-3.5 rounded-full border border-deep-teal/40 text-deep-teal text-[14px] font-medium whitespace-nowrap hover:bg-deep-teal hover:text-paper active:scale-[0.97] transition-[background-color,color,transform] duration-200 ease-out-expo"
               >
                 <Mic size={15} strokeWidth={1.9} aria-hidden />
                 <span className="hidden min-[400px]:inline">Talk</span>
-              </Link>
+              </a>
             )}
 
             {/* Menu: phones and tablets */}
@@ -205,7 +227,7 @@ export function BrandBar({ voice = false }: { voice?: boolean }) {
         {open && (
           <div id="site-menu" className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-panel overflow-hidden">
             <nav aria-label="Main" className="max-w-page mx-auto px-5 sm:px-7 py-3 flex flex-col">
-              {NAV_LINKS.map(({ href, label, match }) => {
+              {NAV_LINKS.map(({ href, label, full, match }) => {
                 const active = isActive(pathname, match);
                 return (
                   <Link
@@ -217,7 +239,7 @@ export function BrandBar({ voice = false }: { voice?: boolean }) {
                       active ? "text-teal font-semibold" : "text-ink"
                     }`}
                   >
-                    {label}
+                    {full ?? label}
                   </Link>
                 );
               })}
