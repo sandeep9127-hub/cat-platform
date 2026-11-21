@@ -19,7 +19,7 @@ async function setStatus(formData: FormData) {
   const slug = String(formData.get("slug") || "");
   const status = String(formData.get("status") || "");
   if (!slug || !["published", "flagged"].includes(status)) return;
-  await db.execute(sql`UPDATE "cat".solution_factsheets SET status=${status}, updated_at=now() WHERE slug=${slug}`);
+  await db.execute(sql`UPDATE "cat".solution_factsheets SET status=${status}, updated_at=now() WHERE slug=${slug} AND status <> 'merged'`);
   await writeAudit({ ...(await actor()), action: `factsheet.${status}`, entityType: "solution_factsheet", entityId: slug });
   revalidatePath("/admin/factsheets");
 }
@@ -86,7 +86,14 @@ export default async function AdminFactSheets() {
                 <Link href={`/admin/factsheets/${s.slug}/edit`} className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal no-underline">
                   Edit
                 </Link>
-                {s.status !== "published" ? (
+                {s.status === "merged" ? (
+                  <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
+                    Merged into{" "}
+                    <Link href={`/factsheet/${(s as { merged_into?: string }).merged_into ?? ""}`} target="_blank" className="text-deep-teal hover:text-teal">
+                      {(s as { merged_into?: string }).merged_into}
+                    </Link>
+                  </span>
+                ) : s.status !== "published" ? (
                   <form action={setStatus}><input type="hidden" name="slug" value={s.slug} /><input type="hidden" name="status" value="published" />
                     <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Publish</button>
                   </form>

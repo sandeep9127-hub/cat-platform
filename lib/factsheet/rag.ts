@@ -1,22 +1,9 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import type { FactSheet } from "@/lib/factsheet/generate";
+import { embedDocuments, toVectorLiteral } from "@/lib/ai/embed";
 
-const EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
 const CHUNK_CHARS = 1100;
-
-async function embed(text: string, inputType: "passage" | "query"): Promise<number[]> {
-  const key = process.env.NVIDIA_API_KEY;
-  if (!key) throw new Error("NVIDIA_API_KEY missing");
-  const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({ input: [text], model: EMBED_MODEL, input_type: inputType, encoding_format: "float", truncate: "END" }),
-  });
-  if (!res.ok) throw new Error(`embed failed: ${res.status}`);
-  const data = await res.json();
-  return data.data[0].embedding as number[];
-}
 
 /** Flatten a fact sheet into searchable prose so Ask can answer from it. */
 function factSheetText(s: FactSheet): string {
@@ -50,9 +37,11 @@ function chunk(text: string): string[] {
 /** (Re)embed a fact sheet into the RAG so it's answerable under Ask "All sources". */
 export async function embedFactSheetIntoRag(s: FactSheet): Promise<number> {
   const chunks = chunk(factSheetText(s));
+  // Embed before deleting so a failed embed never leaves the sheet unsearchable.
+  const vectors = await embedDocuments(chunks);
   await db.execute(sql`DELETE FROM "cat".factsheet_chunks WHERE factsheet_slug = ${s.slug}`);
   for (let idx = 0; idx < chunks.length; idx++) {
-    const vec = `[${(await embed(chunks[idx], "passage")).join(",")}]`;
+    const vec = toVectorLiteral(vectors[idx]);
     await db.execute(sql`
       INSERT INTO "cat".factsheet_chunks (factsheet_slug, chunk_index, chunk_text, embedding)
       VALUES (${s.slug}, ${idx}, ${chunks[idx]}, ${vec}::vector)

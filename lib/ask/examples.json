@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-11-21",
+  "examples": [
+    {
+      "question": "What does Patratu's plan say about livestock?",
+      "scope": "patratu",
+      "answer": "The Patratu Landscape Investment Plan describes livestock as making a modest contribution to overall household income, with systems that are largely small-scale and low-input.[1] Male goats typically sell for ₹5,000–8,000 depending on size and condition, and goats are valued as a quick-liquid asset.[2]",
+      "citations": [
+        {
+          "label": "Patratu Landscape Investment Plan · 4.3 Animal Husbandry › 4.3.2 Yield, Productivity and Income · p. 86",
+          "score": 0.851,
+          "url": "/landscape/patratu"
+        },
+        {
+          "label": "Patratu Landscape Investment Plan · 4.3 Animal Husbandry › 4.3.2 Yield, Productivity and Income · pp. 86–87",
+          "score": 0.886,
+          "url": "/landscape/patratu"
+        }
+      ]
+    },
+    {
+      "question": "What role do women's SHGs play in Rajnagar?",
+      "scope": "rajnagar",
+      "answer": "Rajnagar block has 1402 SHGs consisting of approximately 16800 women[1] in the Rajnagar landscape, and women's SHGs there are central to its institutional base. Women's SHGs in Rajnagar are being asked to run community seed banks[2], and two SHGs are exclusively doing vermin-compost and organic pesticides activities[1].",
+      "citations": [
+        {
+          "label": "Rajnagar Landscape Investment Plan · Chapter 2: Secondary Data Collection: Landscape Profile › 2.6. Institutions and Key Stakeholders · p. 59",
+          "score": 0.894,
+          "url": "/landscape/rajnagar"
+        },
+        {
+          "label": "Rajnagar Landscape Investment Plan · 5.1 Agriculture, Horticulture & Agroforestry, (crops, vegetables, floriculture, fruit trees) › 5.1.5 Strengthening local seed systems through Cluster-Level seed production · p. 101",
+          "score": 0.86,
+          "url": "/landscape/rajnagar"
+        }
+      ]
+    },
+    {
+      "question": "What role does forest produce play in Dantewada?",
+      "scope": "dantewada",
+      "answer": "Forest produce is a central part of livelihoods in the Dantewada landscape, where forests form the ecological, cultural, and economic foundation of livelihoods[1]. Community consultations indicate that NTFPs contribute between one-fourth and one-half of annual household income[2], with mahua flowers emerging as the single most important forest-based source of income for most households[2].",
+      "citations": [
+        {
+          "label": "Dantewada Landscape Investment Plan · Chapter 4: Current State of Agroecology in the Landscape › Forestry and NTFPs · p. 61",
+          "score": 0.939,
+          "url": "/landscape/dantewada"
+        },
+        {
+          "label": "Dantewada Landscape Investment Plan · Forestry and NTFPs › Yield, Productivity and Income · p. 63",
+          "score": 0.919,
+          "url": "/landscape/dantewada"
+        }
+      ]
+    }
+  ]
+}

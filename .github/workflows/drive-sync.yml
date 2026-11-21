@@ -1,0 +1,87 @@
+# Daily Drive sync: keeps the Hub in line with the CAT Drive "Final folder".
+# Runs at 02:30 IST, and on demand (Actions tab -> "Drive sync" -> Run workflow,
+# or the admin "Sync now" button via the GitHub API).
+# Schedules only run from the default branch, so this activates after merge.
+name: Drive sync
+
+on:
+  schedule:
+    - cron: "0 21 * * *" # 21:00 UTC = 02:30 IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Report what would change without writing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drive-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Secrets live in the protected "production" environment (Settings ->
+    # Environments): restrict it to the main branch and, if wanted, require a
+    # reviewer for manual runs. Never runs for other branches.
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # Renders Word reports to the PDF readers open, so citations can say "p. N".
+      # Carlito/Caladea are metric-compatible with Calibri/Cambria (keeps pagination
+      # close to Word); Noto covers Indian scripts.
+      - name: Install LibreOffice (headless) and fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-writer-nogui \
+            fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation2 fonts-noto-core
+          soffice --version
+          # LibreOffice runs as the normal runner user inside an empty network
+          # namespace that sudo creates (SOFFICE_NO_NETWORK=1 below); no kernel
+          # settings are changed. Check that works before the sync starts.
+          sudo -n unshare --net -- sudo -n -u "$(id -un)" env -i PATH="$PATH" true
+      - name: Sync
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then npx tsx scripts/drive-sync.ts --dry-run; else npx tsx scripts/drive-sync.ts; fi
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          DATABASE_URL: ${{ secrets.CAT_DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          DRIVE_FINAL_FOLDER_ID: ${{ secrets.DRIVE_FINAL_FOLDER_ID }}
+          INGESTION_DAILY_USD_CEILING: "25"
+          SOFFICE_NO_NETWORK: "1"
+          SYNC_EMAIL: ${{ vars.SYNC_EMAIL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+      # Claude models, Voyage and Soniox still answering? (free or near-free calls;
+      # results in cat.model_health). A failure fails the run, and GitHub emails
+      # the repository owner. Runs even if the sync step failed.
+      - name: Model health check
+        if: always() && !inputs.dry_run
+        run: npx tsx scripts/model-health.ts
+        env:
+          DATABASE_URL: ${{ secrets.CAT_DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+          SONIOX_API_KEY: ${{ secrets.SONIOX_API_KEY }}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { authoriseCronRequest, politeFetch, startRun } from "@/lib/ingestion/run";
-import { kimiChat, kimiCostUsd, kimiEnabled, safeJsonParse } from "@/lib/ai/kimi";
+import { claudeEnabled, claudeMessage, safeJsonParse } from "@/lib/ai/claude";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export const maxDuration = 300;
 
 /**
  * Draft writer. Picks up promoted discovery candidates, fetches their
- * source URLs, and asks Kimi to draft an entry with citation anchors.
+ * source URLs, and asks Claude to draft an entry with citation anchors.
  * Output lands in draft_entries as `approved_for_publication_at = null`
  * for the CAT editor to review side-by-side with sources.
  *
@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === "production" && !authoriseCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!kimiEnabled()) {
+  if (!claudeEnabled()) {
     return NextResponse.json(
-      { error: "NVIDIA_API_KEY not set" },
+      { error: "ANTHROPIC_API_KEY not set" },
       { status: 503 }
     );
   }
@@ -111,14 +111,12 @@ ${sourceTexts.join("\n\n---\n\n")}
 
 Draft the Entry as a single JSON object per the schema. Respond with JSON only.`;
 
-    const { text, inputTokens, outputTokens } = await kimiChat(
-      [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-      { temperature: 0.2, maxTokens: 4000, jsonMode: true }
-    );
-    run.addCost(kimiCostUsd(inputTokens, outputTokens));
+    const { text, costUsd } = await claudeMessage("draft_writer", {
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userPrompt }],
+      runId: run.id,
+    });
+    run.addCost(costUsd);
 
     const obj = safeJsonParse<Record<string, unknown>>(text);
     if (!obj) {

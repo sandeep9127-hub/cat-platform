@@ -1,12 +1,23 @@
 import { db, schema } from "@/lib/db";
 import { startRun } from "@/lib/ingestion/run";
-import { estimateCostUsd, getClient } from "@/lib/ai/anthropic";
+import { claudeEnabled, claudeMessage } from "@/lib/ai/claude";
 
-const DISCOVERY_MODEL = "claude-sonnet-4-6";
+const ALLOWED_DOMAINS = [
+  "gov.in",
+  "nic.in",
+  "icar.org.in",
+  "wassan.org",
+  "nabard.org",
+  "ifad.org",
+  "icrisat.org",
+  "downtoearth.org.in",
+  "scroll.in",
+  "thewire.in",
+];
 
 const SYSTEM_PROMPT = `You are the Transformation Hub's discovery agent. Your job is to find NEW credible food-systems programmes in India that the platform has not yet documented.
 
-You may use the web_search tool, restricted to .gov.in, .org, and major news domains.
+You may use the web_search tool. It is restricted to Indian government portals (gov.in, nic.in), research and funding bodies (ICAR, ICRISAT, NABARD, IFAD, WASSAN) and a few independent news sites.
 
 Constraints:
 - India-only.
@@ -21,7 +32,8 @@ Valid theme slugs: soil-land, water, seeds-biodiversity, climate-resilience, wom
 Refuse to invent programmes. If a search returns nothing credible, return an empty array.`;
 
 /**
- * Run the discovery agent once: Claude + the Anthropic web-search tool surfaces
+ * Run the discovery agent once: Claude (task "discovery" in lib/ai/models.ts) +
+ * the Anthropic web-search tool surfaces
  * candidate food-systems programmes, which land in discovery_candidates as
  * `pending_triage` rows for an editor to triage. Shared by the weekly cron and
  * the manual "Run discovery now" admin button.
@@ -29,8 +41,7 @@ Refuse to invent programmes. If a search returns nothing credible, return an emp
 export async function runDiscovery(
   triggeredBy: "cron" | "manual" = "cron",
 ): Promise<Record<string, unknown> & { skipped?: boolean; yielded?: number }> {
-  const anthropic = getClient();
-  if (!anthropic) {
+  if (!claudeEnabled()) {
     return { skipped: true, error: "ANTHROPIC_API_KEY not set; discovery agent skipped" };
   }
 
@@ -46,38 +57,14 @@ Themes for context: ${themeList}.
 
 Return only the JSON array of candidates per the instructions.`;
 
-    const res = await anthropic.messages.create({
-      model: DISCOVERY_MODEL,
-      max_tokens: 4096,
+    const res = await claudeMessage("discovery", {
       system: SYSTEM_PROMPT,
-      tools: [
-        {
-          type: "web_search_20250305" as never,
-          name: "web_search",
-          max_uses: 8,
-          allowed_domains: [
-            "gov.in",
-            "nic.in",
-            "icar.org.in",
-            "wassan.org",
-            "nabard.org",
-            "ifad.org",
-            "icrisat.org",
-            "downtoearth.org.in",
-            "scroll.in",
-            "thewire.in",
-          ],
-        } as never,
-      ],
       messages: [{ role: "user", content: userPrompt }],
+      webSearch: { allowedDomains: ALLOWED_DOMAINS },
+      runId: run.id,
     });
-
-    run.addCost(estimateCostUsd(res.usage.input_tokens, res.usage.output_tokens));
-
-    const text = res.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("\n");
+    run.addCost(res.costUsd);
+    const text = res.text;
 
     const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!match) {

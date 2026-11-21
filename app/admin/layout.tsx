@@ -25,11 +25,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <nav className="order-3 md:order-2 w-full md:w-auto overflow-x-auto whitespace-nowrap flex items-center gap-5 font-mono text-[10.5px] uppercase tracking-[0.14em] -mx-1 px-1">
             <Link href="/admin/factsheets" className="text-ink-soft hover:text-teal">Fact sheets</Link>
+            <Link href="/admin/budget-changes" className="text-ink-soft hover:text-teal">Budget changes</Link>
+            <Link href="/admin/budget-tables" className="text-ink-soft hover:text-teal">Budget tables</Link>
+            <Link href="/admin/access-requests" className="text-ink-soft hover:text-teal">Access requests</Link>
             <Link href="/admin/submissions" className="text-ink-soft hover:text-teal">Submissions</Link>
             <Link href="/admin/candidates" className="text-ink-soft hover:text-teal">Discovery</Link>
             <Link href="/admin/organizations" className="text-ink-soft hover:text-teal">Organisations</Link>
             <Link href="/admin/landscapes" className="text-ink-soft hover:text-teal">Landscapes</Link>
             <Link href="/admin/sources" className="text-ink-soft hover:text-teal">Sources</Link>
+            <Link href="/admin/quality" className="text-ink-soft hover:text-teal">Quality</Link>
             <Link href="/admin/audit" className="text-ink-soft hover:text-teal">Audit</Link>
             {role === "admin" ? (
               <Link href="/admin/team" className="text-ink-soft hover:text-teal">Team</Link>

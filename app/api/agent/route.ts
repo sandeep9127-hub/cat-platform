@@ -4,13 +4,16 @@ import { gte, sql } from "drizzle-orm";
 import { searchEntries } from "@/lib/db/search";
 import { searchLandscapeChunks, getIngestedLandscapeSlugs } from "@/lib/db/landscape-kb";
 import {
-  kimiChatStream,
-  kimiEnabled,
-  kimiCostUsd,
-  type ChatMessage,
-} from "@/lib/ai/kimi";
+  BudgetExceededError,
+  claudeEnabled,
+  claudeStream,
+  type ChatTurn,
+  type StreamEvent,
+} from "@/lib/ai/claude";
+import { embedQuery as embedQueryVector, embeddingsEnabled } from "@/lib/ai/embed";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
+import { askV2, askV2History, libraryStats } from "@/lib/ask/v2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +26,6 @@ export const preferredRegion = "bom1";
 
 const MAX_TURNS = 8;
 const MAX_CONTEXT_HITS_PER_SOURCE = 6;
-const NVIDIA_EMBED_MODEL = "nvidia/nv-embedqa-e5-v5";
 /**
  * Hard refusal floor — if no entry or chunk meets this normalised score,
  * the model never gets called and the route returns a refusal directly.
@@ -104,33 +106,33 @@ const STARTERS = [
   "Which entries are CAT-authored versus self-submitted?",
 ];
 
-export async function GET() {
+/**
+ * Ask v2 (hybrid search + native citations + stored conversations) runs only
+ * when ASK_V2=on. It needs the CAT database (cat.chunks, cat.conversations),
+ * so leave it off wherever DATABASE_URL is still the legacy database.
+ */
+const askV2Enabled = () => process.env.ASK_V2 === "on";
+
+export async function GET(req: NextRequest) {
+  if (askV2Enabled() && req.nextUrl.searchParams.get("history") === "latest") {
+    return askV2History(req);
+  }
   return NextResponse.json({
-    enabled: kimiEnabled(),
+    enabled: claudeEnabled() && embeddingsEnabled(),
     starters: STARTERS,
-    maxTurns: MAX_TURNS,
+    maxTurns: askV2Enabled() ? 20 : MAX_TURNS,
+    v2: askV2Enabled(),
+    library: askV2Enabled() ? await libraryStats().catch(() => null) : null,
   });
 }
 
 async function embedQuery(text: string): Promise<number[] | null> {
-  const key = process.env.NVIDIA_API_KEY;
-  if (!key) return null;
+  if (!embeddingsEnabled()) return null;
   try {
-    const res = await fetch("https://integrate.api.nvidia.com/v1/embeddings", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        input: [text.slice(0, 1200)],
-        model: NVIDIA_EMBED_MODEL,
-        input_type: "query",
-        encoding_format: "float",
-        truncate: "END",
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.data[0].embedding;
-  } catch {
+    return await embedQueryVector(text);
+  } catch (e) {
+    // Degrade to keyword-only retrieval rather than failing the question.
+    console.error("agent embedQuery failed:", (e as Error).message);
     return null;
   }
 }
@@ -304,12 +306,13 @@ async function retrieve(
 }
 
 export async function POST(req: NextRequest) {
-  if (!kimiEnabled()) {
+  if (!claudeEnabled()) {
     return NextResponse.json(
-      { error: "Agent is not configured. Set NVIDIA_API_KEY to enable the assistant." },
+      { error: "Agent is not configured. Set ANTHROPIC_API_KEY to enable the assistant." },
       { status: 503 }
     );
   }
+  if (askV2Enabled()) return askV2(req);
 
   // Per-IP rate limit: stops a single anonymous client from driving unbounded
   // (paid) LLM calls. 10 questions / minute is generous for a human reader.
@@ -368,15 +371,33 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Construct Kimi messages: system + history + final user with context
-  const kimiMessages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }];
-  for (const m of messages.slice(0, -1)) {
-    kimiMessages.push({ role: m.role, content: m.content });
-  }
-  kimiMessages.push({
+  // History + final user turn carrying the retrieved context
+  const chatTurns: ChatTurn[] = messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
+  chatTurns.push({
     role: "user",
     content: `${contextBlock}\n\n---\n\nReader question: ${latestUserMessage}`,
   });
+
+  // Open the model stream before the SSE response so a spent daily budget
+  // becomes a polite refusal instead of a broken stream.
+  let modelStream: AsyncGenerator<StreamEvent, void, unknown>;
+  try {
+    modelStream = await claudeStream("ask_hub", {
+      system: SYSTEM_PROMPT,
+      messages: chatTurns,
+      // Reader closes the tab -> upstream Claude request is cancelled too.
+      signal: req.signal,
+    });
+  } catch (e) {
+    if (e instanceof BudgetExceededError) {
+      return NextResponse.json(
+        { refusal: "The assistant has reached today's usage limit. Please browse by theme or search, or try again tomorrow." },
+        { status: 429 }
+      );
+    }
+    console.error("agent stream setup failed:", e);
+    return NextResponse.json({ error: "The assistant is temporarily unavailable." }, { status: 502 });
+  }
 
   // Stream the response. The client subscribes via fetch + getReader and
   // updates the assistant message text as deltas arrive. Each SSE event is
@@ -391,8 +412,14 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
       function send(obj: unknown) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+        } catch {
+          closed = true; // reader went away
+        }
       }
       // Meta first so the citation tray can render immediately, even before
       // the first token arrives.
@@ -411,6 +438,7 @@ export async function POST(req: NextRequest) {
       let bufferingDone = false;
       let inputTokens = 0;
       let outputTokens = 0;
+      let callCostUsd = 0;
 
       function flushBuffer() {
         if (bufferingDone) return;
@@ -424,12 +452,7 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        for await (const evt of kimiChatStream(kimiMessages, {
-          temperature: 0.2,
-          // 1200 tokens ≈ 900 words. Was 700 which truncated longer
-          // analyses mid-sentence on broad questions.
-          maxTokens: 1200,
-        })) {
+        for await (const evt of modelStream) {
           if (evt.type === "delta") {
             if (!bufferingDone) {
               buffer += evt.text;
@@ -441,17 +464,18 @@ export async function POST(req: NextRequest) {
           } else if (evt.type === "done") {
             inputTokens = evt.inputTokens;
             outputTokens = evt.outputTokens;
+            callCostUsd = evt.costUsd;
             // If the whole response was shorter than 80 chars, flush now
             if (!bufferingDone) flushBuffer();
           }
         }
       } catch (e) {
-        console.error("agent stream kimi call failed:", e);
+        console.error("agent stream claude call failed:", e);
         send({
           type: "error",
           message: "The assistant is temporarily unavailable.",
         });
-        controller.close();
+        if (!closed) controller.close();
         return;
       }
 
@@ -466,7 +490,7 @@ export async function POST(req: NextRequest) {
           turnCount,
           totalInputTokens: inputTokens,
           totalOutputTokens: outputTokens,
-          costUsd: kimiCostUsd(inputTokens, outputTokens),
+          costUsd: callCostUsd,
           wasRefused,
           refusalReason: wasRefused ? "library_insufficient" : null,
           citedEntryIds: [],
@@ -476,7 +500,12 @@ export async function POST(req: NextRequest) {
       }
 
       send({ type: "done", refused: wasRefused });
-      controller.close();
+      if (!closed) controller.close();
+    },
+    // Reader disconnected: end the generator so its finally block aborts the
+    // Claude stream and still logs the usage against the daily budget.
+    async cancel() {
+      await modelStream.return(undefined);
     },
   });
 
