@@ -3,27 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  Layers,
-  Map as MapIcon,
-  MessageCircle,
-  Info,
-  Compass,
-  Users,
-  ArrowUpRight,
-} from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
-const PARENT_SITE = "https://www.agroecologyindia.org";
+/**
+ * Public header: logo, five text-only section links, one "Ask the Hub" button.
+ *
+ * Order follows importance (Landscapes first). Labels are short in the bar;
+ * page titles can still say "Solutions Atlas" / "Organisations Atlas".
+ * The parent site link ("The Consortium") lives in the footer and on About,
+ * not here: the header only holds places inside the Hub.
+ * Phones and tablets (<lg): logo, Ask button and a menu drawer with the same links.
+ */
 
 // `match` lists the route prefixes that count as "inside" a section, so a
-// landscape detail page lights up Landscapes and an entry lights up the Atlas.
+// landscape detail page lights up Landscapes and an entry lights up Solutions.
 const NAV_LINKS = [
-  { href: "/principles", label: "Principles", Icon: Compass, match: ["/principles"] },
-  { href: "/landscapes", label: "Landscapes", Icon: Layers, match: ["/landscapes", "/landscape"] },
-  { href: "/map", label: "Solutions Atlas", Icon: MapIcon, match: ["/map", "/entry", "/atlas", "/theme"] },
-  { href: "/organizations", label: "Organisations Atlas", Icon: Users, match: ["/organizations", "/organisation"] },
-  { href: "/about", label: "About", Icon: Info, match: ["/about"] },
+  { href: "/landscapes", label: "Landscapes", match: ["/landscapes", "/landscape"] },
+  { href: "/map", label: "Solutions", match: ["/map", "/entry", "/atlas", "/theme", "/factsheet"] },
+  { href: "/organizations", label: "Organisations", match: ["/organizations", "/organisation"] },
+  { href: "/principles", label: "Principles", match: ["/principles"] },
+  { href: "/about", label: "About", match: ["/about"] },
 ];
 
 function isActive(pathname: string, match: string[]) {
@@ -71,211 +71,141 @@ export function BrandBar() {
     return () => mq.removeEventListener("change", onMq);
   }, []);
 
-  // Anthropic-style brand fold: at the top the header shows the full lockup
-  // (mark + "Transformation Hub"); once scrolled, the wordmark collapses away
-  // and only the mark remains. Disabled for reduced motion (lockup stays full).
+  // Close the drawer on navigation and on Escape.
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  // At the top the header shows the full lockup (mark + "Transformation Hub");
+  // once scrolled, the wordmark folds away and only the mark remains.
+  // Disabled for reduced motion (lockup stays full).
   const collapse = scrolled && !reduce;
 
   return (
     <header className="sticky top-0 z-50 px-3 sm:px-4 lg:px-6 pt-2.5 sm:pt-3 pointer-events-none">
-      {/* Floating, detached bar — rounded, shadowed, with a margin from the edges.
-          pointer-events: the transparent gutter passes clicks through; the bar itself
-          re-enables them. */}
+      {/* Floating bar with a margin from the edges; the transparent gutter
+          passes clicks through and the bar re-enables them. */}
       <div
         className={`max-w-page mx-auto rounded-panel pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
-          scrolled
-            ? "shadow-[0_10px_30px_-18px_rgba(26,38,37,0.22)]"
-            : "shadow-none"
+          scrolled ? "shadow-[0_10px_30px_-18px_rgba(26,38,37,0.22)]" : "shadow-none"
         }`}
-        style={{
-          // Same fill as the body (--paper) so the bar reads as a floating nav
-          // rather than a distinct white card/strip. Opaque so content scrolling
-          // underneath is masked cleanly; a whisper of shadow appears only on
-          // scroll to lift it off the content.
-          backgroundColor: "var(--paper)",
-        }}
+        style={{ backgroundColor: "var(--paper)" }}
       >
-        {/* Constant height: no padding animation (DESIGN.md: never animate
-            layout), so the header and the bars pinned under it stay steady. */}
-        <div
-          ref={rowRef}
-          className="px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3 flex items-center gap-3 sm:gap-5 lg:gap-7"
-        >
-        <Link
-          href="/"
-          aria-label="Transformation Hub, home"
-          className="flex items-center no-underline text-ink group shrink-0"
-        >
-          {/* The mark stays put and crisp; only the wordmark folds away. The
-              logo is rendered ONCE at 36px (re-sizing the SVG mid-scroll made
-              the smallest arch flicker at sub-pixel sizes). */}
-          <div className="shrink-0 origin-center transition-transform duration-300 ease-out group-hover:rotate-[-4deg]">
-            <CatLogo size={36} />
-          </div>
-          {/* Wordmark — collapses to zero width (and fades) on scroll, leaving
-              just the mark. overflow-hidden + max-width is what animates the fold. */}
-          <span
-            className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
-              collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
-            }`}
-          >
-            <span className="font-wordmark font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
-              Transformation <span className="text-teal italic font-normal">Hub</span>
-            </span>
-          </span>
-        </Link>
-        {/* Full nav from 1024px (lg). Between lg and xl the link icons and
-            the Consortium link are dropped so everything fits on one line. */}
-        <nav aria-label="Main" className="ml-auto flex items-center gap-3.5 lg:gap-2.5 xl:gap-4">
-          {NAV_LINKS.map(({ href, label, Icon, match }) => {
-            const active = isActive(pathname, match);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={`hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap hover:text-teal transition-colors group relative py-1 ${
-                  active ? "text-ink font-medium" : "text-ink-soft"
-                }`}
-              >
-                <Icon
-                  size={13}
-                  strokeWidth={1.7}
-                  className={`hidden xl:block group-hover:text-teal transition-colors ${active ? "text-teal" : "text-muted"}`}
-                  aria-hidden
-                />
-                <span className="relative">
-                  {label}
-                  {/* Underline: always shown on the current section, grows in on hover elsewhere. */}
-                  <span
-                    aria-hidden
-                    className={`absolute left-0 -bottom-1 h-[1.5px] w-full bg-teal origin-left transition-transform duration-300 ease-out ${
-                      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    }`}
-                  />
-                </span>
-              </Link>
-            );
-          })}
-          {/* The parent organisation — clearly external, opens in a new tab so the
-              Hub stays open. Deliberately not called "Home" (it leaves the Hub). */}
-          <a
-            href={PARENT_SITE}
-            target="_blank"
-            rel="noreferrer"
-            // Very wide screens only: the Ask box needs the room; the link is
-            // also in the footer and the mobile menu.
-            className="hidden 2xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
-          >
-            <span>The Consortium</span>
-            <ArrowUpRight size={12} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-          </a>
-          {/* Ask (Ask UI spec E1): a box that looks typeable, with a solid Ask
-              button inside. A plain GET form to /agent?q=..., so it works
-              before JS; an empty submit just opens /agent with the composer. */}
-          <form
-            action="/agent"
-            method="get"
-            role="search"
-            aria-label="Ask the Hub"
-            onSubmit={(e) => {
-              const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement | null)?.value.trim();
-              if (!q) {
-                e.preventDefault();
-                window.location.href = "/agent";
-              }
-            }}
-            className="hidden sm:flex items-center shrink-0 rounded-full border border-line bg-paper pl-3.5 pr-1 py-1 focus-within:border-teal focus-within:ring-2 focus-within:ring-teal/20"
-          >
-            <MessageCircle size={14} strokeWidth={1.8} className="text-muted shrink-0" aria-hidden />
-            <label htmlFor="brandbar-ask" className="sr-only">
-              Ask about any landscape
-            </label>
-            <input
-              id="brandbar-ask"
-              name="q"
-              type="text"
-              autoComplete="off"
-              placeholder="Ask about any landscape…"
-              className="w-[178px] lg:w-[176px] xl:w-[178px] min-w-0 bg-transparent text-[13px] text-ink placeholder:text-muted outline-none px-2 py-1"
-            />
-            <button
-              type="submit"
-              className="shrink-0 inline-flex items-center min-h-8 px-3.5 rounded-full bg-deep-teal text-paper text-[13px] font-medium hover:bg-teal transition-colors"
-            >
-              Ask
-            </button>
-          </form>
-          {/* Compact Ask: phones only (<640px), where the box above is hidden. */}
+        {/* Constant height: no padding animation (DESIGN.md: never animate layout). */}
+        <div ref={rowRef} className="px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3 flex items-center gap-3 sm:gap-5 lg:gap-8">
           <Link
-            href="/agent"
-            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3.5 min-h-9 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            href="/"
+            aria-label="Transformation Hub, home"
+            className="flex items-center no-underline text-ink group shrink-0"
           >
-            <MessageCircle size={11} strokeWidth={2} aria-hidden />
-            Ask
+            <div className="shrink-0 origin-center transition-transform duration-300 ease-out group-hover:rotate-[-4deg]">
+              <CatLogo size={36} />
+            </div>
+            <span
+              className={`max-[359px]:hidden overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
+                collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
+              }`}
+            >
+              <span className="font-wordmark font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
+                Transformation <span className="text-teal italic font-normal">Hub</span>
+              </span>
+            </span>
           </Link>
-          {/* Mobile + tablet hamburger */}
-          <button
-            type="button"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-            className="lg:hidden inline-flex items-center justify-center w-11 h-11 -mr-2.5 text-ink hover:text-teal transition-colors"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              {open ? (
-                <>
-                  <path d="M6 6l12 12" />
-                  <path d="M18 6L6 18" />
-                </>
-              ) : (
-                <>
-                  <path d="M4 7h16" />
-                  <path d="M4 12h16" />
-                  <path d="M4 17h16" />
-                </>
-              )}
-            </svg>
-          </button>
-        </nav>
-      </div>
 
-      {/* Disclosure sheet */}
-      {open && (
-        <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-panel overflow-hidden">
-          <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
-            {NAV_LINKS.map(({ href, label, Icon, match }) => {
+          {/* Section links, text only, from 1024px (lg). */}
+          <nav aria-label="Main" className="hidden lg:flex items-center gap-7 xl:gap-8 ml-auto">
+            {NAV_LINKS.map(({ href, label, match }) => {
               const active = isActive(pathname, match);
-              // No per-item stagger: the parent drawer already animates in.
               return (
                 <Link
                   key={href}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                  className={`font-sans text-[19px] tracking-[-0.01em] hover:text-teal py-2 border-b border-line-soft last:border-b-0 inline-flex items-center gap-3 ${
-                    active ? "text-teal font-semibold" : "text-ink"
+                  className={`group relative py-1.5 text-[14px] whitespace-nowrap transition-colors hover:text-teal ${
+                    active ? "text-ink font-medium" : "text-ink-soft"
                   }`}
                 >
-                  <Icon size={18} strokeWidth={1.5} className={active ? "text-teal" : "text-teal/70"} aria-hidden />
-                  <span>{label}</span>
+                  {label}
+                  {/* Underline: always on the current section, grows in on hover elsewhere. */}
+                  <span
+                    aria-hidden
+                    className={`absolute left-0 bottom-0 h-[1.5px] w-full bg-teal origin-left transition-transform duration-300 ease-out motion-reduce:transition-none ${
+                      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                    }`}
+                  />
                 </Link>
               );
             })}
-            {/* Parent organisation — clearly external, new tab. Not "Home". */}
-            <a
-              href={PARENT_SITE}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setOpen(false)}
-              className="mt-4 pt-4 border-t border-line-soft text-[14px] text-muted hover:text-teal inline-flex items-center gap-1.5"
-            >
-              <span>Visit the Consortium · agroecologyindia.org</span>
-              <ArrowUpRight size={14} strokeWidth={1.8} aria-hidden />
-            </a>
           </nav>
+
+          <div className="ml-auto lg:ml-4 flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* One compact Ask button. The full ask box stays on the home band and /agent. */}
+            <Link
+              href="/agent"
+              aria-label="Ask the Hub"
+              aria-current={pathname.startsWith("/agent") ? "page" : undefined}
+              className="inline-flex items-center gap-2 min-h-10 px-3.5 min-[400px]:px-4 rounded-full bg-deep-teal text-paper text-[14px] font-medium whitespace-nowrap hover:bg-teal active:scale-[0.97] transition-[background-color,transform] duration-200 ease-out-expo"
+            >
+              <MessageCircle size={15} strokeWidth={1.9} aria-hidden />
+              <span>
+                Ask<span className="hidden min-[400px]:inline"> the Hub</span>
+              </span>
+            </Link>
+
+            {/* Menu: phones and tablets */}
+            <button
+              type="button"
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="site-menu"
+              onClick={() => setOpen((v) => !v)}
+              className="lg:hidden inline-flex items-center justify-center w-11 h-11 -mr-2.5 text-ink hover:text-teal transition-colors"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+                {open ? (
+                  <>
+                    <path d="M6 6l12 12" />
+                    <path d="M18 6L6 18" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M4 7h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 17h16" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* Drawer: the same five links, text only */}
+        {open && (
+          <div id="site-menu" className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-panel overflow-hidden">
+            <nav aria-label="Main" className="max-w-page mx-auto px-5 sm:px-7 py-3 flex flex-col">
+              {NAV_LINKS.map(({ href, label, match }) => {
+                const active = isActive(pathname, match);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center min-h-12 font-sans text-[19px] tracking-[-0.01em] border-b border-line-soft last:border-b-0 hover:text-teal ${
+                      active ? "text-teal font-semibold" : "text-ink"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

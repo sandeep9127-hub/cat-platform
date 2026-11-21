@@ -34,7 +34,7 @@ export function Footer() {
             rel="noreferrer"
             className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
           >
-            <span>agroecologyindia.org</span>
+            <span>The Consortium · agroecologyindia.org</span>
             <ArrowUpRight
               size={11}
               strokeWidth={2}
