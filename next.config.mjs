@@ -47,11 +47,15 @@ const nextConfig = {
         // CAT Decks: the list of presentation decks, served by the same cat-learn project.
         { source: "/decks", destination: "https://cat-learn.vercel.app/decks/" },
         { source: "/decks/:path*", destination: "https://cat-learn.vercel.app/decks/:path*" },
-        {
-          source: "/:path((?!api/|_next/|moved).*)",
-          has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
-          destination: "/moved?from=/:path",
-        },
+        // Off only while a new deployment is tested on its *.vercel.app address
+        // (VERCEL_APP_REWRITE=off at build time); back on after go-live.
+        ...(process.env.VERCEL_APP_REWRITE === "off"
+          ? []
+          : [{
+              source: "/:path((?!api/|_next/|moved).*)",
+              has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
+              destination: "/moved?from=/:path",
+            }]),
       ],
       afterFiles: [],
       fallback: [],

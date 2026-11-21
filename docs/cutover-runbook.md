@@ -9,7 +9,7 @@
 ## 1. Vercel project (CAT team `agroecologyindia`)
 
 1. Log the Vercel CLI in to the CAT account: `vercel login`.
-2. Create the project `cat-hub` in the CAT team. Don't connect it to GitHub yet (step 6).
+2. Create the project `cat-hub` in the CAT team. Don't connect it to GitHub yet (step 6). **Set Framework Preset = Next.js and Node.js = 24.x** (a project created from the CLI has no framework, and every request then fails with MIDDLEWARE_INVOCATION_FAILED). *(Done 21 Nov: project `cat-hub`, test address https://cat-hub-agroecologyindia.vercel.app.)*
 3. Add these environment variables (Production and Preview). The values are in `.env.local`, with the exceptions noted:
 
 | Variable | Value |
@@ -25,6 +25,7 @@
 | `CRON_SECRET` | **new** random value (Vercel sends it to the weekly cron jobs) |
 | `ASK_V2` | `on` |
 | `PREVIEW_GATE` | `on` until launch, then `off` |
+| `VERCEL_APP_REWRITE` | `off` while testing on the `*.vercel.app` address; **remove at go-live** so `*.vercel.app` visits forward to hub.agroecologyindia.org again |
 | `AGENT_DAILY_USD_CEILING`, `INGESTION_DAILY_USD_CEILING`, `INGESTION_RUN_USD_CEILING` | `15`, `25`, `25` |
 | `ASK_VOICE` | `on` to enable voice conversation in Ask (needs `SONIOX_API_KEY`; try it with a real microphone on the test deploy first) |
 | `VOICE_DAILY_USD_CEILING` | `3` (daily cap for voice; each session reserves about $0.14) |
