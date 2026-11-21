@@ -17,12 +17,14 @@ export async function generateBriefAction(form: FormData): Promise<void> {
   // Every denial is auditable. Rate-limited attempts are always logged; other denials are
   // capped at 20 per editor per hour, and reaching the cap is itself logged once, so
   // suppression is visible. The attempted landscape is kept in a cleaned, bounded form.
-  const attempted = slug.replace(/[^\w-]/g, "?").slice(0, 80);
-  const principal = user.id ? createHash("sha256").update(`brief-denied|${user.id}`).digest("hex").slice(0, 32) : null;
+  const known = Object.hasOwn(LANDSCAPES, slug);
+  const principal = createHash("sha256").update(`brief-denied|${user.id ?? user.email ?? "editor"}`).digest("hex").slice(0, 32);
   const denied = async (reason: string) => {
     const write = (action: string, meta: Record<string, unknown>) =>
-      writeAudit({ ...actor, action, entityType: "landscape", entityId: attempted, meta: { reason, ran: false, ...meta } });
-    if (reason === "rate-limited" || !principal) return write("brief.generate.denied", {});
+      writeAudit({
+        ...actor, action, entityType: "landscape", entityId: known ? slug : "unknown",
+        meta: { reason, ran: false, ...(known ? {} : { attempted: slug.replace(/[^\w-]/g, "?").slice(0, 40) }), ...meta },
+      });
     const cap = await rateLimit({ key: `brief-denied:${principal}`, ip: "audit", limit: 21, windowSec: 3600 });
     if (cap.ok && cap.remaining > 0) return write("brief.generate.denied", {});
     if (cap.ok) return write("brief.generate.denied.suppressing", { note: "further denials this hour are not logged individually" });
