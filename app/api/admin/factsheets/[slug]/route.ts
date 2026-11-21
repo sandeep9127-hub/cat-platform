@@ -6,6 +6,7 @@ import { getFactSheet, type FactSheet, type FactSheetRow } from "@/lib/factsheet
 import { normalizeCategorySlugs } from "@/lib/data/categories";
 import { canonicalPrinciples } from "@/lib/data/principles";
 import { writeAudit } from "@/lib/audit";
+import { reindexFactsheetsAfterResponse } from "@/lib/factsheet/reindex";
 
 export const runtime = "nodejs";
 
@@ -140,6 +141,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   });
 
   // Redirect back to the list (the edit page posts a plain HTML form).
+  await reindexFactsheetsAfterResponse("factsheet.edit");
   return NextResponse.redirect(new URL("/admin/factsheets", req.url), { status: 303 });
 }
 

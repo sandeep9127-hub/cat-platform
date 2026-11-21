@@ -125,6 +125,18 @@ export async function runDriveSync(opts: {
       if (noRenderer) summary.problems.push("Page numbers skipped for Word reports: LibreOffice is not installed where the sync ran");
     }
 
+    // ── Fact sheet search index ──
+    // Rebuilt nightly so the matchmaker never serves an edited, merged or
+    // unpublished sheet in its old form for long.
+    if (!opts.dryRun) {
+      try {
+        const { indexFactsheets } = await import("@/lib/ingest/factsheet-chunks");
+        log(`fact sheets indexed: ${await indexFactsheets()}`);
+      } catch (e) {
+        summary.problems.push(`Fact sheet search index not rebuilt: ${(e as Error).message.slice(0, 150)}`);
+      }
+    }
+
     // ── Sheets ──
     for (const s of plan.sheets) {
       const name = LANDSCAPES[s.slug]?.name ?? s.slug;

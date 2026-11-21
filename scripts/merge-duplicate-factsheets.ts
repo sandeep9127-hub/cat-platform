@@ -50,6 +50,10 @@ const MERGES: [string, string][] = [
     }
   });
 
+  if (!dryRun) {
+    const { indexFactsheets } = await import("../lib/ingest/factsheet-chunks");
+    console.log(`Fact sheet search index rebuilt: ${await indexFactsheets()} published sheets`);
+  }
   const counts = (await db.execute(sql`SELECT status, count(*)::int AS n FROM "cat".solution_factsheets GROUP BY 1 ORDER BY 1`)).rows;
   console.log("Fact sheets by status:", counts);
   process.exit(0);

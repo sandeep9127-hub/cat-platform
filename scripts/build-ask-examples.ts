@@ -39,7 +39,7 @@ function check(text: string, landscape: string): string | null {
   const { SYSTEM_PROMPT, REFUSAL_FLOOR, toCitation, searchResultBlock } = await import("../lib/ask/v2");
   const out = [];
   for (const [scope, question] of QUESTIONS) {
-    const hits = (await hybridSearch({ query: question, landscapeSlug: scope, k: 6 })).filter((h) => h.score >= 0.4);
+    const hits = (await hybridSearch({ query: question, landscapeSlug: scope, k: 6, sourceKinds: ["document", "intervention"] })).filter((h) => h.score >= 0.4);
     if ((hits[0]?.score ?? 0) < REFUSAL_FLOOR) throw new Error(`below floor: ${question}`);
     const cites = hits.map((h, i) => toCitation(h, i + 1));
     let text = "";

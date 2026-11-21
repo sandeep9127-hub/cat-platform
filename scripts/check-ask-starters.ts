@@ -15,7 +15,7 @@ process.env.DATABASE_URL = process.env.DATABASE_URL_CAT;
   let fails = 0;
   for (const [slug, qs] of Object.entries(ASK_STARTERS)) {
     for (const q of qs) {
-      const top = (await hybridSearch({ query: q, landscapeSlug: slug, k: 3 }))[0]?.score ?? 0;
+      const top = (await hybridSearch({ query: q, landscapeSlug: slug, k: 3, sourceKinds: ["document", "intervention"] }))[0]?.score ?? 0;
       const ok = top >= REFUSAL_FLOOR + 0.1; // margin: a starter should be a confident hit
       if (!ok) fails++;
       console.log(`${ok ? "ok  " : "FAIL"} ${top.toFixed(3)}  [${slug}] ${q}`);

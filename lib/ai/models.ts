@@ -35,6 +35,8 @@ export type AiTask =
   | "ask_v2"
   | "ask_rewrite"
   | "ask_followups"
+  | "compare"
+  | "matchmaker"
   | "visualize"
   | "factsheet"
   | "discovery"
@@ -66,10 +68,16 @@ const DEFAULTS: Record<AiTask, TaskConfig> = {
   // the answer is a grounded read-out of the cited passages, and adaptive
   // thinking added ~4 s before the first word in testing (21 Nov 2026).
   ask_v2: { model: MODELS.haiku, effort: "low", maxTokens: 3000, pool: "public", maxWebSearches: 0, thinking: "off" },
-  // Ask v2: turns a follow-up ("and in Vempalli?") into a standalone search query.
+  // Ask v2: turns a follow-up ("and in Vempalli?") into a standalone search query
+  // and picks the mode (plain answer, compare, matchmaker). One call per question.
   ask_rewrite: { model: MODELS.haiku, effort: "low", maxTokens: 400, pool: "public", maxWebSearches: 0, thinking: "off" },
   // Ask v2: three "Ask next" questions after each answer, steered to sections the library holds.
   ask_followups: { model: MODELS.haiku, effort: "low", maxTokens: 400, pool: "public", maxWebSearches: 0, thinking: "off" },
+  // Compare landscapes and the solution matchmaker: judgement across several
+  // sources into a structured, cited table or ranked cards. Sonnet, per the v2
+  // design (a Haiku executor with a Sonnet advisor is to be proven on the test set first).
+  compare: { model: MODELS.sonnet, effort: "low", maxTokens: 8000, pool: "public", maxWebSearches: 0 },
+  matchmaker: { model: MODELS.sonnet, effort: "low", maxTokens: 8000, pool: "public", maxWebSearches: 0 },
   visualize: { model: MODELS.haiku, effort: "low", maxTokens: 2000, pool: "public", maxWebSearches: 0 },
 
   // Research + writing that becomes published content.

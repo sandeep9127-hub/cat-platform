@@ -6,6 +6,7 @@ import { listFactSheets } from "@/lib/factsheet/generate";
 import { FactSheetGenerator } from "@/components/admin/FactSheetGenerator";
 import { auth } from "@/auth";
 import { writeAudit } from "@/lib/audit";
+import { reindexFactsheetsAfterResponse } from "@/lib/factsheet/reindex";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ async function setStatus(formData: FormData) {
   if (!slug || !["published", "flagged"].includes(status)) return;
   await db.execute(sql`UPDATE "cat".solution_factsheets SET status=${status}, updated_at=now() WHERE slug=${slug} AND status <> 'merged'`);
   await writeAudit({ ...(await actor()), action: `factsheet.${status}`, entityType: "solution_factsheet", entityId: slug });
+  await reindexFactsheetsAfterResponse(`factsheet.${status}`);
   revalidatePath("/admin/factsheets");
 }
 
@@ -30,6 +32,7 @@ async function remove(formData: FormData) {
   if (!slug) return;
   await db.execute(sql`DELETE FROM "cat".solution_factsheets WHERE slug=${slug}`);
   await writeAudit({ ...(await actor()), action: "factsheet.deleted", entityType: "solution_factsheet", entityId: slug });
+  await reindexFactsheetsAfterResponse("factsheet.deleted");
   revalidatePath("/admin/factsheets");
 }
 
