@@ -24,7 +24,7 @@ import { CompareTable } from "./ask/Compare";
 import { MatchCards } from "./ask/Match";
 import { ChartView, DiagramView, NoteCard } from "./ask/Visuals";
 import { useVoice, type AnswerHandlers, type VoiceLang, type VoiceName } from "./voice/useVoice";
-import { VoiceBar, VoiceScreen } from "./voice/VoiceUI";
+import { TalkMode } from "./voice/VoiceUI";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
 
 /**
@@ -77,7 +77,8 @@ export function AgentChat({
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
   const [voiceLang, setVoiceLang] = useState<VoiceLang>("en");
-  const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking"
+  const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking" inside talk mode
+  const [talkOpen, setTalkOpen] = useState(false); // full-screen talk mode
   const autoVoiceRef = useRef(false); // voice was started by ?voice=1, not a tap
   const voiceStartRef = useRef<(() => Promise<void>) | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -274,9 +275,15 @@ export function AgentChat({
   });
   const voiceOn = voice.state !== "off";
   voiceStartRef.current = voice.start;
+  /** Open full-screen talk mode and start listening (from a tap, so the browser allows sound). */
   const startVoice = () => {
+    setTalkOpen(true);
     setVoicePrompt(false);
     void voice.start();
+  };
+  const closeTalk = () => {
+    setTalkOpen(false);
+    setVoicePrompt(false);
   };
   const voiceSince = useRef<number | null>(null);
   useEffect(() => {
@@ -285,15 +292,18 @@ export function AgentChat({
       const s = Math.round((Date.now() - voiceSince.current) / 1000);
       showToast(`Voice session ended · ${Math.floor(s / 60)} min ${s % 60} s`);
       voiceSince.current = null;
+      // Back to the chat, which keeps every spoken turn with its sources.
+      setTalkOpen(false);
     }
   }, [voice.state, voice.startedAt, showToast]);
   useEffect(() => {
     if (!voice.error) return;
-    showToast(voice.error);
-    // An automatic start that the browser blocked becomes a tap-to-start button.
-    if (autoVoiceRef.current) setVoicePrompt(true);
+    // In talk mode a failed or blocked start becomes "Tap to start talking" there.
+    if (talkOpen) setVoicePrompt(true);
+    else showToast(voice.error);
     autoVoiceRef.current = false;
-  }, [voice.error, showToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voice.error]);
   useEffect(() => {
     if (voice.state === "listening") autoVoiceRef.current = false;
   }, [voice.state]);
@@ -356,6 +366,7 @@ export function AgentChat({
             sessionStorage.removeItem(TALK_INTENT_KEY);
             talkIntent = t > 0 && Date.now() - t >= 0 && Date.now() - t < 10_000;
           } catch {}
+          setTalkOpen(true);
           if (talkIntent && canPlay) {
             autoVoiceRef.current = true;
             void voiceStartRef.current?.();
@@ -404,39 +415,22 @@ export function AgentChat({
   const panelCited = panelMsg ? citedNumbers(panelMsg.content, panelCites.length, panelMsg.artifact) : [];
   const panelActiveN = active && active.mid === panelMid ? active.n : null;
 
-  const composer = voiceOn ? (
-    <div className="hidden lg:block">
-      <VoiceBar
-        state={voice.state}
-        heard={voice.heard}
-        caption={voice.caption}
-        level={voice.level}
-        voiceName={voiceName}
-        setVoiceName={setVoiceName}
-        onEnd={voice.end}
-        startedAt={voice.startedAt}
-      />
-    </div>
-  ) : (
-    <>
-      {voicePrompt && voiceAvailable && (
-        <div className="flex items-center gap-2 mb-2" role="group" aria-label="Start voice">
-          <button
-            type="button"
-            onClick={startVoice}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-teal text-paper px-4 py-3 text-[15px] font-semibold hover:bg-deep-teal active:scale-[0.99] transition-[transform,background-color]"
-          >
-            <Mic size={18} strokeWidth={2} aria-hidden /> Tap to start talking
-          </button>
-          <button
-            type="button"
-            onClick={() => setVoicePrompt(false)}
-            className="rounded-full border border-line bg-paper px-3 py-3 text-[13px] text-ink-soft hover:bg-cream"
-          >
-            Type instead
-          </button>
-        </div>
-      )}
+  // The latest spoken answer's sources, named in talk mode (full details in the chat).
+  const talkSources = (() => {
+    const last = [...messages].reverse().find((m) => m.role === "assistant" && m.voice);
+    if (!last || last.refused) return [];
+    const cites = last.citations ?? [];
+    return citedNumbers(last.content, cites.length, last.artifact)
+      .map((n) => cites[n - 1])
+      .filter(Boolean)
+      .map((c) => {
+        const { title, detail } = citeParts(c);
+        const page = c.pageStart != null ? ` p. ${c.pageStart}` : detail ? ` · ${detail.split(" · ")[0]}` : "";
+        return `${title.replace(/ Landscape Investment Plan$/, " plan")}${page}`;
+      });
+  })();
+
+  const composer = (
     <Composer
       onVoice={voiceAvailable ? startVoice : undefined}
       input={input}
@@ -452,7 +446,6 @@ export function AgentChat({
       placeholder={placeholder}
       inputRef={inputRef}
     />
-    </>
   );
 
   return (
@@ -540,21 +533,26 @@ export function AgentChat({
         </div>
       )}
 
-      {voiceOn && (
-        <VoiceScreen
-          state={voice.state}
-          heard={voice.heard}
-          caption={voice.caption}
-          level={voice.level}
-          voiceName={voiceName}
-          setVoiceName={setVoiceName}
-          language={voiceLang}
-          setLanguage={setVoiceLang}
-          onEnd={voice.end}
-          onKeyboard={voice.end}
-          startedAt={voice.startedAt}
-        />
-      )}
+      <TalkMode
+        open={talkOpen}
+        state={voice.state}
+        heard={voice.heard}
+        caption={voice.caption}
+        lastQuestion={voice.lastQuestion}
+        level={voice.level}
+        outLevel={voice.outLevel}
+        startedAt={voice.startedAt}
+        voiceName={voiceName}
+        setVoiceName={setVoiceName}
+        language={voiceLang}
+        setLanguage={setVoiceLang}
+        sources={talkSources}
+        needsTap={voicePrompt || (voice.state === "off" && !!voice.error)}
+        message={voice.error}
+        onStart={startVoice}
+        onEnd={voice.end}
+        onClose={closeTalk}
+      />
 
       <SourcesSheet
         open={sheetOpen}
