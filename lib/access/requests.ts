@@ -203,9 +203,10 @@ export async function notifyApprovers(requestId: string): Promise<{ sent: number
     const approve = await siteUrl(`/access/decide/${token}?do=approve`);
     const decline = await siteUrl(`/access/decide/${token}?do=decline`);
     if (!approve || !decline) return { sent, skipped: "NEXT_PUBLIC_SITE_URL not set" };
+    // No reply-to: these emails carry approval links, so a reply (quoting them)
+    // must never reach the requester. The requester's address is shown as text only.
     const res = await sendEmail({
       to,
-      replyTo: req.email,
       subject: `Approve access? ${req.organisation} wants the ${scope} investment table`,
       text: [
         `${req.name} (${req.email}) from ${req.organisation}${req.role ? `, ${req.role}` : ""} asked to view the full investment table for ${scope}.`,
@@ -218,7 +219,7 @@ export async function notifyApprovers(requestId: string): Promise<{ sent: number
         `DECLINE:\n${decline}`,
         "",
         `Each link opens a short confirmation page first. They work for ${APPROVAL_LINK_DAYS} days and stop once anyone decides.`,
-        "Replying to this email writes to the requester.",
+        "Please don't forward this email: the links act on your behalf. To contact the requester, write to them directly.",
       ].join("\n"),
     });
     if (res === "sent") sent++;
@@ -245,6 +246,10 @@ export async function decideByToken(opts: { token: string; decision: "approve" |
   Promise<{ ok?: string; error?: string }> {
   const info = await resolveApprovalToken(opts.token);
   if (!info) return { error: "This link has expired, was already used, or the request was already decided." };
+  // The approver must still be an approver now (role removed or list changed since the email -> link is dead).
+  if (!(await approverEmails()).includes(info.approverEmail.toLowerCase())) {
+    return { error: "You're no longer an approver for these requests. Ask a Hub admin." };
+  }
   // Spend the token first, so it can't be used twice.
   const spent = rows<{ token_hash: string }>(await db.execute(sql`
     UPDATE "cat".access_request_tokens SET used_at = now()
