@@ -24,6 +24,9 @@ import { putObject } from "@/lib/storage/r2";
  */
 
 const run = promisify(execFile);
+const MAX_ZIP_ENTRIES = 5000;
+const MAX_RELS_BYTES = 2 * 1024 * 1024;
+const MAX_INFLATED_BYTES = 300 * 1024 * 1024;
 const HYPERLINK_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 const MAX_PDF_BYTES = 150 * 1024 * 1024;
@@ -60,6 +63,17 @@ const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
  */
 export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
   const zip = await JSZip.loadAsync(docx);
+  // Bound decompression before anything is inflated (zip-bomb guard).
+  const entries = Object.values(zip.files);
+  if (entries.length > MAX_ZIP_ENTRIES) throw new Error(`Rejected document: ${entries.length} zip entries`);
+  let inflated = 0;
+  for (const f of entries) {
+    const size = (f as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize;
+    if (typeof size !== "number" && !f.dir) throw new Error(`Rejected document: unknown size for ${f.name}`);
+    inflated += size ?? 0;
+    if (f.name.toLowerCase().endsWith(".rels") && (size ?? 0) > MAX_RELS_BYTES) throw new Error(`Rejected document: ${f.name} too large`);
+  }
+  if (inflated > MAX_INFLATED_BYTES) throw new Error("Rejected document: too large when unpacked");
   const parser = new XMLParser({
     ignoreAttributes: false, attributeNamePrefix: "", processEntities: false,
     isArray: (name) => name === "Relationship",
@@ -142,8 +156,14 @@ export async function pdfForDriveFile(
   if (file.mimeType === GOOGLE_DOC) {
     // Drive exports its live copy: confirm it is still the ingested version
     // immediately before and after exporting.
-    const same = async () => !opts.expectModifiedTime
-      || new Date((await getFileModifiedTime(file.id)) ?? 0).getTime() === new Date(opts.expectModifiedTime).getTime();
+    // Fails closed: unknown or unreadable times count as "changed".
+    const expected = opts.expectModifiedTime ? new Date(opts.expectModifiedTime).getTime() : NaN;
+    if (Number.isNaN(expected)) throw new Error("Ingested version has no Drive modifiedTime; refusing a live export");
+    const same = async () => {
+      const live = await getFileModifiedTime(file.id);
+      const t = live ? new Date(live).getTime() : NaN;
+      return !Number.isNaN(t) && t === expected;
+    };
     if (!(await same())) throw new Error("Google Doc changed since it was ingested; the next sync will re-import it first");
     const pdf = await exportGoogleDocPdf(file.id);
     if (!(await same())) throw new Error("Google Doc changed during export; skipped");
