@@ -1,9 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
 import type Anthropic from "@anthropic-ai/sdk";
 import {
   BudgetExceededError,
   claudeMessage,
   claudeStream,
+  safeJsonParse,
   type StreamEvent,
   type StreamTurn,
 } from "@/lib/ai/claude";
@@ -48,7 +51,7 @@ const MAX_QUESTION_CHARS = 1000;
 const REFUSAL_TEXT =
   "The library doesn't have this yet. It holds the CAT landscape investment plans and their intervention budgets. Try asking about a landscape's water, soil, livestock, livelihoods or funding plans.";
 
-const SYSTEM_PROMPT = `You are the Transformation Hub assistant. You answer questions from the Consortium for Agroecological Transformations' library of landscape investment plans (LIPs) and their intervention budgets, provided as search results in the reader's turn.
+export const SYSTEM_PROMPT = `You are the Transformation Hub assistant. You answer questions from the Consortium for Agroecological Transformations' library of landscape investment plans (LIPs) and their intervention budgets, provided as search results in the reader's turn.
 
 How you answer:
 - Start with the subject of the question. Never open with "Based on", "According to", "From the passages" or similar; the reader sees the sources.
@@ -72,7 +75,7 @@ type ClientBody = {
   scope?: unknown;
 };
 
-type Citation = {
+export type Citation = {
   index: number;
   type: "landscape";
   label: string;
@@ -113,12 +116,16 @@ function landscapeName(slug: string | null): string {
   return (slug && LANDSCAPES[slug]?.name) || slug || "CAT";
 }
 
-function toCitation(h: Hit, index: number): Citation {
+export function toCitation(h: Hit, index: number): Citation {
   const doc =
     h.sourceKind === "intervention"
       ? `${landscapeName(h.landscapeSlug)} intervention budget`
       : h.documentTitle ?? `${landscapeName(h.landscapeSlug)} report`;
-  const section = h.sectionPath?.split(" > ").slice(-2).join(" › ") ?? null;
+  // Intervention chunks have no section; their first line is the intervention's name.
+  const section =
+    h.sourceKind === "intervention"
+      ? h.text.split("\n")[0].replace(/\.$/, "").trim().slice(0, 120) || null
+      : h.sectionPath?.split(" > ").slice(-2).join(" › ") ?? null;
   const label = [doc, section, pages(h)].filter(Boolean).join(" · ");
   const preview = h.text.replace(/\s+/g, " ").trim();
   return {
@@ -135,7 +142,7 @@ function toCitation(h: Hit, index: number): Citation {
   };
 }
 
-function searchResultBlock(h: Hit, c: Citation): Anthropic.SearchResultBlockParam {
+export function searchResultBlock(h: Hit, c: Citation): Anthropic.SearchResultBlockParam {
   const where = [c.document ?? c.label, h.sectionPath, pages(h)].filter(Boolean).join(" · ");
   return {
     type: "search_result",
@@ -176,6 +183,58 @@ const PREAMBLE_RE =
 
 const isRefusal = (text: string) => /^\s*The library doesn'?t have this yet/i.test(text);
 
+const FOLLOWUPS_PROMPT = `Suggest the three most useful next questions a reader could ask after this answer. The library holds Indian landscape investment plans (LIPs) and their intervention budgets. Prefer questions the listed source sections can answer: costs, who pays, phasing, specific interventions, comparisons with another landscape. Each question: under 90 characters, plain English, names the landscape, no numbering, not a repeat of the reader's question.`;
+
+const FOLLOWUPS_SCHEMA = {
+  type: "object",
+  properties: { questions: { type: "array", items: { type: "string" } } },
+  required: ["questions"],
+  additionalProperties: false,
+};
+
+/** Three "Ask next" questions; [] on any failure (they're a nicety, never a blocker). */
+async function followUpQuestions(question: string, answer: string, cites: Citation[], signal: AbortSignal): Promise<string[]> {
+  try {
+    const r = await claudeMessage("ask_followups", {
+      system: FOLLOWUPS_PROMPT,
+      messages: [{
+        role: "user",
+        content: `Reader question: ${question}\n\nAnswer given:\n${historyText(answer).slice(0, 1800)}\n\nSource sections it drew on:\n${cites.map((c) => `- ${c.label}`).join("\n")}`,
+      }],
+      jsonSchema: FOLLOWUPS_SCHEMA,
+      signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]),
+    });
+    const parsed = safeJsonParse<{ questions?: unknown }>(r.text);
+    const qs = Array.isArray(parsed?.questions) ? parsed!.questions : [];
+    return qs
+      .filter((q): q is string => typeof q === "string")
+      .map((q) => q.replace(/\s+/g, " ").trim())
+      .filter((q) => q.length > 8 && q.length <= 140)
+      .slice(0, 3);
+  } catch (e) {
+    if (!(e instanceof BudgetExceededError) && !signal.aborted) console.error("[ask_v2] follow-ups failed:", (e as Error).message);
+    return [];
+  }
+}
+
+/** Landscapes with a current, published report in the CAT library. */
+export async function readyLandscapeSlugs(): Promise<string[]> {
+  const r = (await db.execute(sql`
+    SELECT DISTINCT landscape_slug AS slug FROM "cat".documents
+    WHERE current_version_id IS NOT NULL AND landscape_slug IS NOT NULL`)) as unknown as { rows: { slug: string }[] };
+  return r.rows.map((x) => x.slug);
+}
+
+/** Live counts for the Ask first screen's proof line. */
+export async function libraryStats(): Promise<{ landscapes: number; interventions: number }> {
+  const r = (await db.execute(sql`
+    SELECT (SELECT count(DISTINCT landscape_slug)::int FROM "cat".documents WHERE current_version_id IS NOT NULL) AS landscapes,
+           (SELECT count(*)::int FROM "cat".interventions) AS interventions`)) as unknown as {
+    rows: { landscapes: number; interventions: number }[];
+  };
+  return r.rows[0] ?? { landscapes: 0, interventions: 0 };
+}
+
 /* ─── GET: restore the latest conversation for this browser ─── */
 
 export async function askV2History(req: NextRequest) {
@@ -191,6 +250,7 @@ export async function askV2History(req: NextRequest) {
       content: m.content,
       refused: m.refused,
       interrupted: m.interrupted,
+      followUps: (m.artifacts ?? []).find((a) => a.type === "follow_ups")?.items ?? [],
       citations: (m.citations ?? []).map(({ chunkId: _c, documentId: _d, quotes: _q, cited: _x, ...c }) => c),
     })),
   });
@@ -278,7 +338,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
     const sse = [
       { type: "meta", citations: [], scope: scope ?? "all", conversationId },
       { type: "delta", text: REFUSAL_TEXT },
-      { type: "done", refused: true },
+      {
+        type: "done",
+        refused: true,
+        // Nearest passage, when retrieval found anything at all, so the reader has somewhere to go.
+        closest: hits[0] ? { label: toCitation(hits[0], 1).label, url: toCitation(hits[0], 1).url } : null,
+      },
     ].map((e) => `data: ${JSON.stringify(e)}\n\n`).join("");
     return withCookie(new Response(sse, { headers }));
   }
@@ -381,25 +446,35 @@ export async function askV2(req: NextRequest): Promise<Response> {
         cited: cited.has(i + 1),
         quotes: cited.get(i + 1) ?? [],
       }));
+      const latencyMs = Date.now() - started;
+
+      if (failed && !req.signal.aborted) send({ type: "error", message: "The assistant is temporarily unavailable." });
+      else if (!failed) send({ type: "done", refused });
+
+      // "Ask next" questions arrive just after done, so the answer never waits on them.
+      const followUps =
+        !failed && !interrupted && !refused && !closed
+          ? await followUpQuestions(question, text, citations.filter((c) => cited.has(c.index)), req.signal)
+          : [];
+      if (followUps.length) send({ type: "followups", questions: followUps });
+
       try {
         await addAssistantMessage({
           conversationId,
           content: text,
           citations: refused ? [] : stored,
+          artifacts: followUps.length ? [{ type: "follow_ups", items: followUps }] : [],
           interrupted,
           refused,
           model: done?.model ?? null,
           inputTokens: done?.inputTokens ?? null,
           outputTokens: done?.outputTokens ?? null,
           costUsd: done?.costUsd ?? null,
-          latencyMs: Date.now() - started,
+          latencyMs,
         });
       } catch (e) {
         console.error("[ask_v2] saving answer failed:", (e as Error).message);
       }
-
-      if (failed && !req.signal.aborted) send({ type: "error", message: "The assistant is temporarily unavailable." });
-      else if (!failed) send({ type: "done", refused });
       if (!closed) {
         closed = true;
         try {

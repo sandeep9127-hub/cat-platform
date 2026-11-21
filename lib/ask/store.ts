@@ -33,6 +33,7 @@ export type StoredMessage = {
   citations: StoredCitation[];
   interrupted: boolean;
   refused: boolean;
+  artifacts: Array<{ type: string; items?: string[] }>;
   createdAt: string;
 };
 
@@ -67,7 +68,7 @@ export async function createConversation(tokenHash: string, scope: string | null
 export async function loadMessages(conversationId: string, limit: number): Promise<StoredMessage[]> {
   const r = rows<StoredMessage>(await db.execute(sql`
     SELECT * FROM (
-      SELECT id, role, content, citations, interrupted, refused, created_at AS "createdAt"
+      SELECT id, role, content, citations, interrupted, refused, artifacts, created_at AS "createdAt"
       FROM "cat".messages WHERE conversation_id = ${conversationId}::uuid
       ORDER BY created_at DESC LIMIT ${limit}
     ) m ORDER BY "createdAt" ASC`));
@@ -92,6 +93,8 @@ export async function addAssistantMessage(m: {
   citations: StoredCitation[];
   interrupted: boolean;
   refused: boolean;
+  /** e.g. [{ type: "follow_ups", items: [...] }]; charts and notes later. */
+  artifacts?: unknown[];
   model: string | null;
   inputTokens: number | null;
   outputTokens: number | null;
@@ -101,9 +104,10 @@ export async function addAssistantMessage(m: {
   await db.transaction(async (tx) => {
     await tx.execute(sql`
       INSERT INTO "cat".messages
-        (conversation_id, role, content, citations, interrupted, refused, model,
+        (conversation_id, role, content, citations, artifacts, interrupted, refused, model,
          input_tokens, output_tokens, cost_usd, latency_ms)
       VALUES (${m.conversationId}::uuid, 'assistant', ${m.content}, ${JSON.stringify(m.citations)}::jsonb,
+              ${JSON.stringify(m.artifacts ?? [])}::jsonb,
               ${m.interrupted}, ${m.refused}, ${m.model}, ${m.inputTokens}, ${m.outputTokens},
               ${m.costUsd}, ${m.latencyMs})`);
     await tx.execute(sql`

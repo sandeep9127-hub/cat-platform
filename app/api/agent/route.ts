@@ -13,7 +13,7 @@ import {
 import { embedQuery as embedQueryVector, embeddingsEnabled } from "@/lib/ai/embed";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
-import { askV2, askV2History } from "@/lib/ask/v2";
+import { askV2, askV2History, libraryStats } from "@/lib/ask/v2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -122,6 +122,7 @@ export async function GET(req: NextRequest) {
     starters: STARTERS,
     maxTurns: askV2Enabled() ? 20 : MAX_TURNS,
     v2: askV2Enabled(),
+    library: askV2Enabled() ? await libraryStats().catch(() => null) : null,
   });
 }
 

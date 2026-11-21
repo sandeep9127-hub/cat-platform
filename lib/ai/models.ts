@@ -34,6 +34,7 @@ export type AiTask =
   | "ask_landscape"
   | "ask_v2"
   | "ask_rewrite"
+  | "ask_followups"
   | "visualize"
   | "factsheet"
   | "discovery"
@@ -67,6 +68,8 @@ const DEFAULTS: Record<AiTask, TaskConfig> = {
   ask_v2: { model: MODELS.haiku, effort: "low", maxTokens: 3000, pool: "public", maxWebSearches: 0, thinking: "off" },
   // Ask v2: turns a follow-up ("and in Vempalli?") into a standalone search query.
   ask_rewrite: { model: MODELS.haiku, effort: "low", maxTokens: 400, pool: "public", maxWebSearches: 0, thinking: "off" },
+  // Ask v2: three "Ask next" questions after each answer, steered to sections the library holds.
+  ask_followups: { model: MODELS.haiku, effort: "low", maxTokens: 400, pool: "public", maxWebSearches: 0, thinking: "off" },
   visualize: { model: MODELS.haiku, effort: "low", maxTokens: 2000, pool: "public", maxWebSearches: 0 },
 
   // Research + writing that becomes published content.
