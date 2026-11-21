@@ -45,6 +45,7 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
 
 ## 21 Nov progress
 - Step 1 done: `scripts/drive-sync.ts --dry-run` reports 0 changes, 0 problems (19s).
+- Step 0 data done (commit 7e652e0): 641 district centroids in `cat.district_centroids` (cat.geographies untouched); a trigger sets `geo_precision`, `geo_points`, latitude/longitude on every fact sheet (8 district, 32 state, 19 national). Re-run `npx tsx scripts/load-districts.ts` after adding aliases. UI session told the field names.
 - Architecture whiteboard: https://claude.ai/artifact/SZw46XxNtif7JHkhFLeqGt
 - Enhanced AI features (Ask v2 onwards) move to a fresh session. Notes for it:
   - Today `/api/agent` (`app/api/agent/route.ts`) still uses the legacy retrieval (entries FTS + old landscape/factsheet chunk tables). `components/agent/AgentChat.tsx` posts `{sessionToken, messages, scope}` and reads SSE events `meta {citations}`, `delta {text}`, `done {refused}`, `error`.
