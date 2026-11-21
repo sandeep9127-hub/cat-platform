@@ -59,3 +59,15 @@ jobs:
           SYNC_EMAIL: ${{ vars.SYNC_EMAIL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+      # Claude models, Voyage and Soniox still answering? (free or near-free calls;
+      # results in cat.model_health). A failure fails the run, and GitHub emails
+      # the repository owner. Runs even if the sync step failed.
+      - name: Model health check
+        if: always() && !inputs.dry_run
+        run: npx tsx scripts/model-health.ts
+        env:
+          DATABASE_URL: ${{ secrets.CAT_DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+          SONIOX_API_KEY: ${{ secrets.SONIOX_API_KEY }}

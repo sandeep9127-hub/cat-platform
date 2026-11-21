@@ -41,12 +41,16 @@ export async function createLinkAction(_prev: CreateState, form: FormData): Prom
     await writeAudit({
       actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.create", entityType: "share_link", entityId: r.id,
     }).catch(() => {});
-    // Prefer the configured site address; fall back to this request's host (local dev).
+    // The configured site address. The request's Host header is trusted only for
+    // local development, so a spoofed host can't put the token on another domain.
     let base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
-    if (!/^https?:\/\//.test(base)) {
-      const h = await headers();
-      const host = h.get("host") ?? "";
-      base = `${host.startsWith("localhost") ? "http" : "https"}://${host}`;
+    if (!/^https?:\/\/[^/]+$/.test(base)) {
+      const host = (await headers()).get("host") ?? "";
+      if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) {
+        await revokeShareLink(r.id, user.id ?? null);
+        return { error: "NEXT_PUBLIC_SITE_URL is not set on the server, so the link can't be built. Nothing was shared." };
+      }
+      base = `http://${host}`;
     }
     revalidatePath(`/admin/budget-tables/${slug}`);
     return { url: `${base}/share/${r.token}`, expiresAt: r.expiresAt };
