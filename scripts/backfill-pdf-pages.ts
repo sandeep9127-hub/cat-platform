@@ -26,10 +26,10 @@ process.env.DATABASE_URL = process.env.DATABASE_URL_CAT;
 
   const mimeById = new Map((await listTree(folderId, "Final folder")).map((f) => [f.id, f.mimeType]));
   const versions = (await db.execute(sql`
-    SELECT d.landscape_slug, d.drive_file_id, v.id AS version_id, v.r2_original_key, v.label
+    SELECT d.landscape_slug, d.drive_file_id, v.id AS version_id, v.r2_original_key, v.label, v.drive_modified_time
     FROM "cat".documents d JOIN "cat".document_versions v ON v.id = d.current_version_id
     WHERE d.drive_file_id IS NOT NULL ORDER BY d.landscape_slug`)).rows as {
-      landscape_slug: string; drive_file_id: string; version_id: string; r2_original_key: string; label: string;
+      landscape_slug: string; drive_file_id: string; version_id: string; r2_original_key: string; label: string; drive_modified_time: string | null;
     }[];
 
   let failures = 0;
@@ -39,7 +39,7 @@ process.env.DATABASE_URL = process.env.DATABASE_URL_CAT;
     if (!mimeType) { console.log(`! ${v.landscape_slug}: Drive file not found in the Final folder, skipped`); continue; }
     try {
       const docx = await getObjectBytes(v.r2_original_key);
-      const got = await pdfForDriveFile({ id: v.drive_file_id, mimeType }, docx);
+      const got = await pdfForDriveFile({ id: v.drive_file_id, mimeType }, docx, { expectModifiedTime: v.drive_modified_time });
       if (!got) { console.log(`- ${v.landscape_slug}: no PDF (LibreOffice not installed?), skipped`); continue; }
       if (dryRun) {
         const texts = await pdfPageTexts(got.pdf);

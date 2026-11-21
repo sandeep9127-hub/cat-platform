@@ -114,7 +114,7 @@ export async function runDriveSync(opts: {
         if (p.current.mimeType === GOOGLE_DOC && (!v.drive_modified_time
             || new Date(v.drive_modified_time).getTime() !== new Date(p.current.modifiedTime).getTime())) continue;
         try {
-          const got = await pdfForDriveFile(p.current, await getObjectBytes(v.r2_original_key));
+          const got = await pdfForDriveFile(p.current, await getObjectBytes(v.r2_original_key), { expectModifiedTime: v.drive_modified_time });
           if (!got) { noRenderer = true; continue; }
           const r = await attachPdfPages(v.id, got.pdf, got.method);
           log(`pages ${name}: ${r.pages} pages, ${r.matched}/${r.chunks} chunks placed (${got.method})`);

@@ -124,6 +124,12 @@ export async function downloadFile(f: Pick<DriveFile, "id" | "mimeType"> & { siz
   return { bytes: await readCapped(res), mime: f.mimeType };
 }
 
+/** Current modifiedTime of a file (for checking it hasn't changed). */
+export async function getFileModifiedTime(fileId: string): Promise<string | null> {
+  const res = await api(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=modifiedTime&supportsAllDrives=true`);
+  return ((await res.json()) as { modifiedTime?: string }).modifiedTime ?? null;
+}
+
 /** PDF of a Google Doc as Drive renders it (read-only export; nothing changes in Drive). */
 export async function exportGoogleDocPdf(fileId: string): Promise<Uint8Array> {
   const res = await api(`https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application%2Fpdf`);

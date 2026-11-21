@@ -5,9 +5,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { sql } from "drizzle-orm";
-import { extractText, getDocumentProxy } from "unpdf";
+import JSZip from "jszip";
+import { getDocumentProxy } from "unpdf";
 import { db } from "@/lib/db";
-import { DOCX, exportGoogleDocPdf, GOOGLE_DOC } from "@/lib/ingest/drive";
+import { DOCX, exportGoogleDocPdf, getFileModifiedTime, GOOGLE_DOC } from "@/lib/ingest/drive";
 import { putObject } from "@/lib/storage/r2";
 
 /**
@@ -51,9 +52,28 @@ const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
 </oor:items>`;
 
 /**
+ * Remove external relationships that could make a renderer fetch something
+ * (linked images, templates, OLE objects, sub-documents, frames). Hyperlinks
+ * stay: they are only drawn, never fetched.
+ */
+async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
+  const zip = await JSZip.loadAsync(docx);
+  let touched = false;
+  for (const name of Object.keys(zip.files)) {
+    if (!name.endsWith(".rels")) continue;
+    const xml = await zip.file(name)!.async("string");
+    const cleaned = xml.replace(/<Relationship\b[^>]*\/>/g, (rel) =>
+      /TargetMode="External"/i.test(rel) && !/\/hyperlink"/.test(rel) ? "" : rel);
+    if (cleaned !== xml) { zip.file(name, cleaned); touched = true; }
+  }
+  return touched ? new Uint8Array(await zip.generateAsync({ type: "uint8array" })) : docx;
+}
+
+/**
  * DOCX -> PDF with LibreOffice. Null if LibreOffice isn't installed.
  * Hardening: throwaway profile with macros and link/field updates off, a
- * minimal environment (no database URL or API keys reach the converter), a
+ * external fetch targets stripped from the file, a minimal environment (no
+ * database URL or API keys reach the converter), a
  * private temp folder, a time limit, and a size check before reading output.
  * Input is a report from CAT's own Drive folder that already passed the DOCX
  * parser's size caps; the sync runs on an ephemeral GitHub runner.
@@ -67,7 +87,7 @@ export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null
     await mkdir(join(profile, "user"), { recursive: true });
     await writeFile(join(profile, "user", "registrymodifications.xcu"), PROFILE_XCU);
     const input = join(dir, "report.docx");
-    await writeFile(input, docx);
+    await writeFile(input, await stripExternalTargets(docx));
     await run(soffice, [
       `-env:UserInstallation=file://${profile}`,
       "--headless", "--norestore", "--nolockcheck", "--convert-to", "pdf:writer_pdf_Export", "--outdir", dir, input,
@@ -85,8 +105,21 @@ export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null
 }
 
 /** The reader-facing PDF for a Drive file, or null when it can't be produced here. */
-export async function pdfForDriveFile(file: { id: string; mimeType: string }, docxBytes: Uint8Array): Promise<{ pdf: Uint8Array; method: "drive-export" | "libreoffice" } | null> {
-  if (file.mimeType === GOOGLE_DOC) return { pdf: await exportGoogleDocPdf(file.id), method: "drive-export" };
+export async function pdfForDriveFile(
+  file: { id: string; mimeType: string },
+  docxBytes: Uint8Array,
+  opts: { expectModifiedTime?: string | null } = {},
+): Promise<{ pdf: Uint8Array; method: "drive-export" | "libreoffice" } | null> {
+  if (file.mimeType === GOOGLE_DOC) {
+    // Drive exports its live copy: confirm it is still the ingested version
+    // immediately before and after exporting.
+    const same = async () => !opts.expectModifiedTime
+      || new Date((await getFileModifiedTime(file.id)) ?? 0).getTime() === new Date(opts.expectModifiedTime).getTime();
+    if (!(await same())) throw new Error("Google Doc changed since it was ingested; the next sync will re-import it first");
+    const pdf = await exportGoogleDocPdf(file.id);
+    if (!(await same())) throw new Error("Google Doc changed during export; skipped");
+    return { pdf, method: "drive-export" };
+  }
   if (file.mimeType === DOCX) {
     const pdf = await renderDocxPdf(docxBytes);
     return pdf ? { pdf, method: "libreoffice" } : null;
@@ -102,10 +135,14 @@ const norm = (s: string) =>
 export type PageAssignment = { pageStart: number | null; pageEnd: number | null };
 
 /**
- * Locate each chunk in the PDF text. Anchors are short word windows from the
- * chunk's start and end, searched forward from where the previous chunk was
- * found (so repeated table headers land on the right occurrence). Needs a start
- * anchor to assign a page; no match -> null.
+ * Locate each chunk in the PDF text, in three passes:
+ *  1. a chunk whose opening phrase (7-word window, several tried) occurs exactly
+ *     once in the PDF is placed there;
+ *  2. a chunk whose phrases occur several times (repeated table headers, stock
+ *     sentences) takes the occurrence that fits between its placed neighbours;
+ *  3. whatever is still out of document order is dropped (longest increasing
+ *     run kept), so a page is never guessed.
+ * Unplaced chunks get null pages (Ask then cites the section only).
  */
 export function assignPages(chunkTexts: string[], pageTexts: string[]): PageAssignment[] {
   const pageStarts: number[] = [];
@@ -122,42 +159,70 @@ export function assignPages(chunkTexts: string[], pageTexts: string[]): PageAssi
     }
     return lo + 1;
   };
-  const find = (anchor: string, from: number) => {
-    const i = doc.indexOf(anchor, Math.max(0, from));
-    return i >= 0 ? i : null;
+  const occurrences = (anchor: string, max = 8) => {
+    const out: number[] = [];
+    for (let i = doc.indexOf(anchor); i >= 0 && out.length < max; i = doc.indexOf(anchor, i + 1)) out.push(i);
+    return out;
   };
 
-  const WINDOW = 7;
-  let cursor = 0;
-  return chunkTexts.map((text) => {
-    const words = norm(text).split(" ").filter(Boolean);
-    if (words.length < WINDOW) return { pageStart: null, pageEnd: null };
-    const windows = (fromEnd: boolean) => {
-      const out: string[] = [];
-      const step = 5;
-      for (let k = 0; k < 8; k++) {
-        const s = fromEnd ? words.length - WINDOW - k * step : k * step;
-        if (s < 0 || s + WINDOW > words.length) break;
-        out.push(words.slice(s, s + WINDOW).join(" "));
-      }
-      return out;
-    };
-    // Start: first window found after the cursor (allow a little back-step).
-    let start: number | null = null;
-    for (const w of windows(false)) {
-      const i = find(w, cursor - 2000);
-      if (i !== null) { start = i; break; }
+  const WINDOW = 7, STEP = 5, TRIES = 8;
+  const n = chunkTexts.length;
+  const words = chunkTexts.map((t) => norm(t).split(" ").filter(Boolean));
+  const windows = (w: string[], fromEnd: boolean) => {
+    const out: string[] = [];
+    for (let k = 0; k < TRIES; k++) {
+      const s = fromEnd ? w.length - WINDOW - k * STEP : k * STEP;
+      if (s < 0 || s + WINDOW > w.length) break;
+      out.push(w.slice(s, s + WINDOW).join(" "));
     }
-    if (start === null) return { pageStart: null, pageEnd: null };
-    let end = start;
-    for (const w of windows(true)) {
-      const i = find(w, start);
-      if (i !== null) { end = i; break; }
+    return out;
+  };
+
+  // Pass 1: unique anchors; remember ambiguous candidates for pass 2.
+  const pos: (number | null)[] = new Array(n).fill(null);
+  const candidates: number[][] = new Array(n).fill(null).map(() => []);
+  for (let i = 0; i < n; i++) {
+    if (words[i].length < WINDOW) continue;
+    for (const w of windows(words[i], false)) {
+      const occ = occurrences(w);
+      if (occ.length === 1) { pos[i] = occ[0]; break; }
+      if (occ.length > 1 && !candidates[i].length) candidates[i] = occ;
     }
-    const pageStart = pageAt(start);
+  }
+
+  // Pass 2: ambiguous chunks take the occurrence between their placed neighbours.
+  for (let i = 0; i < n; i++) {
+    if (pos[i] !== null || !candidates[i].length) continue;
+    let prev: number | null = null, next: number | null = null;
+    for (let j = i - 1; j >= 0; j--) if (pos[j] !== null) { prev = pos[j]; break; }
+    for (let j = i + 1; j < n; j++) if (pos[j] !== null) { next = pos[j]; break; }
+    const fit = candidates[i].filter((c) => (prev === null || c >= prev) && (next === null || c <= next));
+    if (fit.length === 1 || (fit.length > 1 && prev !== null)) pos[i] = fit[0];
+  }
+
+  // Pass 3: keep the longest non-decreasing run of positions; drop the rest.
+  const idx = pos.map((p, i) => (p === null ? -1 : i)).filter((i) => i >= 0);
+  const tails: number[] = [], tailIdx: number[] = [], parent = new Map<number, number>();
+  for (const i of idx) {
+    const v = pos[i]!;
+    let lo = 0, hi = tails.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (tails[m] <= v) lo = m + 1; else hi = m; }
+    if (lo > 0) parent.set(i, tailIdx[lo - 1]);
+    tails[lo] = v; tailIdx[lo] = i;
+  }
+  const keep = new Set<number>();
+  for (let i: number | undefined = tailIdx[tails.length - 1]; i !== undefined; i = parent.get(i)) keep.add(i);
+
+  return pos.map((p, i) => {
+    if (p === null || !keep.has(i)) return { pageStart: null, pageEnd: null };
+    const pageStart = pageAt(p);
+    let end = p;
+    for (const w of windows(words[i], true)) {
+      const e = occurrences(w).find((o) => o >= p);
+      if (e !== undefined) { end = e; break; }
+    }
     let pageEnd = pageAt(end);
-    if (pageEnd < pageStart || pageEnd - pageStart > 6) pageEnd = pageStart; // implausible span: trust the start only
-    cursor = start;
+    if (pageEnd < pageStart || pageEnd - pageStart > 6) pageEnd = pageStart; // implausible span: trust the start
     return { pageStart, pageEnd };
   });
 }
@@ -165,13 +230,22 @@ export function assignPages(chunkTexts: string[], pageTexts: string[]): PageAssi
 const MAX_PAGES = 2000;
 const MAX_TEXT_CHARS = 20_000_000;
 
+/** Text of each PDF page, read page by page and stopped as soon as a cap is hit. */
 export async function pdfPageTexts(pdf: Uint8Array): Promise<string[]> {
   if (pdf.length > MAX_PDF_BYTES) throw new Error("PDF too large");
   const proxy = await getDocumentProxy(new Uint8Array(pdf));
   if (proxy.numPages > MAX_PAGES) throw new Error(`PDF has ${proxy.numPages} pages (limit ${MAX_PAGES})`);
-  const { text } = await extractText(proxy, { mergePages: false });
-  const pages = Array.isArray(text) ? text : [text];
-  if (pages.reduce((n, t) => n + t.length, 0) > MAX_TEXT_CHARS) throw new Error("PDF text too large");
+  const pages: string[] = [];
+  let total = 0;
+  for (let i = 1; i <= proxy.numPages; i++) {
+    const page = await proxy.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items.map((it) => ("str" in it ? it.str + (it.hasEOL ? "\n" : " ") : "")).join("");
+    total += text.length;
+    if (total > MAX_TEXT_CHARS) throw new Error("PDF text too large");
+    pages.push(text);
+    page.cleanup();
+  }
   return pages;
 }
 
