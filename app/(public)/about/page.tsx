@@ -38,6 +38,15 @@ export default function AboutPage() {
             A collaborative platform working to enable agroecological transformation at scale
             across India.
           </p>
+          <a
+            href="https://www.agroecologyindia.org"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center min-h-11 text-[15px] font-medium text-teal hover:text-deep-teal"
+          >
+            Visit The Consortium ↗
+            <span className="sr-only"> (agroecologyindia.org, opens in a new tab)</span>
+          </a>
         </aside>
       </Reveal>
 
