@@ -1,4 +1,5 @@
 import { claudeMessage, safeJsonParse } from "@/lib/ai/claude";
+import { replyInstruction } from "@/lib/ask/languages";
 import { hybridSearch } from "@/lib/rag/search";
 import { cleanMarkers, LIP_KINDS, PASSAGE_MIN, REFUSAL_FLOOR, toCitation } from "@/lib/ask/shared";
 import { refuseMode, streamMode, type ModeCtx } from "@/lib/ask/modes";
@@ -54,7 +55,7 @@ export async function runNote(ctx: ModeCtx, opts: { query: string; topic: string
       const passages = hits.map((h, i) => `[${i + 1}] ${citations[i].label}\n${h.context ? `${h.context}\n` : ""}${h.text}`).join("\n\n");
       const r = await claudeMessage("note", {
         system: SYSTEM,
-        messages: [{ role: "user", content: `${passages}\n\nNote topic: ${opts.topic || opts.query}\nReader request: ${ctx.question}` }],
+        messages: [{ role: "user", content: `${passages}\n\nNote topic: ${opts.topic || opts.query}\nReader request: ${ctx.question}${replyInstruction(ctx.lang)}` }],
         jsonSchema: SCHEMA,
         signal,
       });

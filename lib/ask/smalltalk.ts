@@ -5,6 +5,8 @@
  * about Mau?" is still a real question.
  */
 
+import { LANGUAGES, type LangCode } from "@/lib/ask/languages";
+
 export type SmallTalk = "closing" | "thanks" | "greeting" | "ack";
 
 const PHRASES: Record<SmallTalk, string[]> = {
@@ -81,20 +83,8 @@ export function smallTalk(text: string): SmallTalk | null {
   return null;
 }
 
-/** One short line, spoken in voice mode; never a library answer. */
-export function smallTalkReply(kind: SmallTalk, opts: { voice: boolean; hindi: boolean }): string {
-  if (opts.hindi) {
-    return {
-      closing: "मदद करके अच्छा लगा। बातचीत यहीं समाप्त करते हैं।",
-      thanks: "आपका स्वागत है। योजनाओं के बारे में कुछ और पूछना हो तो पूछिए।",
-      greeting: "नमस्ते। किसी भी लैंडस्केप योजना के बारे में पूछिए।",
-      ack: "ठीक है। आगे क्या जानना चाहेंगे?",
-    }[kind];
-  }
-  return {
-    closing: opts.voice ? "Glad to help. Ending the conversation now." : "Glad to help. Ask again any time.",
-    thanks: "You're welcome. Ask me anything else about the landscape plans.",
-    greeting: "Hello. Ask me about any of the landscape plans, for example Patratu's livestock or Rajnagar's water budget.",
-    ack: "Okay. What would you like to know next?",
-  }[kind];
+/** One short line in the reader's language, spoken in voice mode; never a library answer. */
+export function smallTalkReply(kind: SmallTalk, opts: { voice: boolean; lang: LangCode }): string {
+  const lines = LANGUAGES[opts.lang].smallTalk;
+  return kind === "closing" ? (opts.voice ? lines.closingVoice : lines.closing) : lines[kind];
 }

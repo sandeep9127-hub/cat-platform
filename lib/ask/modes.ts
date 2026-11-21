@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { type LangCode } from "@/lib/ask/languages";
 import { BudgetExceededError } from "@/lib/ai/claude";
 import { addAssistantMessage, type StoredCitation } from "@/lib/ask/store";
 import type { Hit } from "@/lib/rag/search";
@@ -12,6 +13,8 @@ export type ModeCtx = {
   conversationId: string;
   started: number;
   setCookie: string | null;
+  /** The reader's language: summaries and notes are written in it. */
+  lang?: LangCode;
 };
 
 export type ModeResult = {

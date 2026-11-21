@@ -23,6 +23,7 @@ import { FirstScreen, type AskExample } from "./ask/FirstScreen";
 import { CompareTable } from "./ask/Compare";
 import { MatchCards } from "./ask/Match";
 import { ChartView, DiagramView, NoteCard } from "./ask/Visuals";
+import type { LangCode } from "@/lib/ask/languages";
 import { useVoice, type AnswerHandlers, type VoiceLang, type VoiceName } from "./voice/useVoice";
 import { TalkMode } from "./voice/VoiceUI";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
@@ -76,7 +77,7 @@ export function AgentChat({
   const [notePdf, setNotePdf] = useState(false);
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
-  const [voiceLang, setVoiceLang] = useState<VoiceLang>("en");
+  const [voiceLang, setVoiceLang] = useState<VoiceLang>("auto");
   const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking" inside talk mode
   const [talkOpen, setTalkOpen] = useState(false); // full-screen talk mode
   const autoVoiceRef = useRef(false); // voice was started by ?voice=1, not a tap
@@ -112,7 +113,7 @@ export function AgentChat({
 
   /* ─── send ─── */
   const send = useCallback(
-    async (text: string, opts?: { scope?: string | null; history?: Msg[]; voice?: boolean; handlers?: AnswerHandlers }) => {
+    async (text: string, opts?: { scope?: string | null; history?: Msg[]; voice?: boolean; handlers?: AnswerHandlers; lang?: LangCode }) => {
       const trimmed = text.trim();
       if (!trimmed || answeringRef.current) return;
       // A previous answer may still be fetching its follow-ups: let it go.
@@ -148,7 +149,8 @@ export function AgentChat({
             conversationId: conversationIdRef.current,
             messages: next.map((m) => ({ role: m.role, content: m.content })),
             scope: useScope,
-            ...(voiceTurn ? { voice: true, language: voiceLang } : {}),
+            // Voice turns carry the language heard (or fixed in the picker); typed ones are detected on the server.
+            ...(voiceTurn ? { voice: true, ...(opts?.lang ? { language: opts.lang } : {}) } : {}),
           }),
         });
 
@@ -240,7 +242,7 @@ export function AgentChat({
         }
       }
     },
-    [messages, scope, patchReq, voiceLang],
+    [messages, scope, patchReq],
   );
 
   const stop = () => abortRef.current?.abort();
@@ -259,7 +261,7 @@ export function AgentChat({
 
   /* ─── voice ─── */
   const voice = useVoice({
-    ask: (q, handlers) => void send(q, { voice: true, handlers }),
+    ask: (q, handlers, lang) => void send(q, { voice: true, handlers, lang }),
     stopAnswer: () => abortRef.current?.abort(),
     // Talking over a spoken answer tags it "Interrupted", even when its text had finished.
     onInterrupt: () =>

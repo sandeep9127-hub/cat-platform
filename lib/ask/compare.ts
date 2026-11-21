@@ -1,4 +1,5 @@
 import { claudeMessage, safeJsonParse } from "@/lib/ai/claude";
+import { replyInstruction } from "@/lib/ask/languages";
 import { hybridSearch, type Hit } from "@/lib/rag/search";
 import { cleanMarkers, landscapeName, LIP_KINDS, PASSAGE_MIN, REFUSAL_FLOOR, toCitation } from "@/lib/ask/shared";
 import { refuseMode, streamMode, type ModeCtx } from "@/lib/ask/modes";
@@ -116,7 +117,7 @@ export async function runCompare(ctx: ModeCtx, opts: { query: string; topic: str
         system: SYSTEM,
         messages: [{
           role: "user",
-          content: `${passages}\n\nCompare on: ${topic}\nLandscapes, in column order: ${slugs.join(", ")}\nReader question: ${ctx.question}`,
+          content: `${passages}\n\nCompare on: ${topic}\nLandscapes, in column order: ${slugs.join(", ")}\nReader question: ${ctx.question}${replyInstruction(ctx.lang)}`,
         }],
         jsonSchema: SCHEMA,
         signal,

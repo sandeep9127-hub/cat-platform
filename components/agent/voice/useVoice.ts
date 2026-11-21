@@ -1,5 +1,6 @@
 "use client";
 
+import { LANGUAGES, dominantLanguage, sttHints, type LangCode } from "@/lib/ask/languages";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -18,7 +19,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type VoiceState = "off" | "connecting" | "listening" | "thinking" | "speaking";
 export type VoiceName = "Ashok" | "Shalini";
-export type VoiceLang = "en" | "hi";
+/** "auto" follows the speaker turn by turn; a language code fixes the reply language. */
+export type VoiceLang = "auto" | LangCode;
 
 export type AnswerHandlers = {
   onDelta: (text: string) => void;
@@ -64,8 +66,8 @@ export function fixPlaceNames(text: string, places: string[] = DEFAULT_PLACES): 
 }
 
 export function useVoice(opts: {
-  /** Ask the Hub one spoken question; the handlers stream the answer back. */
-  ask: (question: string, handlers: AnswerHandlers) => void;
+  /** Ask the Hub one spoken question in `lang`; the handlers stream the answer back. */
+  ask: (question: string, handlers: AnswerHandlers, lang: LangCode) => void;
   /** Cancel the answer in flight (marks it interrupted). */
   stopAnswer: () => void;
   /** The reader talked over the Hub: tag the cut-off answer. */
@@ -99,6 +101,10 @@ export function useVoice(opts: {
     outAnalyser: null as AnalyserNode | null,
     raf: 0,
     finalText: "",
+    /** This turn's final tokens with their language tags (language identification). */
+    turnTokens: [] as { text: string; language?: string }[],
+    /** The language of the answer being spoken. */
+    replyLang: "en" as LangCode,
     streamId: "",
     seq: 0,
     sources: [] as AudioBufferSourceNode[],
@@ -264,12 +270,14 @@ export function useVoice(opts: {
       c.tts?.close();
     } catch {}
     c.tts = null;
-    const keyPromise = c.speechKey ?? Promise.resolve(null);
+    // A language the Hub can't speak (no TTS row) stays as text, like a missing key.
+    const ttsLang = LANGUAGES[c.replyLang].tts;
+    const keyPromise = ttsLang ? (c.speechKey ?? Promise.resolve(null)) : Promise.resolve(null);
     void keyPromise.then((key) => {
       if (r.current.streamId !== streamId) return; // interrupted meanwhile
       if (key) connectTts(key);
       else {
-        // No speech for this answer (daily limit or expired session): it stays as text.
+        // No speech for this answer (daily limit, expired session, or text-only language): it stays as text.
         r.current.audioEnded = true;
         maybeFinished();
       }
@@ -277,7 +285,7 @@ export function useVoice(opts: {
     sendTts({
       stream_id: c.streamId,
       model: "tts-rt-v2",
-      language: optsRef.current.language,
+      language: ttsLang ?? "en",
       voice: optsRef.current.voiceName,
       audio_format: "pcm_s16le",
       sample_rate: TTS_RATE,
@@ -286,7 +294,8 @@ export function useVoice(opts: {
 
   /* ─── a spoken turn ─── */
 
-  const askTurn = (question: string) => {
+  const askTurn = (question: string, lang: LangCode) => {
+    r.current.replyLang = lang;
     setHeard("");
     setCaption("");
     setLastQuestion(question);
@@ -338,7 +347,7 @@ export function useVoice(opts: {
         cancelSpeech();
         setState("listening");
       },
-    });
+    }, lang);
   };
 
   const interrupt = () => {
@@ -373,7 +382,7 @@ export function useVoice(opts: {
     } catch {}
     void c.micCtx?.close().catch(() => {});
     void c.playCtx?.close().catch(() => {});
-    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, outAnalyser: null, finalText: "", streamId: "" });
+    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, outAnalyser: null, finalText: "", turnTokens: [], streamId: "" });
     setHeard("");
     setCaption("");
     setLevel(0);
@@ -444,7 +453,9 @@ export function useVoice(opts: {
           JSON.stringify({
             model: "stt-rt-v6",
             audio_format: "auto",
-            language_hints: ["en", "hi"],
+            language_hints: sttHints(),
+            // Tags each token with its language, so the Hub replies in the language spoken.
+            enable_language_identification: true,
             enable_endpoint_detection: true,
             enable_agent_text_input: true,
             // Landscape names, places and scheme names, so "Patratu" isn't heard as "Patriarchal".
@@ -466,7 +477,7 @@ export function useVoice(opts: {
         setStartedAt(Date.now());
       };
       stt.onmessage = (ev) => {
-        let m: { tokens?: { text: string; is_final: boolean }[]; error_message?: string; finished?: boolean };
+        let m: { tokens?: { text: string; is_final: boolean; language?: string }[]; error_message?: string; finished?: boolean };
         try {
           m = JSON.parse(String(ev.data));
         } catch {
@@ -482,7 +493,10 @@ export function useVoice(opts: {
         for (const t of m.tokens ?? []) {
           if (t.text === "<end>") {
             if (t.is_final) endpoint = true;
-          } else if (t.is_final) c.finalText += t.text;
+          } else if (t.is_final) {
+            c.finalText += t.text;
+            c.turnTokens.push({ text: t.text, language: t.language });
+          }
           else nonFinal += t.text;
         }
         const live = `${c.finalText}${nonFinal}`;
@@ -493,8 +507,11 @@ export function useVoice(opts: {
         if (stateRef.current === "listening") setHeard(live.trim());
         if (endpoint) {
           const q = fixPlaceNames(c.finalText.trim(), c.places);
+          const pick = optsRef.current.language;
+          const lang = pick === "auto" ? dominantLanguage(c.turnTokens) : pick;
           c.finalText = "";
-          if (q.length > 1 && stateRef.current === "listening") askTurn(q);
+          c.turnTokens = [];
+          if (q.length > 1 && stateRef.current === "listening") askTurn(q, lang);
         }
       };
       stt.onclose = () => {

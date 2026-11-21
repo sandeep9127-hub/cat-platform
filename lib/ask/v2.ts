@@ -20,6 +20,7 @@ import { runMatch } from "@/lib/ask/match";
 import { runNote } from "@/lib/ask/note";
 import { runVisual } from "@/lib/ask/visual";
 import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
+import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode } from "@/lib/ask/languages";
 import {
   historyText,
   LIP_KINDS,
@@ -55,8 +56,6 @@ const MAX_TURNS = 20;
 const HISTORY_MESSAGES = 12;
 const MAX_QUESTION_CHARS = 1000;
 
-const REFUSAL_TEXT =
-  "The library doesn't have this yet. It holds the CAT landscape investment plans and their intervention budgets. Try asking about a landscape's water, soil, livestock, livelihoods or funding plans.";
 
 export const SYSTEM_PROMPT = `You are the Transformation Hub assistant. You answer questions from the Consortium for Agroecological Transformations' library of landscape investment plans (LIPs) and their intervention budgets, provided as search results in the reader's turn.
 
@@ -264,7 +263,9 @@ export async function askV2(req: NextRequest): Promise<Response> {
   if (!question) return json({ error: "No user message" }, 400);
   const scope = cleanScope(body.scope);
   const voice = body.voice === true;
-  const voiceHindi = voice && body.language === "hi";
+  // Reply language: the one the voice client heard (or the reader fixed), else the question's own.
+  const lang: LangCode = isLangCode(body.language) ? body.language : detectLanguage(question);
+  const refusalText = LANGUAGES[lang].refusal;
 
   const { tokenHash, setCookie } = readOrMintSession(req);
   const started = Date.now();
@@ -295,7 +296,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // line: no search, no Claude call, no "Not in the library" card. A voice
   // closing also ends the voice session once the line is spoken.
   const reply = (kind: SmallTalk) => {
-    const text = smallTalkReply(kind, { voice, hindi: voiceHindi });
+    const text = smallTalkReply(kind, { voice, lang });
     return chatResponse({ conversationId, scope, setCookie, started, text, endVoice: voice && kind === "closing" });
   };
   const small = smallTalk(question);
@@ -314,17 +315,21 @@ export async function askV2(req: NextRequest): Promise<Response> {
     // A spoken question that names no landscape may have misheard one ("Patriarchal"
     // for Patratu): the rewrite step, told about speech errors, corrects it.
     const routed =
-      history.length || (!voice && mightNeedRouting(question)) || (voice && !namesLandscape(question))
+      // A question in another language always goes through the rewrite, which searches in English.
+      history.length || lang !== "en" || (!voice && mightNeedRouting(question)) || (voice && !namesLandscape(question))
         ? await classifyQuestion(question, history, req.signal, { voice })
         : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] };
     if (voice && routed.query !== question) askedQuestion = routed.query;
     // The router may also spot a conversational turn the phrase list missed.
     if (routed.intent === "chat") {
-      return reply(/\b(stop|bye|end|done|that's all|that is all|enough|bas|alvida)\b/i.test(question) ? "closing" : "ack");
+      const closing =
+        /\b(stop|bye|end|done|that's all|that is all|enough|bas|alvida|khatam|samapt|band karo)\b/i.test(question) ||
+        /(खत्म|ख़त्म|समाप्त|बंद करो|बस|अलविदा)/u.test(question);
+      return reply(closing ? "closing" : "ack");
     }
     // Voice keeps the rewritten follow-up query but always answers in speakable prose.
     const intent = voice ? { ...routed, intent: "answer" as const } : routed;
-    const ctx = { req, question, scope, conversationId, started, setCookie };
+    const ctx = { req, question, scope, conversationId, started, setCookie, lang };
 
     if (intent.intent === "compare") {
       const landscapes = [...intent.landscapes];
@@ -362,12 +367,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // Below the floor: refuse without calling Claude.
   if (!hits.length || topScore < REFUSAL_FLOOR) {
     await addAssistantMessage({
-      conversationId, content: REFUSAL_TEXT, citations: [], interrupted: false, refused: true,
+      conversationId, content: refusalText, citations: [], interrupted: false, refused: true,
       model: null, inputTokens: null, outputTokens: null, costUsd: null, latencyMs: Date.now() - started,
     });
     const sse = [
       { type: "meta", citations: [], scope: scope ?? "all", conversationId },
-      { type: "delta", text: REFUSAL_TEXT },
+      { type: "delta", text: refusalText },
       {
         type: "done",
         refused: true,
@@ -388,9 +393,9 @@ export async function askV2(req: NextRequest): Promise<Response> {
           type: "text",
           text: `Answer from the search results above only, citing them for each claim.${
             voice
-              ? ` This answer will be read aloud: at most three short sentences, no lists, and say figures the way the passage writes them.${voiceHindi ? " Answer in Hindi, in Devanagari script." : ""}`
+              ? " This answer will be read aloud: at most three short sentences, no lists, and say figures the way the passage writes them."
               : ""
-          }\n\nReader question: ${askedQuestion}`,
+          }${replyInstruction(lang)}\n\nReader question: ${askedQuestion}`,
         },
       ],
     },

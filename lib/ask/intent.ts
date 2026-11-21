@@ -36,7 +36,7 @@ function prompt(): string {
 
 Return:
 - intent: "compare" when the reader asks to compare, contrast or set side by side two or more of the landscapes above on some aspect. "match" when the reader describes a problem, situation or need and asks which programmes, solutions or approaches could help, or who has done something similar elsewhere. "note" when the reader asks for a note, summary, brief or one-pager on a topic. "visual" when the reader asks for a chart, graph, breakdown, diagram or flow. "chat" when the turn is only conversation with no question in it (thanks, a greeting, goodbye, an acknowledgement, or asking to stop), in any language. Otherwise "answer", including any question about a single landscape.
-- query: the latest question rewritten as one standalone search query. Resolve follow-ups ("and in Vempalli?", "what about cost?") from the conversation, and keep names, numbers and key terms.
+- query: the latest question rewritten as one standalone search query. Resolve follow-ups ("and in Vempalli?", "what about cost?") from the conversation, and keep names, numbers and key terms. Always write it in English, translating a question asked in Hindi or another language, because the library is in English.
 - topic: for "compare", the aspect being compared in a few words (e.g. "water budgets"); for "note" and "visual", the subject in a few words. Otherwise "".
 - landscapes: slugs from the list above that the question names or clearly refers to, including through the conversation. Otherwise [].`;
 }
