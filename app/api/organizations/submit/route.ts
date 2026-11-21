@@ -68,9 +68,33 @@ export async function POST(req: NextRequest) {
 
   try {
     await insertSubmission(submission);
+    await notifyEditors(submission).catch((e) => console.error("[org-submit] editor email failed", (e as Error).message));
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("organizations/submit failed:", e);
     return NextResponse.json({ error: "submit_failed" }, { status: 500 });
   }
+}
+
+/**
+ * Tell the editors a submission is waiting (it used to sit unseen in the
+ * queue). Off with SUBMISSION_EMAIL=off or when email isn't configured.
+ */
+async function notifyEditors(s: Submission): Promise<void> {
+  if (process.env.SUBMISSION_EMAIL === "off") return;
+  const { sql } = await import("drizzle-orm");
+  const { db } = await import("@/lib/db");
+  const { sendEmail } = await import("@/lib/notify/email");
+  const { siteUrl } = await import("@/lib/share/links");
+  const to = ((await db.execute(sql`
+    SELECT email FROM "cat".users WHERE role IN ('admin', 'editor') AND email IS NOT NULL`)) as unknown as { rows: { email: string }[] })
+    .rows.map((u) => u.email);
+  if (!to.length) return;
+  const name = String(s.name ?? "an organisation").slice(0, 120);
+  const link = (await siteUrl("/admin/submissions")) ?? "the Hub admin, under Submissions";
+  await sendEmail({
+    to,
+    subject: `New organisation submission: ${name}`,
+    text: `A ${s.submissionType === "new" ? "new organisation" : "change to an organisation"} was submitted to the Organisations map: ${name}.\n\nReview it at ${link}.`,
+  });
 }
