@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { RequestTableCta } from "@/components/landscape/RequestTableCta";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { budgetSummary, listBudgetLines, landscapeHasLip, landscapeHasClimate } from "@/lib/db/landscape-kb";
@@ -70,17 +71,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
           Every intervention costed in the {p.name} investment plan, filterable by category. Numbers
           are 7-year totals across {lines.length} intervention lines unless filtered.
         </p>
-        {/* Full tables are shared only on request (a personal, view-only,
-            expiring link after an editor approves), never as downloads. */}
-        <p className="mt-4 text-[14px] text-muted">
-          <a
-            href={`/request-access?${new URLSearchParams({ landscape: slug }).toString()}`}
-            className="inline-flex items-center min-h-11 font-medium text-teal hover:text-deep-teal"
-          >
-            Request the full investment table →
-          </a>
-          <span className="block sm:inline sm:ml-2">Shared on request with a personal, view-only link.</span>
-        </p>
+        <RequestTableCta slug={slug} className="mt-6" />
       </header>
 
       <LandscapeTabs slug={slug} active="budget" hasLip={hasLip} hasClimate={hasClimate} />

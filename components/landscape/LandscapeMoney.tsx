@@ -1,6 +1,7 @@
 "use client";
 
 import { palette } from "@/lib/design/palette";
+import { RequestTableCta } from "./RequestTableCta";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
@@ -214,6 +215,7 @@ export function LandscapeMoney(props: MoneyProps) {
               <ArrowUpRight size={14} strokeWidth={2} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
             </Link>
           </div>
+          <RequestTableCta slug={props.slug} className="mt-6 pt-6 border-t border-line" />
         </div>
       </div>
     </section>
