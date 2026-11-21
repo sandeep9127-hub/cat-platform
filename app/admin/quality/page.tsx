@@ -70,11 +70,11 @@ export default async function Quality() {
     rows<{ what: string; n: number; href: string }>(sql`
       SELECT 'Budget changes' AS what, count(*)::int AS n, '/admin/budget-changes' AS href FROM "cat".intervention_changes WHERE status = 'pending'
       UNION ALL SELECT 'Access requests', count(*)::int, '/admin/access-requests' FROM "cat".access_requests WHERE status = 'pending'
-      UNION ALL SELECT 'Source changes to review', count(*)::int, '/admin/quality' FROM "cat".freshness_flags WHERE status = 'pending_review'
+      UNION ALL SELECT 'Source changes to review', count(*)::int, '/admin/source-changes' FROM "cat".freshness_flags WHERE status = 'pending_review'
       UNION ALL SELECT 'Organisation submissions', count(*)::int, '/admin/submissions' FROM "cat".org_submissions WHERE status = 'pending'
       UNION ALL SELECT 'Discovery candidates', count(*)::int, '/admin/candidates' FROM "cat".discovery_candidates WHERE status = 'pending_triage'
       UNION ALL SELECT 'Flagged fact sheets', count(*)::int, '/admin/factsheets' FROM "cat".solution_factsheets WHERE status = 'flagged'
-      UNION ALL SELECT 'Open triage items', count(*)::int, '/admin/budget-changes' FROM "cat".triage_items WHERE status IN ('new','in_review','needs_info')`),
+      UNION ALL SELECT 'Open triage items', count(*)::int, '/admin/inbox' FROM "cat".triage_items WHERE status IN ('new','in_review','needs_info')`),
     rows<{ answers: number; refused: number; interrupted: number; p50_ms: number | null; up: number; down: number; conversations: number }>(sql`
       SELECT count(*)::int AS answers, count(*) FILTER (WHERE refused)::int AS refused,
              count(*) FILTER (WHERE interrupted)::int AS interrupted,

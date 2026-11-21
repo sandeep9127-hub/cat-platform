@@ -8,7 +8,7 @@ export const metadata = {
 
 export default async function RequestAccess({ searchParams }: { searchParams: Promise<{ landscape?: string }> }) {
   const sp = await searchParams;
-  const initial = sp.landscape && LANDSCAPES[sp.landscape] ? sp.landscape : "all";
+  const initial = sp.landscape && Object.hasOwn(LANDSCAPES, sp.landscape) ? sp.landscape : "all";
   const landscapes = Object.entries(LANDSCAPES).map(([slug, l]) => ({ slug, name: l.name })).sort((a, b) => a.name.localeCompare(b.name));
   return (
     <main className="max-w-[880px] mx-auto px-5 sm:px-8 py-12 space-y-8">

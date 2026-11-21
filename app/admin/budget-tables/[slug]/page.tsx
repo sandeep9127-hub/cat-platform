@@ -15,7 +15,7 @@ const date = (s: string | null) =>
 export default async function BudgetTable({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const all = slug === "all";
-  if (!all && !LANDSCAPES[slug]) notFound();
+  if (!all && !Object.hasOwn(LANDSCAPES, slug)) notFound();
   const name = all ? "All landscapes" : LANDSCAPES[slug].name;
   const [rows, links, changed] = await Promise.all([getInterventions(all ? null : slug), listShareLinks(all ? null : slug), getRecentlyChanged(all ? null : slug)]);
   const now = Date.now();

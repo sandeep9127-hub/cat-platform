@@ -26,7 +26,7 @@ export async function createLinkAction(_prev: CreateState, form: FormData): Prom
   }
   const slug = String(form.get("landscape") ?? "");
   const all = slug === "all";
-  if (!all && !LANDSCAPES[slug]) return { error: "Unknown landscape." };
+  if (!all && !Object.hasOwn(LANDSCAPES, slug)) return { error: "Unknown landscape." };
   const label = String(form.get("label") ?? "").trim();
   if (!label) return { error: "Say who the link is for (it appears in the view log)." };
   const days = Number(form.get("days") ?? 30);

@@ -125,6 +125,18 @@ export async function runDriveSync(opts: {
       if (noRenderer) summary.problems.push("Page numbers skipped for Word reports: LibreOffice is not installed where the sync ran");
     }
 
+    // ── Uploaded documents that didn't finish in the web request ──
+    if (!opts.dryRun) {
+      try {
+        const { processPendingUploads } = await import("@/lib/ingest/uploads");
+        const u = await processPendingUploads(log);
+        if (u.done || u.failed) log(`uploads: ${u.done} published, ${u.failed} failed`);
+        if (u.failed) summary.problems.push(`${u.failed} uploaded document(s) failed to process; see Admin → Documents`);
+      } catch (e) {
+        summary.problems.push(`Uploaded documents not processed: ${(e as Error).message.slice(0, 150)}`);
+      }
+    }
+
     // ── Fact sheet search index ──
     // Rebuilt nightly so the matchmaker never serves an edited, merged or
     // unpublished sheet in its old form for long.

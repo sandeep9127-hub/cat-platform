@@ -54,7 +54,7 @@ export async function submitAccessRequest(input: RequestInput): Promise<{ id?: s
   if (!EMAIL_RE.test(email)) return { error: "Please give a valid email address." };
   if (organisation.length < 2) return { error: "Please give your organisation." };
   if (purpose.length < 10) return { error: "Please say briefly how you'll use the figures (at least a sentence)." };
-  if (landscape !== null && !LANDSCAPES[landscape]) return { error: "Please choose a landscape." };
+  if (landscape !== null && !Object.hasOwn(LANDSCAPES, landscape)) return { error: "Please choose a landscape." };
 
   // One open request per email and landscape is enough.
   const open = rows<{ id: string }>(await db.execute(sql`
@@ -98,7 +98,7 @@ export async function approveAccessRequest(opts: {
 }): Promise<{ url?: string; emailed?: string; error?: string; requesterEmail?: string }> {
   if (!UUID.test(opts.id)) return { error: "Unknown request." };
   const all = opts.landscape === "all";
-  if (!all && !LANDSCAPES[opts.landscape]) return { error: "Unknown landscape." };
+  if (!all && !Object.hasOwn(LANDSCAPES, opts.landscape)) return { error: "Unknown landscape." };
   const req = rows<AccessRequest>(await db.execute(sql`
     SELECT * FROM "cat".access_requests WHERE id = ${opts.id}::uuid AND status = 'pending'`))[0];
   if (!req) return { error: "This request was already decided." };

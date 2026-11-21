@@ -30,6 +30,8 @@
 
 Not needed on Vercel: `DATABASE_URL_RAG`, `NEON_API_KEY`, `NVIDIA_API_KEY`, `OPENROUTER_*` (old), and the Google service account (the Drive sync runs in GitHub Actions).
 
+4. In Cloudflare R2 → bucket `cat-hub-documents` → Settings → CORS, allow `PUT` with the `Content-Type` header from the test address and the final site address. Admin → Documents uploads go from the browser straight to R2.
+
 ## 2. Test deploy (private)
 
 From `~/code/cat-platform-release`, deploy to Vercel without touching GitHub:
