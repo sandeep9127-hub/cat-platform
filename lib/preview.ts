@@ -21,11 +21,15 @@ export const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * The gate is used only to hold a deployment private while it is tested (e.g. a
- * new version on its *.vercel.app address). It is on only when PREVIEW_GATE=on;
- * the public site (launched 23 June 2026) runs with it off.
+ * new version on its *.vercel.app address): on with PREVIEW_GATE=on, and by default on
+ * Vercel preview (branch) deployments; the public production site runs with it off.
  */
 export function previewGateEnabled(): boolean {
-  return process.env.PREVIEW_GATE === "on";
+  const v = (process.env.PREVIEW_GATE ?? "").trim().toLowerCase();
+  if (v === "on") return true;
+  if (v === "off") return false;
+  // Fail closed for Vercel preview deployments (branch builds); open for production.
+  return process.env.VERCEL_ENV === "preview";
 }
 
 /** Only allow internal, non-loop redirect targets. */
