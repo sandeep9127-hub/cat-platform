@@ -22,7 +22,7 @@ const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.sl
   if (!file || !title) throw new Error("Usage: ingest-manual-pdf.ts <file.pdf> --title=\"...\"");
   const { LANDSCAPES } = await import("../lib/data/landscapes");
   const slug = arg("landscape") ?? null;
-  if (slug && !LANDSCAPES[slug]) throw new Error(`Unknown landscape ${slug}`);
+  if (slug && !Object.hasOwn(LANDSCAPES, slug)) throw new Error(`Unknown landscape ${slug}`);
   const docType = (arg("type") ?? "report") as "lip" | "report" | "other";
 
   const bytes = new Uint8Array(await readFile(file));

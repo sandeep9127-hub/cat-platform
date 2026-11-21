@@ -32,7 +32,7 @@ export function validateUploadMeta(m: Partial<UploadMeta>): { meta?: UploadMeta;
   const title = String(m.title ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
   if (title.length < 3) return { error: "Give the document a title." };
   const landscape = m.landscape && m.landscape !== "none" ? m.landscape : null;
-  if (landscape && !LANDSCAPES[landscape]) return { error: "Unknown landscape." };
+  if (landscape && !Object.hasOwn(LANDSCAPES, landscape)) return { error: "Unknown landscape." };
   const docType = m.docType === "lip" || m.docType === "other" ? m.docType : "report";
   const contentType = String(m.contentType ?? "");
   if (contentType !== PDF && contentType !== DOCX) return { error: "Upload a PDF or a Word (.docx) file." };
@@ -83,6 +83,11 @@ export async function processUploadJob(jobId: string, log: (m: string) => void =
   const m = job.payload;
   try {
     const bytes = await getObjectBytes(m.key);
+    // Re-check the bytes actually being processed (the upload link could have been reused after confirmation).
+    const magic = m.contentType === PDF ? [0x25, 0x50, 0x44, 0x46, 0x2d] : [0x50, 0x4b, 0x03, 0x04];
+    if (bytes.length !== m.bytes || !magic.every((b, i) => bytes[i] === b)) {
+      throw new Error("Not a DOCX or PDF matching the checked upload; upload it again");
+    }
     const { ingestDocumentVersion } = await import("@/lib/ingest/pipeline");
     let parsed: { blocks: import("@/lib/ingest/docx").Block[]; pageCount: number };
     let pdf: Uint8Array | null = null;
@@ -93,11 +98,10 @@ export async function processUploadJob(jobId: string, log: (m: string) => void =
       parsed = pdfToBlocks(await pdfPageTexts(bytes));
       pdf = bytes; pdfMethod = "original";
     } else {
+      // Uploaded Word files come from a browser, not CAT's Drive folder: they are never
+      // handed to LibreOffice. Page numbers come from Word's own saved page markers.
       const { parseDocx } = await import("@/lib/ingest/docx");
       parsed = await parseDocx(bytes);
-      const { renderDocxPdf } = await import("@/lib/ingest/pdf-pages");
-      pdf = await renderDocxPdf(bytes).catch(() => null); // null where LibreOffice isn't installed (e.g. Vercel)
-      pdfMethod = pdf ? "libreoffice" : null;
     }
     const words = parsed.blocks.reduce((n, b) => n + (b.kind === "table" ? b.rows.flat().join(" ").split(" ").length : b.text.split(" ").length), 0);
     if (words < 200) throw new Error("Too little text to index. Is it a scanned PDF? Upload a version with a text layer.");
