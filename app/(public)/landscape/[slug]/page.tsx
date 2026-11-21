@@ -5,6 +5,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
+import { LandscapeAskBar, SPEC_STARTERS } from "@/components/landscape/LandscapeAskBar";
 import { landscapeHasLip, budgetSummary, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
@@ -168,6 +169,9 @@ export default async function LandscapeDetailPage({ params }: Props) {
       {/* Spacer, not a wrapper: a wrapping div would stop the tabs sticking. */}
       <div className="mt-8 lg:mt-12" aria-hidden />
       <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
+      {/* Ask UI spec E2. Starters: swap SPEC_STARTERS for startersFor(slug)
+          from lib/ask/starters.ts once the Ask session's branch is merged. */}
+      <LandscapeAskBar slug={slug} name={p.name} starters={SPEC_STARTERS[slug] ?? []} />
 
       {/* ORIENT + MONEY — share the page currency control above */}
         <LandscapeLedger

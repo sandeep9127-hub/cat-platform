@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { searchEntries, type SearchHit } from "@/lib/db/search";
@@ -184,6 +185,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       </Reveal>
 
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-6" delay={80}>
+        {/* Ask UI spec E4: one hand-off to Ask; Search itself stays plain search. */}
+        {q && (
+          <a
+            href={`/agent?${new URLSearchParams({ q }).toString()}`}
+            className="group mb-5 flex items-center gap-3 rounded-card border border-line bg-paper px-4 py-3 min-h-11 text-[15px] text-ink-soft hover:border-teal transition-colors"
+          >
+            <MessageCircle size={16} strokeWidth={1.8} className="shrink-0 text-teal" aria-hidden />
+            <span className="min-w-0">
+              Want a cited answer instead?{" "}
+              <span className="font-medium text-teal group-hover:text-deep-teal">
+                Ask the Hub about &ldquo;{q}&rdquo; →
+              </span>
+            </span>
+          </a>
+        )}
         <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           <span>{totalLabel}</span>
           {hasAnyFilter && (

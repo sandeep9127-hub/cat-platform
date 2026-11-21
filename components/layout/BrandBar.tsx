@@ -126,7 +126,7 @@ export function BrandBar() {
         </Link>
         {/* Full nav from 1024px (lg). Between lg and xl the link icons and
             the Consortium link are dropped so everything fits on one line. */}
-        <nav aria-label="Main" className="ml-auto flex items-center gap-3.5 lg:gap-4 xl:gap-5">
+        <nav aria-label="Main" className="ml-auto flex items-center gap-3.5 lg:gap-2.5 xl:gap-4">
           {NAV_LINKS.map(({ href, label, Icon, match }) => {
             const active = isActive(pathname, match);
             return (
@@ -163,22 +163,50 @@ export function BrandBar() {
             href={PARENT_SITE}
             target="_blank"
             rel="noreferrer"
-            className="hidden xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
+            // Very wide screens only: the Ask box needs the room; the link is
+            // also in the footer and the mobile menu.
+            className="hidden 2xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
           >
             <span>The Consortium</span>
             <ArrowUpRight size={12} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
           </a>
-          {/* Ask — single highlighted entry point (replaces the old floating widget) */}
-          <Link
-            href="/agent"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] tracking-mono-mid uppercase px-4 py-2 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
+          {/* Ask (Ask UI spec E1): a box that looks typeable, with a solid Ask
+              button inside. A plain GET form to /agent?q=..., so it works
+              before JS; an empty submit just opens /agent with the composer. */}
+          <form
+            action="/agent"
+            method="get"
+            role="search"
+            aria-label="Ask the Hub"
+            onSubmit={(e) => {
+              const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement | null)?.value.trim();
+              if (!q) {
+                e.preventDefault();
+                window.location.href = "/agent";
+              }
+            }}
+            className="hidden sm:flex items-center shrink-0 rounded-full border border-line bg-paper pl-3.5 pr-1 py-1 focus-within:border-teal focus-within:ring-2 focus-within:ring-teal/20"
           >
-            <MessageCircle size={12} strokeWidth={2} aria-hidden />
-            Ask the Hub
-          </Link>
-          {/* Compact Ask — phones only (<640px). The full green pill above is
-              hidden below sm; this keeps Ask one tap away in the bar while
-              everything else lives in the drawer. Tablet/desktop unchanged. */}
+            <MessageCircle size={14} strokeWidth={1.8} className="text-muted shrink-0" aria-hidden />
+            <label htmlFor="brandbar-ask" className="sr-only">
+              Ask about any landscape
+            </label>
+            <input
+              id="brandbar-ask"
+              name="q"
+              type="text"
+              autoComplete="off"
+              placeholder="Ask about any landscape…"
+              className="w-[178px] lg:w-[176px] xl:w-[178px] min-w-0 bg-transparent text-[13px] text-ink placeholder:text-muted outline-none px-2 py-1"
+            />
+            <button
+              type="submit"
+              className="shrink-0 inline-flex items-center min-h-8 px-3.5 rounded-full bg-deep-teal text-paper text-[13px] font-medium hover:bg-teal transition-colors"
+            >
+              Ask
+            </button>
+          </form>
+          {/* Compact Ask: phones only (<640px), where the box above is hidden. */}
           <Link
             href="/agent"
             className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3.5 min-h-9 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
