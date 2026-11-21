@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/guard";
 import { signOut } from "@/auth";
+import { AdminNav } from "@/components/admin/AdminNav";
 
 /**
  * Admin desk shell. Access is gated by Auth.js: requireAdmin() redirects
@@ -23,27 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" className="order-1 font-serif text-[18px] font-medium tracking-[-0.01em] text-deep-teal hover:text-teal">
             CAT <em className="text-teal italic font-normal">desk</em>
           </Link>
-          <nav className="order-3 md:order-2 w-full md:w-auto overflow-x-auto whitespace-nowrap flex items-center gap-5 font-mono text-[11px] uppercase tracking-[0.14em] -mx-1 px-1">
-            <Link href="/admin/inbox" className="text-ink-soft hover:text-teal">Inbox</Link>
-            <Link href="/admin/factsheets" className="text-ink-soft hover:text-teal">Fact sheets</Link>
-            <Link href="/admin/budget-changes" className="text-ink-soft hover:text-teal">Budget changes</Link>
-            <Link href="/admin/budget-tables" className="text-ink-soft hover:text-teal">Budget tables</Link>
-            <Link href="/admin/access-requests" className="text-ink-soft hover:text-teal">Access requests</Link>
-            <Link href="/admin/submissions" className="text-ink-soft hover:text-teal">Submissions</Link>
-            <Link href="/admin/candidates" className="text-ink-soft hover:text-teal">Discovery</Link>
-            <Link href="/admin/organizations" className="text-ink-soft hover:text-teal">Organisations</Link>
-            <Link href="/admin/landscapes" className="text-ink-soft hover:text-teal">Landscapes</Link>
-            <Link href="/admin/sources" className="text-ink-soft hover:text-teal">Sources</Link>
-            <Link href="/admin/documents" className="text-ink-soft hover:text-teal">Documents</Link>
-            <Link href="/admin/report-changes" className="text-ink-soft hover:text-teal">Report changes</Link>
-            <Link href="/admin/briefs" className="text-ink-soft hover:text-teal">Briefs</Link>
-            <Link href="/admin/quality" className="text-ink-soft hover:text-teal">Quality</Link>
-            <Link href="/admin/audit" className="text-ink-soft hover:text-teal">Audit</Link>
-            {role === "admin" ? (
-              <Link href="/admin/team" className="text-ink-soft hover:text-teal">Team</Link>
-            ) : null}
-            <Link href="/admin/account" className="text-ink-soft hover:text-teal">Account</Link>
-          </nav>
+          <AdminNav isAdmin={role === "admin"} />
           <div className="order-2 md:order-3 ml-auto flex items-center gap-4">
             <span className="hidden md:inline font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
               {email} · {role}
