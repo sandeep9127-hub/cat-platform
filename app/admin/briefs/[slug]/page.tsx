@@ -57,7 +57,7 @@ export default async function BriefPage({ params }: { params: Promise<{ slug: st
         </p>
         {!b.current && (
           <form action={generateBriefAction}>
-            <input type="hidden" name="slug" value={slug} /><input type="hidden" name="force" value="1" />
+            <input type="hidden" name="slug" value={slug} />
             <button className="rounded-[6px] bg-teal text-paper px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.1em]">Regenerate</button>
           </form>
         )}

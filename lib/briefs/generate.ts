@@ -100,7 +100,10 @@ export async function generateBrief(slug: string, opts: { force?: boolean } = {}
 
   const tag = `passage-${randomBytes(6).toString("hex")}`;
   const blocks = passages.map((p, i) =>
-    `<${tag} n="${i + 1}" section="${(p.section ?? "").replace(/"/g, "'")}" page="${p.page ?? ""}">\n${p.text.replaceAll(tag, "")}\n</${tag}>`).join("\n\n");
+    `<${tag} n="${i + 1}" section="${(p.section ?? "").replace(/["<>]/g, "'")}" page="${p.page ?? ""}">\n${
+      // Passage text is data: drop our tag, neutralise markdown headings and angle brackets.
+      p.text.replaceAll(tag, "").replace(/^\s*#+\s*/gm, "").replace(/[<>]/g, " ")
+    }\n</${tag}>`).join("\n\n");
 
   const { claudeMessage } = await import("@/lib/ai/claude");
   const r = await claudeMessage("brief", {
@@ -117,6 +120,12 @@ export async function generateBrief(slug: string, opts: { force?: boolean } = {}
 
   // Keep only citations that point at a real passage.
   const content = r.text.replace(/\[(\d{1,2})\]/g, (m, n) => (Number(n) >= 1 && Number(n) <= passages.length ? m : "")).trim();
+  // Reject output that lost the required structure (e.g. steered by passage text) instead of storing it.
+  const required = ["## The landscape", "## The challenge", "## What the plan invests in", "## How it will be delivered", "## Expected change", "## How it is funded"];
+  const headings = content.split("\n").filter((l) => l.startsWith("## ")).map((l) => l.trim());
+  if (!required.every((h) => headings.includes(h)) || headings.length !== required.length || !/\[\d{1,2}\]/.test(content)) {
+    return { error: "The generated brief didn't have the expected sections and citations; nothing was saved. Try again.", costUsd: r.costUsd };
+  }
   const citations: BriefCitation[] = passages.map((p, i) => ({ n: i + 1, chunkId: p.chunkId, document: p.document, section: p.section, page: p.page }));
   await db.execute(sql`
     INSERT INTO "cat".landscape_briefs (landscape_slug, source_hash, content_md, citations, model, cost_usd)
