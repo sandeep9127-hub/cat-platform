@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { fieldValue, listPendingChanges, type PendingChange } from "@/lib/admin/budget-changes";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { decideAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Budget changes · Admin" };
@@ -96,7 +97,7 @@ export default async function BudgetChanges({ searchParams }: { searchParams: Pr
       ) : (
         [...byLandscape.entries()].map(([slug, list]) => (
           <section key={slug} className="rounded-[10px] border border-line bg-cream/40 px-5 py-4">
-            <form action="/api/admin/budget-changes" method="post">
+            <form action={decideAction}>
               <div className="flex flex-wrap items-center gap-3 mb-1">
                 <h2 className="font-serif text-[20px] text-deep-teal">{LANDSCAPES[slug]?.name ?? slug}</h2>
                 <span className="font-mono text-[11px] text-muted">{list.length} change{list.length === 1 ? "" : "s"}</span>

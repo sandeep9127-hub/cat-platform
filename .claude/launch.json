@@ -4,14 +4,29 @@
     {
       "name": "cat-platform",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "cat-hub-v2",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/dev-cat.mjs", "3100"],
+      "runtimeArgs": [
+        "scripts/dev-cat.mjs",
+        "3100"
+      ],
       "port": 3100
+    },
+    {
+      "name": "cat-hub-v2-admin",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/dev-cat.mjs",
+        "3200"
+      ],
+      "port": 3200
     }
   ]
 }
