@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFactSheet } from "@/lib/factsheet/generate";
 import { CATEGORY_BY_SLUG } from "@/lib/data/categories";
+
+// Own-key lookup: theme slugs are compiled data (avoid prototype keys like "constructor").
+const category = (slug: string | undefined) =>
+  slug && Object.prototype.hasOwnProperty.call(CATEGORY_BY_SLUG, slug) ? CATEGORY_BY_SLUG[slug] : undefined;
 import { solutionHeroWeb, glanceIconWeb, type GlanceKey } from "@/lib/design/solution-art";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +52,7 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
   if (!s) notFound();
 
   const stateName = s.state_code ? STATE_NAMES[s.state_code] ?? s.state_code : null;
-  const primaryTheme = s.themes[0] ? CATEGORY_BY_SLUG[s.themes[0]]?.name ?? s.themes[0].replace(/-/g, " ") : null;
+  const primaryTheme = s.themes[0] ? category(s.themes[0])?.name ?? s.themes[0].replace(/-/g, " ") : null;
   const eyebrow = [
     primaryTheme,
     stateName,
@@ -241,10 +245,10 @@ export default async function FactSheetPage({ params }: { params: Promise<{ slug
                 <ul className="list-none p-0 m-0 mt-3 space-y-2">
                   {s.themes.map((t) => (
                     <li key={t} className="flex items-center gap-2.5 text-[14px] text-ink">
-                      {CATEGORY_BY_SLUG[t] && (
+                      {category(t) && (
                         <Image src={themeIcon(t)} alt="" aria-hidden width={28} height={28} className="w-7 h-7 object-contain" />
                       )}
-                      {CATEGORY_BY_SLUG[t]?.name ?? t.replace(/-/g, " ")}
+                      {category(t)?.name ?? t.replace(/-/g, " ")}
                     </li>
                   ))}
                 </ul>

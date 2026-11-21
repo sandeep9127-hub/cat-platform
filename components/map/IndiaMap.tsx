@@ -67,8 +67,12 @@ const CATEGORY_COLOUR: Record<string, string> = {
   energy: palette.amberDeep,
   "technical-assistance": palette.periwinkleText,
 };
-const colourFor = (e: MapEntry) => CATEGORY_COLOUR[e.themes?.[0] ?? ""] ?? palette.teal;
-const categoryName = (e: MapEntry) => CATEGORY_BY_SLUG[e.themes?.[0] ?? ""]?.short ?? "Programme";
+// Theme slugs come from compiled data: look up own keys only, so a slug like
+// "constructor" can never pull a prototype value into the canvas code.
+const own = <T,>(o: Record<string, T>, k: string | undefined): T | undefined =>
+  k && Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined;
+const colourFor = (e: MapEntry) => own(CATEGORY_COLOUR, e.themes?.[0]) ?? palette.teal;
+const categoryName = (e: MapEntry) => own(CATEGORY_BY_SLUG, e.themes?.[0])?.short ?? "Programme";
 
 /** #RRGGBB -> rgba(), for translucent fills. */
 function hexRgba(hex: string, alpha: number): string {
@@ -222,7 +226,7 @@ export function IndiaMap({
     const counts = new Map<string, number>();
     for (const e of entries) for (const t of e.themes ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
     return CATEGORIES.filter((c) => (counts.get(c.slug) ?? 0) > 0)
-      .map((c) => ({ slug: c.slug, short: c.short, color: CATEGORY_COLOUR[c.slug] ?? palette.teal, count: counts.get(c.slug) ?? 0 }))
+      .map((c) => ({ slug: c.slug, short: c.short, color: own(CATEGORY_COLOUR, c.slug) ?? palette.teal, count: counts.get(c.slug) ?? 0 }))
       .sort((a, b) => b.count - a.count);
   }, [entries]);
 
