@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
  * Private share links for the full investment table.
  * The URL carries a random 256-bit token; only its sha256 is stored, so the
  * database can't be used to rebuild a link. Every link expires (max 366 days),
- * can be revoked, and logs each view and download (IP stored only as a salted
+ * can be revoked, is view-only (no download), and logs each view (IP stored only as a salted
  * hash that changes daily).
  */
 
@@ -36,7 +36,6 @@ export async function createShareLink(opts: {
   landscapeSlug: string | null;
   label: string;
   days: number;
-  allowDownload: boolean;
   userId: string | null;
 }): Promise<{ token: string; id: string; expiresAt: string }> {
   const label = opts.label.trim().slice(0, 200);
@@ -47,7 +46,7 @@ export async function createShareLink(opts: {
   const r = rows<{ id: string; expires_at: string }>(await db.execute(sql`
     INSERT INTO "cat".share_links (token_hash, scope, landscape_slug, label, allow_download, created_by, expires_at)
     VALUES (${sha256(token)}, ${opts.scope}, ${opts.scope === "landscape_full_table" ? opts.landscapeSlug : null},
-            ${label}, ${opts.allowDownload}, ${opts.userId && UUID.test(opts.userId) ? opts.userId : null},
+            ${label}, false, ${opts.userId && UUID.test(opts.userId) ? opts.userId : null},
             now() + make_interval(days => ${days}))
     RETURNING id, expires_at`))[0];
   return { token, id: r.id, expiresAt: r.expires_at };

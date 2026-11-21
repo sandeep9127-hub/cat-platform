@@ -35,7 +35,6 @@ export async function createLinkAction(_prev: CreateState, form: FormData): Prom
       landscapeSlug: all ? null : slug,
       label,
       days: Number.isFinite(days) ? days : 30,
-      allowDownload: form.get("download") === "on",
       userId: user.id ?? null,
     });
     await writeAudit({

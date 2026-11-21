@@ -27,9 +27,6 @@ export function ShareLinkCreator({ landscape }: { landscape: string }) {
             <option value="365">1 year</option>
           </select>
         </label>
-        <label className="flex items-center gap-2 text-[13px] text-ink-soft pb-1.5">
-          <input type="checkbox" name="download" className="accent-teal" /> Allow CSV download
-        </label>
         <button disabled={pending}
           className="rounded-[6px] bg-teal text-paper px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.1em] hover:bg-deep-teal disabled:opacity-60">
           {pending ? "Creating…" : "Create link"}

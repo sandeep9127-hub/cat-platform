@@ -27,6 +27,7 @@ const run = promisify(execFile);
 const MAX_ZIP_ENTRIES = 5000;
 const MAX_RELS_BYTES = 2 * 1024 * 1024;
 const MAX_INFLATED_BYTES = 300 * 1024 * 1024;
+const MAX_DOCX_INPUT_BYTES = 150 * 1024 * 1024;
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 const MAX_PDF_BYTES = 150 * 1024 * 1024;
 
@@ -60,18 +61,18 @@ const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
  * (linked images, templates, OLE objects, sub-documents, frames, hyperlinks).
  */
 export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
-  const zip = await JSZip.loadAsync(docx);
-  // Bound decompression before anything is inflated (zip-bomb guard).
-  const entries = Object.values(zip.files);
+  if (docx.length > MAX_DOCX_INPUT_BYTES) throw new Error("Rejected document: file too large");
+  const source = await JSZip.loadAsync(docx);
+  const entries = Object.values(source.files).filter((f) => !f.dir);
   if (entries.length > MAX_ZIP_ENTRIES) throw new Error(`Rejected document: ${entries.length} zip entries`);
-  let inflated = 0;
+  // Inflate every entry with a running byte count (declared sizes are not
+  // trusted), into a fresh archive, so nothing downstream inflates unbounded data.
+  const zip = new JSZip();
+  const budget = { left: MAX_INFLATED_BYTES };
   for (const f of entries) {
-    const size = (f as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize;
-    if (typeof size !== "number" && !f.dir) throw new Error(`Rejected document: unknown size for ${f.name}`);
-    inflated += size ?? 0;
-    if (f.name.toLowerCase().endsWith(".rels") && (size ?? 0) > MAX_RELS_BYTES) throw new Error(`Rejected document: ${f.name} too large`);
+    const isRels = f.name.toLowerCase().endsWith(".rels");
+    zip.file(f.name, await inflateCapped(f, budget, isRels ? MAX_RELS_BYTES : Infinity), { date: f.date });
   }
-  if (inflated > MAX_INFLATED_BYTES) throw new Error("Rejected document: too large when unpacked");
   const parser = new XMLParser({
     ignoreAttributes: false, attributeNamePrefix: "", processEntities: false,
     isArray: (name) => name === "Relationship",
@@ -84,7 +85,7 @@ export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array
 
   for (const name of Object.keys(zip.files)) {
     if (!name.toLowerCase().endsWith(".rels") || zip.files[name].dir) continue;
-    const xml = await zip.file(name)!.async("string");
+    const xml = new TextDecoder().decode(await zip.file(name)!.async("uint8array"));
     if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error(`Rejected document: ${name} declares a DOCTYPE`);
     let doc: { Relationships?: { Relationship?: Record<string, unknown>[] } };
     try {
@@ -105,7 +106,39 @@ export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array
       + "</Relationships>";
     zip.file(name, out);
   }
-  return new Uint8Array(await zip.generateAsync({ type: "uint8array" }));
+  return new Uint8Array(await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }));
+}
+
+/** Inflate one zip entry, aborting as soon as it or the whole archive passes its cap. */
+function inflateCapped(entry: JSZip.JSZipObject, budget: { left: number }, perEntryMax: number): Promise<Uint8Array> {
+  type ZipStream = {
+    on(ev: "data", cb: (chunk: Uint8Array) => void): ZipStream;
+    on(ev: "error", cb: (e: Error) => void): ZipStream;
+    on(ev: "end", cb: () => void): ZipStream;
+    pause(): ZipStream;
+    resume(): ZipStream;
+  };
+  return new Promise((resolve, reject) => {
+    const parts: Uint8Array[] = [];
+    let size = 0, done = false;
+    const stream = (entry as unknown as { internalStream(t: "uint8array"): ZipStream }).internalStream("uint8array");
+    stream
+      .on("data", (chunk) => {
+        if (done) return;
+        size += chunk.length;
+        budget.left -= chunk.length;
+        if (size > perEntryMax || budget.left < 0) {
+          done = true;
+          stream.pause();
+          reject(new Error(`Rejected document: too large when unpacked (${entry.name})`));
+          return;
+        }
+        parts.push(chunk);
+      })
+      .on("error", (e) => { if (!done) { done = true; reject(e); } })
+      .on("end", () => { if (!done) { done = true; resolve(new Uint8Array(Buffer.concat(parts))); } })
+      .resume();
+  });
 }
 
 /**

@@ -107,17 +107,3 @@ export async function getBudgetSummaries(): Promise<LandscapeBudgetSummary[]> {
     FROM "cat".interventions GROUP BY 1 ORDER BY 1`);
   return (r as unknown as { rows: LandscapeBudgetSummary[] }).rows;
 }
-
-/** CSV of the full table (UTF-8 with BOM so Excel reads ₹ and Indian names). */
-export function toCsv(rows: InterventionRecord[], landscapeName: (slug: string) => string): string {
-  const esc = (v: unknown) => {
-    const s = v === null || v === undefined ? "" : String(v);
-    // Neutralise spreadsheet formulas in text cells.
-    const safe = /^[=+\-@\t\r]/.test(s) && !/^-?\d/.test(s) ? `'${s}` : s;
-    return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
-  };
-  const header = ["Landscape", ...COLUMNS.map((c) => (c.group === "Intervention" ? c.label : `${c.group}: ${c.label}`))];
-  const lines = [header.map(esc).join(",")];
-  for (const r of rows) lines.push([landscapeName(r.landscape_slug), ...COLUMNS.map((c) => c.get(r))].map(esc).join(","));
-  return "﻿" + lines.join("\r\n");
-}

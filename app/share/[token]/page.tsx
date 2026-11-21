@@ -57,12 +57,6 @@ export default async function SharedTable({ params }: { params: Promise<{ token:
         </h1>
         <p className="text-[13.5px] text-muted">
           Shared with {link.label}. Approved figures from the landscape investment plans. This link expires on {expires}.
-          {link.allow_download ? (
-            <>
-              {" "}
-              <a href={`/share/${token}/download`} rel="noreferrer" className="text-teal underline">Download CSV</a>
-            </>
-          ) : null}
         </p>
       </header>
       {Object.entries(groups).map(([slug, rs]) => (

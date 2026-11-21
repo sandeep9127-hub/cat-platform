@@ -30,7 +30,7 @@ export default async function BudgetTable({ params }: { params: Promise<{ slug: 
       <section className="rounded-[10px] border border-line bg-cream/40 px-5 py-4 space-y-4">
         <h2 className="font-serif text-[19px] text-deep-teal">Private share links</h2>
         <p className="text-[13.5px] text-muted max-w-[720px]">
-          Anyone with the link can view this {all ? "set of tables" : "table"} until it expires or you revoke it. Every
+          Anyone with the link can view this {all ? "set of tables" : "table"} until it expires or you revoke it. Links are view-only (no download), and every
           view is logged. Links never show pending (unapproved) changes.
         </p>
         <ShareLinkCreator landscape={slug} />
@@ -54,7 +54,6 @@ export default async function BudgetTable({ params }: { params: Promise<{ slug: 
                   <tr key={l.id} className={`border-t border-line ${live ? "" : "text-muted"}`}>
                     <td className="py-1.5 pr-3">
                       {l.label}
-                      {l.allow_download ? <span className="ml-2 font-mono text-[11px] text-muted">CSV</span> : null}
                     </td>
                     <td className="py-1.5 pr-3">{l.scope === "all_landscapes_full_table" ? "All landscapes" : LANDSCAPES[l.landscape_slug ?? ""]?.name ?? l.landscape_slug}</td>
                     <td className="py-1.5 pr-3">{date(l.created_at)}{l.created_by_email ? <span className="text-muted"> · {l.created_by_email}</span> : null}</td>
