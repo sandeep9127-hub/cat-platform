@@ -230,8 +230,16 @@ export async function readyLandscapeSlugs(): Promise<string[]> {
   return r.rows.map((x) => x.slug);
 }
 
-/** Live counts for the Ask first screen's proof line. */
+/** Live counts for the Ask first screen's proof line, cached for 10 minutes per instance. */
+let statsCache: { at: number; value: { landscapes: number; interventions: number } } | null = null;
 export async function libraryStats(): Promise<{ landscapes: number; interventions: number }> {
+  if (statsCache && Date.now() - statsCache.at < 10 * 60_000) return statsCache.value;
+  const value = await queryLibraryStats();
+  statsCache = { at: Date.now(), value };
+  return value;
+}
+
+async function queryLibraryStats(): Promise<{ landscapes: number; interventions: number }> {
   const r = (await db.execute(sql`
     SELECT (SELECT count(DISTINCT landscape_slug)::int FROM "cat".documents WHERE current_version_id IS NOT NULL) AS landscapes,
            (SELECT count(*)::int FROM "cat".interventions) AS interventions`)) as unknown as {

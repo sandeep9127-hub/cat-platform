@@ -226,12 +226,23 @@ export function AgentChat({
     if (startedRef.current) return;
     startedRef.current = true;
     if (initialQuestion) {
-      // Arrived from the header box, a landscape page or Search: ask it once,
-      // then drop ?q= so a refresh doesn't ask again.
+      // Drop ?q= so a refresh doesn't ask again.
       const url = new URL(window.location.href);
       url.searchParams.delete("q");
       window.history.replaceState(null, "", url.toString());
-      void send(initialQuestion, { scope: initialScope });
+      // Only the Hub's own boxes (header, landscape pages, Search) send straight
+      // away. A link from elsewhere just fills the box, so nobody can make a
+      // reader ask something they didn't choose.
+      let fromHub = false;
+      try {
+        fromHub = !!document.referrer && new URL(document.referrer).origin === window.location.origin;
+      } catch {}
+      if (fromHub) {
+        void send(initialQuestion, { scope: initialScope });
+        return;
+      }
+      setInput(initialQuestion);
+      inputRef.current?.focus({ preventScroll: true });
       return;
     }
     inputRef.current?.focus({ preventScroll: true });
