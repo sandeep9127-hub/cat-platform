@@ -34,7 +34,7 @@ export type Msg = {
   /** Which request owns this placeholder, so late events never patch a newer answer. */
   reqId?: number;
   /** Compare and the matchmaker answer with a structured block under the summary. */
-  mode?: "compare" | "match" | "note" | "visual";
+  mode?: "compare" | "match" | "note" | "visual" | "chat";
   artifact?: CompareArtifact | MatchArtifact | NoteArtifact | ChartArtifact | DiagramArtifact | null;
   /** Stored message id (notes need it for Download PDF). */
   id?: string;

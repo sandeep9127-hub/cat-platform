@@ -19,6 +19,7 @@ import { runCompare } from "@/lib/ask/compare";
 import { runMatch } from "@/lib/ask/match";
 import { runNote } from "@/lib/ask/note";
 import { runVisual } from "@/lib/ask/visual";
+import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
 import {
   historyText,
   LIP_KINDS,
@@ -206,10 +207,37 @@ export async function askV2History(req: NextRequest) {
       refused: m.refused,
       interrupted: m.interrupted,
       followUps: (m.artifacts ?? []).find((a) => a.type === "follow_ups")?.items ?? [],
+      mode: (m.artifacts ?? []).some((a) => a.type === "chat") ? "chat" : undefined,
       artifact: (m.artifacts ?? []).find((a) => ["compare", "match", "note", "chart", "diagram"].includes(a.type)) ?? null,
       citations: (m.citations ?? []).map(({ chunkId: _c, documentId: _d, quotes: _q, cited: _x, ...c }) => c),
     })),
   });
+}
+
+/** A short conversational reply in the usual SSE shape (mode "chat"). */
+async function chatResponse(o: {
+  conversationId: string;
+  scope: string | null;
+  setCookie: string | null;
+  started: number;
+  text: string;
+  endVoice: boolean;
+}): Promise<Response> {
+  await addAssistantMessage({
+    conversationId: o.conversationId, content: o.text, citations: [], artifacts: [{ type: "chat" }],
+    interrupted: false, refused: false, model: null, inputTokens: null, outputTokens: null, costUsd: null,
+    latencyMs: Date.now() - o.started,
+  });
+  const body = [
+    { type: "meta", citations: [], scope: o.scope ?? "all", conversationId: o.conversationId, mode: "chat" },
+    { type: "delta", text: o.text },
+    { type: "done", refused: false, ...(o.endVoice ? { endVoice: true } : {}) },
+  ].map((e) => `data: ${JSON.stringify(e)}\n\n`).join("");
+  const res = new Response(body, {
+    headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" },
+  });
+  if (o.setCookie) res.headers.append("Set-Cookie", o.setCookie);
+  return res;
 }
 
 /* ─── POST: answer one question ─── */
@@ -263,6 +291,16 @@ export async function askV2(req: NextRequest): Promise<Response> {
   const conversationId = conv.id;
   await addUserMessage(conversationId, question, scope);
 
+  // Conversational turns ("thanks", "we can stop", "theek hai") get one short
+  // line: no search, no Claude call, no "Not in the library" card. A voice
+  // closing also ends the voice session once the line is spoken.
+  const reply = (kind: SmallTalk) => {
+    const text = smallTalkReply(kind, { voice, hindi: voiceHindi });
+    return chatResponse({ conversationId, scope, setCookie, started, text, endVoice: voice && kind === "closing" });
+  };
+  const small = smallTalk(question);
+  if (small) return reply(small);
+
   // Route and retrieve. A first question searches in parallel with routing, so
   // plain answers don't wait for it; a follow-up needs the rewritten query first.
   let hits: Hit[] = [];
@@ -280,6 +318,10 @@ export async function askV2(req: NextRequest): Promise<Response> {
         ? await classifyQuestion(question, history, req.signal, { voice })
         : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] };
     if (voice && routed.query !== question) askedQuestion = routed.query;
+    // The router may also spot a conversational turn the phrase list missed.
+    if (routed.intent === "chat") {
+      return reply(/\b(stop|bye|end|done|that's all|that is all|enough|bas|alvida)\b/i.test(question) ? "closing" : "ack");
+    }
     // Voice keeps the rewritten follow-up query but always answers in speakable prose.
     const intent = voice ? { ...routed, intent: "answer" as const } : routed;
     const ctx = { req, question, scope, conversationId, started, setCookie };

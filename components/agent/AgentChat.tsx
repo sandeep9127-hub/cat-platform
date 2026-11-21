@@ -45,6 +45,9 @@ function getSessionToken(): string {
   return t;
 }
 
+/** Set by the header "Talk" button on click: sessionStorage.setItem(TALK_INTENT_KEY, String(Date.now())). */
+export const TALK_INTENT_KEY = "cat-talk-intent";
+
 const isDesktop = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
 
 export function AgentChat({
@@ -74,6 +77,9 @@ export function AgentChat({
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
   const [voiceLang, setVoiceLang] = useState<VoiceLang>("en");
+  const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking"
+  const autoVoiceRef = useRef(false); // voice was started by ?voice=1, not a tap
+  const voiceStartRef = useRef<(() => Promise<void>) | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -179,6 +185,7 @@ export function AgentChat({
               mode?: Msg["mode"];
               artifact?: Msg["artifact"];
               messageId?: string;
+              endVoice?: boolean;
             };
             try {
               evt = JSON.parse(t.slice(5).trimStart());
@@ -206,7 +213,7 @@ export function AgentChat({
               setAnnounce(refused ? "Not in the library" : "Answer ready");
               answeringRef.current = false;
               setBusy(false); // the composer frees up; follow-ups may still arrive
-              h?.onDone();
+              h?.onDone({ endVoice: evt.endVoice });
             } else if (evt.type === "followups" && Array.isArray(evt.questions)) {
               patchLast((m) => ({ ...m, followUps: evt.questions!.slice(0, 3) }));
             } else if (evt.type === "error") {
@@ -266,6 +273,11 @@ export function AgentChat({
     language: voiceLang,
   });
   const voiceOn = voice.state !== "off";
+  voiceStartRef.current = voice.start;
+  const startVoice = () => {
+    setVoicePrompt(false);
+    void voice.start();
+  };
   const voiceSince = useRef<number | null>(null);
   useEffect(() => {
     if (voice.startedAt) voiceSince.current = voice.startedAt;
@@ -276,8 +288,15 @@ export function AgentChat({
     }
   }, [voice.state, voice.startedAt, showToast]);
   useEffect(() => {
-    if (voice.error) showToast(voice.error);
+    if (!voice.error) return;
+    showToast(voice.error);
+    // An automatic start that the browser blocked becomes a tap-to-start button.
+    if (autoVoiceRef.current) setVoicePrompt(true);
+    autoVoiceRef.current = false;
   }, [voice.error, showToast]);
+  useEffect(() => {
+    if (voice.state === "listening") autoVoiceRef.current = false;
+  }, [voice.state]);
 
   /** Retry the last turn: drop it and ask the same question again. */
   const retry = (mid: number) => {
@@ -286,31 +305,31 @@ export function AgentChat({
     void send(q.content, { history: messages.slice(0, mid - 1) });
   };
 
-  /* ─── first load: ?q= or restore history ─── */
+  /* ─── first load: ?q=, ?voice=1, or restore history ─── */
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    if (initialQuestion) {
-      // Drop ?q= so a refresh doesn't ask again.
-      const url = new URL(window.location.href);
+    const url = new URL(window.location.href);
+    // ?voice=1 comes from the header's "Talk" button.
+    const wantVoice = url.searchParams.get("voice") === "1";
+    if (initialQuestion || wantVoice) {
+      // Drop them so a refresh doesn't ask again or restart voice.
       url.searchParams.delete("q");
+      url.searchParams.delete("voice");
       window.history.replaceState(null, "", url.toString());
-      // Only the Hub's own boxes (header, landscape pages, Search) send straight
-      // away. A link from elsewhere just fills the box, so nobody can make a
-      // reader ask something they didn't choose.
-      let fromHub = false;
-      try {
-        fromHub = !!document.referrer && new URL(document.referrer).origin === window.location.origin;
-      } catch {}
-      if (fromHub) {
-        void send(initialQuestion, { scope: initialScope });
-        return;
-      }
-      setInput(initialQuestion);
-      inputRef.current?.focus({ preventScroll: true });
-      return;
     }
-    inputRef.current?.focus({ preventScroll: true });
+    // Only the Hub's own pages (header, landscape pages, Search) may ask or start
+    // voice straight away. A link from elsewhere fills the box or offers a button,
+    // so nobody can make a reader ask, or switch on the mic, without choosing to.
+    let fromHub = false;
+    try {
+      fromHub = !!document.referrer && new URL(document.referrer).origin === window.location.origin;
+    } catch {}
+
+    if (initialQuestion && fromHub) void send(initialQuestion, { scope: initialScope });
+    else if (initialQuestion) setInput(initialQuestion);
+    if (!(initialQuestion && fromHub)) inputRef.current?.focus({ preventScroll: true });
+
     (async () => {
       try {
         const info = await fetch("/api/agent").then((r) => r.json());
@@ -318,6 +337,33 @@ export function AgentChat({
         setIsV2(true);
         setNotePdf(!!info.notePdf);
         setVoiceAvailable(!!info.voice);
+        if (wantVoice && info.voice && !initialQuestion) {
+          // Browsers often block sound on a page nobody has tapped yet; then
+          // offer a clear button instead of starting a session that can't speak.
+          let canPlay = false;
+          try {
+            const probe = new AudioContext();
+            canPlay = probe.state === "running";
+            void probe.close();
+          } catch {}
+          // Auto-start needs the one-time token the header "Talk" button puts in this
+          // tab's sessionStorage on click (valid 10 s, used once). Any other way of
+          // arriving at ?voice=1 (a link, a typed address) gets the tap button, so
+          // the mic never switches on without the reader's own click.
+          let talkIntent = false;
+          try {
+            const t = Number(sessionStorage.getItem(TALK_INTENT_KEY));
+            sessionStorage.removeItem(TALK_INTENT_KEY);
+            talkIntent = t > 0 && Date.now() - t >= 0 && Date.now() - t < 10_000;
+          } catch {}
+          if (talkIntent && canPlay) {
+            autoVoiceRef.current = true;
+            void voiceStartRef.current?.();
+          } else {
+            setVoicePrompt(true);
+          }
+        }
+        if (initialQuestion) return; // a fresh question, not a restored chat
         const h = await fetch("/api/agent?history=latest").then((r) => r.json());
         if (!h?.conversationId || !Array.isArray(h.messages) || !h.messages.length) return;
         conversationIdRef.current = h.conversationId;
@@ -372,8 +418,27 @@ export function AgentChat({
       />
     </div>
   ) : (
+    <>
+      {voicePrompt && voiceAvailable && (
+        <div className="flex items-center gap-2 mb-2" role="group" aria-label="Start voice">
+          <button
+            type="button"
+            onClick={startVoice}
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-teal text-paper px-4 py-3 text-[15px] font-semibold hover:bg-deep-teal active:scale-[0.99] transition-[transform,background-color]"
+          >
+            <Mic size={18} strokeWidth={2} aria-hidden /> Tap to start talking
+          </button>
+          <button
+            type="button"
+            onClick={() => setVoicePrompt(false)}
+            className="rounded-full border border-line bg-paper px-3 py-3 text-[13px] text-ink-soft hover:bg-cream"
+          >
+            Type instead
+          </button>
+        </div>
+      )}
     <Composer
-      onVoice={voiceAvailable ? () => void voice.start() : undefined}
+      onVoice={voiceAvailable ? startVoice : undefined}
       input={input}
       setInput={setInput}
       onSubmit={() => send(input.trim() || starterPlaceholder || "")}
@@ -387,6 +452,7 @@ export function AgentChat({
       placeholder={placeholder}
       inputRef={inputRef}
     />
+    </>
   );
 
   return (
@@ -609,7 +675,7 @@ function Answer({
         </p>
       )}
 
-      {msg.phase === "done" && (
+      {msg.phase === "done" && msg.mode !== "chat" && (
         <div className="flex flex-wrap items-center gap-1">
           {msg.content && !msg.refused && !msg.error && !ownText && <CopyButton text={msg.content} />}
           {isLast && !busy && (msg.interrupted || msg.error || msg.content) && (
@@ -652,6 +718,8 @@ function Answer({
 
 function Status({ msg }: { msg: Msg }) {
   const [open, setOpen] = useState(false);
+  // A conversational reply ("You're welcome") didn't search the library.
+  if (msg.mode === "chat") return null;
   const n = msg.citations?.length ?? 0;
   const phase = msg.phase ?? "done";
   const names = (msg.citations ?? [])

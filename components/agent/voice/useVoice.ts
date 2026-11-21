@@ -20,7 +20,12 @@ export type VoiceState = "off" | "connecting" | "listening" | "thinking" | "spea
 export type VoiceName = "Ashok" | "Shalini";
 export type VoiceLang = "en" | "hi";
 
-export type AnswerHandlers = { onDelta: (text: string) => void; onDone: () => void; onError: (message: string) => void };
+export type AnswerHandlers = {
+  onDelta: (text: string) => void;
+  /** endVoice: the reader closed the conversation ("we can stop"); end after the reply is spoken. */
+  onDone: (o?: { endVoice?: boolean }) => void;
+  onError: (message: string) => void;
+};
 
 const STT_URL = "wss://stt-rt.soniox.com/transcribe-websocket";
 const TTS_URL = "wss://tts-rt.soniox.com/tts-websocket";
@@ -100,6 +105,8 @@ export function useVoice(opts: {
     answerDone: false,
     /** An answer is coming: open the TTS stream on its first words (a stream with no text times out). */
     wantSpeech: false,
+    /** End the session once the current reply has been spoken. */
+    endAfter: false,
     endTimer: 0 as unknown as ReturnType<typeof setTimeout>,
     keepalive: 0 as unknown as ReturnType<typeof setInterval>,
   });
@@ -187,6 +194,11 @@ export function useVoice(opts: {
     const ctx = c.playCtx;
     const wait = ctx ? Math.max(0, (c.nextTime - ctx.currentTime) * 1000) : 0;
     window.setTimeout(() => {
+      if (c.endAfter) {
+        c.endAfter = false;
+        endRef.current?.();
+        return;
+      }
       if (stateRef.current === "speaking" || stateRef.current === "thinking") {
         c.streamId = "";
         sendAgentText("", true);
@@ -301,11 +313,17 @@ export function useVoice(opts: {
         setCaption(said.replace(/\[\d+\]/g, ""));
         speak(t, false);
       },
-      onDone: () => {
+      onDone: (o) => {
+        if (o?.endVoice) r.current.endAfter = true;
         speak("", true);
         r.current.answerDone = true;
         r.current.wantSpeech = false;
         if (!r.current.streamId || !said) {
+          if (r.current.endAfter) {
+            r.current.endAfter = false;
+            endRef.current?.();
+            return;
+          }
           setState("listening");
           return;
         }
@@ -367,6 +385,10 @@ export function useVoice(opts: {
     try {
       // Audio contexts must start inside the click that opened voice.
       c.playCtx = new AudioContext();
+      // Microphone first: a blocked mic shouldn't reserve a paid session.
+      c.media = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+      });
       const res = await fetch("/api/agent/voice", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
       const keys = (await res.json().catch(() => ({}))) as {
         stt?: string;
@@ -380,10 +402,6 @@ export function useVoice(opts: {
       c.session = keys.session;
       if (Array.isArray(keys.places) && keys.places.length) c.places = keys.places;
       const sttContext = keys.context;
-
-      c.media = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
-      });
 
       // Level meter for the waveform.
       c.micCtx = new AudioContext();
@@ -479,6 +497,8 @@ export function useVoice(opts: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [end]);
 
+  const endRef = useRef<(() => void) | null>(null);
+  endRef.current = end;
   useEffect(() => () => end(), [end]);
 
   return { state, heard, caption, level, error, start, end, startedAt, interrupt };

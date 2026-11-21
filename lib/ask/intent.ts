@@ -10,7 +10,7 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
  */
 
 export type Intent = {
-  intent: "answer" | "compare" | "match" | "note" | "visual";
+  intent: "answer" | "compare" | "match" | "note" | "visual" | "chat";
   query: string;
   topic: string;
   landscapes: string[];
@@ -19,7 +19,7 @@ export type Intent = {
 const SCHEMA = {
   type: "object",
   properties: {
-    intent: { type: "string", enum: ["answer", "compare", "match", "note", "visual"] },
+    intent: { type: "string", enum: ["answer", "compare", "match", "note", "visual", "chat"] },
     query: { type: "string" },
     topic: { type: "string" },
     landscapes: { type: "array", items: { type: "string" } },
@@ -35,7 +35,7 @@ function prompt(): string {
   return `You route questions for the CAT Transformation Hub, which holds landscape investment plans (LIPs) for these landscapes: ${roster}; and a Solutions Atlas of agroecology programmes across India.
 
 Return:
-- intent: "compare" when the reader asks to compare, contrast or set side by side two or more of the landscapes above on some aspect. "match" when the reader describes a problem, situation or need and asks which programmes, solutions or approaches could help, or who has done something similar elsewhere. "note" when the reader asks for a note, summary, brief or one-pager on a topic. "visual" when the reader asks for a chart, graph, breakdown, diagram or flow. Otherwise "answer", including any question about a single landscape.
+- intent: "compare" when the reader asks to compare, contrast or set side by side two or more of the landscapes above on some aspect. "match" when the reader describes a problem, situation or need and asks which programmes, solutions or approaches could help, or who has done something similar elsewhere. "note" when the reader asks for a note, summary, brief or one-pager on a topic. "visual" when the reader asks for a chart, graph, breakdown, diagram or flow. "chat" when the turn is only conversation with no question in it (thanks, a greeting, goodbye, an acknowledgement, or asking to stop), in any language. Otherwise "answer", including any question about a single landscape.
 - query: the latest question rewritten as one standalone search query. Resolve follow-ups ("and in Vempalli?", "what about cost?") from the conversation, and keep names, numbers and key terms.
 - topic: for "compare", the aspect being compared in a few words (e.g. "water budgets"); for "note" and "visual", the subject in a few words. Otherwise "".
 - landscapes: slugs from the list above that the question names or clearly refers to, including through the conversation. Otherwise [].`;
@@ -96,7 +96,7 @@ export async function classifyQuestion(
     });
     const p = safeJsonParse<Partial<Intent>>(r.text);
     if (!p) return fallback;
-    const intent = (["compare", "match", "note", "visual"] as const).find((x) => x === p.intent) ?? "answer";
+    const intent = (["compare", "match", "note", "visual", "chat"] as const).find((x) => x === p.intent) ?? "answer";
     const query = typeof p.query === "string" && p.query.trim() && p.query.length <= 400 ? p.query.trim() : question;
     const landscapes = Array.isArray(p.landscapes)
       ? [...new Set(p.landscapes.filter((s): s is string => typeof s === "string" && !!LANDSCAPES[s]))]
