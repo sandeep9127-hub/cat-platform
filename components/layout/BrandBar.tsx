@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Mic } from "lucide-react";
 import { CatLogo } from "./CatLogo";
 
 /**
@@ -30,7 +30,11 @@ function isActive(pathname: string, match: string[]) {
   return match.some((m) => pathname === m || pathname.startsWith(m + "/"));
 }
 
-export function BrandBar() {
+/**
+ * `voice`: show the Talk button. Set by the layout from the server's voice
+ * switch (ASK_VOICE), so the button never appears when voice is off.
+ */
+export function BrandBar({ voice = false }: { voice?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [reduce, setReduce] = useState(false);
@@ -106,7 +110,7 @@ export function BrandBar() {
               <CatLogo size={36} />
             </div>
             <span
-              className={`max-[359px]:hidden overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
+              className={`${voice ? "max-[519px]:hidden" : "max-[439px]:hidden"} overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-[450ms] ease-out-expo ${
                 collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
               }`}
             >
@@ -117,7 +121,7 @@ export function BrandBar() {
           </Link>
 
           {/* Section links, text only, from 1024px (lg). */}
-          <nav aria-label="Main" className="hidden lg:flex items-center gap-7 xl:gap-8 ml-auto">
+          <nav aria-label="Main" className="hidden lg:flex items-center gap-5 xl:gap-8 ml-auto">
             {NAV_LINKS.map(({ href, label, match }) => {
               const active = isActive(pathname, match);
               return (
@@ -155,6 +159,20 @@ export function BrandBar() {
                 Ask<span className="hidden min-[400px]:inline"> the Hub</span>
               </span>
             </Link>
+
+            {/* Talk: for people who would rather speak than type. Opens Ask
+                with voice started (/agent?voice=1). Hidden when voice is off. */}
+            {voice && (
+              <Link
+                href="/agent?voice=1"
+                aria-label="Talk to the Hub"
+                title="Talk to the Hub"
+                className="inline-flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 min-[400px]:px-3.5 rounded-full border border-deep-teal/40 text-deep-teal text-[14px] font-medium whitespace-nowrap hover:bg-deep-teal hover:text-paper active:scale-[0.97] transition-[background-color,color,transform] duration-200 ease-out-expo"
+              >
+                <Mic size={15} strokeWidth={1.9} aria-hidden />
+                <span className="hidden min-[400px]:inline">Talk</span>
+              </Link>
+            )}
 
             {/* Menu: phones and tablets */}
             <button

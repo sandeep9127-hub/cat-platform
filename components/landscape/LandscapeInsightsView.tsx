@@ -1,9 +1,9 @@
 import { palette } from "@/lib/design/palette";
+import { RequestTableCta } from "./RequestTableCta";
 import Link from "next/link";
 import type { LandscapeInsights } from "@/lib/db/landscape-kb";
 import type { LandscapeProfile } from "@/lib/data/landscapes";
 import { Counter } from "@/components/insights/Counter";
-import { DownloadButton } from "@/components/insights/DownloadButton";
 import { Treemap, type TreeItem } from "@/components/insights/Treemap";
 import { Donut } from "@/components/insights/Donut";
 import { Scatter, type Point } from "@/components/insights/Scatter";
@@ -65,15 +65,6 @@ export function LandscapeInsightsView({
       color: catColor(c.category),
     }));
   const maxPkg = Math.max(...byPackage.map((p) => p.total), 1);
-  const csvRows = data.lines.map((l) => ({
-    category: l.category ?? "",
-    intervention: l.intervention ?? "",
-    package: l.package ?? "",
-    total_cost_inr: l.total,
-    investment_required_inr: l.investment,
-    households: l.households,
-    hectares: l.hectares,
-  }));
   const top3pct = (() => {
     const t = [...byCategory].sort((a, b) => b.total - a.total).slice(0, 3).reduce((s, c) => s + c.total, 0);
     return totals.total > 0 ? Math.round((t / totals.total) * 100) : 0;
@@ -116,9 +107,6 @@ export function LandscapeInsightsView({
       >
         <div className="rounded-panel overflow-hidden border border-line bg-paper p-2 sm:p-3">
           <Treemap items={treeItems} />
-        </div>
-        <div className="mt-5 flex flex-wrap items-center justify-end gap-4">
-          <DownloadButton rows={csvRows} filename={`${slug}-investment-plan.csv`} />
         </div>
       </Section>
 
@@ -240,7 +228,6 @@ export function LandscapeInsightsView({
             ({totals.lineCount} costed budget lines), entered and reviewed by hand.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <DownloadButton rows={csvRows} filename={`${slug}-investment-plan.csv`} label="Download the dataset (CSV)" />
             <Link
               href={`/landscape/${slug}/budget`}
               className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
@@ -256,6 +243,8 @@ export function LandscapeInsightsView({
               <ArrowRight size={13} strokeWidth={2} aria-hidden />
             </Link>
           </div>
+          {/* Full tables are shared only on request, never as downloads. */}
+          <RequestTableCta slug={slug} className="mt-6" />
         </div>
       </section>
     </div>
