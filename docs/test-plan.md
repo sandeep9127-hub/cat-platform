@@ -70,4 +70,4 @@
 | 5.2 | First nightly run at 02:30 IST | Quality → Drive sync and AI services show the run | Claude |
 
 ## Not in this release
-Monday.com board (parked). Pangi report (waiting for the file; upload via Documents). Notes as PDF (off until you decide).
+Monday.com board (parked). Public Budget page rework (Sandeep, 21 Nov, later): stop at the plan summary, on-the-ground impact and filters; show the 10 thematic areas instead of every intervention line; revisit the budget schema: the latest Patratu report (section 5.2) merges energy into technology, so the themes must follow the final reports. Redo the whole Budget tab once all final files are in. Pangi report (waiting for the file; upload via Documents). Notes as PDF (off until you decide).
