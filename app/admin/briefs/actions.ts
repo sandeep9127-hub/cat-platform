@@ -14,9 +14,9 @@ export async function generateBriefAction(form: FormData): Promise<void> {
   if (user?.role !== "admin" && user?.role !== "editor") return;
   const slug = String(form.get("slug") ?? "");
   const actor = { actorUserId: user.id ?? null, actorEmail: user.email ?? null };
-  // Every denial is auditable. Rate-limited attempts are always logged; other denials are
-  // capped at 20 per editor per hour, and reaching the cap is itself logged once, so
-  // suppression is visible. The attempted landscape is kept in a cleaned, bounded form.
+  // Every denial is auditable: up to 20 entries per person per hour (all reasons), then one
+  // "suppressing" marker so the cap is visible. Unknown landscapes are logged as "unknown"
+  // with a cleaned, bounded copy of the attempt in meta.
   const known = Object.hasOwn(LANDSCAPES, slug);
   const principal = createHash("sha256").update(`brief-denied|${user.id ?? user.email ?? "editor"}`).digest("hex").slice(0, 32);
   const denied = async (reason: string) => {
