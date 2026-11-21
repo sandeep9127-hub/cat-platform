@@ -154,9 +154,9 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
           RETURNING id`),
       )[0];
 
-  const prevInDb = rows<{ id: string; version_no: number; label: string | null; r2_original_key: string; r2_parsed_key: string | null }>(
+  const prevInDb = rows<{ id: string; version_no: number; label: string | null; r2_original_key: string; r2_parsed_key: string | null; r2_pdf_key: string | null }>(
     await db.execute(sql`
-      SELECT id, version_no, label, r2_original_key, r2_parsed_key FROM "cat".document_versions
+      SELECT id, version_no, label, r2_original_key, r2_parsed_key, r2_pdf_key FROM "cat".document_versions
       WHERE document_id = ${doc.id} AND is_current`),
   )[0];
   const maxNo = rows<{ n: number | null }>(
@@ -276,7 +276,7 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
     });
 
     if (prevInDb) {
-      for (const k of [prevInDb.r2_original_key, prevInDb.r2_parsed_key]) if (k) await deleteObject(k).catch(() => {});
+      for (const k of [prevInDb.r2_original_key, prevInDb.r2_parsed_key, prevInDb.r2_pdf_key]) if (k) await deleteObject(k).catch(() => {});
     }
     return { documentId: doc.id, versionId, versionNo, pagesReliable: reliable, sections: sections.length, chunks: chunks.length, diff, costUsd: cost };
   } catch (e) {

@@ -40,6 +40,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+      # Renders Word reports to the PDF readers open, so citations can say "p. N".
+      # Carlito/Caladea are metric-compatible with Calibri/Cambria (keeps pagination
+      # close to Word); Noto covers Indian scripts.
+      - name: Install LibreOffice (headless) and fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-writer-nogui \
+            fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation2 fonts-noto-core
+          soffice --version
       - name: Sync
         run: |
           if [ "$DRY_RUN" = "true" ]; then npx tsx scripts/drive-sync.ts --dry-run; else npx tsx scripts/drive-sync.ts; fi

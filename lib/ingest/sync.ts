@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { downloadFile, GOOGLE_DOC, listTree, readSheetValues } from "@/lib/ingest/drive";
 import { parseDocx } from "@/lib/ingest/docx";
+import { attachPdfPages, pdfForDriveFile } from "@/lib/ingest/pdf-pages";
+import { getObjectBytes } from "@/lib/storage/r2";
 import { ingestDocumentVersion } from "@/lib/ingest/pipeline";
 import { planFinalFolder, versionLabel } from "@/lib/ingest/plan";
 import { parseInterventionSheet, stageInterventions } from "@/lib/ingest/sheets";
@@ -92,6 +94,29 @@ export async function runDriveSync(opts: {
       } catch (e) {
         summary.problems.push(`${name} report failed to sync: ${(e as Error).message.slice(0, 200)}`);
       }
+    }
+
+    // ── Page numbers ──
+    // Every current report gets a reader-facing PDF and page numbers: new
+    // versions from above, and any older version still without one.
+    if (!opts.dryRun) {
+      let noRenderer = false;
+      for (const p of plan.reports) {
+        const name = LANDSCAPES[p.slug]?.name ?? p.slug;
+        const v = rows<{ id: string; r2_original_key: string }>(await db.execute(sql`
+          SELECT v.id, v.r2_original_key FROM "cat".documents d JOIN "cat".document_versions v ON v.id = d.current_version_id
+          WHERE d.drive_file_id = ${p.current.id} AND v.r2_pdf_key IS NULL`))[0];
+        if (!v) continue;
+        try {
+          const got = await pdfForDriveFile(p.current, await getObjectBytes(v.r2_original_key));
+          if (!got) { noRenderer = true; continue; }
+          const r = await attachPdfPages(v.id, got.pdf, got.method);
+          log(`pages ${name}: ${r.pages} pages, ${r.matched}/${r.chunks} chunks placed (${got.method})`);
+        } catch (e) {
+          summary.problems.push(`${name}: page numbers not added (${(e as Error).message.slice(0, 150)}); citations show sections only`);
+        }
+      }
+      if (noRenderer) summary.problems.push("Page numbers skipped for Word reports: LibreOffice is not installed where the sync ran");
     }
 
     // ── Sheets ──

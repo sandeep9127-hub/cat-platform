@@ -124,6 +124,12 @@ export async function downloadFile(f: Pick<DriveFile, "id" | "mimeType"> & { siz
   return { bytes: await readCapped(res), mime: f.mimeType };
 }
 
+/** PDF of a Google Doc as Drive renders it (read-only export; nothing changes in Drive). */
+export async function exportGoogleDocPdf(fileId: string): Promise<Uint8Array> {
+  const res = await api(`https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application%2Fpdf`);
+  return readCapped(res);
+}
+
 /** Cell values (as displayed) of one sheet tab, e.g. "Data". */
 export async function readSheetValues(spreadsheetId: string, range = "Data"): Promise<string[][]> {
   const res = await api(
