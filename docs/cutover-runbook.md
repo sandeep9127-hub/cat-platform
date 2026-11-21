@@ -24,7 +24,7 @@
 | `NEXT_PUBLIC_SITE_URL` | the same site address. Share links and approval emails need it |
 | `CRON_SECRET` | **new** random value (Vercel sends it to the weekly cron jobs) |
 | `ASK_V2` | `on` |
-| `PREVIEW_GATE` | `on` until launch, then `off` |
+| `PREVIEW_GATE` | `off` (Sandeep, 21 Nov: no private-preview page; Vercel login protects the test address) |
 | `VERCEL_APP_REWRITE` | `off` while testing on the `*.vercel.app` address; **remove at go-live** so `*.vercel.app` visits forward to hub.agroecologyindia.org again |
 | `AGENT_DAILY_USD_CEILING`, `INGESTION_DAILY_USD_CEILING`, `INGESTION_RUN_USD_CEILING` | `15`, `25`, `25` |
 | `ASK_VOICE` | `on` to enable voice conversation in Ask (needs `SONIOX_API_KEY`; try it with a real microphone on the test deploy first) |
