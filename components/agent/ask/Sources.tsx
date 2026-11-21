@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ExternalLink, FileText, X } from "lucide-react";
+import { ArrowRight, FileText, X } from "lucide-react";
 import { citeParts, pageLabel, relevance, type Citation } from "./types";
 
 export function RelevanceMeter({ score }: { score: number }) {
@@ -52,15 +52,10 @@ function SourceCard({ c, active, onSelect, muted }: { c: Citation; active: boole
             {page && <span className="shrink-0 tabular-nums">{page}</span>}
           </div>
           <p className="text-[13px] leading-[1.55] text-ink bg-amber/30 rounded-[2px] px-2 py-1.5">{c.preview}</p>
-          {c.url.includes("/report?") ? (
-            <a href={c.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-teal hover:text-deep-teal">
-              {page ? `Open ${page}` : "Open the report"} <ExternalLink size={12} strokeWidth={2} aria-hidden />
-            </a>
-          ) : (
-            <Link href={c.url} className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-teal hover:text-deep-teal">
-              {page ? `Open ${page}` : "Open the landscape"} <ExternalLink size={12} strokeWidth={2} aria-hidden />
-            </Link>
-          )}
+          {/* Reports are shared on request only: the page shows as text, the link goes to the landscape. */}
+          <Link href={c.url} className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-teal hover:text-deep-teal">
+            About this landscape <ArrowRight size={12} strokeWidth={2} aria-hidden />
+          </Link>
         </div>
       )}
     </li>
