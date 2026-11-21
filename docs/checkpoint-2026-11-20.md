@@ -46,6 +46,14 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
 ## 21 Nov progress
 - Step 1 done: `scripts/drive-sync.ts --dry-run` reports 0 changes, 0 problems (19s).
 - Step 0 data done (commit 7e652e0): 641 district centroids in `cat.district_centroids` (cat.geographies untouched); a trigger sets `geo_precision`, `geo_points`, latitude/longitude on every fact sheet (8 district, 32 state, 19 national). Re-run `npx tsx scripts/load-districts.ts` after adding aliases. UI session told the field names.
+- Fact sheet duplicates merged (Sandeep approved): 52 published + 7 `merged` (`merged_into` set; old links 307 to the kept sheet; `scripts/merge-duplicate-factsheets.ts`).
+- Step 3 admin done (CAT DB; admin pages need sign-in, so they were tested through their data functions plus the public share page in a browser):
+  - `/admin/budget-changes`: approve or reject sheet edits (Server Action, locked transaction, triage events, re-index for Ask).
+  - `/admin/budget-tables` (+ `/[slug]`, `/all`): full 45-column approved tables; private share links (token shown once, sha256 stored, expiry ≤1 year, revoke, optional CSV, views logged). Public page `/share/<token>` (noindex, no-referrer, rate-limited). **Needs `NEXT_PUBLIC_SITE_URL` on the deployment** to create links.
+  - `/admin/quality`: spend vs caps, service health, Ask v2 stats, queues, sync runs, library reports.
+  - Nightly model health check (`scripts/model-health.ts`) in the Drive sync workflow; needs GitHub secret `SONIOX_API_KEY` too.
+- Found: only 3 of 10 reports have page numbers (Dantewada, Patratu, Rajnagar); the rest cite by section. Told the AI session (PDF export via Drive is the likely fix). 182 discovery candidates are waiting in /admin/candidates.
+- Local dev against the CAT DB: launch config `cat-hub-v2-admin` (port 3200, `scripts/dev-cat.mjs`).
 - Architecture whiteboard: https://claude.ai/artifact/SZw46XxNtif7JHkhFLeqGt
 - Enhanced AI features (Ask v2 onwards) move to a fresh session. Notes for it:
   - Today `/api/agent` (`app/api/agent/route.ts`) still uses the legacy retrieval (entries FTS + old landscape/factsheet chunk tables). `components/agent/AgentChat.tsx` posts `{sessionToken, messages, scope}` and reads SSE events `meta {citations}`, `delta {text}`, `done {refused}`, `error`.
