@@ -62,7 +62,26 @@ export function mightNeedRouting(question: string): boolean {
   return named >= 2 || (COMPARE_CUES.test(question) && named >= 1) || MATCH_CUES.test(question) || MAKE_CUES.test(question);
 }
 
-export async function classifyQuestion(question: string, history: StreamTurn[], signal: AbortSignal): Promise<Intent> {
+/** Does the text name a landscape exactly (either part of a hyphenated name counts)? */
+export function namesLandscape(text: string): boolean {
+  const q = text.toLowerCase();
+  return Object.values(LANDSCAPES).some((l) =>
+    l.name
+      .toLowerCase()
+      .split(/[–-]/)
+      .some((part) => part.trim().length >= 3 && new RegExp(`\\b${part.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(q)),
+  );
+}
+
+const VOICE_NOTE = `
+This question was spoken and transcribed by speech recognition, which often mishears the landscape names above: as spelled-out letters ("P-A-T-T-R-A-T-U"), or as near-sounding words ("Patriarchal", "Patrato", "Patra two" for Patratu; "Vempali", "When Pally" for Vempalli; "Chitra Konda" for Chitrakonda). When a word or phrase sounds like a landscape name and reads as a place in the question, use the correct landscape name in query and landscapes. Leave words alone that make sense as they are.`;
+
+export async function classifyQuestion(
+  question: string,
+  history: StreamTurn[],
+  signal: AbortSignal,
+  opts?: { voice?: boolean },
+): Promise<Intent> {
   const fallback: Intent = { intent: "answer", query: question, topic: "", landscapes: [] };
   try {
     const transcript = history
@@ -70,7 +89,7 @@ export async function classifyQuestion(question: string, history: StreamTurn[], 
       .map((t) => `${t.role === "user" ? "Reader" : "Assistant"}: ${String(t.content).slice(0, 600)}`)
       .join("\n");
     const r = await claudeMessage("ask_rewrite", {
-      system: prompt(),
+      system: prompt() + (opts?.voice ? VOICE_NOTE : ""),
       messages: [{ role: "user", content: `${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}` }],
       jsonSchema: SCHEMA,
       signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),

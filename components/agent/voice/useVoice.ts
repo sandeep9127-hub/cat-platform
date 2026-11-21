@@ -26,8 +26,9 @@ const STT_URL = "wss://stt-rt.soniox.com/transcribe-websocket";
 const TTS_URL = "wss://tts-rt.soniox.com/tts-websocket";
 const TTS_RATE = 24000;
 
-// Landscape names speech-to-text often mishears ("Patrutu", "Vempali").
-const PLACES = ["Ahwa", "Chitrakonda", "Dantewada", "Dharashiv", "Khatarshnong", "Laitkroh", "Patharpratima", "Patratu", "Rajnagar", "Vempalli"];
+// Landscape names speech-to-text often mishears ("Patrutu", "Vempali"). The server
+// sends the current list with the session; this is the fallback.
+const DEFAULT_PLACES = ["Ahwa", "Chitrakonda", "Dantewada", "Dharashiv", "Khatarshnong", "Laitkroh", "Pangi", "Patharpratima", "Patratu", "Rajnagar", "Vempalli"];
 
 function distance(a: string, b: string): number {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -38,13 +39,18 @@ function distance(a: string, b: string): number {
   return d[a.length][b.length];
 }
 
+/** "P-A-T-T-R-A-T-U" / "P A T R A T U" / "P.A.T." → "PATTRATU": rejoin words spoken letter by letter. */
+export function joinSpelledLetters(text: string): string {
+  return text.replace(/(?<![\p{L}\p{N}])\p{L}(?:[-.\s]+\p{L}(?![\p{L}\p{N}])){2,}\.?/gu, (m) => m.replace(/[-.\s]+/g, ""));
+}
+
 /** Snap near-miss spellings of landscape names to the library's spelling. */
-export function fixPlaceNames(text: string): string {
-  return text.replace(/\p{L}{5,}/gu, (w) => {
+export function fixPlaceNames(text: string, places: string[] = DEFAULT_PLACES): string {
+  return joinSpelledLetters(text).replace(/\p{L}{5,}/gu, (w) => {
     const lw = w.toLowerCase();
-    for (const p of PLACES) {
+    for (const p of places) {
       const lp = p.toLowerCase();
-      if (lw === lp) return w;
+      if (lw === lp) return p;
       const max = lp.length <= 6 ? 1 : 2;
       if (Math.abs(lw.length - lp.length) <= max && distance(lw, lp) <= max) return p;
     }
@@ -76,6 +82,7 @@ export function useVoice(opts: {
     stt: null as WebSocket | null,
     tts: null as WebSocket | null,
     session: "",
+    places: DEFAULT_PLACES,
     speechKey: null as Promise<string | null> | null,
     ttsQueue: [] as string[],
     media: null as MediaStream | null,
@@ -361,9 +368,18 @@ export function useVoice(opts: {
       // Audio contexts must start inside the click that opened voice.
       c.playCtx = new AudioContext();
       const res = await fetch("/api/agent/voice", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
-      const keys = (await res.json().catch(() => ({}))) as { stt?: string; session?: string; maxSeconds?: number; error?: string };
+      const keys = (await res.json().catch(() => ({}))) as {
+        stt?: string;
+        session?: string;
+        maxSeconds?: number;
+        context?: unknown;
+        places?: string[];
+        error?: string;
+      };
       if (!res.ok || !keys.stt || !keys.session) throw new Error(keys.error || "Voice is temporarily unavailable.");
       c.session = keys.session;
+      if (Array.isArray(keys.places) && keys.places.length) c.places = keys.places;
+      const sttContext = keys.context;
 
       c.media = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
@@ -396,6 +412,8 @@ export function useVoice(opts: {
             language_hints: ["en", "hi"],
             enable_endpoint_detection: true,
             enable_agent_text_input: true,
+            // Landscape names, places and scheme names, so "Patratu" isn't heard as "Patriarchal".
+            ...(sttContext ? { context: sttContext } : {}),
           }),
         );
         const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find((t) => MediaRecorder.isTypeSupported(t));
@@ -439,7 +457,7 @@ export function useVoice(opts: {
         }
         if (stateRef.current === "listening") setHeard(live.trim());
         if (endpoint) {
-          const q = fixPlaceNames(c.finalText.trim());
+          const q = fixPlaceNames(c.finalText.trim(), c.places);
           c.finalText = "";
           if (q.length > 1 && stateRef.current === "listening") askTurn(q);
         }
