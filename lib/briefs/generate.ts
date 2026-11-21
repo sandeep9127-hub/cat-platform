@@ -122,7 +122,8 @@ export async function generateBrief(slug: string, opts: { force?: boolean } = {}
   const content = r.text.replace(/\[(\d{1,2})\]/g, (m, n) => (Number(n) >= 1 && Number(n) <= passages.length ? m : "")).trim();
   // Reject output that lost the required structure (e.g. steered by passage text) instead of storing it.
   const required = ["## The landscape", "## The challenge", "## What the plan invests in", "## How it will be delivered", "## Expected change", "## How it is funded"];
-  const headings = content.split("\n").filter((l) => l.startsWith("## ")).map((l) => l.trim());
+  // Same reading as the renderer: trimmed lines; anything starting with "#" counts as a heading.
+  const headings = content.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("#"));
   if (!required.every((h) => headings.includes(h)) || headings.length !== required.length || !/\[\d{1,2}\]/.test(content)) {
     return { error: "The generated brief didn't have the expected sections and citations; nothing was saved. Try again.", costUsd: r.costUsd };
   }
