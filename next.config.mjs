@@ -58,7 +58,9 @@ const nextConfig = {
     // Production (next build) does not need it, so the strict CSP is kept for prod.
     const isDev = process.env.NODE_ENV !== "production";
     const devScriptToken = isDev ? " 'unsafe-" + "eval'" : "";
-    const connectSrc = isDev ? "connect-src 'self' https: ws: wss:" : "connect-src 'self' https:";
+    // Ask voice streams speech to and from Soniox over WebSockets (only these two hosts).
+    const soniox = "wss://stt-rt.soniox.com wss://tts-rt.soniox.com";
+    const connectSrc = isDev ? "connect-src 'self' https: ws: wss:" : `connect-src 'self' https: ${soniox}`;
     // unpkg.com hosts Leaflet + markercluster for the Organisations Atlas map
     // (the only third-party runtime asset; the basemap itself is our own GeoJSON,
     // no tile server). Allowed for scripts + styles so the map can load.

@@ -65,6 +65,7 @@ How you answer:
 - Cite the search results for every factual sentence, in every answer, including follow-ups. Earlier answers in this conversation appear without their citations because their sources are no longer attached; that is not a style to copy. Citations are attached automatically through the search results, so do not type bracketed numbers or source names yourself.
 - Plain, direct language. Short sentences. No marketing words. No em dashes. British / Indian English spelling (organisation, programme, prioritise).
 - Give figures exactly as the source states them, with units (₹ lakh, ₹ crore, hectares, households).
+- If the reader spells a place slightly differently from the library (often from speech), use the library's spelling without comment.
 - You may compare and connect passages, but every factual claim must come from the search results. Mark inference as your reading ("My read is…").
 
 What you must not do:
@@ -74,6 +75,9 @@ What you must not do:
 
 
 type ClientBody = {
+  /** Voice turn: answer briefly for listening, never as a table or cards. */
+  voice?: unknown;
+  language?: unknown;
   conversationId?: unknown;
   messages?: unknown;
   message?: unknown;
@@ -231,6 +235,8 @@ export async function askV2(req: NextRequest): Promise<Response> {
   const question = latestQuestion(body).slice(0, MAX_QUESTION_CHARS);
   if (!question) return json({ error: "No user message" }, 400);
   const scope = cleanScope(body.scope);
+  const voice = body.voice === true;
+  const voiceHindi = voice && body.language === "hi";
 
   const { tokenHash, setCookie } = readOrMintSession(req);
   const started = Date.now();
@@ -265,10 +271,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
       hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
     const early = history.length ? null : search(question);
     early?.catch(() => {}); // awaited below if used
-    const intent =
-      history.length || mightNeedRouting(question)
+    const routed =
+      history.length || (!voice && mightNeedRouting(question))
         ? await classifyQuestion(question, history, req.signal)
         : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] };
+    // Voice keeps the rewritten follow-up query but always answers in speakable prose.
+    const intent = voice ? { ...routed, intent: "answer" as const } : routed;
     const ctx = { req, question, scope, conversationId, started, setCookie };
 
     if (intent.intent === "compare") {
@@ -331,7 +339,11 @@ export async function askV2(req: NextRequest): Promise<Response> {
         ...hits.map((h, i) => searchResultBlock(h, citations[i])),
         {
           type: "text",
-          text: `Answer from the search results above only, citing them for each claim.\n\nReader question: ${question}`,
+          text: `Answer from the search results above only, citing them for each claim.${
+            voice
+              ? ` This answer will be read aloud: at most three short sentences, no lists, and say figures the way the passage writes them.${voiceHindi ? " Answer in Hindi, in Devanagari script." : ""}`
+              : ""
+          }\n\nReader question: ${question}`,
         },
       ],
     },

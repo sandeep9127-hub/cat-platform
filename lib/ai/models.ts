@@ -27,7 +27,7 @@ export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
  * landscape Ask, chart helper). `ingestion` is editor/cron work that searches
  * the web or drafts records (fact sheets, discovery, draft writer).
  */
-export type BudgetPool = "public" | "ingestion";
+export type BudgetPool = "public" | "ingestion" | "voice";
 
 export type AiTask =
   | "ask_hub"
@@ -114,9 +114,13 @@ export function taskConfig(task: AiTask): TaskConfig {
 /** Daily USD ceiling per pool, reset at midnight IST. */
 export function poolDailyCapUsd(pool: BudgetPool): number {
   const raw =
-    pool === "public" ? process.env.AGENT_DAILY_USD_CEILING : process.env.INGESTION_DAILY_USD_CEILING;
+    pool === "public"
+      ? process.env.AGENT_DAILY_USD_CEILING
+      : pool === "voice"
+        ? process.env.VOICE_DAILY_USD_CEILING
+        : process.env.INGESTION_DAILY_USD_CEILING;
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? n : pool === "public" ? 15 : 25;
+  return Number.isFinite(n) && n > 0 ? n : pool === "public" ? 15 : pool === "voice" ? 3 : 25;
 }
 
 /** Per-run USD ceiling for multi-call ingestion runs (discovery, batch fact-sheet scripts). */
