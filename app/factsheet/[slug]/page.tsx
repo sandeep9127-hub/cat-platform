@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
-import { getFactSheet } from "@/lib/factsheet/generate";
+import { notFound, permanentRedirect } from "next/navigation";
+import { getFactSheet, getMergedFactSheetTarget } from "@/lib/factsheet/generate";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,12 @@ const STATE_NAMES: Record<string, string> = {
 export default async function FactSheetPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const s = await getFactSheet(slug);
-  if (!s) notFound();
+  if (!s) {
+    // A duplicate merged into another sheet keeps its old link working.
+    const target = await getMergedFactSheetTarget(slug);
+    if (target) permanentRedirect(`/factsheet/${encodeURIComponent(target)}`);
+    notFound();
+  }
 
   const stateName = s.state_code ? STATE_NAMES[s.state_code] ?? s.state_code : null;
   const eyebrow = [

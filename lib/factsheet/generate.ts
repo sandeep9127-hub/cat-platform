@@ -320,6 +320,7 @@ export async function generateFactSheet(
       citations=EXCLUDED.citations, source_name=EXCLUDED.source_name,
       source_url=EXCLUDED.source_url, confidence=EXCLUDED.confidence,
       verified=EXCLUDED.verified, status=EXCLUDED.status, updated_at=now()
+    WHERE "cat".solution_factsheets.status <> 'merged' -- a merged duplicate stays merged
   `);
 
   // Embed into the RAG so Ask can answer from it under "All sources".
@@ -348,6 +349,23 @@ export type FactSheetRow = FactSheet & {
 export async function listFactSheets(): Promise<FactSheetRow[]> {
   const r = await db.execute(sql`SELECT * FROM "cat".solution_factsheets ORDER BY updated_at DESC`);
   return (r as unknown as { rows: FactSheetRow[] }).rows;
+}
+
+/**
+ * Slug of the published sheet a merged duplicate now points to, or null.
+ * Tolerates databases without the merged_into column (it exists only in the
+ * CAT database, from drizzle/sql/2026-11-21_factsheet_merges.sql).
+ */
+export async function getMergedFactSheetTarget(slug: string): Promise<string | null> {
+  try {
+    const r = await db.execute(sql`
+      SELECT t.slug FROM "cat".solution_factsheets m
+      JOIN "cat".solution_factsheets t ON t.slug = m.merged_into AND t.status = 'published'
+      WHERE m.slug = ${slug} AND m.status = 'merged' LIMIT 1`);
+    return (r as unknown as { rows: { slug: string }[] }).rows[0]?.slug ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getFactSheet(
