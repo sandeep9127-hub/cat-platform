@@ -338,6 +338,12 @@ export async function generateFactSheet(
     }
   }
 
+  // Keep the matchmaker's search index current (best-effort; also rebuilt nightly).
+  if (status === "published") {
+    const { reindexFactsheets } = await import("@/lib/factsheet/reindex");
+    await reindexFactsheets(`generated ${sheet.slug}`);
+  }
+
   return { ok: true, sheet, status, costUsd: callCost };
 }
 
