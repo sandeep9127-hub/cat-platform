@@ -1,5 +1,4 @@
-import { safeFrom, LAUNCH_DATE } from "@/lib/preview";
-import { LaunchCountdown } from "@/components/preview/LaunchCountdown";
+import { safeFrom } from "@/lib/preview";
 
 export const metadata = {
   title: "Private preview",
@@ -29,14 +28,11 @@ export default async function PreviewPage({
           <img src="/images/cat-logo.png" alt="Consortium for Agroecological Transformations" className="h-16 w-auto mb-8" />
           <span className="eyebrow">Private preview</span>
           <h1 className="font-sans font-semibold text-[clamp(26px,4vw,34px)] tracking-[-0.03em] leading-[1.1] text-ink mt-3 max-w-[18ch]">
-            The Transformation Hub launches at London Climate Week
+            Transformation Hub: private preview
           </h1>
           <p className="text-[15px] text-ink-soft leading-[1.6] mt-4 max-w-[42ch]">
             This is a private preview. Enter the access code you were given to continue.
           </p>
-          <div className="w-full max-w-[360px]">
-            <LaunchCountdown target={LAUNCH_DATE} />
-          </div>
         </div>
 
         <form
