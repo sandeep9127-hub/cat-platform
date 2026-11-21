@@ -43,6 +43,15 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
 4. Voice (Soniox), comparison of landscapes, solution matchmaker, notes and diagrams.
 5. Cutover prep: CAT Vercel project, GitHub secrets in the "production" environment, preview deploy.
 
+## 21 Nov progress
+- Step 1 done: `scripts/drive-sync.ts --dry-run` reports 0 changes, 0 problems (19s).
+- Architecture whiteboard: https://claude.ai/artifact/SZw46XxNtif7JHkhFLeqGt
+- Enhanced AI features (Ask v2 onwards) move to a fresh session. Notes for it:
+  - Today `/api/agent` (`app/api/agent/route.ts`) still uses the legacy retrieval (entries FTS + old landscape/factsheet chunk tables). `components/agent/AgentChat.tsx` posts `{sessionToken, messages, scope}` and reads SSE events `meta {citations}`, `delta {text}`, `done {refused}`, `error`.
+  - Plan: put v2 behind an `ASK_V2=on` env flag so the legacy path stays intact for the live site. v2 = `hybridSearch` (lib/rag/search.ts) -> Claude Haiku stream with citations carrying document, section path and page; a rerank-score refusal floor (calibrate on real questions); server-issued httpOnly session cookie, stored only as sha256 in `cat.conversations.session_token_hash`; history loaded from `cat.messages` (not trusted from the client); partial answer saved with `interrupted = true` when the reader presses Stop; "New chat" = new conversation id. Keep the SSE event shape so AgentChat keeps working, adding `conversationId` to `meta`.
+  - Check whether fact-sheet and entry embeddings in the CAT DB are Voyage-compatible before mixing them into v2 retrieval.
+  - No `psql` on this Mac: query the CAT DB with a small `npx tsx` script placed inside the repo (imports of `@/lib/db` don't resolve from the scratchpad).
+
 ## Open decisions for Sandeep
 - Who receives the sync email digest. The DB currently has 2 admins and 2 editors copied from the old site.
 - Vercel Pro for the CAT team, before the preview deploy.
