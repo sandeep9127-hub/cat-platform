@@ -4,10 +4,11 @@ import type { MapEntry, MapPoint } from "./IndiaMap";
  * Turns a fact-sheet row into a Solutions Atlas map entry, and decides which
  * programmes belong on the map versus the "Nationwide" strip.
  *
- * Placement fields are being added to the fact-sheet data separately
- * (geo_precision, district-centroid lat/lon, a points list for multi-district
- * programmes, households for reach). They are read loosely here so this works
- * before and after that change:
+ * Placement comes from the fact-sheet data: geo_precision ('district' |
+ * 'state' | 'national'), latitude/longitude (first point), and geo_points, a
+ * jsonb array of { lat, lon, district | state } filled by a database trigger.
+ * There is no households field yet, so reach falls back to a headline metric.
+ * Fields are read loosely, with fallbacks:
  *   - no geo_precision: anything with lat/lon is treated as 'state';
  *   - geo_precision 'national', or a national/multi-state scale with no state,
  *     goes to the Nationwide strip, not the map.
@@ -27,7 +28,11 @@ type Loose = Record<string, unknown>;
 
 const num = (v: unknown): number | null => (typeof v === "number" && isFinite(v) ? v : null);
 
-function readPoints(raw: unknown): MapPoint[] {
+function readPoints(input: unknown): MapPoint[] {
+  let raw = input;
+  if (typeof raw === "string") {
+    try { raw = JSON.parse(raw); } catch { return []; } // jsonb may arrive serialised
+  }
   if (!Array.isArray(raw)) return [];
   const out: MapPoint[] = [];
   for (const p of raw) {
@@ -78,7 +83,8 @@ export function factsheetToMapEntry(sheet: FactSheetLike): MapEntry {
     internalHref: `/factsheet/${f.slug}`,
     themes: f.themes ?? [],
     geoPrecision,
-    points: readPoints(f.points),
+    // The data layer stores placements in geo_points (jsonb); points is accepted too.
+    points: readPoints(f.geo_points ?? f.points),
     reach: readReach(f),
   };
 }
