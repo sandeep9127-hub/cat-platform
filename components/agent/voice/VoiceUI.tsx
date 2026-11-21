@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Mic, X } from "lucide-react";
 import { CatLogo } from "./CatLogo";
+import { LANG_CODES, LANGUAGES, TEXT_ONLY_LANGUAGES } from "@/lib/ask/languages";
 import type { VoiceLang, VoiceName, VoiceState } from "./useVoice";
 
 /**
@@ -30,10 +31,11 @@ export const VOICES: { id: VoiceName; label: string }[] = [
   { id: "Shalini", label: "Shalini" },
 ];
 
-const LANGS: { id: VoiceLang | "or"; label: string; textOnly?: boolean }[] = [
-  { id: "en", label: "English" },
-  { id: "hi", label: "हिन्दी" },
-  { id: "or", label: "ଓଡ଼ିଆ", textOnly: true },
+// Auto follows the speaker turn by turn; picking a language fixes the reply language.
+const LANGS: { id: VoiceLang | string; label: string; textOnly?: boolean }[] = [
+  { id: "auto", label: "Auto" },
+  ...LANG_CODES.map((c) => ({ id: c, label: LANGUAGES[c].label })),
+  ...TEXT_ONLY_LANGUAGES.map((l) => ({ id: l.code, label: l.label, textOnly: true })),
 ];
 
 function useElapsed(startedAt: number | null) {

@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { replyInstruction } from "@/lib/ask/languages";
 import { db } from "@/lib/db";
 import { claudeMessage, safeJsonParse } from "@/lib/ai/claude";
 import { hybridSearch } from "@/lib/rag/search";
@@ -124,7 +125,7 @@ export async function runMatch(ctx: ModeCtx, opts: { query: string }): Promise<R
       const sheets = hits.map((h, i) => `[${i + 1}] ${citations[i].document}\n${h.text}`).join("\n\n");
       const r = await claudeMessage("matchmaker", {
         system: SYSTEM,
-        messages: [{ role: "user", content: `Problem:\n${ctx.question}\n\nFact sheets:\n${sheets}` }],
+        messages: [{ role: "user", content: `Problem:\n${ctx.question}\n\nFact sheets:\n${sheets}${replyInstruction(ctx.lang)}` }],
         jsonSchema: SCHEMA,
         signal,
       });
