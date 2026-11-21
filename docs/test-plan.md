@@ -5,8 +5,8 @@
 ## 0. Access and safety
 | # | Test | What should happen | Who |
 |---|---|---|---|
-| 0.1 | Open the test address without the preview password | Preview gate page | Claude |
-| 0.2 | Unlock with the preview password | Home page | You |
+| 0.1 | Open the test address while signed out of Vercel | Vercel login wall (no private-preview page) | Claude |
+| 0.2 | Open it signed in to Vercel | Home page directly | You |
 | 0.3 | `/admin` while signed out | Redirect to sign-in | Claude |
 | 0.4 | Sign in by email link (your CAT address) | Email arrives; link signs you in; admin opens on the Inbox | You |
 | 0.5 | `/hr` | Redirects to Team Flow | Claude |

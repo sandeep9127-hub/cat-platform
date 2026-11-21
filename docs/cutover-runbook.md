@@ -43,7 +43,7 @@ From `~/code/cat-platform-release`, deploy to Vercel without touching GitHub:
 vercel deploy --scope agroecologyindia
 ```
 
-The preview gate stays on, so only people with the preview password can see it.
+The private-preview page is off (`PREVIEW_GATE=off`); Vercel's login wall keeps the test address private.
 
 ## 3. Check the test deploy
 
@@ -75,7 +75,7 @@ The CAT database was copied from production on 20 Nov. Anything people added to 
 2. **Before pushing**, disconnect the old personal Vercel project from the GitHub repo (or pause its auto-deploys), so it doesn't deploy the new code against the old database.
 3. Connect the CAT `cat-hub` project to the repo, with `main` as its production branch.
 4. Move the domain from the old project to `cat-hub`.
-5. Set `PREVIEW_GATE=off` on `cat-hub` and redeploy.
+5. Remove `VERCEL_APP_REWRITE=off`, add `CRON_SECRET`, check `PREVIEW_GATE=off`, and redeploy.
 
 ## 7. Rollback (30 days)
 
