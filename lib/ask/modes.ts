@@ -33,7 +33,7 @@ export type ModeResult = {
  */
 export function streamMode(opts: {
   ctx: ModeCtx;
-  mode: "compare" | "match";
+  mode: "compare" | "match" | "note" | "visual";
   citations: Citation[];
   hits: Hit[];
   extraMeta?: Record<string, unknown>;
@@ -76,15 +76,16 @@ export function streamMode(opts: {
         send({ type: "error", message: errorMsg });
       }
 
-      const stored: StoredCitation[] = hits.map((h, i) => ({
-        ...citations[i],
-        chunkId: h.chunkId,
-        documentId: h.documentId,
+      // Citations line up with hits; a chart's data source has no chunk behind it.
+      const stored: StoredCitation[] = citations.map((c, i) => ({
+        ...c,
+        chunkId: hits[i]?.chunkId ?? null,
+        documentId: hits[i]?.documentId ?? null,
         cited: !!result?.citedIndexes.includes(i + 1),
         quotes: [],
       }));
       try {
-        await addAssistantMessage({
+        const messageId = await addAssistantMessage({
           conversationId: ctx.conversationId,
           content: result?.summary ?? "",
           citations: stored,
@@ -97,6 +98,8 @@ export function streamMode(opts: {
           costUsd: result?.costUsd ?? null,
           latencyMs: Date.now() - ctx.started,
         });
+        // The note card needs it for "Download PDF".
+        if (result) send({ type: "saved", messageId });
       } catch (e) {
         console.error(`[ask_v2] saving ${mode} failed:`, (e as Error).message);
       }

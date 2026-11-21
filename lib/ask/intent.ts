@@ -9,12 +9,17 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
  *   match   – describes a problem or need and asks which programmes could help
  */
 
-export type Intent = { intent: "answer" | "compare" | "match"; query: string; topic: string; landscapes: string[] };
+export type Intent = {
+  intent: "answer" | "compare" | "match" | "note" | "visual";
+  query: string;
+  topic: string;
+  landscapes: string[];
+};
 
 const SCHEMA = {
   type: "object",
   properties: {
-    intent: { type: "string", enum: ["answer", "compare", "match"] },
+    intent: { type: "string", enum: ["answer", "compare", "match", "note", "visual"] },
     query: { type: "string" },
     topic: { type: "string" },
     landscapes: { type: "array", items: { type: "string" } },
@@ -30,15 +35,18 @@ function prompt(): string {
   return `You route questions for the CAT Transformation Hub, which holds landscape investment plans (LIPs) for these landscapes: ${roster}; and a Solutions Atlas of agroecology programmes across India.
 
 Return:
-- intent: "compare" when the reader asks to compare, contrast or set side by side two or more of the landscapes above on some aspect. "match" when the reader describes a problem, situation or need and asks which programmes, solutions or approaches could help, or who has done something similar elsewhere. Otherwise "answer", including any question about a single landscape.
+- intent: "compare" when the reader asks to compare, contrast or set side by side two or more of the landscapes above on some aspect. "match" when the reader describes a problem, situation or need and asks which programmes, solutions or approaches could help, or who has done something similar elsewhere. "note" when the reader asks for a note, summary, brief or one-pager on a topic. "visual" when the reader asks for a chart, graph, breakdown, diagram or flow. Otherwise "answer", including any question about a single landscape.
 - query: the latest question rewritten as one standalone search query. Resolve follow-ups ("and in Vempalli?", "what about cost?") from the conversation, and keep names, numbers and key terms.
-- topic: for "compare", the aspect being compared in a few words (e.g. "water budgets"). Otherwise "".
+- topic: for "compare", the aspect being compared in a few words (e.g. "water budgets"); for "note" and "visual", the subject in a few words. Otherwise "".
 - landscapes: slugs from the list above that the question names or clearly refers to, including through the conversation. Otherwise [].`;
 }
 
 const COMPARE_CUES = /\b(compare|comparison|contrast|versus|vs\.?|differ|difference|side by side|both|between)\b/i;
 const MATCH_CUES =
   /\b(programmes?|programs?|solutions?|solved|who has|anyone|elsewhere|examples?|what works|worked|approach(es)?|could help|help us|help with|we (work|have|are)|our (district|block|village|farmers|area|landscape|region))\b/i;
+
+const MAKE_CUES =
+  /\b(note|notes|summary|summari[sz]e|brief|one-pager|chart|graph|plot|visuali[sz]e|diagram|flow ?chart|breakdown|break down|pie|bar)\b/i;
 
 /**
  * Cheap pre-check for a first question: only questions that name two or more
@@ -51,7 +59,7 @@ export function mightNeedRouting(question: string): boolean {
     const name = l.name.replace(/ landscape$/i, "").toLowerCase();
     return q.includes(name) || q.includes(l.slug.replace(/-/g, " "));
   }).length;
-  return named >= 2 || (COMPARE_CUES.test(question) && named >= 1) || MATCH_CUES.test(question);
+  return named >= 2 || (COMPARE_CUES.test(question) && named >= 1) || MATCH_CUES.test(question) || MAKE_CUES.test(question);
 }
 
 export async function classifyQuestion(question: string, history: StreamTurn[], signal: AbortSignal): Promise<Intent> {
@@ -69,7 +77,7 @@ export async function classifyQuestion(question: string, history: StreamTurn[], 
     });
     const p = safeJsonParse<Partial<Intent>>(r.text);
     if (!p) return fallback;
-    const intent = p.intent === "compare" || p.intent === "match" ? p.intent : "answer";
+    const intent = (["compare", "match", "note", "visual"] as const).find((x) => x === p.intent) ?? "answer";
     const query = typeof p.query === "string" && p.query.trim() && p.query.length <= 400 ? p.query.trim() : question;
     const landscapes = Array.isArray(p.landscapes)
       ? [...new Set(p.landscapes.filter((s): s is string => typeof s === "string" && !!LANDSCAPES[s]))]
