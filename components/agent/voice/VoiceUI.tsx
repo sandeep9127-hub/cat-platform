@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Keyboard, Mic, X } from "lucide-react";
+import { Mic, X } from "lucide-react";
+import { CatLogo } from "./CatLogo";
 import type { VoiceLang, VoiceName, VoiceState } from "./useVoice";
 
 /**
- * Voice layouts (docs/ask-ui-spec.md §5): a live bar inside the composer on
- * desktop, a full-screen mode on phones. States have their own colour:
- * listening teal, thinking slate, speaking amber.
+ * Full-screen talk mode (docs/ask-ui-spec.md §5, Sandeep 21 Nov: "Talk opens a
+ * full-screen talk mode"). One view on every screen size: a large state
+ * indicator in the centre, big live captions of the last turn, the current
+ * answer's sources, the voice switch, timer and End. The indicator is the
+ * animated CAT logo (CatLogo.tsx); with reduced motion it is still.
+ * When voice can't start on its own (sound or the mic blocked) the view shows
+ * "Tap to start talking". Closing returns to the chat, which keeps every turn
+ * with its sources.
  */
 
 const STATE = {
@@ -16,12 +22,18 @@ const STATE = {
   listening: { label: "Listening", color: "var(--teal)" },
   thinking: { label: "Thinking", color: "#646d95" },
   speaking: { label: "Speaking", color: "var(--amber-deep)" },
-  off: { label: "", color: "var(--muted)" },
+  off: { label: "Ready", color: "var(--muted)" },
 } as const;
 
 export const VOICES: { id: VoiceName; label: string }[] = [
   { id: "Ashok", label: "Ashok" },
   { id: "Shalini", label: "Shalini" },
+];
+
+const LANGS: { id: VoiceLang | "or"; label: string; textOnly?: boolean }[] = [
+  { id: "en", label: "English" },
+  { id: "hi", label: "हिन्दी" },
+  { id: "or", label: "ଓଡ଼ିଆ", textOnly: true },
 ];
 
 function useElapsed(startedAt: number | null) {
@@ -36,57 +48,99 @@ function useElapsed(startedAt: number | null) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function StateLabel({ state }: { state: VoiceState }) {
-  const s = STATE[state];
-  return (
-    <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: s.color }}>
-      <span className={`w-2 h-2 rounded-full ${state === "listening" || state === "speaking" ? "animate-pulse" : ""}`} style={{ background: s.color }} aria-hidden />
-      {s.label}
-    </span>
-  );
+/** The latest words of a long caption, so it never pushes the controls off screen. */
+function tail(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.indexOf(" ", text.length - max);
+  return `…${text.slice(cut > 0 ? cut : text.length - max)}`;
 }
 
-function Wave({ level, state }: { level: number; state: VoiceState }) {
-  const color = state === "speaking" ? "var(--amber-deep)" : state === "thinking" ? "#646d95" : "var(--teal)";
-  const bars = [0.5, 0.8, 1, 0.7, 0.9, 0.6, 1, 0.75, 0.55];
-  const amp = state === "listening" ? level : state === "speaking" ? 0.6 : 0.15;
-  return (
-    <span className="inline-flex items-center gap-[3px] h-6" aria-hidden>
-      {bars.map((b, i) => (
-        <span key={i} className="w-[3px] rounded-full transition-[height] duration-100" style={{ background: color, height: `${4 + Math.round(18 * amp * b)}px` }} />
-      ))}
-    </span>
-  );
-}
-
-/** Desktop: the composer turns into a live voice bar. */
-export function VoiceBar(props: {
+export function TalkMode(props: {
+  open: boolean;
   state: VoiceState;
   heard: string;
   caption: string;
+  lastQuestion: string;
   level: number;
+  /** The Hub's playback level 0–1 (drives the logo while speaking). */
+  outLevel: number;
+  startedAt: number | null;
   voiceName: VoiceName;
   setVoiceName: (v: VoiceName) => void;
+  language: VoiceLang;
+  setLanguage: (l: VoiceLang) => void;
+  /** Titles of the current answer's sources (full details stay in the chat). */
+  sources: string[];
+  /** Voice isn't running and needs a tap (sound or mic blocked, or not started yet). */
+  needsTap: boolean;
+  message: string | null;
+  onStart: () => void;
   onEnd: () => void;
-  startedAt: number | null;
+  onClose: () => void;
 }) {
-  const { state, heard, caption } = props;
+  const { open, state } = props;
+  const [mounted, setMounted] = useState(false);
+  const [odiaNote, setOdiaNote] = useState(false);
+  const endRef = useRef<HTMLButtonElement | null>(null);
   const elapsed = useElapsed(props.startedAt);
-  const line =
-    state === "listening"
-      ? heard || "Go ahead, I'm listening"
+  useEffect(() => setMounted(true), []);
+
+  // While open: no page scroll behind it; Escape ends; focus starts on End.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    endRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") (state === "off" ? props.onClose : props.onEnd)();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, state]);
+
+  if (!mounted || !open) return null;
+  const live = state !== "off";
+  const s = STATE[props.needsTap && !live ? "off" : state];
+
+  // Captions: the reader's words, then the Hub's, the last turn only.
+  const you = state === "listening" ? props.heard : props.lastQuestion;
+  const hub =
+    state === "speaking"
+      ? props.caption
       : state === "thinking"
         ? "Searching the library…"
-        : state === "speaking"
-          ? caption
-          : "Connecting to voice…";
-  return (
-    <div className="rounded-[20px] border-[1.5px] border-teal bg-teal-wash px-3 py-2.5 space-y-1.5" role="group" aria-label="Voice conversation">
-      <div className="flex items-center gap-3">
-        <StateLabel state={state} />
-        <Wave level={props.level} state={state} />
+        : state === "connecting"
+          ? "Connecting…"
+          : state === "listening" && !props.heard
+            ? "Go ahead, I'm listening."
+            : "";
+
+  // Rendered into <body> so the page's stacking contexts can't put the header on top.
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Talk to the Hub"
+      className="fixed inset-0 z-[200] flex flex-col bg-paper text-ink"
+      style={{
+        paddingTop: "max(12px, env(safe-area-inset-top))",
+        paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+        paddingLeft: "max(16px, env(safe-area-inset-left))",
+        paddingRight: "max(16px, env(safe-area-inset-right))",
+      }}
+    >
+      {/* Top: state and timer, voice and language */}
+      <div className="w-full max-w-[880px] mx-auto flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.14em]" style={{ color: s.color }}>
+          <span className={`w-2.5 h-2.5 rounded-full ${live ? "motion-safe:animate-pulse" : ""}`} style={{ background: s.color }} aria-hidden />
+          {s.label}
+        </span>
+        <span className="text-[13px] tabular-nums text-ink-soft">{live ? elapsed : ""}</span>
         <span className="flex-1" />
-        <span className="text-[12px] tabular-nums text-ink-soft">{elapsed}</span>
         <div className="inline-flex rounded-full border border-line bg-paper p-0.5" role="radiogroup" aria-label="Voice">
           {VOICES.map((v) => (
             <button
@@ -95,75 +149,14 @@ export function VoiceBar(props: {
               role="radio"
               aria-checked={props.voiceName === v.id}
               onClick={() => props.setVoiceName(v.id)}
-              className={`px-2.5 py-0.5 rounded-full text-[12px] ${props.voiceName === v.id ? "bg-teal text-paper" : "text-ink-soft hover:text-ink"}`}
+              className={`px-3 py-1 rounded-full text-[13px] ${props.voiceName === v.id ? "bg-teal text-paper" : "text-ink-soft hover:text-ink"}`}
             >
               {v.label}
             </button>
           ))}
         </div>
-        <button type="button" onClick={props.onEnd} aria-label="End voice conversation" className="w-9 h-9 grid place-items-center rounded-full bg-ink text-paper hover:bg-deep-teal">
-          <X size={16} strokeWidth={2} />
-        </button>
       </div>
-      <p className="text-[14px] leading-[1.5] text-ink line-clamp-2 min-h-[1.5em]" aria-live="polite">
-        {line}
-      </p>
-      {state === "speaking" && <p className="text-[11.5px] text-ink-soft">Speak over it to interrupt.</p>}
-    </div>
-  );
-}
-
-const LANGS: { id: VoiceLang | "or"; label: string; textOnly?: boolean }[] = [
-  { id: "en", label: "English" },
-  { id: "hi", label: "हिन्दी" },
-  { id: "or", label: "ଓଡ଼ିଆ", textOnly: true },
-];
-
-/** The latest words of a long caption, so big captions never push the controls off screen. */
-function captionTail(text: string, max = 170): string {
-  if (text.length <= max) return text;
-  const cut = text.indexOf(" ", text.length - max);
-  return `…${text.slice(cut > 0 ? cut : text.length - max)}`;
-}
-
-/** Phones: full-screen voice mode. */
-export function VoiceScreen(props: {
-  state: VoiceState;
-  heard: string;
-  caption: string;
-  level: number;
-  voiceName: VoiceName;
-  setVoiceName: (v: VoiceName) => void;
-  language: VoiceLang;
-  setLanguage: (l: VoiceLang) => void;
-  onEnd: () => void;
-  onKeyboard: () => void;
-  startedAt: number | null;
-}) {
-  const { state } = props;
-  const [odiaNote, setOdiaNote] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const elapsed = useElapsed(props.startedAt);
-  const color = STATE[state].color;
-  const scale = state === "listening" ? 1 + props.level * 0.18 : state === "speaking" ? 1.06 : 1;
-  // Rendered into <body>: the page's route transition creates a stacking context
-  // that would otherwise keep this under the site header.
-  if (!mounted) return null;
-  return createPortal(
-    <div
-      className="lg:hidden fixed inset-0 z-[200] bg-paper flex flex-col"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Voice conversation"
-      style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="flex items-center justify-between px-4 py-3">
-        <StateLabel state={state} />
-        <span className="text-[12px] tabular-nums text-ink-soft">{elapsed}</span>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-1.5 px-4" role="radiogroup" aria-label="Language">
+      <div className="w-full max-w-[880px] mx-auto flex flex-wrap gap-1.5 mt-2.5" role="radiogroup" aria-label="Language">
         {LANGS.map((l) => (
           <button
             key={l.id}
@@ -172,62 +165,80 @@ export function VoiceScreen(props: {
             aria-checked={!l.textOnly && props.language === l.id}
             onClick={() => (l.textOnly ? setOdiaNote(true) : props.setLanguage(l.id as VoiceLang))}
             className={`rounded-full border px-3 py-1 text-[13px] ${
-              l.textOnly ? "border-dashed border-line text-ink-soft" : props.language === l.id ? "border-teal bg-teal-wash text-ink" : "border-line text-ink-soft"
+              l.textOnly ? "border-dashed border-line text-ink-soft" : props.language === l.id ? "border-teal bg-teal-wash text-ink" : "border-line text-ink-soft hover:border-teal"
             }`}
           >
             {l.label}
             {l.textOnly && <span className="ml-1 text-[11px]">text only</span>}
           </button>
         ))}
+        {odiaNote && <span className="self-center text-[12.5px] text-ink-soft">Odia is text only for now. Type your question in Odia instead.</span>}
       </div>
-      {odiaNote && <p className="text-center text-[12.5px] text-ink-soft mt-2 px-6">Odia is text only for now. Type your question in Odia instead.</p>}
 
-      <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-6 px-6">
-        <div className="relative w-40 h-40 grid place-items-center" aria-hidden>
-          <span
-            className={`absolute inset-0 rounded-full border-2 ${state === "listening" || state === "speaking" ? "animate-ping" : ""}`}
-            style={{ borderColor: color, opacity: 0.25, animationDuration: state === "speaking" ? "1s" : "1.8s" }}
-          />
-          <span
-            className={`w-28 h-28 rounded-full transition-transform duration-150 ${state === "thinking" ? "animate-pulse" : ""}`}
-            style={{ background: color, transform: `scale(${scale})` }}
-          />
-        </div>
-        <p className="text-center text-[19px] leading-[1.45] text-ink max-w-[26ch] min-h-[4.4em] max-h-[8.7em] overflow-hidden" aria-live="polite">
-          {state === "listening"
-            ? props.heard || <span className="text-ink-soft">Go ahead, I'm listening</span>
-            : state === "thinking"
-              ? <span className="text-ink-soft">Searching the library…</span>
-              : state === "speaking"
-                ? captionTail(props.caption)
-                : <span className="text-ink-soft">Connecting…</span>}
-        </p>
-        {state === "speaking" && <p className="text-[12.5px] text-ink-soft -mt-5">Speak over it to interrupt.</p>}
-        <div className="inline-flex rounded-full border border-line bg-paper p-0.5" role="radiogroup" aria-label="Voice">
-          {VOICES.map((v) => (
+      {/* Centre: indicator and captions */}
+      <div className="flex-1 min-h-0 w-full max-w-[880px] mx-auto flex flex-col items-center justify-center gap-6 sm:gap-8 text-center overflow-hidden py-4">
+        <CatLogo
+          state={live ? state : "idle"}
+          micLevel={props.level}
+          voiceLevel={props.outLevel}
+          label={s.label}
+          className="shrink min-h-0"
+        />
+
+        {props.needsTap && !live ? (
+          <div className="flex flex-col items-center gap-3 max-w-[40ch]">
+            {props.message && <p className="text-[15px] text-ink-soft">{props.message}</p>}
             <button
-              key={v.id}
               type="button"
-              role="radio"
-              aria-checked={props.voiceName === v.id}
-              onClick={() => props.setVoiceName(v.id)}
-              className={`px-3.5 py-1 rounded-full text-[13px] ${props.voiceName === v.id ? "bg-teal text-paper" : "text-ink-soft"}`}
+              onClick={props.onStart}
+              className="inline-flex items-center gap-2.5 rounded-full bg-teal text-paper px-7 py-4 text-[18px] font-semibold hover:bg-deep-teal active:scale-[0.98] motion-safe:transition-[transform,background-color]"
             >
-              {v.label}
+              <Mic size={22} strokeWidth={2} aria-hidden /> Tap to start talking
             </button>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="w-full flex flex-col items-center gap-3" aria-live="polite">
+            {you && (
+              <p className="text-[16px] sm:text-[19px] leading-[1.45] text-ink-soft max-w-[46ch]">
+                <span className="sr-only">You said: </span>
+                {tail(you, 140)}
+              </p>
+            )}
+            {hub && (
+              <p className="text-[22px] sm:text-[30px] leading-[1.35] tracking-[-0.01em] text-ink max-w-[30ch] sm:max-w-[34ch] font-medium">
+                {tail(hub, state === "speaking" ? 190 : 120)}
+              </p>
+            )}
+            {state === "speaking" && <p className="text-[13px] text-ink-soft">Speak over it to interrupt.</p>}
+            {props.sources.length > 0 && state === "speaking" && (
+              <p className="text-[12.5px] text-ink-soft max-w-[60ch]">
+                From: {props.sources.slice(0, 2).join(" · ")}
+                {props.sources.length > 2 ? ` and ${props.sources.length - 2} more` : ""}. Full sources stay in the chat.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-center gap-5 pb-6 pt-2">
-        <button type="button" onClick={props.onKeyboard} aria-label="Type instead" className="w-13 h-13 w-[52px] h-[52px] grid place-items-center rounded-full border border-line bg-paper text-ink-soft">
-          <Keyboard size={20} strokeWidth={1.8} />
-        </button>
-        <span className="w-[64px] h-[64px] grid place-items-center rounded-full bg-teal text-paper" aria-hidden>
-          <Mic size={24} strokeWidth={1.8} />
-        </span>
-        <button type="button" onClick={props.onEnd} aria-label="End voice conversation" className="w-[52px] h-[52px] grid place-items-center rounded-full bg-ink text-paper">
-          <X size={20} strokeWidth={2} />
+      {/* Bottom: End, within thumb reach */}
+      <div className="w-full max-w-[880px] mx-auto flex items-center justify-center gap-4 shrink-0">
+        {!live && (
+          <button
+            type="button"
+            onClick={props.onClose}
+            className="rounded-full border border-line bg-paper px-5 h-14 text-[15px] text-ink-soft hover:bg-cream"
+          >
+            Type instead
+          </button>
+        )}
+        <button
+          ref={endRef}
+          type="button"
+          onClick={live ? props.onEnd : props.onClose}
+          aria-label={live ? "End voice conversation" : "Close talk mode"}
+          className="inline-flex items-center gap-2 rounded-full bg-ink text-paper px-7 h-14 text-[16px] font-semibold hover:bg-deep-teal active:scale-[0.98] motion-safe:transition-[transform,background-color]"
+        >
+          <X size={20} strokeWidth={2.2} aria-hidden /> {live ? "End" : "Close"}
         </button>
       </div>
     </div>,

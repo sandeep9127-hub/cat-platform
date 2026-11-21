@@ -76,7 +76,9 @@ export function useVoice(opts: {
   const [state, setStateRaw] = useState<VoiceState>("off");
   const [heard, setHeard] = useState(""); // live words while listening
   const [caption, setCaption] = useState(""); // what the Hub is saying
-  const [level, setLevel] = useState(0);
+  const [lastQuestion, setLastQuestion] = useState(""); // what the reader last asked
+  const [level, setLevel] = useState(0); // mic input level, 0–1
+  const [outLevel, setOutLevel] = useState(0); // the Hub's voice level, 0–1 (drives the logo)
   const [error, setError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
 
@@ -94,6 +96,7 @@ export function useVoice(opts: {
     rec: null as MediaRecorder | null,
     micCtx: null as AudioContext | null,
     playCtx: null as AudioContext | null,
+    outAnalyser: null as AnalyserNode | null,
     raf: 0,
     finalText: "",
     streamId: "",
@@ -221,7 +224,7 @@ export function useVoice(opts: {
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.connect(ctx.destination);
+    src.connect(r.current.outAnalyser ?? ctx.destination);
     const at = Math.max(r.current.nextTime, ctx.currentTime + 0.05);
     src.start(at);
     r.current.nextTime = at + buf.duration;
@@ -286,6 +289,7 @@ export function useVoice(opts: {
   const askTurn = (question: string) => {
     setHeard("");
     setCaption("");
+    setLastQuestion(question);
     setState("thinking");
     r.current.streamId = "";
     r.current.wantSpeech = true;
@@ -369,10 +373,11 @@ export function useVoice(opts: {
     } catch {}
     void c.micCtx?.close().catch(() => {});
     void c.playCtx?.close().catch(() => {});
-    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, finalText: "", streamId: "" });
+    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, outAnalyser: null, finalText: "", streamId: "" });
     setHeard("");
     setCaption("");
     setLevel(0);
+    setOutLevel(0);
     setStartedAt(null);
     setState("off");
   }, [cancelSpeech]);
@@ -380,11 +385,16 @@ export function useVoice(opts: {
   const start = useCallback(async () => {
     if (stateRef.current !== "off") return;
     setError(null);
+    setLastQuestion("");
     setState("connecting");
     const c = r.current;
     try {
       // Audio contexts must start inside the click that opened voice.
       c.playCtx = new AudioContext();
+      // Speech goes through an analyser so the talk-mode logo can follow the Hub's voice.
+      c.outAnalyser = c.playCtx.createAnalyser();
+      c.outAnalyser.fftSize = 512;
+      c.outAnalyser.connect(c.playCtx.destination);
       // Microphone first: a blocked mic shouldn't reserve a paid session.
       c.media = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
@@ -409,11 +419,18 @@ export function useVoice(opts: {
       analyser.fftSize = 512;
       c.micCtx.createMediaStreamSource(c.media).connect(analyser);
       const data = new Uint8Array(analyser.fftSize);
+      const out = new Uint8Array(512);
       const tick = () => {
         analyser.getByteTimeDomainData(data);
         let peak = 0;
         for (const v of data) peak = Math.max(peak, Math.abs(v - 128));
         setLevel(Math.min(1, peak / 64));
+        if (c.outAnalyser) {
+          c.outAnalyser.getByteTimeDomainData(out);
+          let sum = 0;
+          for (const v of out) sum += (v - 128) * (v - 128);
+          setOutLevel(Math.min(1, Math.sqrt(sum / out.length) / 28));
+        }
         c.raf = requestAnimationFrame(tick);
       };
       tick();
@@ -501,5 +518,5 @@ export function useVoice(opts: {
   endRef.current = end;
   useEffect(() => () => end(), [end]);
 
-  return { state, heard, caption, level, error, start, end, startedAt, interrupt };
+  return { state, heard, caption, lastQuestion, level, outLevel, error, start, end, startedAt, interrupt };
 }
