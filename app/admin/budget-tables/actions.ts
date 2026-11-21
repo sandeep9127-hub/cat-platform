@@ -1,10 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { LANDSCAPES } from "@/lib/data/landscapes";
-import { createShareLink, revokeShareLink } from "@/lib/share/links";
+import { createShareLink, revokeShareLink, shareEmail, shareUrl } from "@/lib/share/links";
+import { sendEmail } from "@/lib/notify/email";
 import { writeAudit } from "@/lib/audit";
 
 async function editor() {
@@ -14,7 +14,8 @@ async function editor() {
   return user;
 }
 
-export type CreateState = { url?: string; expiresAt?: string; error?: string };
+export type CreateState = { url?: string; expiresAt?: string; error?: string; emailed?: string };
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export async function createLinkAction(_prev: CreateState, form: FormData): Promise<CreateState> {
   let user;
@@ -40,19 +41,23 @@ export async function createLinkAction(_prev: CreateState, form: FormData): Prom
     await writeAudit({
       actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.create", entityType: "share_link", entityId: r.id,
     }).catch(() => {});
-    // The configured site address. The request's Host header is trusted only for
-    // local development, so a spoofed host can't put the token on another domain.
-    let base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
-    if (!/^https?:\/\/[^/]+$/.test(base)) {
-      const host = (await headers()).get("host") ?? "";
-      if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) {
-        await revokeShareLink(r.id, user.id ?? null);
-        return { error: "NEXT_PUBLIC_SITE_URL is not set on the server, so the link can't be built. Nothing was shared." };
-      }
-      base = `http://${host}`;
+    const url = await shareUrl(r.token);
+    if (!url) {
+      await revokeShareLink(r.id, user.id ?? null);
+      return { error: "NEXT_PUBLIC_SITE_URL is not set on the server, so the link can't be built. Nothing was shared." };
+    }
+    // Optional: email the link straight to the person (e.g. someone who asked by email).
+    const emailTo = String(form.get("emailTo") ?? "").trim();
+    let emailed: string | undefined;
+    if (emailTo) {
+      if (!EMAIL_RE.test(emailTo) || emailTo.length > 254) return { url, expiresAt: r.expiresAt, error: "That email address doesn't look right; the link was created but not sent." };
+      const scopeName = all ? "all landscapes" : LANDSCAPES[slug].name;
+      const res = await sendEmail({ to: emailTo, ...shareEmail({ name: "", url, scopeName, expiresAt: r.expiresAt }) });
+      emailed = res === "sent" ? `Emailed to ${emailTo}.` : res === "disabled" ? "Email isn't configured on this server; send the link yourself." : `Email failed (${res.slice(8, 120)}); send the link yourself.`;
+      await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.email", entityType: "share_link", entityId: r.id, meta: { result: res } });
     }
     revalidatePath(`/admin/budget-tables/${slug}`);
-    return { url: `${base}/share/${r.token}`, expiresAt: r.expiresAt };
+    return { url, expiresAt: r.expiresAt, emailed };
   } catch (e) {
     return { error: (e as Error).message };
   }

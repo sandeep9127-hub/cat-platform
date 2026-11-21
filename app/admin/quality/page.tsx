@@ -69,6 +69,7 @@ export default async function Quality() {
       ORDER BY d.landscape_slug, d.title`),
     rows<{ what: string; n: number; href: string }>(sql`
       SELECT 'Budget changes' AS what, count(*)::int AS n, '/admin/budget-changes' AS href FROM "cat".intervention_changes WHERE status = 'pending'
+      UNION ALL SELECT 'Access requests', count(*)::int, '/admin/access-requests' FROM "cat".access_requests WHERE status = 'pending'
       UNION ALL SELECT 'Discovery candidates', count(*)::int, '/admin/candidates' FROM "cat".discovery_candidates WHERE status = 'pending_triage'
       UNION ALL SELECT 'Flagged fact sheets', count(*)::int, '/admin/factsheets' FROM "cat".solution_factsheets WHERE status = 'flagged'
       UNION ALL SELECT 'Open triage items', count(*)::int, '/admin/budget-changes' FROM "cat".triage_items WHERE status IN ('new','in_review','needs_info')`),

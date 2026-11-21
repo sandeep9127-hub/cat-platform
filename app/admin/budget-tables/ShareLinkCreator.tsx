@@ -27,6 +27,11 @@ export function ShareLinkCreator({ landscape }: { landscape: string }) {
             <option value="365">1 year</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-[12.5px] text-muted">
+          Email it to (optional)
+          <input name="emailTo" type="email" maxLength={254} placeholder="name@organisation.org"
+            className="rounded-[6px] border border-line bg-paper px-2.5 py-1.5 text-[13.5px] text-ink w-[240px]" />
+        </label>
         <button disabled={pending}
           className="rounded-[6px] bg-teal text-paper px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.1em] hover:bg-deep-teal disabled:opacity-60">
           {pending ? "Creating…" : "Create link"}
@@ -35,6 +40,7 @@ export function ShareLinkCreator({ landscape }: { landscape: string }) {
       {state.error && <p className="text-[13px] text-red-alert">{state.error}</p>}
       {state.url && (
         <div className="rounded-[8px] border border-teal/30 bg-teal/10 px-4 py-3 space-y-2">
+          {state.emailed && <p className="text-[13px] text-deep-teal font-medium">{state.emailed}</p>}
           <p className="text-[13px] text-deep-teal">
             Copy this link now. It is shown only once; if it&apos;s lost, revoke it and create a new one.
           </p>

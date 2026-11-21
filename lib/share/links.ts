@@ -66,6 +66,37 @@ export async function listShareLinks(landscapeSlug?: string | null): Promise<Sha
     ORDER BY l.revoked_at IS NOT NULL, l.expires_at < now(), l.created_at DESC`));
 }
 
+/**
+ * Public URL for a share token. Built from NEXT_PUBLIC_SITE_URL; the request's
+ * Host header is trusted only on localhost (dev). Null when neither applies.
+ */
+export async function shareUrl(token: string): Promise<string | null> {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
+  if (/^https?:\/\/[^/]+$/.test(base)) return `${base}/share/${token}`;
+  const { headers } = await import("next/headers");
+  const host = (await headers()).get("host") ?? "";
+  return /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? `http://${host}/share/${token}` : null;
+}
+
+/** The plain-text email that delivers a link. */
+export function shareEmail(opts: { name: string; url: string; scopeName: string; expiresAt: string }) {
+  const expires = new Date(opts.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return {
+    subject: `Your access to the ${opts.scopeName} investment table (CAT Transformation Hub)`,
+    text: [
+      opts.name ? `Dear ${opts.name},` : "Hello,",
+      "",
+      `You can now view the full investment table for ${opts.scopeName} on the CAT Transformation Hub:`,
+      "",
+      opts.url,
+      "",
+      `The link is personal and view-only, and it works until ${expires}. Please don't forward it; if a colleague needs access, they can request it on the Hub.`,
+      "",
+      "Consortium for Agroecological Transformations (CAT)",
+    ].join("\n"),
+  };
+}
+
 export async function revokeShareLink(id: string, userId: string | null): Promise<void> {
   if (!UUID.test(id)) return;
   await db.execute(sql`

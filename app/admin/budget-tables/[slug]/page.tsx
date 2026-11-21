@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FullInterventionTable } from "@/components/budget/FullInterventionTable";
+import { InteractiveBudgetTable } from "@/components/budget/InteractiveBudgetTable";
 import { getInterventions } from "@/lib/budget/table";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { listShareLinks } from "@/lib/share/links";
@@ -77,20 +77,11 @@ export default async function BudgetTable({ params }: { params: Promise<{ slug: 
         )}
       </section>
 
-      {all
-        ? Object.entries(groupBy(rows)).map(([s, rs]) => (
-            <section key={s} className="space-y-2">
-              <h2 className="font-serif text-[20px] text-deep-teal">{LANDSCAPES[s]?.name ?? s}</h2>
-              <FullInterventionTable rows={rs} />
-            </section>
-          ))
-        : <FullInterventionTable rows={rows} />}
+      <InteractiveBudgetTable rows={rows} multi={all} landscapeNames={landscapeNames()} />
     </div>
   );
 }
 
-function groupBy<T extends { landscape_slug: string }>(rows: T[]): Record<string, T[]> {
-  const out: Record<string, T[]> = {};
-  for (const r of rows) (out[r.landscape_slug] ??= []).push(r);
-  return out;
+function landscapeNames(): Record<string, string> {
+  return Object.fromEntries(Object.entries(LANDSCAPES).map(([k, v]) => [k, v.name]));
 }

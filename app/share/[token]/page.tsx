@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { FullInterventionTable } from "@/components/budget/FullInterventionTable";
+import { InteractiveBudgetTable } from "@/components/budget/InteractiveBudgetTable";
 import { getInterventions } from "@/lib/budget/table";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { getClientIp, rateLimit } from "@/lib/security/ratelimit";
@@ -38,14 +38,12 @@ export default async function SharedTable({ params }: { params: Promise<{ token:
 
   const link = await resolveShareToken(token);
   if (!link) {
-    return <Message title="This link isn't available" body="It may have expired or been revoked. Ask the person who shared it for a new one." />;
+    return <Message title="This link isn't available" body="It may have expired or been revoked. You can ask for access again at /request-access on the CAT Transformation Hub." />;
   }
   await logShareView(link.id, ip, h.get("user-agent"), "view");
 
   const all = link.scope === "all_landscapes_full_table";
   const rows = await getInterventions(all ? null : link.landscape_slug);
-  const groups: Record<string, typeof rows> = {};
-  for (const r of rows) (groups[r.landscape_slug] ??= []).push(r);
   const expires = new Date(link.expires_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
@@ -59,13 +57,9 @@ export default async function SharedTable({ params }: { params: Promise<{ token:
           Shared with {link.label}. Approved figures from the landscape investment plans. This link expires on {expires}.
         </p>
       </header>
-      {Object.entries(groups).map(([slug, rs]) => (
-        <section key={slug} className="space-y-2">
-          {all && <h2 className="font-serif text-[20px] text-deep-teal">{LANDSCAPES[slug]?.name ?? slug}</h2>}
-          <FullInterventionTable rows={rs} />
-        </section>
-      ))}
-      <p className="text-[12px] text-muted">Amounts in Indian rupees. Phase 1 and Phase 2 follow each landscape investment plan.</p>
+      <InteractiveBudgetTable rows={rows} multi={all}
+        landscapeNames={Object.fromEntries(Object.entries(LANDSCAPES).map(([k, v]) => [k, v.name]))} />
+      <p className="text-[12px] text-muted">View only. Amounts in Indian rupees. Phase 1 and Phase 2 follow each landscape investment plan.</p>
     </main>
   );
 }
