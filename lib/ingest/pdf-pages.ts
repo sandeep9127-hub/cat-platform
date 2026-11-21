@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -39,21 +39,46 @@ function sofficePath(): string | null {
   return candidates.find((p) => existsSync(p)) ?? null;
 }
 
-/** DOCX -> PDF with LibreOffice in a throwaway profile and folder. Null if LibreOffice isn't installed. */
+// Locked-down LibreOffice profile: no macros, never update links or fields
+// (so a document can't pull remote or local content into the render).
+const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
+<oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item>
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableMacrosExecution" oor:op="fuse"><value>true</value></prop></item>
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="BlockUntrustedRefererLinks" oor:op="fuse"><value>true</value></prop></item>
+<item oor:path="/org.openoffice.Office.Writer/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item>
+<item oor:path="/org.openoffice.Office.Writer/Content/Update"><prop oor:name="Field" oor:op="fuse"><value>false</value></prop></item>
+</oor:items>`;
+
+/**
+ * DOCX -> PDF with LibreOffice. Null if LibreOffice isn't installed.
+ * Hardening: throwaway profile with macros and link/field updates off, a
+ * minimal environment (no database URL or API keys reach the converter), a
+ * private temp folder, a time limit, and a size check before reading output.
+ * Input is a report from CAT's own Drive folder that already passed the DOCX
+ * parser's size caps; the sync runs on an ephemeral GitHub runner.
+ */
 export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null> {
   const soffice = sofficePath();
   if (!soffice) return null;
   const dir = await mkdtemp(join(tmpdir(), "cat-pdf-"));
   try {
+    const profile = join(dir, "profile");
+    await mkdir(join(profile, "user"), { recursive: true });
+    await writeFile(join(profile, "user", "registrymodifications.xcu"), PROFILE_XCU);
     const input = join(dir, "report.docx");
     await writeFile(input, docx);
     await run(soffice, [
-      `-env:UserInstallation=file://${join(dir, "profile")}`,
-      "--headless", "--norestore", "--convert-to", "pdf", "--outdir", dir, input,
-    ], { timeout: 300_000, maxBuffer: 10 * 1024 * 1024 });
-    const pdf = await readFile(join(dir, "report.pdf"));
-    if (pdf.length > MAX_PDF_BYTES) throw new Error("Rendered PDF too large");
-    return new Uint8Array(pdf);
+      `-env:UserInstallation=file://${profile}`,
+      "--headless", "--norestore", "--nolockcheck", "--convert-to", "pdf:writer_pdf_Export", "--outdir", dir, input,
+    ], {
+      timeout: 300_000,
+      maxBuffer: 10 * 1024 * 1024,
+      env: { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: dir, TMPDIR: dir, LANG: "en_US.UTF-8" } as unknown as NodeJS.ProcessEnv,
+    });
+    const out = join(dir, "report.pdf");
+    if ((await stat(out)).size > MAX_PDF_BYTES) throw new Error("Rendered PDF too large");
+    return new Uint8Array(await readFile(out));
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => {});
   }
@@ -137,10 +162,17 @@ export function assignPages(chunkTexts: string[], pageTexts: string[]): PageAssi
   });
 }
 
+const MAX_PAGES = 2000;
+const MAX_TEXT_CHARS = 20_000_000;
+
 export async function pdfPageTexts(pdf: Uint8Array): Promise<string[]> {
+  if (pdf.length > MAX_PDF_BYTES) throw new Error("PDF too large");
   const proxy = await getDocumentProxy(new Uint8Array(pdf));
+  if (proxy.numPages > MAX_PAGES) throw new Error(`PDF has ${proxy.numPages} pages (limit ${MAX_PAGES})`);
   const { text } = await extractText(proxy, { mergePages: false });
-  return Array.isArray(text) ? text : [text];
+  const pages = Array.isArray(text) ? text : [text];
+  if (pages.reduce((n, t) => n + t.length, 0) > MAX_TEXT_CHARS) throw new Error("PDF text too large");
+  return pages;
 }
 
 // ─── Attaching pages to a published version ──────────────────────────

@@ -103,10 +103,16 @@ export async function runDriveSync(opts: {
       let noRenderer = false;
       for (const p of plan.reports) {
         const name = LANDSCAPES[p.slug]?.name ?? p.slug;
-        const v = rows<{ id: string; r2_original_key: string }>(await db.execute(sql`
-          SELECT v.id, v.r2_original_key FROM "cat".documents d JOIN "cat".document_versions v ON v.id = d.current_version_id
-          WHERE d.drive_file_id = ${p.current.id} AND v.r2_pdf_key IS NULL`))[0];
+        const v = rows<{ id: string; r2_original_key: string; drive_modified_time: string | null }>(await db.execute(sql`
+          SELECT v.id, v.r2_original_key, v.drive_modified_time
+          FROM "cat".documents d JOIN "cat".document_versions v ON v.id = d.current_version_id
+          WHERE d.source = 'drive' AND d.doc_type = 'lip' AND d.landscape_slug = ${p.slug}
+            AND d.drive_file_id = ${p.current.id} AND v.r2_pdf_key IS NULL`))[0];
         if (!v) continue;
+        // A Google Doc's PDF comes from Drive's live copy: only use it while that
+        // copy is exactly the version we ingested (Word files render the stored original).
+        if (p.current.mimeType === GOOGLE_DOC && (!v.drive_modified_time
+            || new Date(v.drive_modified_time).getTime() !== new Date(p.current.modifiedTime).getTime())) continue;
         try {
           const got = await pdfForDriveFile(p.current, await getObjectBytes(v.r2_original_key));
           if (!got) { noRenderer = true; continue; }
