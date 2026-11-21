@@ -465,12 +465,12 @@ function FilterDropdown({
   options: string[];
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className="flex flex-col gap-1.5 min-w-0 max-w-full">
       <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3.5 py-2.5 bg-paper border border-line rounded-card font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
+        className="w-full max-w-full truncate px-3.5 py-2.5 bg-paper border border-line rounded-card font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
       >
         <option value="">All</option>
         {options.map((o) => (
