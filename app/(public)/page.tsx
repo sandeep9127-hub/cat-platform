@@ -97,9 +97,10 @@ export default async function LandingPage() {
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
       <section className="relative">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
-          {/* Left — headline panel */}
-          <div className="order-2 lg:order-1">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-10 lg:gap-16 items-center">
+          {/* Left: headline panel. First on phones too, so a first-time
+              visitor reads what the site is before the map. */}
+          <div>
             {hasLastUpdate && (
               <div className="flex items-center gap-2.5 mb-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
                 <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
@@ -145,7 +146,7 @@ export default async function LandingPage() {
 
           {/* Right — the live Solutions Atlas (pins animate in on load), with
               its stat ledger docked underneath so map + numbers read as one. */}
-          <div className="order-1 lg:order-2">
+          <div>
             <IndiaMap
               entries={mapEntries}
               nationwide={nationwideEntries}
