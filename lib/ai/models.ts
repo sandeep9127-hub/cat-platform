@@ -44,7 +44,8 @@ export type AiTask =
   | "draft_writer"
   | "chunk_context"
   | "version_diff"
-  | "eval_build";
+  | "eval_build"
+  | "brief";
 
 export type TaskConfig = {
   model: ModelId;
@@ -88,6 +89,8 @@ const DEFAULTS: Record<AiTask, TaskConfig> = {
 
   // Research + writing that becomes published content.
   factsheet: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
+  // Two-page cited landscape brief for funders (lib/briefs/generate.ts); rebuilt only when sources change.
+  brief: { model: MODELS.sonnet, effort: "low", maxTokens: 8000, pool: "ingestion", maxWebSearches: 0 },
   // Drafts test-set questions from library passages (scripts/build-eval-set.ts); editors review them.
   eval_build: { model: MODELS.haiku, effort: "low", maxTokens: 4000, pool: "ingestion", maxWebSearches: 0, thinking: "off" },
   discovery: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
