@@ -49,6 +49,11 @@ jobs:
           sudo apt-get install -y -qq --no-install-recommends libreoffice-writer-nogui \
             fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation2 fonts-noto-core
           soffice --version
+          # LibreOffice runs inside a network namespace with no interfaces
+          # (SOFFICE_NO_NETWORK=1 below). Ubuntu 24.04 restricts unprivileged
+          # user namespaces by default; allow them on this throwaway runner.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          unshare --user --map-root-user --net -- true
       - name: Sync
         run: |
           if [ "$DRY_RUN" = "true" ]; then npx tsx scripts/drive-sync.ts --dry-run; else npx tsx scripts/drive-sync.ts; fi
@@ -65,6 +70,7 @@ jobs:
           GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
           DRIVE_FINAL_FOLDER_ID: ${{ secrets.DRIVE_FINAL_FOLDER_ID }}
           INGESTION_DAILY_USD_CEILING: "25"
+          SOFFICE_NO_NETWORK: "1"
           SYNC_EMAIL: ${{ vars.SYNC_EMAIL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}

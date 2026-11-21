@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { sql } from "drizzle-orm";
+import { XMLParser } from "fast-xml-parser";
 import JSZip from "jszip";
 import { getDocumentProxy } from "unpdf";
 import { db } from "@/lib/db";
@@ -23,6 +24,7 @@ import { putObject } from "@/lib/storage/r2";
  */
 
 const run = promisify(execFile);
+const HYPERLINK_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 const MAX_PDF_BYTES = 150 * 1024 * 1024;
 
@@ -56,23 +58,47 @@ const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
  * (linked images, templates, OLE objects, sub-documents, frames). Hyperlinks
  * stay: they are only drawn, never fetched.
  */
-async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
+export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
   const zip = await JSZip.loadAsync(docx);
-  let touched = false;
+  const parser = new XMLParser({
+    ignoreAttributes: false, attributeNamePrefix: "", processEntities: false,
+    isArray: (name) => name === "Relationship",
+  });
+  const decode = (v: unknown) => String(v ?? "")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+  const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
   for (const name of Object.keys(zip.files)) {
-    if (!name.endsWith(".rels")) continue;
+    if (!name.toLowerCase().endsWith(".rels") || zip.files[name].dir) continue;
     const xml = await zip.file(name)!.async("string");
-    const cleaned = xml.replace(/<Relationship\b[^>]*\/>/g, (rel) =>
-      /TargetMode="External"/i.test(rel) && !/\/hyperlink"/.test(rel) ? "" : rel);
-    if (cleaned !== xml) { zip.file(name, cleaned); touched = true; }
+    if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error(`Rejected document: ${name} declares a DOCTYPE`);
+    let doc: { Relationships?: { Relationship?: Record<string, unknown>[] } };
+    try {
+      doc = parser.parse(xml, true);
+    } catch {
+      throw new Error(`Rejected document: ${name} is not well-formed`);
+    }
+    const rels = doc.Relationships?.Relationship ?? [];
+    const kept = rels.filter((r) =>
+      decode(r.TargetMode).trim().toLowerCase() !== "external" || decode(r.Type).trim() === HYPERLINK_REL);
+    // Rebuild every .rels file from parsed attributes only (nothing else survives).
+    const out = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + kept.map((r) => `<Relationship ${["Id", "Type", "Target", "TargetMode"]
+          .filter((k) => r[k] !== undefined).map((k) => `${k}="${esc(decode(r[k]))}"`).join(" ")}/>`).join("")
+      + "</Relationships>";
+    zip.file(name, out);
   }
-  return touched ? new Uint8Array(await zip.generateAsync({ type: "uint8array" })) : docx;
+  return new Uint8Array(await zip.generateAsync({ type: "uint8array" }));
 }
 
 /**
  * DOCX -> PDF with LibreOffice. Null if LibreOffice isn't installed.
  * Hardening: throwaway profile with macros and link/field updates off, a
- * external fetch targets stripped from the file, a minimal environment (no
+ * external fetch targets stripped from the file (rels rebuilt via an XML parser),
+ * no network on CI (unshare), a minimal environment (no
  * database URL or API keys reach the converter), a
  * private temp folder, a time limit, and a size check before reading output.
  * Input is a report from CAT's own Drive folder that already passed the DOCX
@@ -88,7 +114,10 @@ export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null
     await writeFile(join(profile, "user", "registrymodifications.xcu"), PROFILE_XCU);
     const input = join(dir, "report.docx");
     await writeFile(input, await stripExternalTargets(docx));
-    await run(soffice, [
+    // Where possible (Linux CI, SOFFICE_NO_NETWORK=1), run with no network at all.
+    const isolate = process.platform === "linux" && process.env.SOFFICE_NO_NETWORK === "1";
+    await run(isolate ? "unshare" : soffice, [
+      ...(isolate ? ["--user", "--map-root-user", "--net", "--", soffice] : []),
       `-env:UserInstallation=file://${profile}`,
       "--headless", "--norestore", "--nolockcheck", "--convert-to", "pdf:writer_pdf_Export", "--outdir", dir, input,
     ], {
