@@ -52,7 +52,7 @@ export default async function EntryDetailPage({ params }: Props) {
 
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-8 lg:pb-10 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 lg:gap-12 items-start">
         <div>
-          <div className="flex gap-3 items-center font-mono text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold mb-5">
+          <div className="flex gap-3 items-center font-mono text-[11px] uppercase tracking-mono-wide text-teal font-semibold mb-5">
             <Link href={`/theme/${theme?.slug}`} className="hover:text-teal-soft">
               {theme?.name}
             </Link>
@@ -108,7 +108,7 @@ export default async function EntryDetailPage({ params }: Props) {
           <NarrativeBlock label="What worked">{entry.whatWorked}</NarrativeBlock>
           {entry.whatDidNotWork && (
             <div
-              className="relative rounded-[8px] border border-line p-6 my-10"
+              className="relative rounded-card border border-line p-6 my-10"
               style={{ background: "var(--red-alert-wash)" }}
             >
               <span
@@ -116,7 +116,7 @@ export default async function EntryDetailPage({ params }: Props) {
                 className="absolute top-0 left-0 right-0 h-[2px]"
                 style={{ background: "var(--red-alert)" }}
               />
-              <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-red-alert font-semibold flex gap-2 items-center mb-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-red-alert font-semibold flex gap-2 items-center mb-3">
                 <span className="w-3.5 h-px bg-red-alert" />
                 What did not work
               </span>
@@ -137,12 +137,12 @@ export default async function EntryDetailPage({ params }: Props) {
                     <div className="font-serif text-[28px] font-medium text-deep-teal leading-none tracking-[-0.02em]">
                       {m.value}
                       {m.unit && (
-                        <sup className="font-mono text-[10px] text-amber-deep align-super font-medium tracking-[0.08em] ml-0.5">
+                        <sup className="font-mono text-[11px] text-amber-deep align-super font-medium tracking-[0.08em] ml-0.5">
                           {m.unit}
                         </sup>
                       )}
                     </div>
-                    <div className="font-mono text-[9.5px] uppercase tracking-mono-mid text-muted mt-1.5">
+                    <div className="font-mono text-[11px] uppercase tracking-mono-mid text-muted mt-1.5">
                       {m.label}
                     </div>
                   </div>
@@ -173,7 +173,7 @@ export default async function EntryDetailPage({ params }: Props) {
                       <div className="font-serif text-[16px] text-ink group-hover:text-teal transition-colors">
                         {o.org.shortName ?? o.org.name}
                       </div>
-                      <div className="font-mono text-[9.5px] uppercase tracking-mono-mid text-muted">
+                      <div className="font-mono text-[11px] uppercase tracking-mono-mid text-muted">
                         {ROLE_LABELS[o.role] ?? o.role}
                       </div>
                     </Link>
@@ -187,7 +187,7 @@ export default async function EntryDetailPage({ params }: Props) {
 
       {/* Bottom rail: provenance + status */}
       <footer className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-20 pt-6 border-t border-line">
-        <div className="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-mono-mid text-muted">
+        <div className="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-mono-mid text-muted">
           <span>
             Provenance:{" "}
             <span className="text-ink-soft">
@@ -224,7 +224,7 @@ export default async function EntryDetailPage({ params }: Props) {
 function NarrativeBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>

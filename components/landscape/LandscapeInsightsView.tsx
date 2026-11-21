@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import Link from "next/link";
 import type { LandscapeInsights } from "@/lib/db/landscape-kb";
 import type { LandscapeProfile } from "@/lib/data/landscapes";
@@ -10,15 +11,15 @@ import { Layers, ArrowRight } from "lucide-react";
 
 const CAT_COLOR: Record<string, string> = {
   "Agriculture, Horticulture & Agroforestry": "#8C7A5C",
-  "Livestock Management": "#C68C2E",
-  "NRM Private": "#2E7573",
+  "Livestock Management": palette.ochre,
+  "NRM Private": palette.teal,
   "NRM Community": "#3E8E8B",
-  "Technical Assistance": "#929CC5",
+  "Technical Assistance": palette.periwinkle,
   Fisheries: "#2C7BD0",
   "Common services for all value chains": "#8A8F98",
   Nutrition: "#C24A2E",
-  "Forestry & NTFP": "#5C8C2E",
-  Market: "#5C6796",
+  "Forestry & NTFP": palette.leaf,
+  Market: palette.periwinkleText,
   Biodiversity: "#2EA37A",
   Uncategorised: "#9AA0A6",
 };
@@ -43,15 +44,15 @@ export function LandscapeInsightsView({
     color: catColor(c.category),
   }));
   const whoPays = [
-    { label: "Government schemes", value: totals.govt, color: "#2E7573" },
-    { label: "Community contribution", value: totals.community, color: "#C68C2E" },
-    { label: "To be mobilised", value: totals.investment, color: "#5C6796" },
+    { label: "Government schemes", value: totals.govt, color: palette.teal },
+    { label: "Community contribution", value: totals.community, color: palette.ochre },
+    { label: "To be mobilised", value: totals.investment, color: palette.periwinkleText },
   ];
   const instruments = [
     { label: "Grants", value: totals.grants, color: "#2EA37A" },
-    { label: "Debt", value: totals.debt, color: "#B85042" },
-    { label: "Returnable grants", value: totals.returnable, color: "#929CC5" },
-    { label: "Outcome finance", value: totals.outcome, color: "#C68C2E" },
+    { label: "Debt", value: totals.debt, color: palette.redAlert },
+    { label: "Returnable grants", value: totals.returnable, color: palette.periwinkle },
+    { label: "Outcome finance", value: totals.outcome, color: palette.ochre },
   ].filter((s) => s.value > 0);
   const whoTotal = totals.total || 1;
   const scatterPoints: Point[] = byCategory
@@ -91,13 +92,13 @@ export function LandscapeInsightsView({
     <div className="pb-24">
       {/* KPI strip */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-[10px] overflow-hidden border border-line bg-line">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-card overflow-hidden border border-line bg-line">
           {kpis.map((s, i) => (
             <div key={i} className="bg-paper px-5 py-5">
-              <div className="font-serif text-[26px] sm:text-[30px] leading-none tracking-[-0.02em] text-deep-teal tabular-nums">
+              <div className="font-sans font-medium text-[26px] sm:text-[30px] leading-none tracking-[-0.02em] text-ink tabular-nums">
                 <Counter value={s.v} decimals={s.dec} prefix={s.pre ?? ""} suffix={s.suf} />
               </div>
-              <div className="mt-2 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+              <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
                 {s.lab}
               </div>
             </div>
@@ -113,7 +114,7 @@ export function LandscapeInsightsView({
         tail="goes"
         intro={`The plan is costed across ${byCategory.length} intervention categories; area is proportional to total cost. The top three carry ${top3pct}% of the budget.`}
       >
-        <div className="rounded-[12px] overflow-hidden border border-line bg-paper p-2 sm:p-3">
+        <div className="rounded-panel overflow-hidden border border-line bg-paper p-2 sm:p-3">
           <Treemap items={treeItems} />
         </div>
         <div className="mt-5 flex flex-wrap items-center justify-end gap-4">
@@ -130,10 +131,10 @@ export function LandscapeInsightsView({
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 items-start">
           <div>
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
               Who carries the cost
             </h3>
-            <div className="flex h-12 w-full rounded-[6px] overflow-hidden border border-line">
+            <div className="flex h-12 w-full rounded-card overflow-hidden border border-line">
               {whoPays.map((s, i) => (
                 <div
                   key={i}
@@ -141,7 +142,7 @@ export function LandscapeInsightsView({
                   style={{ width: `${(s.value / whoTotal) * 100}%`, background: s.color }}
                   title={`${s.label}: ₹${cr(s.value).toFixed(2)} Cr`}
                 >
-                  <span className="font-mono text-[10px] text-paper/95 tabular-nums">
+                  <span className="font-mono text-[11px] text-paper/95 tabular-nums">
                     {Math.round((s.value / whoTotal) * 100)}%
                   </span>
                 </div>
@@ -150,7 +151,7 @@ export function LandscapeInsightsView({
             <ul className="mt-5 space-y-3 list-none p-0">
               {whoPays.map((s, i) => (
                 <li key={i} className="flex items-baseline gap-3">
-                  <span className="w-3 h-3 rounded-[3px] shrink-0 translate-y-0.5" style={{ background: s.color }} aria-hidden />
+                  <span className="w-3 h-3 rounded-tight shrink-0 translate-y-0.5" style={{ background: s.color }} aria-hidden />
                   <span className="text-[14px] text-ink">{s.label}</span>
                   <span className="font-mono text-[11.5px] text-muted tabular-nums ml-auto">
                     ₹{cr(s.value).toFixed(2)} Cr
@@ -160,7 +161,7 @@ export function LandscapeInsightsView({
             </ul>
           </div>
           <div>
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
               The blend it&apos;s raising
             </h3>
             <Donut
@@ -180,11 +181,11 @@ export function LandscapeInsightsView({
           italic="reaches"
           intro="Investment against the land each category covers: land-heavy work that is costly per hectare, versus lighter services that touch many households for little. Bubble size is household engagements."
         >
-          <div className="rounded-[12px] border border-line bg-paper p-3 sm:p-5">
+          <div className="rounded-panel border border-line bg-paper p-3 sm:p-5">
             <Scatter points={scatterPoints} xLabel="Investment required (₹ crore)" yLabel="Hectares reached" />
           </div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-muted max-w-[64ch] leading-relaxed">
-            Household engagements are cumulative across interventions — read as relative
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted max-w-[64ch] leading-relaxed">
+            Household engagements are cumulative across interventions, so read them as relative
             intensity, not unique people. Unique landscape reach is {profile.households} households.
           </p>
         </Section>
@@ -206,9 +207,9 @@ export function LandscapeInsightsView({
                 <span className="font-mono text-[11px] text-muted tabular-nums">P{num}</span>
                 <span className="text-[13.5px] text-ink leading-tight">{label}</span>
                 <div className="flex items-center gap-3">
-                  <div className="h-[22px] rounded-[4px] flex-1 bg-cream/60 overflow-hidden">
+                  <div className="h-[22px] rounded-tight flex-1 bg-cream/60 overflow-hidden">
                     <div
-                      className="h-full rounded-[4px]"
+                      className="h-full rounded-tight"
                       style={{ width: `${(p.total / maxPkg) * 100}%`, background: "linear-gradient(90deg, #2E7573, #4E9C99)" }}
                     />
                   </div>
@@ -225,10 +226,10 @@ export function LandscapeInsightsView({
       {/* Data & methods */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-20">
         <div
-          className="rounded-[12px] border border-line p-6 sm:p-8"
+          className="rounded-panel border border-line p-6 sm:p-8"
           style={{ backgroundImage: "linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(232,240,234,0.6) 100%)" }}
         >
-          <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-deep-teal mb-2">
+          <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-2">
             Data &amp; methods
           </div>
           <h2 className="font-serif text-[22px] sm:text-[26px] tracking-[-0.015em] text-ink max-w-[36ch] leading-[1.15]">
@@ -242,14 +243,14 @@ export function LandscapeInsightsView({
             <DownloadButton rows={csvRows} filename={`${slug}-investment-plan.csv`} label="Download the dataset (CSV)" />
             <Link
               href={`/landscape/${slug}/budget`}
-              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal hover:bg-cream/60 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
             >
               <Layers size={13} strokeWidth={1.9} aria-hidden />
               Explore line-by-line
             </Link>
             <Link
               href={`/landscape/${slug}/ask`}
-              className="inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.14em] hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
+              className="inline-flex items-center gap-2 rounded-full bg-deep-teal text-paper px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
             >
               Ask the plan a question
               <ArrowRight size={13} strokeWidth={2} aria-hidden />
@@ -283,7 +284,7 @@ function Section({
 }) {
   return (
     <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-16 lg:mt-20">
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">{eyebrow}</div>
+      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">{eyebrow}</div>
       <h2 className="font-serif text-[28px] sm:text-[34px] leading-[1.06] tracking-[-0.02em] text-ink max-w-[20ch]">
         {title} <span className="italic font-normal text-deep-teal">{italic}</span>
         {tail ? ` ${tail}` : ""}.

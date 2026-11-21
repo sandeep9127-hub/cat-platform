@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useMemo, useState } from "react";
 import type { BudgetLine, BudgetSummary } from "@/lib/db/landscape-kb";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -36,25 +37,25 @@ type Accent = {
 
 const ACCENTS = {
   amber: {
-    bar: "#C68C2E",
+    bar: palette.ochre,
     soft: "rgba(248,202,124,0.14)",
     glow: "rgba(248,202,124,0.30)",
     iconBg: "rgba(248,202,124,0.22)",
-    iconFg: "#C68C2E",
+    iconFg: palette.amberDeep,
   } as Accent,
   teal: {
-    bar: "#2E7573",
+    bar: palette.teal,
     soft: "rgba(46,117,115,0.08)",
     glow: "rgba(46,117,115,0.20)",
     iconBg: "rgba(46,117,115,0.12)",
-    iconFg: "#2E7573",
+    iconFg: palette.teal,
   } as Accent,
   periwinkle: {
-    bar: "#929CC5",
+    bar: palette.periwinkle,
     soft: "rgba(146,156,197,0.12)",
     glow: "rgba(146,156,197,0.24)",
     iconBg: "rgba(146,156,197,0.18)",
-    iconFg: "#5C6796",
+    iconFg: palette.periwinkleText,
   } as Accent,
   deepTeal: {
     bar: "#334B4A",
@@ -123,10 +124,11 @@ export function BudgetExplorer({
       <div className="mt-10 mb-4 flex items-end justify-between gap-4 flex-wrap">
         <SectionOpener number="01" label="Programme scale" />
         <div className="flex items-center gap-2.5 flex-wrap pb-1">
-          <CurrencyToggle />
+          {/* Label sits left of the toggle so the toggle stays put when it appears. */}
           {currency !== "INR" && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">Indicative rates</span>
           )}
+          <CurrencyToggle />
         </div>
       </div>
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -204,7 +206,7 @@ export function BudgetExplorer({
 
       {/* Filters */}
       <section className="mt-14 flex flex-wrap gap-3 items-end">
-        <span className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
+        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold pb-2">
           <Filter size={12} strokeWidth={1.8} />
           Filter the plan
         </span>
@@ -212,13 +214,13 @@ export function BudgetExplorer({
         {cat && (
           <button
             onClick={() => setCat("")}
-            className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep hover:text-deep-teal font-semibold py-2 transition-colors"
           >
             <XIcon size={12} strokeWidth={2} />
             Clear filter
           </button>
         )}
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted ml-auto self-center tabular-nums">
           {filtered.length} of {lines.length} lines
         </span>
       </section>
@@ -241,12 +243,12 @@ export function BudgetExplorer({
 
       {/* Line table */}
       <section className="mt-14">
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
+        <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-4 inline-flex items-center gap-2">
           <span className="w-4 h-px bg-amber-deep" />
           {filtered.length === lines.length ? "All intervention lines" : "Filtered lines"}
         </div>
         <div
-          className="overflow-x-auto rounded-[8px] border border-line"
+          className="overflow-x-auto rounded-card border border-line"
           style={{
             boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.18)",
           }}
@@ -258,7 +260,7 @@ export function BudgetExplorer({
                 background: "linear-gradient(135deg, #334B4A 0%, #2E7573 100%)",
               }}
             >
-              <tr className="text-left font-mono uppercase text-[10px] tracking-[0.14em]">
+              <tr className="text-left font-mono uppercase text-[11px] tracking-[0.14em]">
                 <th className="px-4 py-3.5 font-semibold">Category</th>
                 <th className="px-4 py-3.5 font-semibold">Intervention</th>
                 <th className="px-4 py-3.5 font-semibold text-right">Total</th>
@@ -322,45 +324,32 @@ function StatCard({
 }) {
   return (
     <div
-      className="group relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5"
-      style={{
-        boxShadow: highlighted
-          ? `0 1px 2px rgba(26,38,37,0.04), 0 14px 36px -14px ${accent.glow}`
-          : `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -14px ${accent.glow}`,
-        backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
-      }}
+      // Plain report tile: hairline border, no tinted gradient, coloured stripe,
+      // glow or hover lift. The figure carries the weight, not decoration.
+      className={`relative rounded-card border bg-paper p-5 sm:p-6 ${highlighted ? "border-ink/25" : "border-line"}`}
+      data-accent={accent.bar}
     >
-      <span
-        aria-hidden
-        className="absolute top-0 left-0 right-0"
-        style={{
-          height: highlighted ? 4 : 3,
-          background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
-        }}
-      />
       <div className="relative flex items-start justify-between gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted leading-tight max-w-[18ch]">
           {label}
         </span>
         <span
-          className="shrink-0 w-9 h-9 rounded-[6px] inline-flex items-center justify-center"
-          style={{ background: accent.iconBg, color: accent.iconFg }}
+          className="shrink-0 inline-flex items-center justify-center text-muted"
           aria-hidden
         >
           <Icon size={16} strokeWidth={1.7} />
         </span>
       </div>
       <div
-        className={`relative font-serif font-medium leading-none tracking-[-0.022em] mt-4 text-deep-teal tabular-nums ${
+        className={`relative font-sans font-medium leading-none tracking-[-0.022em] mt-4 text-ink tabular-nums ${
           compact ? "text-[28px] sm:text-[32px]" : "text-[28px] sm:text-[34px] lg:text-[36px]"
         }`}
       >
         <AnimatedNumber value={value} />
       </div>
       {sub && (
-        <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
-          <span className="inline-block w-3 h-px" style={{ background: accent.bar }} />
-          <span style={{ color: accent.iconFg }}>{sub}</span>
+        <div className="relative mt-3 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
+          <span className="text-muted">{sub}</span>
         </div>
       )}
     </div>
@@ -384,11 +373,11 @@ function FundingMix({
   const { currency } = useCurrency();
   const inr = inrFor(currency);
   const segments = [
-    { label: "Government", value: totals.govt, color: "#2E7573" },
-    { label: "Community", value: totals.community, color: "#929CC5" },
-    { label: "Grants", value: totals.grants, color: "#C68C2E" },
+    { label: "Government", value: totals.govt, color: palette.teal },
+    { label: "Community", value: totals.community, color: palette.periwinkle },
+    { label: "Grants", value: totals.grants, color: palette.ochre },
     { label: "Returnable", value: totals.returnable, color: "#F8CA7C" },
-    { label: "Outcome-based", value: totals.outcome, color: "#5C6796" },
+    { label: "Outcome-based", value: totals.outcome, color: palette.periwinkleText },
     { label: "Debt", value: totals.debt, color: "#334B4A" },
   ].filter((s) => s.value > 0);
 
@@ -397,7 +386,7 @@ function FundingMix({
 
   return (
     <section
-      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6 mt-4"
+      className="relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6 mt-4"
       style={{
         boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px rgba(46,117,115,0.20)",
         backgroundImage:
@@ -405,11 +394,11 @@ function FundingMix({
       }}
     >
       <div className="flex items-center justify-between gap-3 mb-4">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold inline-flex items-center gap-2">
           <span className="w-4 h-px bg-amber-deep" />
           Funding mix
         </span>
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted tabular-nums">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted tabular-nums">
           {inr(sum)}
         </span>
       </div>
@@ -447,13 +436,13 @@ function FundingMix({
               aria-hidden
             />
             <div className="min-w-0">
-              <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted leading-none">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted leading-none">
                 {s.label}
               </div>
               <div className="font-mono text-[12.5px] text-deep-teal tabular-nums leading-tight mt-1">
                 {inr(s.value)}
               </div>
-              <div className="font-mono text-[9.5px] tabular-nums text-muted leading-none mt-0.5">
+              <div className="font-mono text-[11px] tabular-nums text-muted leading-none mt-0.5">
                 {((s.value / sum) * 100).toFixed(1)}%
               </div>
             </div>
@@ -476,12 +465,12 @@ function FilterDropdown({
   options: string[];
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{label}</span>
+    <label className="flex flex-col gap-1.5 min-w-0 max-w-full">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3.5 py-2.5 bg-paper border border-line rounded-[6px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
+        className="w-full max-w-full truncate px-3.5 py-2.5 bg-paper border border-line rounded-card font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft shadow-[inset_0_1px_0_rgba(26,38,37,0.03)] hover:border-line-soft focus:outline-none focus:border-teal focus:shadow-[inset_0_1px_0_rgba(26,38,37,0.03),0_0_0_3px_rgba(46,117,115,0.18)] transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
       >
         <option value="">All</option>
         {options.map((o) => (
@@ -509,7 +498,7 @@ function BreakdownCard({
   const inr = inrFor(currency);
   return (
     <div
-      className="relative overflow-hidden rounded-[8px] border border-line bg-paper p-5 sm:p-6"
+      className="relative overflow-hidden rounded-card border border-line bg-paper p-5 sm:p-6"
       style={{
         boxShadow: `0 1px 2px rgba(26,38,37,0.04), 0 8px 24px -16px ${accent.glow}`,
         backgroundImage: `linear-gradient(180deg, rgba(251,248,242,1) 0%, ${accent.soft} 100%)`,
@@ -522,7 +511,7 @@ function BreakdownCard({
           background: `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar}cc 55%, transparent 100%)`,
         }}
       />
-      <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold mb-5 inline-flex items-center gap-2">
+      <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold mb-5 inline-flex items-center gap-2">
         <span className="w-3.5 h-px" style={{ background: accent.bar }} />
         {title}
       </div>
@@ -547,7 +536,7 @@ function BreakdownCard({
                   }}
                 />
               </div>
-              <div className="flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted mt-1.5 tabular-nums">
+              <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-1.5 tabular-nums">
                 <span>{p.toFixed(1)}% of total</span>
                 <span>Investment: {inr(r.investment)}</span>
               </div>

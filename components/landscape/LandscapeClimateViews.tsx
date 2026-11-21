@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useCurrency, formatMoney } from "./currency";
@@ -19,20 +20,20 @@ const LENSES = [
   {
     key: "resilience" as const,
     label: "Resilience donor",
-    colour: "#2E7573",
-    blurb: "The safety net — household income protected when a climate shock hits.",
+    colour: palette.teal,
+    blurb: "The safety net: household income protected when a climate shock hits.",
   },
   {
     key: "adaptation" as const,
     label: "Adaptation finance",
-    colour: "#5E6990",
-    blurb: "The farm economy — lower costs, better yields, steadier margins.",
+    colour: palette.periwinkleDeep,
+    blurb: "The farm economy: lower costs, better yields, steadier margins.",
   },
   {
     key: "carbon" as const,
     label: "Carbon investor",
-    colour: "#946616",
-    blurb: "The tradeable carbon — greenhouse gas removed, reduced and avoided.",
+    colour: palette.amberDeep,
+    blurb: "The tradeable carbon: greenhouse gas removed, reduced and avoided.",
   },
 ];
 
@@ -93,7 +94,7 @@ export function LandscapeClimateViews({
           return (
             <div
               key={lens.key}
-              className="rounded-[12px] border border-line bg-paper overflow-hidden transition-shadow"
+              className="rounded-panel border border-line bg-paper overflow-hidden transition-shadow"
               style={{ boxShadow: isOpen ? "0 1px 2px rgba(26,38,37,0.04), 0 14px 34px -26px rgba(26,38,37,0.3)" : "0 1px 2px rgba(26,38,37,0.04)" }}
             >
               {/* Always-visible header — name, share, value, toggle */}
@@ -108,7 +109,7 @@ export function LandscapeClimateViews({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2.5 flex-wrap">
                     <h3 className="font-sans text-[17px] sm:text-[18px] font-semibold tracking-[-0.01em] text-ink">{lens.label}</h3>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-muted tabular-nums">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted tabular-nums">
                       {pct(lens.total, grand)}% of value
                     </span>
                   </div>
@@ -135,7 +136,7 @@ export function LandscapeClimateViews({
                     {/* Carbon lens: marketability split */}
                     {lens.key === "carbon" && ghgTotalTco2e > 0 && (
                       <div className="px-5 sm:px-6 py-4 border-b border-line bg-line-soft/40">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-amber-deep">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.13em] text-amber-deep">
                           {groupUS(ghgTotalTco2e)} tCO₂e over 7 years · all tracks
                         </p>
                         {carbonCreditableTco2e > 0 && (
@@ -144,19 +145,19 @@ export function LandscapeClimateViews({
                               <div style={{ width: `${creditablePct}%`, background: lens.colour }} title={`Creditable today · ${creditablePct}%`} />
                               <div style={{ width: `${shadowPct}%`, background: `${lens.colour}33` }} title={`Shadow price · ${shadowPct}%`} />
                             </div>
-                            <div className="flex items-center gap-4 mt-2 font-mono text-[10px] uppercase tracking-[0.1em]">
+                            <div className="flex items-center gap-4 mt-2 font-mono text-[11px] uppercase tracking-[0.1em]">
                               <span className="flex items-center gap-1.5" style={{ color: lens.colour }}>
-                                <span className="inline-block w-2 h-2 rounded-sm" style={{ background: lens.colour }} />
+                                <span className="inline-block w-2 h-2 rounded-tight" style={{ background: lens.colour }} />
                                 {creditablePct}% creditable today
                               </span>
                               <span className="flex items-center gap-1.5 text-muted">
-                                <span className="inline-block w-2 h-2 rounded-sm" style={{ background: `${lens.colour}33` }} />
+                                <span className="inline-block w-2 h-2 rounded-tight" style={{ background: `${lens.colour}33` }} />
                                 {shadowPct}% shadow price
                               </span>
                             </div>
                             <p className="font-sans text-[12.5px] text-ink-soft leading-[1.5] mt-2">
                               Only the {creditablePct}% on a registry pathway is creditable today. The rest is real
-                              greenhouse-gas impact with no smallholder MRV pathway yet — a chance for early funders to
+                              greenhouse-gas impact with no smallholder MRV pathway yet, a chance for early funders to
                               help build the method that turns it into creditable supply.
                             </p>
                           </div>
@@ -172,15 +173,15 @@ export function LandscapeClimateViews({
                             <div className="font-sans text-[14px] text-ink leading-snug">{l.subIntervention}</div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               {l.metric && (
-                                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">{l.metric}</span>
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{l.metric}</span>
                               )}
                               {l.tco2e7yr ? (
-                                <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: lens.colour }}>
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em]" style={{ color: lens.colour }}>
                                   {groupUS(l.tco2e7yr)} tCO₂e
                                 </span>
                               ) : null}
                               {l.tier && (
-                                <span className="font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted border border-line rounded px-1 py-0.5">
+                                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted border border-line rounded-tight px-1 py-0.5">
                                   {l.tier}
                                 </span>
                               )}
@@ -204,7 +205,7 @@ export function LandscapeClimateViews({
       </div>
 
       {/* How the value is graded — collapsed by default to keep the page light */}
-      <div className="mt-10 rounded-[12px] border border-line bg-paper overflow-hidden">
+      <div className="mt-10 rounded-panel border border-line bg-paper overflow-hidden">
         <button
           type="button"
           onClick={() => setMethodOpen((o) => !o)}
@@ -226,26 +227,26 @@ export function LandscapeClimateViews({
           <div className="overflow-hidden">
             <div className="px-5 sm:px-6 pb-6 border-t border-line pt-5">
               <p className="font-sans text-[14px] text-ink-soft leading-[1.55] max-w-[68ch]">
-                Each intervention is counted once, in the track it mainly serves — so nothing is double-counted.
+                Each intervention is counted once, in the track it mainly serves, so nothing is double-counted.
                 Carbon is priced at benchmark rates. Every figure carries an evidence grade:
               </p>
-              <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[10px] overflow-hidden border border-line list-none p-0">
+              <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-card overflow-hidden border border-line list-none p-0">
                 {[
-                  { tier: "T1", label: "Primary · local", body: "Programme data, baseline surveys and impact evaluations from the landscape itself — the strongest evidence." },
-                  { tier: "T2", label: "Secondary · national", body: "ICAR institutes, government datasets and peer-reviewed Indian studies — used where local data isn't available yet." },
-                  { tier: "T3", label: "Global · methodological", body: "IPCC Guidelines & AR6, FAO and international methods — for emission factors and standard conversions." },
+                  { tier: "T1", label: "Primary · local", body: "Programme data, baseline surveys and impact evaluations from the landscape itself, the strongest evidence." },
+                  { tier: "T2", label: "Secondary · national", body: "ICAR institutes, government datasets and peer-reviewed Indian studies, used where local data isn't available yet." },
+                  { tier: "T3", label: "Global · methodological", body: "IPCC Guidelines & AR6, FAO and international methods, for emission factors and standard conversions." },
                 ].map((t) => (
                   <li key={t.tier} className="bg-paper p-5">
                     <div className="flex items-baseline gap-2">
                       <span className="font-mono text-[12px] font-semibold tracking-[0.08em] text-deep-teal">{t.tier}</span>
-                      <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">{t.label}</span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{t.label}</span>
                     </div>
                     <p className="font-sans text-[13px] text-ink-soft leading-[1.5] mt-2">{t.body}</p>
                   </li>
                 ))}
               </ul>
               <p className="font-sans text-[12.5px] text-muted italic leading-[1.5] mt-4 max-w-[68ch]">
-                A tag like “T1+T2” combines a local figure with a national factor. All values are modelled — not a
+                A tag like “T1+T2” combines a local figure with a national factor. All values are modelled, not a
                 cash return.
               </p>
             </div>

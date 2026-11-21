@@ -104,7 +104,7 @@ export default function TermsPage() {
         </aside>
       </Reveal>
 
-      <footer className="mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
+      <footer className="mt-20 pt-6 border-t border-line font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
         Last updated · 20 May 2026
       </footer>
     </article>

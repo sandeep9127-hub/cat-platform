@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 /**
  * Decorative botanical sprigs used at section corners to echo the
  * agroecologyindia.org watercolour framing. SVG, low opacity, aria-hidden.
@@ -25,7 +26,7 @@ export function Sprig({ variant = "wheat", className, flip }: SprigProps) {
       style={{ transform }}
     >
       {variant === "wheat" && (
-        <g stroke="#929CC5" strokeOpacity="0.55" strokeWidth="1.2" strokeLinecap="round" fill="none">
+        <g stroke={palette.periwinkle} strokeOpacity="0.55" strokeWidth="1.2" strokeLinecap="round" fill="none">
           <path d="M70 195 C70 160, 68 130, 70 100 C72 70, 70 40, 72 12" />
           {Array.from({ length: 11 }).map((_, i) => {
             const y = 30 + i * 14;
@@ -54,7 +55,7 @@ export function Sprig({ variant = "wheat", className, flip }: SprigProps) {
         </g>
       )}
       {variant === "leafy" && (
-        <g fill="#C68C2E" fillOpacity="0.18" stroke="#C68C2E" strokeOpacity="0.45" strokeWidth="1">
+        <g fill={palette.ochre} fillOpacity="0.18" stroke={palette.ochre} strokeOpacity="0.45" strokeWidth="1">
           <path d="M70 195 Q60 150, 72 100 Q60 60, 75 15" fill="none" />
           {[
             [40, 60],
@@ -69,7 +70,7 @@ export function Sprig({ variant = "wheat", className, flip }: SprigProps) {
         </g>
       )}
       {variant === "fern" && (
-        <g stroke="#2E7573" strokeOpacity="0.40" strokeWidth="1" strokeLinecap="round" fill="none">
+        <g stroke={palette.teal} strokeOpacity="0.40" strokeWidth="1" strokeLinecap="round" fill="none">
           <path d="M70 195 Q60 130, 72 75 Q66 40, 78 8" />
           {Array.from({ length: 10 }).map((_, i) => {
             const y = 30 + i * 16;

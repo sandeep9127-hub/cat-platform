@@ -153,13 +153,13 @@ export default async function AdminSourcesPage({
           or paste many at once. Each source carries a type and a trust tier that
           shape how its findings are weighted.
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-3">
           {sources.length} {sources.length === 1 ? "source" : "sources"}
         </p>
       </header>
 
       {error ? (
-        <div className="rounded-[10px] border border-red-alert/40 bg-red-alert/5 px-4 py-3 text-[13px] text-ink">
+        <div className="rounded-card border border-red-alert/40 bg-red-alert/5 px-4 py-3 text-[13px] text-ink">
           {error === "unauthorized"
             ? "You do not have permission to add sources."
             : error === "invalid-url"
@@ -171,7 +171,7 @@ export default async function AdminSourcesPage({
       ) : null}
 
       {showResult ? (
-        <div className="rounded-[10px] border border-teal/40 bg-teal/5 px-4 py-3 text-[13px] text-ink">
+        <div className="rounded-card border border-teal/40 bg-teal/5 px-4 py-3 text-[13px] text-ink">
           Bulk import complete:{" "}
           <span className="font-medium">{added ?? 0} added</span>,{" "}
           <span className="font-medium">{skipped ?? 0} skipped</span> (duplicates
@@ -182,7 +182,7 @@ export default async function AdminSourcesPage({
 
       {gen ? (
         <div
-          className={`rounded-[10px] border px-4 py-3 text-[13px] text-ink ${
+          className={`rounded-card border px-4 py-3 text-[13px] text-ink ${
             gen === "published"
               ? "border-teal/40 bg-teal/5"
               : gen === "flagged"
@@ -219,7 +219,7 @@ export default async function AdminSourcesPage({
       ) : null}
 
       {/* Single-URL add */}
-      <section className="rounded-[10px] border border-line p-4 sm:p-5 space-y-4">
+      <section className="rounded-card border border-line p-4 sm:p-5 space-y-4">
         <div>
           <h2 className="font-serif text-[20px] text-ink">Add a source</h2>
           <p className="text-[12.5px] text-muted mt-1">
@@ -236,17 +236,17 @@ export default async function AdminSourcesPage({
             name="url"
             required
             placeholder="https://example.org"
-            className="rounded-[8px] border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
+            className="rounded-card border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
           />
           <div className="flex flex-col sm:flex-row gap-3">
             <label className="flex flex-col gap-1 flex-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                 Source type
               </span>
               <select
                 name="source_type"
                 defaultValue={DEFAULT_TYPE}
-                className="rounded-[8px] border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
+                className="rounded-card border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
               >
                 {SOURCE_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -256,13 +256,13 @@ export default async function AdminSourcesPage({
               </select>
             </label>
             <label className="flex flex-col gap-1 flex-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                 Trust tier
               </span>
               <select
                 name="trust_tier"
                 defaultValue={DEFAULT_TIER}
-                className="rounded-[8px] border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
+                className="rounded-card border border-line bg-white px-3 py-2 text-[13.5px] text-ink focus:border-teal focus:outline-none"
               >
                 {TRUST_TIERS.map((t) => (
                   <option key={t} value={t}>
@@ -275,7 +275,7 @@ export default async function AdminSourcesPage({
           <div>
             <button
               type="submit"
-              className="font-mono text-[10px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
+              className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-card bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
             >
               Add source
             </button>
@@ -284,7 +284,7 @@ export default async function AdminSourcesPage({
       </section>
 
       {/* Bulk importer */}
-      <section className="rounded-[10px] border border-line p-4 sm:p-5 space-y-4">
+      <section className="rounded-card border border-line p-4 sm:p-5 space-y-4">
         <div>
           <h2 className="font-serif text-[20px] text-ink">Bulk import</h2>
           <p className="text-[12.5px] text-muted mt-1">
@@ -309,12 +309,12 @@ export default async function AdminSourcesPage({
               "https://institute.org, research_inst, tier_1_authoritative\n" +
               "# this line is a comment"
             }
-            className="rounded-[8px] border border-line bg-white px-3 py-2 text-[13px] font-mono text-ink leading-relaxed focus:border-teal focus:outline-none"
+            className="rounded-card border border-line bg-white px-3 py-2 text-[13px] font-mono text-ink leading-relaxed focus:border-teal focus:outline-none"
           />
           <div>
             <button
               type="submit"
-              className="font-mono text-[10px] uppercase tracking-[0.12em] rounded-[8px] bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
+              className="font-mono text-[11px] uppercase tracking-[0.12em] rounded-card bg-deep-teal text-white px-4 py-2.5 hover:bg-teal"
             >
               Import sources
             </button>
@@ -328,10 +328,10 @@ export default async function AdminSourcesPage({
           No sources yet. Add one above, or paste a batch into the bulk importer.
         </p>
       ) : (
-        <div className="rounded-[10px] border border-line overflow-x-auto">
+        <div className="rounded-card border border-line overflow-x-auto">
           <table className="w-full min-w-[1040px] border-collapse text-[13.5px]">
             <thead>
-              <tr className="bg-cream text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <tr className="bg-cream text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                 <th className="px-4 py-3 font-medium">URL</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Trust tier</th>
@@ -365,7 +365,7 @@ export default async function AdminSourcesPage({
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`font-mono text-[8.5px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full ${
+                      className={`font-mono text-[11px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full ${
                         s.isActive
                           ? "bg-teal/15 text-deep-teal"
                           : "bg-amber/30 text-deep-teal"
@@ -386,11 +386,11 @@ export default async function AdminSourcesPage({
                         name="name"
                         placeholder="Programme name (optional)"
                         title="Leave blank to seed from the URL"
-                        className="rounded-[6px] border border-line bg-white px-2 py-1 text-[12px] text-ink focus:border-teal focus:outline-none w-[160px]"
+                        className="rounded-card border border-line bg-white px-2 py-1 text-[12px] text-ink focus:border-teal focus:outline-none w-[160px]"
                       />
                       <button
                         type="submit"
-                        className="font-mono text-[9px] uppercase tracking-[0.1em] rounded-[6px] bg-deep-teal text-white px-2.5 py-1.5 hover:bg-teal whitespace-nowrap"
+                        className="font-mono text-[11px] uppercase tracking-[0.1em] rounded-card bg-deep-teal text-white px-2.5 py-1.5 hover:bg-teal whitespace-nowrap"
                       >
                         Generate
                       </button>

@@ -42,13 +42,13 @@ export default async function LandscapeAdminDetail({
   return (
     <div className="space-y-7 max-w-[820px]">
       <header>
-        <Link href="/admin/landscapes" className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted hover:text-teal no-underline">
+        <Link href="/admin/landscapes" className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted hover:text-teal no-underline">
           ← All landscapes
         </Link>
         <h1 className="font-serif text-[32px] sm:text-[40px] font-normal tracking-[-0.02em] text-ink mt-2">
           {landscape.name}
         </h1>
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted mt-1">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-1">
           {landscape.district} · {landscape.region} · {slug}
         </p>
         <p className="text-[13.5px] text-ink-soft mt-3">
@@ -62,7 +62,7 @@ export default async function LandscapeAdminDetail({
       <LandscapeUpload slug={slug} />
 
       <section>
-        <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mb-2">Ingested documents</div>
+        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mb-2">Ingested documents</div>
         {docs.length === 0 ? (
           <div className="flex flex-col items-center text-center py-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -79,12 +79,12 @@ export default async function LandscapeAdminDetail({
             </p>
           </div>
         ) : (
-          <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+          <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
             {docs.map((d) => (
               <li key={d.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="font-serif text-[15px] text-ink truncate">{d.title}</div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-0.5">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted mt-0.5">
                     {d.type}{d.publication_year ? ` · ${d.publication_year}` : ""} · {d.chunk_count} chunks
                   </div>
                 </div>
@@ -93,7 +93,7 @@ export default async function LandscapeAdminDetail({
                   <input type="hidden" name="slug" value={slug} />
                   <button
                     type="submit"
-                    className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted hover:text-red-alert transition-colors"
+                    className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-red-alert transition-colors"
                   >
                     Remove
                   </button>

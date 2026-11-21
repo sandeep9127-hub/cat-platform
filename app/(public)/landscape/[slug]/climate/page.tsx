@@ -39,7 +39,7 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
 
   const Header = (
     <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-      <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+      <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
         <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
         <span className="text-line">/</span>
         <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -48,7 +48,7 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
         {p.name} · <span className="text-teal">Climate value</span>
       </h1>
       <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
-        What seven years of the {p.name} plan is worth to the climate — and to the families who
+        What seven years of the {p.name} plan is worth to the climate, and to the families who
         farm it. These are modelled estimates: a sense of scale, not cash in hand.
       </p>
     </header>
@@ -79,7 +79,7 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
     <CurrencyProvider>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
             <span className="text-line">/</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -92,7 +92,7 @@ export default async function ClimatePage({ params }: { params: Promise<{ slug: 
           {p.name} · <span className="text-teal">Climate value</span>
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[60ch]">
-          What the {p.name} plan is worth to the climate — valued across carbon, adaptation and
+          What the {p.name} plan is worth to the climate, valued across carbon, adaptation and
           resilience on tiered evidence, from local programme data to IPCC methods. Modelled value,
           not a cash return.
         </p>

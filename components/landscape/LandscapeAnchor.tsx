@@ -71,7 +71,7 @@ export function LandscapeAnchor({ photo }: Props) {
   }, []);
 
   return (
-    <figure ref={figRef} className="relative overflow-hidden rounded-[10px] border border-line">
+    <figure ref={figRef} className="relative overflow-hidden rounded-card border border-line">
       <div
         className="relative w-full bg-deep-teal overflow-hidden"
         style={{ aspectRatio: "5 / 2" }}
@@ -120,14 +120,14 @@ export function LandscapeAnchor({ photo }: Props) {
         />
         {/* Caption block, bottom-left */}
         <figcaption className="absolute bottom-4 left-5 sm:left-7 lg:left-10 right-5 max-w-[64ch]">
-          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] inline-flex items-center gap-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] inline-flex items-center gap-2">
             <span className="inline-block w-4 h-px bg-amber" />
             Anchor photograph
           </span>
           <p className="font-sans text-[14px] sm:text-[15px] text-paper mt-1.5 leading-snug drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]">
             {photo.caption}
           </p>
-          <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-paper/70 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/70 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
             {photo.credit}{photo.date ? ` · ${formatDate(photo.date)}` : ""}
           </p>
         </figcaption>

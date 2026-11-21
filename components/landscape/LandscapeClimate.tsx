@@ -1,8 +1,9 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useRef, useState } from "react";
 import { useCurrency, formatMoney } from "./currency";
-import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { AnimatedNumber, FigureText } from "@/components/ui/AnimatedNumber";
 
 export type ClimateProps = {
   landscapeName: string;
@@ -51,9 +52,9 @@ function useInView<T extends HTMLElement>(threshold = 0.3) {
 
 // The three climate tracks, in the official CAT palette.
 const TRACKS = [
-  { key: "resilience", label: "Resilience", colour: "#2E7573", note: "Income protected when a climate shock hits" },
-  { key: "adaptation", label: "Adaptation", colour: "#5E6990", note: "Lower costs, better yields, healthier farms" },
-  { key: "mitigation", label: "Carbon", colour: "#946616", note: "Greenhouse gas removed, reduced and avoided" },
+  { key: "resilience", label: "Resilience", colour: palette.teal, note: "Income protected when a climate shock hits" },
+  { key: "adaptation", label: "Adaptation", colour: palette.periwinkleDeep, note: "Lower costs, better yields, healthier farms" },
+  { key: "mitigation", label: "Carbon", colour: palette.amberDeep, note: "Greenhouse gas removed, reduced and avoided" },
 ] as const;
 
 /**
@@ -101,10 +102,10 @@ export function LandscapeClimate(props: ClimateProps) {
   return (
     <section className="mt-16 lg:mt-20 max-w-page mx-auto px-5 sm:px-7 lg:px-10">
       <div
-        className="rounded-[14px] border border-line bg-paper overflow-hidden"
+        className="rounded-panel border border-line bg-paper overflow-hidden"
         style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.25)" }}
       >
-        <span aria-hidden className="block h-[3px]" style={{ background: "linear-gradient(90deg,#2E7573,#5E6990,#946616)" }} />
+        <span aria-hidden className="block h-[3px]" style={{ background: "linear-gradient(90deg,var(--teal),var(--periwinkle-deep),var(--amber-deep))" }} />
         <div className="p-6 sm:p-8 lg:p-9">
           {/* Header + headline */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
@@ -114,21 +115,21 @@ export function LandscapeClimate(props: ClimateProps) {
                 What the plan is worth to the climate
               </h2>
               <p className="font-sans text-[14.5px] text-ink-soft leading-[1.55] mt-3 max-w-[54ch]">
-                Modelled over seven years — protected income, healthier farms and stored carbon. A sense of
+                Modelled over seven years: protected income, healthier farms and stored carbon. A sense of
                 scale, not cash in hand.
               </p>
             </div>
             <div className="lg:text-right shrink-0">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+              <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
                 {focusSeg ? `${focusSeg.label} value · 7 years` : "Climate value · 7 years"}
               </div>
               <div
                 className="font-serif text-[clamp(36px,5vw,60px)] leading-none tracking-[-0.02em] tabular-nums mt-1 transition-colors"
                 style={{ color: focusSeg ? focusSeg.colour : "var(--teal, #2E7573)" }}
               >
-                {formatMoney(displayValue, currency)}
+                <FigureText value={formatMoney(displayValue, currency)} />
               </div>
-              <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-2">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-2">
                 {focusSeg ? `${pct(focusSeg.value, total)}% of the headline` : "across all three tracks"}
               </div>
             </div>
@@ -136,9 +137,9 @@ export function LandscapeClimate(props: ClimateProps) {
 
           {/* Investment-to-return hero — the headline comparison, animated on scroll */}
           {ratio > 0 && (
-            <div ref={barRef} className="mt-7 rounded-[12px] border border-line bg-line-soft p-5 sm:p-6">
+            <div ref={barRef} className="mt-7 rounded-panel border border-line bg-line-soft p-5 sm:p-6">
               <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-                <div className="font-serif text-[clamp(40px,7vw,68px)] leading-none text-teal tracking-[-0.03em]">
+                <div className="font-sans font-medium text-[clamp(40px,7vw,64px)] leading-none text-ink tracking-[-0.03em]">
                   <AnimatedNumber value={ratioLabel} duration={1100} />
                 </div>
                 <div className="min-w-[16ch] flex-1">
@@ -147,7 +148,7 @@ export function LandscapeClimate(props: ClimateProps) {
                     models about <strong className="text-deep-teal">{formatMoney(props.total, currency)}</strong> of
                     climate value.
                   </p>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-amber-deep mt-2">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-amber-deep mt-2">
                     ≈ ₹{Math.round(ratio)} of modelled value for every ₹1, over 7 years
                   </p>
                 </div>
@@ -155,11 +156,11 @@ export function LandscapeClimate(props: ClimateProps) {
               {/* Two proportional bars: the plan, and what it returns */}
               <div className="mt-5 space-y-3">
                 {[
-                  { lab: "What it costs · the plan", w: planPct, val: props.planCostInr, c: "#5E6990" },
-                  { lab: "What it's worth · climate value", w: 100, val: props.total, c: "#2E7573" },
+                  { lab: "What it costs · the plan", w: planPct, val: props.planCostInr, c: palette.periwinkleDeep },
+                  { lab: "What it's worth · climate value", w: 100, val: props.total, c: palette.teal },
                 ].map((r) => (
                   <div key={r.lab}>
-                    <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-muted mb-1.5">
+                    <div className="flex items-baseline justify-between font-mono text-[11px] uppercase tracking-[0.12em] text-muted mb-1.5">
                       <span>{r.lab}</span>
                       <span className="tabular-nums text-ink-soft">{formatMoney(r.val, currency)}</span>
                     </div>
@@ -186,7 +187,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 <div
                   key={s.key}
                   {...focusFns(s.key)}
-                  aria-label={`${s.label} · ${pct(s.value, total)}% — ${formatMoney(s.value, currency)}`}
+                  aria-label={`${s.label} · ${pct(s.value, total)}%, ${formatMoney(s.value, currency)}`}
                   className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
                   style={{
                     width: `${(s.value / total) * 100}%`,
@@ -198,13 +199,13 @@ export function LandscapeClimate(props: ClimateProps) {
                 />
               ))}
             </div>
-            <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted mt-2">
+            <p className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted mt-2">
               Hover or tap a track to focus it
             </p>
           </div>
 
           {/* Three track cards — interactive, linked to the bar + headline */}
-          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[10px] overflow-hidden border border-line list-none p-0">
+          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-card overflow-hidden border border-line list-none p-0">
             {segs.map((s) => {
               const active = focus === s.key;
               const dimmed = focus && !active;
@@ -218,12 +219,12 @@ export function LandscapeClimate(props: ClimateProps) {
                     boxShadow: active ? `inset 0 0 0 2px ${s.colour}` : "none",
                   }}
                 >
-                  <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] font-semibold" style={{ color: s.colour }}>
+                  <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] font-semibold" style={{ color: s.colour }}>
                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: s.colour }} />
                     {s.label}
                     <span className="ml-auto tabular-nums text-muted">{pct(s.value, total)}%</span>
                   </div>
-                  <div className="font-serif text-[22px] sm:text-[24px] text-deep-teal tabular-nums tracking-[-0.015em] mt-2.5">
+                  <div className="font-sans font-medium text-[22px] sm:text-[24px] text-ink tabular-nums tracking-[-0.015em] mt-2.5">
                     {formatMoney(s.value, currency)}
                   </div>
                   <div className="font-sans text-[12.5px] text-ink-soft leading-[1.45] mt-1.5">{s.note}</div>
@@ -235,8 +236,8 @@ export function LandscapeClimate(props: ClimateProps) {
           {/* Co-benefit disclosure — value the same interventions throw off in their
               NON-primary tracks. Kept out of the headline to avoid double-counting. */}
           {props.cobenefitInr > 0 && (
-            <div className="mt-6 rounded-[10px] border border-line bg-line-soft px-5 py-4">
-              <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+            <div className="mt-6 rounded-card border border-line bg-line-soft px-5 py-4">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                 Also generated · not in the headline
               </div>
               <p className="font-sans text-[13px] text-ink-soft leading-[1.55] mt-1.5 max-w-[82ch]">
@@ -244,7 +245,7 @@ export function LandscapeClimate(props: ClimateProps) {
                 <span className="font-serif text-deep-teal text-[16px] tabular-nums">
                   ≈ {formatMoney(props.cobenefitInr, currency)}
                 </span>{" "}
-                in tracks other than their main one — a goat also protects income and stores carbon, for
+                in tracks other than their main one: a goat also protects income and stores carbon, for
                 example. We show it, but keep it out of the headline so nothing is counted twice.
               </p>
             </div>
@@ -256,12 +257,12 @@ export function LandscapeClimate(props: ClimateProps) {
               <div className="flex items-baseline gap-4 flex-wrap">
                 <div>
                   <span className="font-serif text-[20px] text-ink tabular-nums">{groupUS(props.ghgTotalTco2e)}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted ml-1.5">tCO₂e · 7 yr · all tracks</span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted ml-1.5">tCO₂e · 7 yr · all tracks</span>
                 </div>
                 <span className="font-sans text-[12.5px] text-muted italic">the full greenhouse-gas footprint</span>
               </div>
             )}
-            <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted sm:text-right">
+            <p className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted sm:text-right">
               Modelled climate valuation
               <br className="hidden sm:block" /> Evidence-tiered: local → national → IPCC
             </p>

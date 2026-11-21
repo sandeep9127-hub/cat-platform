@@ -1,3 +1,4 @@
+import Image from "next/image";
 /**
  * Official CAT symbol — the brand mark (four nested teal arches over the two
  * periwinkle leaf-wings), cropped from the official logo lockup
@@ -15,14 +16,15 @@ export function CatLogo({
   idSuffix?: string;
 }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src="/images/cat-logo-mark.png"
       alt="Consortium for Agroecological Transformations"
       width={size}
       height={size}
       className={className}
       style={{ width: size, height: size, objectFit: "contain" }}
+      // Always above the fold (header, sign-in, moved page): load eagerly.
+      priority
     />
   );
 }

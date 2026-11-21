@@ -95,7 +95,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
                 type="button"
                 onClick={() => setOpen(i)}
                 aria-label={`Enlarge photograph: ${p.caption}`}
-                className="group relative block w-full text-left overflow-hidden rounded-[8px] border border-line bg-paper transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 active:scale-[0.99] cursor-zoom-in"
+                className="group relative block w-full text-left overflow-hidden rounded-card border border-line bg-paper transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 active:scale-[0.99] cursor-zoom-in"
                 style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 10px 24px -16px rgba(46,117,115,0.20)" }}
               >
                 <div className="relative w-full bg-cream overflow-hidden" style={{ aspectRatio: aspect }}>
@@ -120,7 +120,7 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
                   <p className="font-sans text-[13.5px] text-[color:var(--navy-teal)] leading-snug">
                     {p.caption}
                   </p>
-                  <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mt-1.5 inline-flex items-center gap-1.5">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted mt-1.5 inline-flex items-center gap-1.5">
                     <span className="inline-block w-3 h-px bg-amber-deep" />
                     {p.credit}{p.date ? ` · ${formatDate(p.date)}` : ""}
                   </p>
@@ -167,17 +167,20 @@ export function LandscapeGallery({ photos }: { photos: LandscapePhoto[] }) {
           )}
           <figure className="relative max-w-[min(1100px,92vw)] max-h-[88vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
+              {/* Plain <img> on purpose: the lightbox sizes to the photo's own
+                  aspect, which next/image's srcset sizing would shrink. Loads
+                  only on click, and the source JPEGs are capped at 2000px. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={active.src}
                 alt={active.alt ?? active.caption}
-                className="max-h-[78vh] w-auto max-w-full object-contain rounded-[8px]"
+                className="max-h-[78vh] w-auto max-w-full object-contain rounded-card"
                 style={{ boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6)" }}
               />
             </div>
             <figcaption className="mt-3 flex items-baseline justify-between gap-4 flex-wrap">
               <p className="font-sans text-[14px] text-paper leading-snug">{active.caption}</p>
-              <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[color:#f8ca7c] inline-flex items-center gap-1.5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:#f8ca7c] inline-flex items-center gap-1.5">
                 <span className="inline-block w-3 h-px bg-[#f8ca7c]" />
                 {active.credit}{active.date ? ` · ${formatDate(active.date)}` : ""}
                 {photos.length > 1 && (

@@ -14,10 +14,10 @@ export default function ContactPage() {
       {/* Header — broadsheet, all-Inter */}
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10" delay={0}>
         <span className="eyebrow">Contact</span>
-        <h1 className="font-sans font-semibold text-[clamp(38px,5vw,72px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[16ch] reveal-stagger">
+        <h1 className="font-sans font-semibold text-[clamp(38px,5vw,72px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4 max-w-[16ch]">
           Write to us, <span className="text-teal">say what you need</span>.
         </h1>
-        <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-6 max-w-[56ch] reveal-stagger" style={{ animationDelay: "120ms" }}>
+        <p className="text-[16.5px] sm:text-[18px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-6 max-w-[56ch]">
           Plain emails, no contact forms, no chatbots. We read everything that lands in
           this inbox.
         </p>
@@ -79,8 +79,8 @@ export default function ContactPage() {
               <li>Generic press release submissions</li>
             </ul>
           </div>
-          <aside className="bg-paper border border-line rounded-[10px] p-6 self-start">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
+          <aside className="bg-paper border border-line rounded-card p-6 self-start">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold">
               Response time
             </span>
             <p className="text-[14px] text-ink-soft leading-[1.55] mt-2.5">
@@ -111,7 +111,7 @@ function Channel({
 }) {
   return (
     <div className="bg-paper p-6 sm:p-8 flex flex-col min-h-[208px]">
-      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep font-semibold mb-3">
         {label}
       </span>
       <p className="text-[15px] leading-[1.6] text-ink-soft">{body}</p>
@@ -119,10 +119,12 @@ function Channel({
         href={href}
         {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
         className={
-          "group mt-auto pt-6 inline-flex items-center gap-1.5 self-start font-mono text-[11px] uppercase tracking-[0.14em] pb-1 border-b-2 transition-colors " +
+          // Reading size and normal case so an email address is easy to read
+          // and copy; 44px tall for touch.
+          "group mt-auto pt-4 inline-flex items-center gap-1.5 self-start min-h-11 text-[15px] font-medium underline decoration-2 underline-offset-[6px] break-all transition-colors " +
           (accent === "amber"
-            ? "text-deep-teal border-amber hover:border-amber-deep"
-            : "text-teal border-line-soft hover:border-teal")
+            ? "text-deep-teal decoration-amber hover:decoration-amber-deep"
+            : "text-teal decoration-line hover:decoration-teal")
         }
       >
         {cta}

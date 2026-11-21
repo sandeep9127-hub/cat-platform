@@ -4,6 +4,7 @@ import { MapFilterBar } from "@/components/entries/MapFilterBar";
 import { MapExplorer } from "@/components/entries/MapExplorer";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { listFactSheets } from "@/lib/factsheet/generate";
+import { factsheetToMapEntry, splitAtlasEntries } from "@/components/map/mapEntries";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug } from "@/lib/data/principles";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -73,10 +74,11 @@ export default async function MapPage({
   const sp = await searchParams;
 
   const allFactsheets = await listFactSheets();
-  // Published, geocoded fact sheets are the Atlas (decoupled engine).
-  const publishedFactsheets = allFactsheets.filter(
-    (f) => f.status === "published" && f.latitude != null && f.longitude != null
-  );
+  // Every published fact sheet is in the Atlas. Whether it gets a map point,
+  // goes to the Nationwide strip, or is list-only is decided by the shared
+  // placement rules (components/map/mapEntries.ts), not by lat/lon here; the
+  // old lat/lon filter hid national and geo_points-only programmes.
+  const publishedFactsheets = allFactsheets.filter((f) => f.status === "published");
 
   // Live per-axis counts over the full published set (so chip counts stay
   // stable regardless of the active filter), then apply the active filters.
@@ -140,17 +142,10 @@ export default async function MapPage({
   // pin is an auto-compiled, cited fact sheet.
   const combinedTotal = factsheets.length;
 
-  const factsheetMapEntries = factsheets.map((f) => ({
-    id: f.slug,
-    slug: f.slug,
-    title: f.title,
-    scaleBand: f.scale_band ?? "multi_district",
-    provenance: "sourced" as const,
-    stateCode: f.state_code ?? "",
-    latitude: f.latitude!,
-    longitude: f.longitude!,
-    internalHref: `/factsheet/${f.slug}`,
-  }));
+  // Map placement (district/state point vs. the Nationwide strip) is decided
+  // in one place, shared with the home page: components/map/mapEntries.ts.
+  const factsheetMapEntries = factsheets.map(factsheetToMapEntry);
+  const { mapped: mappedEntries, nationwide: nationwideEntries } = splitAtlasEntries(factsheets);
 
   const factsheetListEntries = factsheets.map((f, i) => ({
     id: f.slug,
@@ -159,7 +154,7 @@ export default async function MapPage({
     total: combinedTotal,
     title: f.title,
     tagline: f.one_liner ?? f.summary ?? "",
-    stateName: STATE_NAMES[f.state_code ?? ""] ?? f.district ?? f.state_code ?? "—",
+    stateName: STATE_NAMES[f.state_code ?? ""] ?? f.district ?? f.state_code ?? "",
     startYear: f.start_year ?? new Date(f.updated_at).getFullYear(),
     endYear: null,
     scaleBand: f.scale_band ?? "multi_district",
@@ -181,7 +176,7 @@ export default async function MapPage({
   return (
     <>
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
-        <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+        <div>
           <span className="eyebrow">The open library</span>
           <h1 className="font-sans font-semibold text-[clamp(40px,5.4vw,76px)] tracking-[-0.04em] leading-[0.98] text-ink mt-4">
             Solutions <span className="text-teal">Atlas</span>
@@ -200,9 +195,9 @@ export default async function MapPage({
             and programmes.
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">In the Solutions Atlas</span>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
             <div>
               <dt>Programmes</dt>
               <dd className="font-serif text-[26px] text-deep-teal mt-1 leading-none tracking-[-0.02em] tabular-nums">
@@ -216,11 +211,11 @@ export default async function MapPage({
               </dd>
             </div>
           </dl>
-          <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted mt-4 leading-relaxed">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-4 leading-relaxed">
             <span className="text-amber-deep">●</span> includes routed discovery records:
             government, NGO and collaborations led programmes pulled from public sources
           </p>
-          <p className="font-mono text-[9.5px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
+          <p className="font-mono text-[11px] tracking-[0.03em] text-muted mt-3 pt-3 border-t border-line-soft leading-relaxed">
             The Solutions Atlas is updated at regular intervals as new programmes are verified and
             added. It does not yet capture every food-systems initiative across India, and will keep
             growing over time. Each programme is drawn from public references; we&apos;d gently
@@ -232,7 +227,7 @@ export default async function MapPage({
       {/* Filter bar — three multi-select dropdowns, right-aligned (Intervention
           · Principle · State). Selections live in the URL (deep-linkable). */}
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           Showing{" "}
           <span className="text-deep-teal font-semibold tabular-nums">{factsheets.length}</span>
           {totalActive > 0 ? (
@@ -257,7 +252,8 @@ export default async function MapPage({
         <MapExplorer
           map={
             <IndiaMap
-              entries={mapEntries}
+              entries={mappedEntries}
+              nationwide={nationwideEntries}
               totalProgrammes={mapEntries.length}
               totalStates={stateCount}
             />

@@ -32,9 +32,10 @@
   --amber: #f8ca7c;
   /* --amber-deep is the amber used as TEXT on light surfaces (eyebrow labels,
      source names, bullet dots). The old #d9a655 was only ~2:1 on cream — a
-     WCAG AA fail. Darkened to a deep ochre-amber that clears 4.5:1 on paper.
+     WCAG AA fail. #8a5f14 clears 4.5:1 on paper (5.35), cream (4.98) and
+     teal-wash (4.69); the previous #946616 was 4.45 on cream.
      Bright --amber is still used for amber text on the dark band and for fills. */
-  --amber-deep: #946616;
+  --amber-deep: #8a5f14;
 
   /* Surfaces and ink — Equals-style "broadsheet on warm cream".
      Canvas is a true warm cream; text is near-black for old-media contrast. */
@@ -45,16 +46,30 @@
   /* --ink-2: raised surface used for the tiles inside the dark "Read by theme"
      band. Tokenised so the band isn't carrying a bare hex in component JSX. */
   --ink-2: #22302e;
-  /* --muted: warm-grey for mono labels/captions. Darkened from #807c72 (3.95:1,
-     a WCAG AA fail at the 8–11px label sizes it's used at) to #736f64, which
-     clears 4.5:1 on both --paper and --cream while staying visually "muted". */
-  --muted: #736f64;
+  /* --muted: warm-grey for mono labels/captions. #6b675d clears WCAG AA
+     (4.5:1) on every light surface it sits on: 5.35 on --paper, 4.99 on
+     --cream, 4.69 on --teal-wash. (#807c72 was 3.95, #736f64 was 4.44 on
+     cream.) Pair with the 11px minimum for label text. */
+  --muted: #6b675d;
   /* --line: subtle warm-grey hairline (Equals "fog border").
      --rule: the strong near-black section divider (the spreadsheet grid line). */
   --line: #d7d4cc;
   --line-soft: #e6e3db;
   --rule: #18150f;
   --red-alert: #b85042;
+  /* Data-viz fills used across charts and category colours (also exported
+     for JS in lib/design/palette.ts; keep the two in step). */
+  --ochre: #c68c2e;
+  --leaf: #5c8c2e;
+  --periwinkle-text: #5c6796;
+
+  /* Corner radius: three steps plus the pill (rounded-full).
+     tight: chips, tags, data cells, small bars. card: cards, inputs, images,
+     buttons that are not pills. panel: sheets, modals, the header bar and
+     large framed panels. Tailwind: rounded-tight / rounded-card / rounded-panel. */
+  --radius-tight: 4px;
+  --radius-card: 8px;
+  --radius-panel: 16px;
   /* Translucent wash of --red-alert for the "what did not work" callout. */
   --red-alert-wash: rgba(184, 80, 66, 0.05);
 }
@@ -79,7 +94,7 @@ body {
 .callout {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--line);
   padding: 18px 20px;
   background-color: var(--paper);
@@ -97,7 +112,7 @@ body {
   background-image: linear-gradient(180deg, rgba(251, 248, 242, 1) 0%, rgba(248, 202, 124, 0.10) 100%);
 }
 .callout-amber::before {
-  background: linear-gradient(90deg, #c68c2e 0%, rgba(198, 140, 46, 0.6) 60%, transparent 100%);
+  background: linear-gradient(90deg, var(--ochre) 0%, rgba(198, 140, 46, 0.6) 60%, transparent 100%);
 }
 .callout-teal {
   box-shadow: 0 1px 2px rgba(26, 38, 37, 0.04), 0 8px 20px -14px rgba(46, 117, 115, 0.22);
@@ -230,7 +245,7 @@ body::before {
     font-family: var(--font-jetbrains), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--muted);
     font-weight: 500;
   }
@@ -239,13 +254,13 @@ body::before {
     font-family: var(--font-jetbrains), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--teal);
     font-weight: 600;
   }
 
   .serif-italic {
-    font-family: var(--font-fraunces), Georgia, serif;
+    font-family: var(--font-inter), system-ui, sans-serif;
     font-style: italic;
     color: var(--teal);
     font-weight: 400;
@@ -261,7 +276,7 @@ body::before {
 *:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-tight);
 }
 
 /* Flash a citation source card when its inline [n] chip is clicked. */
@@ -295,6 +310,24 @@ body::before {
   top: 1rem;
 }
 
+/* Big figures: the unit (cr, M, ha, x) is set a little smaller in the same
+   colour and weight, like a printed report. No colour games on decimals. */
+.fig-unit {
+  font-size: 0.6em;
+  letter-spacing: 0;
+  margin-left: 0.14em;
+}
+/* Count lifted beside its label (RaisedCount). */
+.raised-count {
+  font-size: 0.72em;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.3em;
+  vertical-align: 0.5em;
+  line-height: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
 /* Map state styling — shared between landing atlas and /map deep view. */
 .map-state {
   fill: rgba(46, 117, 115, 0.07);
@@ -423,6 +456,9 @@ body::before {
 .reveal-in {
   animation: fade-in-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+/* Legacy load-time fade. Public pages no longer use it (it hid heroes for up
+   to a second before and after JS loaded); kept only for the Ask chat, which
+   is owned by the RAG rebuild. Do not add new uses: use <Reveal> instead. */
 .reveal-stagger {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -574,12 +610,18 @@ body::before {
    halos breathe on a livelier ~2.1s cycle, staggered into a travelling wave.
    --pop-delay drives the entrance only; --halo-delay drives the pulse only,
    so the two never clobber each other (a single animation-delay would). */
+/* Halos no longer breathe all at once. Only a highlighted dot (.is-live:
+   in the current theme, the chosen state, or hovered) pulses, slowly (3s),
+   so motion points at something. Refero review: sparse 3s map pings. */
 .dot-group .dot-halo {
   transform-origin: center;
   transform-box: fill-box;
+  animation: dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both;
+}
+.dot-group.is-live .dot-halo {
   animation:
     dot-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--pop-delay, 0s) both,
-    dot-pulse 2.1s ease-in-out var(--halo-delay, 0s) infinite;
+    dot-pulse 3s ease-in-out var(--halo-delay, 0s) infinite;
 }
 .dot-group .dot-core {
   transform-origin: center;
@@ -590,7 +632,8 @@ body::before {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .dot-group .dot-halo {
+  .dot-group .dot-halo,
+  .dot-group.is-live .dot-halo {
     animation: dot-pop 0.4s ease both;
   }
 }

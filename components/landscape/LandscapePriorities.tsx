@@ -24,13 +24,13 @@ export function LandscapePriorities({
           Transformational priorities
         </h2>
         <p className="font-sans text-[15px] text-ink-soft leading-[1.55] mt-3 max-w-[60ch]">
-          What the {landscapeName} plan is steering toward — the strategic shifts that guide every
+          What the {landscapeName} plan is steering toward: the strategic shifts that guide every
           intervention on the ground.
         </p>
       </div>
 
       <div
-        className="rounded-[14px] p-6 sm:p-8 lg:p-9"
+        className="rounded-panel p-6 sm:p-8 lg:p-9"
         style={{
           background:
             "linear-gradient(180deg, rgba(248,202,124,0.12) 0%, rgba(248,202,124,0.04) 100%)",

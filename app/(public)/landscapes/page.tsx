@@ -69,7 +69,7 @@ export default async function LandscapesPage() {
   return (
     <>
       <Reveal as="section" delay={0} className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-10 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end">
-        <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+        <div>
           <span className="eyebrow">Current Focus · Lighthouses of Transformation</span>
           <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
             CAT <span className="text-teal">Landscapes</span>
@@ -81,7 +81,7 @@ export default async function LandscapesPage() {
             an administrative block or a cluster of villages within one, chosen because the
             geography, communities and institutions there make focused work possible.
           </p>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mt-5 max-w-[52ch]">
             These are the geographies currently at the heart of CAT&apos;s work. For
             programmes, interventions, and contributed work from across India, see the{" "}
             <Link href="/map" className="text-teal hover:text-teal-soft underline-offset-2 hover:underline">
@@ -90,15 +90,15 @@ export default async function LandscapesPage() {
             .
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">Investment plans</span>
           <p className="text-[14px] text-ink-soft max-w-[36ch] mt-3.5">
-            Each landscape has a Landscape Investment Plan — a place-based costing and
+            Each landscape has a Landscape Investment Plan: a place-based costing and
             implementation roadmap developed with its anchor partner.
           </p>
           <div className="mt-4 flex gap-2.5 items-center">
             <span className="w-6 h-px bg-amber-deep" />
-            <span className="font-mono text-[10.5px] uppercase tracking-mono-mid text-ink-soft">
+            <span className="font-mono text-[11px] uppercase tracking-mono-mid text-ink-soft">
               Seven-year horizon
             </span>
           </div>
@@ -124,7 +124,7 @@ export default async function LandscapesPage() {
             </span>
             <a
               href="mailto:programmes@agroecologyindia.org?subject=Request%3A%20detailed%20Landscape%20Investment%20Plan"
-              className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.14em] font-semibold text-paper bg-deep-teal hover:bg-teal rounded-full px-4 py-2 no-underline transition-colors"
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] font-semibold text-paper bg-deep-teal hover:bg-teal rounded-full px-4 py-2 no-underline transition-colors"
             >
               <Mail size={13} strokeWidth={1.9} aria-hidden />
               Email the team
@@ -139,15 +139,15 @@ export default async function LandscapesPage() {
           {rows.map((g, i) => {
             const p = LANDSCAPES[g.slug];
             return (
-              <li key={g.id} className="reveal-stagger" style={{ animationDelay: `${i * 40}ms` }}>
+              <li key={g.id}>
                 <Link href={`/landscape/${g.slug}`} className="group block">
                   <div
-                    className="relative overflow-hidden rounded-[10px] border border-line bg-paper aspect-[800/1131]"
+                    className="relative overflow-hidden rounded-card border border-line bg-paper aspect-[800/1131]"
                     style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(26,38,37,0.45)" }}
                   >
                     <Image
                       src={`/images/landscapes/${g.slug}/cover.jpg`}
-                      alt={`${p?.name ?? g.name} — Landscape-Based Investment Plan cover`}
+                      alt={`${p?.name ?? g.name}, Landscape-Based Investment Plan cover`}
                       width={800}
                       height={1131}
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
@@ -155,19 +155,19 @@ export default async function LandscapesPage() {
                     />
                     <span
                       aria-hidden
-                      className="absolute inset-0 ring-1 ring-inset ring-black/0 group-hover:ring-teal/30 transition-[box-shadow] duration-300 rounded-[10px] pointer-events-none"
+                      className="absolute inset-0 ring-1 ring-inset ring-black/0 group-hover:ring-teal/30 transition-[box-shadow] duration-300 rounded-card pointer-events-none"
                     />
                   </div>
                   <div className="mt-3 flex items-baseline justify-between gap-2">
                     <span className="font-sans text-[15px] font-semibold tracking-[-0.01em] text-ink group-hover:text-teal transition-colors">
                       {p?.name ?? g.name}
                     </span>
-                    <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted shrink-0">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted shrink-0">
                       {g.stateCode}
                     </span>
                   </div>
                   {p && (
-                    <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal mt-0.5">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-teal mt-0.5">
                       {p.district}
                     </div>
                   )}
@@ -176,16 +176,16 @@ export default async function LandscapesPage() {
             );
           })}
 
-          <li className="reveal-stagger" style={{ animationDelay: `${rows.length * 40}ms` }}>
+          <li>
             <Link href="/map" className="group block">
               <div
-                className="relative overflow-hidden rounded-[10px] aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"
+                className="relative overflow-hidden rounded-card aspect-[800/1131] flex flex-col justify-between p-5 sm:p-6"
                 style={{
                   background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
                   boxShadow: "0 1px 2px rgba(26,38,37,0.05), 0 20px 44px -26px rgba(46,117,115,0.5)",
                 }}
               >
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "#B8CCCA" }}>
                   Go wider
                 </span>
                 <span>
@@ -193,7 +193,7 @@ export default async function LandscapesPage() {
                     The Solutions Atlas
                   </span>
                   <span
-                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em]"
+                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em]"
                     style={{ color: "#B8CCCA" }}
                   >
                     Every landscape, and beyond

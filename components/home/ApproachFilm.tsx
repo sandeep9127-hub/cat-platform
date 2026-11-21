@@ -16,8 +16,8 @@ export function ApproachFilm() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <ClipReveal className="rounded-[12px]">
-    <div className="relative aspect-video rounded-[12px] overflow-hidden border border-line bg-deep-teal/5">
+    <ClipReveal className="rounded-panel">
+    <div className="relative aspect-video rounded-panel overflow-hidden border border-line bg-deep-teal/5">
       {playing ? (
         <iframe
           className="absolute inset-0 h-full w-full"

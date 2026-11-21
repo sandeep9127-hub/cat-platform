@@ -12,7 +12,7 @@ type Props = {
 export function ThemeChip({ slug, name, colourHex, asLink = true, showIcon = false }: Props) {
   const inner = (
     <span
-      className="font-mono text-[9.5px] uppercase tracking-[0.12em] px-2.5 py-1 rounded-full bg-cream text-ink-soft inline-flex gap-1.5 items-center font-medium"
+      className="font-mono text-[11px] uppercase tracking-[0.12em] px-2.5 py-1 rounded-full bg-cream text-ink-soft inline-flex gap-1.5 items-center font-medium"
       style={{ ["--c" as string]: colourHex } as React.CSSProperties}
     >
       {showIcon ? (

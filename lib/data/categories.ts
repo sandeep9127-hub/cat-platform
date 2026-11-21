@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 /**
  * The 10 CAT intervention categories — the single source of truth for the
  * Solutions Atlas taxonomy. Borrowed from the 5.2 Landscape Investment Plan
@@ -11,15 +12,15 @@ export type Category = { slug: string; name: string; short: string; colourHex: s
 
 export const CATEGORIES: Category[] = [
   { slug: "agri-horti-agroforestry", name: "Agriculture, Horticulture & Agroforestry", short: "Agri & Agroforestry", colourHex: "#8C7A5C" },
-  { slug: "forestry-ntfp", name: "Forestry & NTFP", short: "Forestry & NTFP", colourHex: "#5C8C2E" },
-  { slug: "livestock", name: "Livestock Management", short: "Livestock", colourHex: "#C68C2E" },
+  { slug: "forestry-ntfp", name: "Forestry & NTFP", short: "Forestry & NTFP", colourHex: palette.leaf },
+  { slug: "livestock", name: "Livestock Management", short: "Livestock", colourHex: palette.ochre },
   { slug: "fisheries", name: "Fisheries", short: "Fisheries", colourHex: "#2C7BD0" },
-  { slug: "nrm", name: "Natural Resource Management", short: "NRM", colourHex: "#2E7573" },
+  { slug: "nrm", name: "Natural Resource Management", short: "NRM", colourHex: palette.teal },
   { slug: "biodiversity", name: "Biodiversity", short: "Biodiversity", colourHex: "#2EA37A" },
   { slug: "nutrition", name: "Nutrition", short: "Nutrition", colourHex: "#C24A2E" },
-  { slug: "market", name: "Market", short: "Market", colourHex: "#5C6796" },
+  { slug: "market", name: "Market", short: "Market", colourHex: palette.periwinkleText },
   { slug: "energy", name: "Energy", short: "Energy", colourHex: "#D9A655" },
-  { slug: "technical-assistance", name: "Technical Assistance", short: "Technical Assistance", colourHex: "#929CC5" },
+  { slug: "technical-assistance", name: "Technical Assistance", short: "Technical Assistance", colourHex: palette.periwinkle },
 ];
 
 export const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug);

@@ -175,11 +175,11 @@ export function FloatingAsk() {
         ) : (
           <Sparkles size={15} strokeWidth={1.8} className="text-amber" aria-hidden />
         )}
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold whitespace-nowrap">
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] font-semibold whitespace-nowrap">
           {open ? "Close" : mode.label}
         </span>
         {!open && (
-          <span className="hidden sm:inline-flex items-center gap-1 ml-1 pl-2 border-l border-paper/25 font-mono text-[9px] uppercase tracking-[0.14em] text-paper/70">
+          <span className="hidden sm:inline-flex items-center gap-1 ml-1 pl-2 border-l border-paper/25 font-mono text-[11px] uppercase tracking-[0.14em] text-paper/70">
             ⌘ K
           </span>
         )}
@@ -200,7 +200,7 @@ export function FloatingAsk() {
         <aside
           role="dialog"
           aria-label={`${mode.label} chat`}
-          className="fixed z-[56] right-0 left-0 bottom-0 sm:left-auto sm:right-5 sm:bottom-[5.5rem] sm:w-[400px] max-h-[78dvh] sm:max-h-[70dvh] flex flex-col sm:rounded-[8px] overflow-hidden border-t sm:border border-line/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-paper/92 bg-paper shadow-[0_32px_80px_-20px_rgba(26,38,37,0.55),0_8px_24px_-8px_rgba(26,38,37,0.25),0_0_0_1px_rgba(26,38,37,0.04)] animate-fade-in-down"
+          className="fixed z-[56] right-0 left-0 bottom-0 sm:left-auto sm:right-5 sm:bottom-[5.5rem] sm:w-[400px] max-h-[78dvh] sm:max-h-[70dvh] flex flex-col sm:rounded-card overflow-hidden border-t sm:border border-line/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-paper/92 bg-paper shadow-[0_32px_80px_-20px_rgba(26,38,37,0.55),0_8px_24px_-8px_rgba(26,38,37,0.25),0_0_0_1px_rgba(26,38,37,0.04)] animate-fade-in-down"
           style={{
             // Tiny upward tone shift so the conversation feels lifted off the page,
             // but the fill stays effectively opaque (>92%) so text behind never bleeds through.
@@ -216,7 +216,7 @@ export function FloatingAsk() {
                 <h2 className="font-serif text-[15px] leading-none tracking-[-0.01em] font-medium truncate">
                   {mode.label}
                 </h2>
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-paper/70 mt-1 truncate">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/70 mt-1 truncate">
                   {mode.scope !== "all"
                     ? `Scoped to ${mode.landscapeName} library`
                     : "Reads the published library only"}
@@ -226,7 +226,7 @@ export function FloatingAsk() {
                 type="button"
                 aria-label="Close"
                 onClick={() => setOpen(false)}
-                className="ml-auto p-1.5 -mr-1 rounded hover:bg-paper/10 transition-colors"
+                className="ml-auto p-1.5 -mr-1 rounded-tight hover:bg-paper/10 transition-colors"
               >
                 <X size={16} strokeWidth={1.8} aria-hidden />
               </button>
@@ -243,7 +243,7 @@ export function FloatingAsk() {
                     : "Ask the Hub. Answers come from the published library, with the entries cited."}
                 </p>
                 <div className="mt-5 flex flex-col gap-2">
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
                     Try
                   </span>
                   {mode.starters.map((s) => (
@@ -270,8 +270,8 @@ export function FloatingAsk() {
                     <div
                       className={`max-w-[88%] px-4 py-2.5 text-[14px] leading-[1.55] shadow-[0_1px_2px_rgba(26,38,37,0.06)] ${
                         m.role === "user"
-                          ? "bg-gradient-to-br from-deep-teal to-teal text-paper rounded-[12px] rounded-br-[4px] font-mono text-[13px]"
-                          : "bg-paper border border-line/80 text-ink font-sans rounded-[12px] rounded-bl-[4px]"
+                          ? "bg-gradient-to-br from-deep-teal to-teal text-paper rounded-panel rounded-br-tight font-mono text-[13px]"
+                          : "bg-paper border border-line/80 text-ink font-sans rounded-panel rounded-bl-tight"
                       }`}
                     >
                       {m.content}
@@ -280,9 +280,9 @@ export function FloatingAsk() {
                 ))}
                 {busy && (
                   <li className="flex justify-start">
-                    <div className="px-4 py-2.5 border border-line rounded-[12px] rounded-bl-[4px] bg-paper inline-flex items-center gap-2 text-muted">
+                    <div className="px-4 py-2.5 border border-line rounded-panel rounded-bl-tight bg-paper inline-flex items-center gap-2 text-muted">
                       <Loader2 size={14} className="animate-spin" aria-hidden />
-                      <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.16em]">
                         Reading the library
                       </span>
                     </div>
@@ -306,7 +306,7 @@ export function FloatingAsk() {
             }}
             className="border-t border-line/80 bg-paper p-3 shadow-[0_-2px_8px_rgba(26,38,37,0.04)]"
           >
-            <div className="flex items-end gap-2 border border-line rounded-[6px] bg-paper focus-within:border-teal transition-colors">
+            <div className="flex items-end gap-2 border border-line rounded-card bg-paper focus-within:border-teal transition-colors">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -329,12 +329,12 @@ export function FloatingAsk() {
                 type="submit"
                 disabled={!input.trim() || busy}
                 aria-label="Send"
-                className="m-1.5 p-2 rounded-[4px] bg-gradient-to-br from-deep-teal to-teal text-paper disabled:opacity-40 disabled:cursor-not-allowed hover:from-teal hover:to-deep-teal transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
+                className="m-1.5 p-2 rounded-tight bg-gradient-to-br from-deep-teal to-teal text-paper disabled:opacity-40 disabled:cursor-not-allowed hover:from-teal hover:to-deep-teal transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out"
               >
                 <ArrowUp size={14} strokeWidth={2} aria-hidden />
               </button>
             </div>
-            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted text-center">
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted text-center">
               <MessageCircle size={9} className="inline -translate-y-px mr-1" />
               Public preview, scoped to the library
             </p>

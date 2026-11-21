@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SectionOpener } from "@/components/ui/SectionOpener";
 import { LANDSCAPES } from "@/lib/data/landscapes";
@@ -44,14 +45,13 @@ export function AnchorPartners() {
 
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-10 sm:gap-x-12 lg:gap-x-16 gap-y-14 sm:gap-y-16 list-none p-0 rounded-[14px] bg-white border border-line/60 px-8 sm:px-12 lg:px-14 py-14 sm:py-16"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-10 sm:gap-x-12 lg:gap-x-16 gap-y-14 sm:gap-y-16 list-none p-0 rounded-panel bg-white border border-line/60 px-8 sm:px-12 lg:px-14 py-14 sm:py-16"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {items.map(({ slug, a, landscape }, i) => (
             <li
               key={slug}
-              className="group flex items-center justify-center reveal-stagger"
-              style={{ animationDelay: `${i * 35}ms` }}
+              className="group flex items-center justify-center"
             >
               <Link
                 href={`/landscape/${slug}`}
@@ -62,15 +62,16 @@ export function AnchorPartners() {
                     share a baseline per row. max-w caps the wide two-part lockups
                     (Srijan, Pradan) so they can't bleed into the gutter. */}
                 <span className="flex h-[72px] sm:h-[80px] w-full items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={a.logo}
                     alt={a.name}
-                    loading="lazy"
-                    className="max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                    width={240}
+                    height={120}
+                    sizes="200px"
+                    className="h-auto max-h-[64px] sm:max-h-[72px] w-auto max-w-[74%] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
                   />
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted group-hover:text-teal transition-colors text-center">
                   {landscape}
                 </span>
               </Link>

@@ -1,5 +1,7 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Download } from "lucide-react";
@@ -19,9 +21,9 @@ export type Pin = {
   lipStatus: "published" | "in_preparation";
 };
 
-const TEAL = "#2e7573";
-const SLATE = "#5e6990";
-const AMBER = "#946616";
+const TEAL = palette.teal;
+const SLATE = palette.periwinkleDeep;
+const AMBER = palette.amberDeep;
 const ZOOM = 3.6;
 const CX = VB.width / 2;
 const CY = VB.height / 2;
@@ -192,7 +194,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
         {/* Map spine — sticky on desktop */}
         <div className="lg:sticky lg:top-[10vh] self-start order-1 lg:order-none mt-8 lg:mt-16">
           <div
-            className="relative rounded-[12px] border border-line overflow-hidden"
+            className="relative rounded-panel border border-line overflow-hidden"
             style={{
               background:
                 "radial-gradient(ellipse 70% 55% at 50% 8%, rgba(208,218,239,0.45), transparent 70%), linear-gradient(180deg, rgba(251,248,242,1) 0%, rgba(244,237,221,0.85) 100%)",
@@ -251,7 +253,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
 
             {/* Persistent "you are here" locator — only during the dive */}
             {isLandscape(active) && (
-              <div className="absolute bottom-3 right-3 w-[64px] sm:w-[76px] rounded-[6px] border border-line/80 bg-paper/90 backdrop-blur-sm p-1 transition-opacity duration-300">
+              <div className="absolute bottom-3 right-3 w-[64px] sm:w-[76px] rounded-card border border-line/80 bg-paper/90 backdrop-blur-sm p-1 transition-opacity duration-300">
                 <svg viewBox={`0 0 ${VB.width} ${VB.height}`} className="w-full h-auto block" aria-hidden>
                   {paths.map((d, i) => (
                     <path key={i} d={d} fill="rgba(94,103,144,0.10)" stroke="rgba(94,103,144,0.35)" strokeWidth={0.5} />
@@ -262,7 +264,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               </div>
             )}
 
-            <div className="absolute top-3 left-4 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+            <div className="absolute top-3 left-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
               {isLandscape(active) ? (
                 <>
                   <span className="text-amber-deep font-semibold tabular-nums">{String(active + 1).padStart(2, "0")}</span>
@@ -274,7 +276,7 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
               )}
             </div>
             {isLandscape(active) && (
-              <div className="absolute bottom-3 left-4 font-mono text-[9.5px] uppercase tracking-[0.14em] text-deep-teal font-semibold max-w-[55%]">
+              <div className="absolute bottom-3 left-4 font-mono text-[11px] uppercase tracking-[0.14em] text-deep-teal font-semibold max-w-[55%]">
                 {mapLabel}
               </div>
             )}
@@ -319,18 +321,18 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                 <div className={"transition-opacity duration-500 " + (reduced ? "opacity-100" : isActive ? "opacity-100" : "lg:opacity-35")}>
                   {profile?.photos?.[0] && (
                     <figure
-                      className="relative mb-6 overflow-hidden rounded-[11px] border border-line"
+                      className="relative mb-6 overflow-hidden rounded-card border border-line"
                       style={{
                         aspectRatio: "16 / 10",
                         boxShadow:
                           "0 1px 2px rgba(26,38,37,0.05), 0 24px 50px -30px rgba(26,38,37,0.45)",
                       }}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={profile.photos[0].src}
                         alt={profile.photos[0].alt ?? profile.photos[0].caption}
-                        loading="lazy"
+                        fill
+                        sizes="(min-width: 1024px) 560px, 100vw"
                         className={
                           "absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out " +
                           (isActive ? "scale-100" : "scale-[1.04]")
@@ -346,12 +348,12 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                         className="absolute inset-x-0 bottom-0 h-px"
                         style={{ background: "linear-gradient(90deg, transparent 0%, rgba(248,202,124,0.7) 50%, transparent 100%)" }}
                       />
-                      <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-[9px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                      <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                         {profile.photos[0].caption}
                       </figcaption>
                     </figure>
                   )}
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex items-center gap-2 flex-wrap">
                     <span className="text-amber-deep tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                     <span className="text-line">/</span>
                     {profile?.region ?? pin.stateCode}
@@ -365,18 +367,17 @@ export function LandscapeScrollytelling({ pins }: { pins: Pin[] }) {
                   <div className="mt-7 flex flex-wrap items-start gap-x-8 gap-y-5">
                     {anchor && (
                       <div>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
+                        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Anchor partner</span>
                         <div className="mt-1.5 flex items-center gap-2.5">
-                          <span className="inline-flex items-center justify-center w-12 h-12 rounded-[7px] bg-paper border border-line p-1">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={anchor.logo} alt={anchor.name} className="max-h-full max-w-full object-contain" />
+                          <span className="inline-flex items-center justify-center w-12 h-12 rounded-card bg-paper border border-line p-1">
+                            <Image src={anchor.logo} alt={anchor.name} width={40} height={40} className="w-full h-full object-contain" />
                           </span>
                           <span className="font-sans text-[13px] text-ink leading-tight max-w-[18ch]">{anchor.short}</span>
                         </div>
                       </div>
                     )}
                     <div>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Investment plan</span>
                       <div className="mt-1.5 font-sans text-[14px] flex items-center min-h-12">
                         {pin.lipStatus === "published" ? (
                           <span className="text-deep-teal font-medium">Published</span>

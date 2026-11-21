@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   Layers,
   Map as MapIcon,
@@ -15,18 +16,43 @@ import { CatLogo } from "./CatLogo";
 
 const PARENT_SITE = "https://www.agroecologyindia.org";
 
+// `match` lists the route prefixes that count as "inside" a section, so a
+// landscape detail page lights up Landscapes and an entry lights up the Atlas.
 const NAV_LINKS = [
-  { href: "/principles", label: "Principles", Icon: Compass },
-  { href: "/landscapes", label: "Landscapes", Icon: Layers },
-  { href: "/map", label: "Solutions Atlas", Icon: MapIcon },
-  { href: "/organizations", label: "Organisations Atlas", Icon: Users },
-  { href: "/about", label: "About", Icon: Info },
+  { href: "/principles", label: "Principles", Icon: Compass, match: ["/principles"] },
+  { href: "/landscapes", label: "Landscapes", Icon: Layers, match: ["/landscapes", "/landscape"] },
+  { href: "/map", label: "Solutions Atlas", Icon: MapIcon, match: ["/map", "/entry", "/atlas", "/theme"] },
+  { href: "/organizations", label: "Organisations Atlas", Icon: Users, match: ["/organizations", "/organisation"] },
+  { href: "/about", label: "About", Icon: Info, match: ["/about"] },
 ];
+
+function isActive(pathname: string, match: string[]) {
+  return match.some((m) => pathname === m || pathname.startsWith(m + "/"));
+}
 
 export function BrandBar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [reduce, setReduce] = useState(false);
+  const pathname = usePathname() ?? "/";
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Publish the header's real height as --header-h so sticky bars below it
+  // (the landscape tabs) sit exactly underneath instead of a guessed offset.
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const set = () =>
+      document.documentElement.style.setProperty("--header-h", `${row.offsetTop + row.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(row);
+    window.addEventListener("resize", set);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", set);
+    };
+  }, []);
 
   useEffect(() => {
     function onScroll() {
@@ -56,7 +82,7 @@ export function BrandBar() {
           pointer-events: the transparent gutter passes clicks through; the bar itself
           re-enables them. */}
       <div
-        className={`max-w-page mx-auto rounded-[18px] pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
+        className={`max-w-page mx-auto rounded-panel pointer-events-auto transition-[box-shadow] duration-300 ease-out ${
           scrolled
             ? "shadow-[0_10px_30px_-18px_rgba(26,38,37,0.22)]"
             : "shadow-none"
@@ -69,14 +95,15 @@ export function BrandBar() {
           backgroundColor: "var(--paper)",
         }}
       >
+        {/* Constant height: no padding animation (DESIGN.md: never animate
+            layout), so the header and the bars pinned under it stay steady. */}
         <div
-          className={`px-4 sm:px-6 lg:px-7 flex items-center gap-3 sm:gap-5 lg:gap-7 transition-[padding] duration-300 ease-out ${
-            scrolled ? "py-2 sm:py-2.5" : "py-3 sm:py-3.5"
-          }`}
+          ref={rowRef}
+          className="px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3 flex items-center gap-3 sm:gap-5 lg:gap-7"
         >
         <Link
           href="/"
-          aria-label="Transformation Hub — home"
+          aria-label="Transformation Hub, home"
           className="flex items-center no-underline text-ink group shrink-0"
         >
           {/* The mark stays put and crisp; only the wordmark folds away. The
@@ -92,58 +119,97 @@ export function BrandBar() {
               collapse ? "max-w-0 opacity-0 ml-0" : "max-w-[460px] opacity-100 ml-3 pr-[0.18em]"
             }`}
           >
-            <span className="font-serif font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
+            <span className="font-wordmark font-medium leading-[1.05] tracking-[-0.012em] text-[16px] sm:text-[18px] group-hover:text-teal transition-colors">
               Transformation <span className="text-teal italic font-normal">Hub</span>
             </span>
           </span>
         </Link>
-        <nav className="ml-auto flex items-center gap-3.5 lg:gap-4 xl:gap-5">
-          {NAV_LINKS.map(({ href, label, Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="hidden xl:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap text-ink-soft hover:text-teal transition-colors group relative py-1"
-            >
-              <Icon size={13} strokeWidth={1.7} className="text-muted group-hover:text-teal transition-colors" aria-hidden />
-              <span className="relative">
-                {label}
-                {/* Animated underline — grows from left on hover */}
-                <span
+        {/* Full nav from 1024px (lg). Between lg and xl the link icons and
+            the Consortium link are dropped so everything fits on one line. */}
+        <nav aria-label="Main" className="ml-auto flex items-center gap-3.5 lg:gap-2.5 xl:gap-4">
+          {NAV_LINKS.map(({ href, label, Icon, match }) => {
+            const active = isActive(pathname, match);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`hidden lg:inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap hover:text-teal transition-colors group relative py-1 ${
+                  active ? "text-ink font-medium" : "text-ink-soft"
+                }`}
+              >
+                <Icon
+                  size={13}
+                  strokeWidth={1.7}
+                  className={`hidden xl:block group-hover:text-teal transition-colors ${active ? "text-teal" : "text-muted"}`}
                   aria-hidden
-                  className="absolute left-0 -bottom-1 h-[1.5px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #2E7573 0%, #C68C2E 100%)",
-                  }}
                 />
-              </span>
-            </Link>
-          ))}
+                <span className="relative">
+                  {label}
+                  {/* Underline: always shown on the current section, grows in on hover elsewhere. */}
+                  <span
+                    aria-hidden
+                    className={`absolute left-0 -bottom-1 h-[1.5px] w-full bg-teal origin-left transition-transform duration-300 ease-out ${
+                      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                    }`}
+                  />
+                </span>
+              </Link>
+            );
+          })}
           {/* The parent organisation — clearly external, opens in a new tab so the
               Hub stays open. Deliberately not called "Home" (it leaves the Hub). */}
           <a
             href={PARENT_SITE}
             target="_blank"
             rel="noreferrer"
-            className="hidden xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
+            // Very wide screens only: the Ask box needs the room; the link is
+            // also in the footer and the mobile menu.
+            className="hidden 2xl:inline-flex items-center gap-1 text-[13px] whitespace-nowrap text-muted hover:text-teal transition-colors group py-1"
           >
             <span>The Consortium</span>
             <ArrowUpRight size={12} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
           </a>
-          {/* Ask — single highlighted entry point (replaces the old floating widget) */}
-          <Link
-            href="/agent"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] sm:text-[10.5px] tracking-mono-mid uppercase px-4 py-2 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-200 ease-out-expo whitespace-nowrap shrink-0"
+          {/* Ask (Ask UI spec E1): a box that looks typeable, with a solid Ask
+              button inside. A plain GET form to /agent?q=..., so it works
+              before JS; an empty submit just opens /agent with the composer. */}
+          <form
+            action="/agent"
+            method="get"
+            role="search"
+            aria-label="Ask the Hub"
+            onSubmit={(e) => {
+              const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement | null)?.value.trim();
+              if (!q) {
+                e.preventDefault();
+                window.location.href = "/agent";
+              }
+            }}
+            className="hidden sm:flex items-center shrink-0 rounded-full border border-line bg-paper pl-3.5 pr-1 py-1 focus-within:border-teal focus-within:ring-2 focus-within:ring-teal/20"
           >
-            <MessageCircle size={12} strokeWidth={2} aria-hidden />
-            Ask the Hub
-          </Link>
-          {/* Compact Ask — phones only (<640px). The full green pill above is
-              hidden below sm; this keeps Ask one tap away in the bar while
-              everything else lives in the drawer. Tablet/desktop unchanged. */}
+            <MessageCircle size={14} strokeWidth={1.8} className="text-muted shrink-0" aria-hidden />
+            <label htmlFor="brandbar-ask" className="sr-only">
+              Ask about any landscape
+            </label>
+            <input
+              id="brandbar-ask"
+              name="q"
+              type="text"
+              autoComplete="off"
+              placeholder="Ask about any landscape…"
+              className="w-[178px] lg:w-[176px] xl:w-[178px] min-w-0 bg-transparent text-[13px] text-ink placeholder:text-muted outline-none px-2 py-1"
+            />
+            <button
+              type="submit"
+              className="shrink-0 inline-flex items-center min-h-8 px-3.5 rounded-full bg-deep-teal text-paper text-[13px] font-medium hover:bg-teal transition-colors"
+            >
+              Ask
+            </button>
+          </form>
+          {/* Compact Ask: phones only (<640px), where the box above is hidden. */}
           <Link
             href="/agent"
-            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[9.5px] tracking-mono-mid uppercase px-3 py-1.5 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
+            className="sm:hidden inline-flex items-center gap-1.5 font-mono text-[11px] tracking-mono-mid uppercase px-3.5 min-h-9 rounded-full bg-deep-teal text-paper active:scale-[0.97] transition-transform duration-200 ease-out-expo whitespace-nowrap shrink-0"
           >
             <MessageCircle size={11} strokeWidth={2} aria-hidden />
             Ask
@@ -154,7 +220,7 @@ export function BrandBar() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="xl:hidden p-2 -mr-2 text-ink hover:text-teal transition-colors"
+            className="lg:hidden inline-flex items-center justify-center w-11 h-11 -mr-2.5 text-ink hover:text-teal transition-colors"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               {open ? (
@@ -176,22 +242,26 @@ export function BrandBar() {
 
       {/* Disclosure sheet */}
       {open && (
-        <div className="xl:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-[18px] overflow-hidden">
+        <div className="lg:hidden border-t border-line-soft bg-paper animate-fade-in-down rounded-b-panel overflow-hidden">
           <nav className="max-w-page mx-auto px-5 sm:px-7 py-4 flex flex-col gap-1">
-            {NAV_LINKS.map(({ href, label, Icon }) => (
-              // No per-item stagger — the parent drawer already animates
-              // in. The stagger had items at opacity 0 mid-flight which
-              // made the menu read as half-empty on mobile.
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setOpen(false)}
-                className="font-serif text-[20px] text-ink hover:text-teal py-2 border-b border-line-soft last:border-b-0 inline-flex items-center gap-3"
-              >
-                <Icon size={18} strokeWidth={1.5} className="text-teal/70" aria-hidden />
-                <span>{label}</span>
-              </Link>
-            ))}
+            {NAV_LINKS.map(({ href, label, Icon, match }) => {
+              const active = isActive(pathname, match);
+              // No per-item stagger: the parent drawer already animates in.
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={`font-sans text-[19px] tracking-[-0.01em] hover:text-teal py-2 border-b border-line-soft last:border-b-0 inline-flex items-center gap-3 ${
+                    active ? "text-teal font-semibold" : "text-ink"
+                  }`}
+                >
+                  <Icon size={18} strokeWidth={1.5} className={active ? "text-teal" : "text-teal/70"} aria-hidden />
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
             {/* Parent organisation — clearly external, new tab. Not "Home". */}
             <a
               href={PARENT_SITE}

@@ -1,5 +1,7 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
+import Image from "next/image";
 import { Mountain, Users, Coins, type LucideIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { useCurrency, formatMoney } from "./currency";
@@ -54,7 +56,7 @@ export function LandscapeLedger(props: LedgerProps) {
       Icon: Mountain,
       // CAT illustrated stat icon (periwinkle — matches the Land accent).
       iconSrc: "/icons/stats/area.png",
-      accent: "#5e6990",
+      accent: palette.periwinkleDeep,
       rows: [
         { label: "Geographical area", value: props.area },
         { label: "Inhabited villages", value: props.villages },
@@ -67,7 +69,7 @@ export function LandscapeLedger(props: LedgerProps) {
       Icon: Users,
       // CAT illustrated stat icon (teal — matches the People accent).
       iconSrc: "/icons/stats/population.png",
-      accent: "#2e7573",
+      accent: palette.teal,
       rows: [
         { label: "Population", value: props.population },
         { label: "Households", value: props.households },
@@ -78,7 +80,7 @@ export function LandscapeLedger(props: LedgerProps) {
       key: "money",
       label: "Investment",
       Icon: Coins,
-      accent: "#946616",
+      accent: palette.amberDeep,
       rows: hasMoney
         ? [
             { label: "Total plan size", value: formatMoney(props.totalCostInr!, currency) },
@@ -98,13 +100,13 @@ export function LandscapeLedger(props: LedgerProps) {
         </h2>
       </div>
 
-      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-[14px] overflow-hidden border border-line list-none p-0 m-0">
+      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line rounded-panel overflow-hidden border border-line list-none p-0 m-0">
         {groups.map((g) => (
           <li key={g.key} className="relative bg-paper px-6 py-6 sm:px-7 sm:py-7">
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: g.accent }} />
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
+            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold mb-5" style={{ color: g.accent }}>
               {g.iconSrc ? (
-                <img src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
+                <Image src={g.iconSrc} alt="" aria-hidden width={20} height={20} className="w-5 h-5 object-contain -my-1" />
               ) : (
                 <g.Icon size={13} strokeWidth={1.9} aria-hidden />
               )}
@@ -116,11 +118,11 @@ export function LandscapeLedger(props: LedgerProps) {
                   key={r.label}
                   className={"flex items-baseline justify-between gap-4 py-2.5" + (i < g.rows.length - 1 ? " border-b border-line/70" : "")}
                 >
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.13em] text-muted">{r.label}</dt>
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.13em] text-muted">{r.label}</dt>
                   <dd
                     className={
                       "font-serif tabular-nums tracking-[-0.015em] text-right " +
-                      (r.muted ? "text-[15px] italic text-amber-deep" : "text-[19px] sm:text-[21px] text-deep-teal font-medium")
+                      (r.muted ? "text-[15px] italic text-amber-deep" : "text-[19px] sm:text-[21px] text-ink font-medium")
                     }
                   >
                     {r.muted ? r.value : <AnimatedNumber key={g.key === "money" ? `${currency}` : undefined} value={r.value} />}

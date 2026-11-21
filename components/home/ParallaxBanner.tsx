@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import { useEffect, useRef, type ReactNode } from "react";
 
 type ParallaxBannerProps = {
@@ -280,7 +281,7 @@ export function ParallaxBanner({
       )}
 
       {caption && !isHero && (
-        <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+        <span className="absolute bottom-3 left-5 sm:left-7 lg:left-10 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
           <span className="inline-block w-4 h-px bg-amber align-middle mr-2" />
           {caption}
         </span>
@@ -311,13 +312,13 @@ function BrandGlyphRow() {
           <path d="M-9 6 A 9 9 0 0 1 9 6" stroke="#F8CA7C" strokeOpacity="0.55" strokeWidth="1.4" />
           <path
             d="M0 9 C -10 14, -12 26, -5 34 C 0 30, 1 24, 0 9 Z"
-            stroke="#929CC5"
+            stroke={palette.periwinkle}
             strokeOpacity="0.35"
             strokeWidth="1.2"
           />
           <path
             d="M0 9 C 10 14, 12 26, 5 34 C 0 30, -1 24, 0 9 Z"
-            stroke="#929CC5"
+            stroke={palette.periwinkle}
             strokeOpacity="0.35"
             strokeWidth="1.2"
           />

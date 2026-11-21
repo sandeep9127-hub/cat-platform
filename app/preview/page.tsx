@@ -2,7 +2,7 @@ import { safeFrom, LAUNCH_DATE } from "@/lib/preview";
 import { LaunchCountdown } from "@/components/preview/LaunchCountdown";
 
 export const metadata = {
-  title: "Private preview · Transformation Hub",
+  title: "Private preview",
   robots: { index: false, follow: false },
 };
 
@@ -42,13 +42,13 @@ export default async function PreviewPage({
         <form
           method="POST"
           action="/api/preview/unlock"
-          className="mt-8 rounded-[14px] border border-line bg-paper p-6 sm:p-7 flex flex-col gap-4"
+          className="mt-8 rounded-panel border border-line bg-paper p-6 sm:p-7 flex flex-col gap-4"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 22px 48px -30px rgba(26,38,37,0.3)" }}
         >
           <input type="hidden" name="from" value={from} />
 
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
               Your name or organisation <span className="text-muted normal-case tracking-normal">(optional)</span>
             </span>
             <input
@@ -56,12 +56,12 @@ export default async function PreviewPage({
               type="text"
               autoComplete="organization"
               placeholder="e.g. Rockefeller Foundation"
-              className="w-full rounded-[9px] border border-line bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none focus:border-teal transition-colors"
+              className="w-full rounded-card border border-line bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none focus:border-teal transition-colors"
             />
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Access code</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Access code</span>
             <input
               name="password"
               type="password"
@@ -69,14 +69,14 @@ export default async function PreviewPage({
               autoFocus
               autoComplete="off"
               className={
-                "w-full rounded-[9px] border bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition-colors focus:border-teal " +
-                (error ? "border-[#b85042]" : "border-line")
+                "w-full rounded-card border bg-cream px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition-colors focus:border-teal " +
+                (error ? "border-red-alert" : "border-line")
               }
             />
           </label>
 
           {error && (
-            <p className="font-sans text-[13px] text-[#b85042] -mt-1">
+            <p className="font-sans text-[13px] text-red-alert -mt-1">
               That code wasn&apos;t right. Try again, or ask your CAT contact.
             </p>
           )}
@@ -89,7 +89,7 @@ export default async function PreviewPage({
           </button>
         </form>
 
-        <p className="text-center font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted mt-6">
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted mt-6">
           Consortium for Agroecological Transformations
         </p>
       </div>

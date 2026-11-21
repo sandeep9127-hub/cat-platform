@@ -118,12 +118,12 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
 
       {selected ? (
         // Selected chip — canonical, with path. Clear to search again.
-        <div className="flex items-center gap-2.5 rounded-[10px] border border-line bg-line-soft px-3 py-2.5">
+        <div className="flex items-center gap-2.5 rounded-card border border-line bg-line-soft px-3 py-2.5">
           <MapPin size={15} className="text-teal shrink-0" aria-hidden />
           <div className="min-w-0 flex-1">
             <div className="font-sans text-[14px] text-ink leading-tight truncate">{selected.name}</div>
             {selected.path.length > 0 && (
-              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted truncate">
+              <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted truncate">
                 {selected.path.join(" · ")}
                 {!selected.verified && <span className="text-amber-deep ml-2">· pending review</span>}
               </div>
@@ -155,7 +155,7 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
               onKeyDown={onKeyDown}
               onFocus={() => hits.length > 0 && setOpen(true)}
               placeholder={placeholder ?? `Type a ${levelHint} name…`}
-              className="w-full rounded-[10px] border border-line bg-paper pl-9 pr-3 py-2.5 font-sans text-[14px] text-ink placeholder:text-muted outline-none focus:border-teal transition-colors"
+              className="w-full rounded-card border border-line bg-paper pl-9 pr-3 py-2.5 font-sans text-[14px] text-ink placeholder:text-muted outline-none focus:border-teal transition-colors"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
             <ul
               id={listId}
               role="listbox"
-              className="absolute z-30 mt-1.5 w-full max-h-[300px] overflow-auto rounded-[10px] border border-line bg-paper shadow-lg list-none p-1 m-0"
+              className="absolute z-30 mt-1.5 w-full max-h-[300px] overflow-auto rounded-card border border-line bg-paper shadow-lg list-none p-1 m-0"
               style={{ boxShadow: "0 10px 30px -12px rgba(26,38,37,0.35)" }}
             >
               {loading && hits.length === 0 ? (
@@ -179,15 +179,15 @@ export function GeographyPicker({ name, type, state, defaultValue = null, placeh
                       type="button"
                       onMouseEnter={() => setActive(i)}
                       onClick={() => pick(h)}
-                      className="w-full text-left rounded-[7px] px-3 py-2 transition-colors"
+                      className="w-full text-left rounded-card px-3 py-2 transition-colors"
                       style={{ background: i === active ? "var(--line-soft, #EEF2EA)" : "transparent" }}
                     >
                       <div className="font-sans text-[14px] text-ink leading-tight">
                         {h.name}
-                        <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted">{h.type}</span>
+                        <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">{h.type}</span>
                       </div>
                       {h.path.length > 0 && (
-                        <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted truncate">
+                        <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted truncate">
                           {h.path.join(" · ")}
                         </div>
                       )}

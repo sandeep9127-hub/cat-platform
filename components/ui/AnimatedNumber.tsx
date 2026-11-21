@@ -88,7 +88,30 @@ export function AnimatedNumber({ value, duration = 900 }: AnimatedNumberProps) {
     }
   }, [value, duration, hasNumber, decimals, numericTarget, prefix, suffix]);
 
-  return <span ref={ref}>{display || value}</span>;
+  return (
+    <span ref={ref}>
+      <FigureText value={display || value} />
+    </span>
+  );
+}
+
+/**
+ * Renders a formatted figure with a trailing unit (cr, lakh, M, K, ha, x, %)
+ * set slightly smaller, in the same colour: "₹170.0 cr". Anything else
+ * ("10 / 11") renders unchanged.
+ */
+export function FigureText({ value }: { value: string }) {
+  const m = value.match(/^(\D*?)(-?[\d,]+)(\.\d+)?(\s*)([A-Za-z×%][\w×%]*)?$/);
+  if (!m) return <>{value}</>;
+  const [, prefix, int, dec = "", , unit] = m;
+  return (
+    <>
+      {prefix}
+      {int}
+      {dec}
+      {unit && <span className="fig-unit">{unit}</span>}
+    </>
+  );
 }
 
 /** Indian-style grouping (e.g. 1,23,456). Skips small numbers and decimals. */

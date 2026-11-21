@@ -1,9 +1,11 @@
+import { palette } from "@/lib/design/palette";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
+import { LandscapeAskBar, SPEC_STARTERS } from "@/components/landscape/LandscapeAskBar";
 import { landscapeHasLip, budgetSummary, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
@@ -85,24 +87,28 @@ export default async function LandscapeDetailPage({ params }: Props) {
       {/* One currency control for the whole page — sits top-right, drives the
           ledger, the plan and every figure below it (INR / USD / EUR). */}
       <CurrencyProvider>
+      {/* On phones the hero photo leads and the currency control follows it;
+          from md up the control sits top-right above the hero. */}
+      <div className="flex flex-col">
       {money && money.totalCostInr > 0 && (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 flex justify-end mb-4 reveal-stagger">
+        <div className="order-2 md:order-1 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 flex justify-end mb-6 md:mb-4">
           <CurrencyControl />
         </div>
       )}
       {/* Hero visual anchor: photograph when available, procedural signature otherwise */}
       {p.photos && p.photos.length > 0 ? (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-6 reveal-stagger">
+        <div className="order-1 md:order-2 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 mb-6">
           <LandscapeAnchor photo={p.photos[0]} />
         </div>
       ) : (
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center reveal-stagger">
+        <div className="order-1 md:order-2 max-w-page w-full mx-auto px-5 sm:px-7 lg:px-10 mb-2 hidden md:flex justify-center">
           <LandscapeSignature slug={slug} width={480} />
         </div>
       )}
+      </div>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 lg:gap-12 items-end">
-        <div className="reveal-stagger">
-          <div className="flex items-center gap-3 mb-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+        <div>
+          <div className="flex items-center gap-3 mb-5 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <Link href="/landscapes" className="hover:text-teal-soft">
               Landscapes
             </Link>
@@ -125,13 +131,13 @@ export default async function LandscapeDetailPage({ params }: Props) {
           <FactRow label="Investment plan">
             {p.lipStatus === "published" ? (
               <span className="inline-flex items-center gap-1.5 text-ink-soft">
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#2e7573" }} />
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: palette.teal }} />
                 <strong className="text-deep-teal">Published</strong>
                 <span className="text-muted">· See report</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5" style={{ color: "#5e6990" }}>
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#929cc5" }} />
+              <span className="inline-flex items-center gap-1.5" style={{ color: palette.periwinkleDeep }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: palette.periwinkle }} />
                 In preparation
               </span>
             )}
@@ -141,7 +147,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
           {hasLip && (
             <Link
               href={`/landscape/${slug}/ask`}
-              className="group mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out hover:-translate-y-0.5"
+              className="group mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] font-semibold rounded-full text-paper transition-[transform,box-shadow,border-color,background-color,opacity] duration-200 ease-out hover:-translate-y-0.5"
               style={{
                 background: "linear-gradient(135deg, #2E7573 0%, #334B4A 100%)",
                 boxShadow:
@@ -160,9 +166,12 @@ export default async function LandscapeDetailPage({ params }: Props) {
         </aside>
       </header>
 
-      <div className="mt-8 lg:mt-12">
-        <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
-      </div>
+      {/* Spacer, not a wrapper: a wrapping div would stop the tabs sticking. */}
+      <div className="mt-8 lg:mt-12" aria-hidden />
+      <LandscapeTabs slug={slug} active="profile" hasLip={hasLip} hasClimate={hasClimate} />
+      {/* Ask UI spec E2. Starters: swap SPEC_STARTERS for startersFor(slug)
+          from lib/ask/starters.ts once the Ask session's branch is merged. */}
+      <LandscapeAskBar slug={slug} name={p.name} starters={SPEC_STARTERS[slug] ?? []} />
 
       {/* ORIENT + MONEY — share the page currency control above */}
         <LandscapeLedger
@@ -243,7 +252,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
             <div className="relative flex flex-col gap-2.5">
               <a
                 href={`/api/landscape/${slug}/download?format=pdf`}
-                className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors self-start"
                 download={`${slug}-investment-brief.pdf`}
               >
                 <FileText size={13} strokeWidth={1.6} aria-hidden />
@@ -255,7 +264,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
               plan, its costing, and the metrics.
             </p>
           </div>
-          <div className="border border-line rounded-[10px] p-5 bg-paper">
+          <div className="border border-line rounded-card p-5 bg-paper">
             <span className="eyebrow block mb-3.5">How CAT works here</span>
             <ul className="list-none p-0 m-0 flex flex-col gap-3 text-[13.5px] text-ink-soft leading-[1.45]">
               <li className="flex gap-2.5 items-baseline">
@@ -311,7 +320,7 @@ export default async function LandscapeDetailPage({ params }: Props) {
       )}
 
       <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10">
-        <footer className="mt-16 lg:mt-20 pt-6 border-t border-line font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
+        <footer className="mt-16 lg:mt-20 pt-6 border-t border-line font-mono text-[11px] uppercase tracking-[0.16em] text-muted flex flex-wrap gap-x-8 gap-y-2">
           <span>
             Source ·{" "}
             <a
@@ -341,7 +350,7 @@ function FactRow({ label, children }: { label: string; children: React.ReactNode
 function NarrativeBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>

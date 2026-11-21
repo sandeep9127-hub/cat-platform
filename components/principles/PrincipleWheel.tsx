@@ -50,7 +50,7 @@ function arcStroke(cx: number, cy: number, r: number, a0: number, a1: number) {
   return `M ${p0.x.toFixed(2)} ${p0.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
 }
 
-const SERIF = "var(--font-fraunces), Georgia, serif";
+const SERIF = "var(--font-inter), system-ui, sans-serif";
 const MONO = "var(--font-jetbrains), ui-monospace, monospace";
 
 export function PrincipleWheel({
@@ -240,7 +240,7 @@ export function PrincipleWheel({
               </g>
               <g transform={`rotate(${-rot} ${iconPos.x.toFixed(2)} ${iconPos.y.toFixed(2)})`}>
                 <image
-                  href={`/images/principle-icons/p${p.n}.png?v=4`}
+                  href={`/images/principle-icons/p${p.n}.png?v=5`}
                   x={(iconPos.x - emSize / 2).toFixed(2)}
                   y={(iconPos.y - emSize / 2).toFixed(2)}
                   width={emSize}

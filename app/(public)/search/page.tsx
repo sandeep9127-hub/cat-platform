@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { searchEntries, type SearchHit } from "@/lib/db/search";
 import { EndorsementBadge } from "@/components/ui/EndorsementBadge";
 import { Reveal } from "@/components/ui/Reveal";
 
+// Results depend on the query string, so render per request (a revalidate
+// window alongside force-dynamic was contradictory and ignored).
 export const dynamic = "force-dynamic";
-
-export const revalidate = 30;
 export const metadata = {
   title: "Search",
   description: "Search the library across programmes, themes, states, and years.",
@@ -51,7 +52,7 @@ function renderHighlight(headline: string): React.ReactNode[] {
     const match = seg.match(/^<mark>(.*?)<\/mark>$/);
     if (match) {
       parts.push(
-        <mark key={i} className="bg-amber/40 text-ink rounded-[1px] px-0.5">
+        <mark key={i} className="bg-amber/40 text-ink rounded-tight px-0.5">
           {match[1]}
         </mark>
       );
@@ -85,10 +86,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   return (
     <>
-      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8 reveal-stagger" delay={0}>
-        <span className="eyebrow">Search the library</span>
+      <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-8" delay={0}>
+        <span className="eyebrow">Full-text search</span>
         <h1 className="font-sans font-semibold tracking-[-0.035em] text-hero-xl text-ink mt-4">
-          Ask the <span className="text-teal">library</span>.
+          Search the <span className="text-teal">library</span>.
         </h1>
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] max-w-[44ch] mt-5">
           Full-text search across every published entry. Filters narrow by theme, scale, and
@@ -163,6 +164,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             </FilterGroup>
 
             <FilterGroup label="Endorsement">
+              {/* "Any" lets a chosen endorsement be cleared (radios can't untick). */}
+              <FilterChip name="endorsement" value="" active={!endorsement} radio>
+                Any
+              </FilterChip>
               {(["cat_authored", "cat_endorsed", "cat_listed"] as const).map((tier) => (
                 <FilterChip
                   key={tier}
@@ -180,7 +185,22 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       </Reveal>
 
       <Reveal as="section" className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-24 border-t border-line pt-6" delay={80}>
-        <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+        {/* Ask UI spec E4: one hand-off to Ask; Search itself stays plain search. */}
+        {q && (
+          <a
+            href={`/agent?${new URLSearchParams({ q }).toString()}`}
+            className="group mb-5 flex items-center gap-3 rounded-card border border-line bg-paper px-4 py-3 min-h-11 text-[15px] text-ink-soft hover:border-teal transition-colors"
+          >
+            <MessageCircle size={16} strokeWidth={1.8} className="shrink-0 text-teal" aria-hidden />
+            <span className="min-w-0">
+              Want a cited answer instead?{" "}
+              <span className="font-medium text-teal group-hover:text-deep-teal">
+                Ask the Hub about &ldquo;{q}&rdquo; →
+              </span>
+            </span>
+          </a>
+        )}
+        <div className="flex items-baseline justify-between gap-4 mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           <span>{totalLabel}</span>
           {hasAnyFilter && (
             <Link href="/search" className="text-deep-teal hover:text-teal font-semibold">
@@ -210,22 +230,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 function SearchResult({ hit, index }: { hit: SearchHit; index: number }) {
   return (
     <li
-      className="reveal-stagger border-b border-line-soft"
-      style={{ animationDelay: `${index * 40}ms` }}
+      className="border-b border-line-soft"
     >
       <Link
         href={`/entry/${hit.slug}`}
         className="group block py-6 hover:bg-teal-wash/40 transition-colors"
       >
         <div className="grid grid-cols-[44px_minmax(0,1fr)] sm:grid-cols-[74px_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 items-start">
-          <div className="font-mono text-[10.5px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
+          <div className="font-mono text-[11px] text-muted tracking-mono-mid pt-1 flex flex-col gap-1.5">
             <span className="hidden sm:inline">No.</span>
             <span className="text-amber-deep font-semibold">
               {String(index + 1).padStart(2, "0")}
             </span>
           </div>
           <div className="min-w-0">
-            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center mb-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
+            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center mb-2 font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
               <span>{hit.themeName}</span>
               <span className="text-line">/</span>
               <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
@@ -282,23 +301,22 @@ function FilterChip({
   colour?: string;
   radio?: boolean;
 }) {
+  // State is shown from the input itself (:has(:checked)), so a chip answers
+  // the click straight away instead of waiting for Search; the hidden input's
+  // keyboard focus shows as a ring on the chip. 40px tall for touch.
   return (
     <label
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
-        active
-          ? "bg-deep-teal text-paper border-deep-teal"
-          : "bg-cream text-ink-soft border-line hover:border-teal"
-      }`}
+      className="inline-flex items-center gap-1.5 min-h-10 px-3.5 rounded-full border cursor-pointer text-[13px] transition-colors bg-cream text-ink-soft border-line hover:border-teal has-[:checked]:bg-deep-teal has-[:checked]:text-paper has-[:checked]:border-deep-teal has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-teal"
     >
       <input
         type={radio ? "radio" : "checkbox"}
         name={name}
         value={value}
         defaultChecked={active}
-        className="sr-only"
+        className="sr-only peer"
       />
-      {colour && !active && (
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: colour }} aria-hidden />
+      {colour && (
+        <span className="w-1.5 h-1.5 rounded-full peer-checked:hidden" style={{ background: colour }} aria-hidden />
       )}
       {children}
     </label>

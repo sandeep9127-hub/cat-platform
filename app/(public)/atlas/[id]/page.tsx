@@ -1,3 +1,4 @@
+import { palette } from "@/lib/design/palette";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight, ExternalLink, MapPin, Calendar, Building2 } from "lucide-react";
@@ -12,16 +13,16 @@ export const dynamic = "force-static";
 export const revalidate = 3600;
 
 const THEME_COLOURS: Record<string, string> = {
-  "soil-and-land": "#8C7A5C",
-  water: "#2C7BD0",
-  "seeds-and-biodiversity": "#5C8C2E",
-  "farmer-livelihoods": "#C68C2E",
-  nutrition: "#C24A2E",
-  "climate-resilience": "#2E7573",
-  "markets-and-value-chains": "#2EA37A",
-  "policy-and-finance": "#334B4A",
-  "knowledge-and-capacity": "#5C6796",
-  "women-and-collectives": "#929CC5",
+  "soil-and-land": palette.amberDeep,
+  water: palette.periwinkleDeep,
+  "seeds-and-biodiversity": palette.leaf,
+  "farmer-livelihoods": palette.ochre,
+  nutrition: palette.redAlert,
+  "climate-resilience": palette.teal,
+  "markets-and-value-chains": palette.tealSoft,
+  "policy-and-finance": palette.deepTeal,
+  "knowledge-and-capacity": palette.periwinkleText,
+  "women-and-collectives": palette.periwinkle,
 };
 
 const STATE_NAMES: Record<string, string> = {
@@ -98,7 +99,7 @@ export default async function AtlasRecordPage({ params }: Props) {
     ? Number(record.publishedAt.slice(0, 4))
     : null;
   const primaryThemeColour =
-    THEME_COLOURS[record.themes[0] ?? ""] ?? "#334B4A";
+    THEME_COLOURS[record.themes[0] ?? ""] ?? palette.deepTeal;
   const provenanceLabel = record.provenance
     ? PROVENANCE_LABEL[record.provenance] ?? record.provenance
     : "Listed programme";
@@ -107,7 +108,7 @@ export default async function AtlasRecordPage({ params }: Props) {
     <article className="relative z-10">
       {/* Provenance banner — explains what this page is */}
       <div className="border-y border-line bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-deep">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.16em] text-amber-deep">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-deep" aria-hidden />
           <span className="font-semibold">CAT-sourced atlas record</span>
           <span className="text-line">·</span>
@@ -119,7 +120,7 @@ export default async function AtlasRecordPage({ params }: Props) {
 
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-8 lg:pb-10 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 lg:gap-12 items-start">
         <div>
-          <div className="flex flex-wrap gap-3 items-center font-mono text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold mb-5">
+          <div className="flex flex-wrap gap-3 items-center font-mono text-[11px] uppercase tracking-mono-wide text-teal font-semibold mb-5">
             <span
               className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full"
               style={{
@@ -161,7 +162,7 @@ export default async function AtlasRecordPage({ params }: Props) {
               href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-[4px] font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
+              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-tight font-mono text-[11px] uppercase tracking-[0.16em] font-semibold text-deep-teal transition-colors duration-200 bg-amber hover:bg-amber-deep hover:text-paper"
             >
               <span>{sourceCtaLabel}</span>
               <span className="font-normal normal-case tracking-normal text-amber-deep/80">
@@ -176,7 +177,7 @@ export default async function AtlasRecordPage({ params }: Props) {
             </a>
             <Link
               href="/map"
-              className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal border-b-2 border-line-soft pb-0.5 hover:border-teal transition-colors"
+              className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-teal border-b-2 border-line-soft pb-0.5 hover:border-teal transition-colors"
             >
               ← Back to the Atlas
             </Link>
@@ -185,7 +186,7 @@ export default async function AtlasRecordPage({ params }: Props) {
 
         <aside className="lg:border-l lg:border-line lg:pl-7 flex flex-col gap-6 border-t border-line pt-6 lg:pt-0 lg:border-t-0">
           <div>
-            <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted font-semibold">
               Programme type
             </span>
             <div className="mt-2 inline-flex items-center gap-2 font-serif text-[15px] text-deep-teal">
@@ -195,7 +196,7 @@ export default async function AtlasRecordPage({ params }: Props) {
           </div>
 
           <div>
-            <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted font-semibold">
               Published by
             </span>
             <div className="mt-2 font-serif text-[15px] text-ink leading-tight">
@@ -205,7 +206,7 @@ export default async function AtlasRecordPage({ params }: Props) {
               href={deepSourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-amber-deep hover:text-deep-teal transition-colors break-all max-w-full"
+              className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-amber-deep hover:text-deep-teal transition-colors break-all max-w-full"
             >
               <span className="truncate max-w-[28ch]">{prettyHost(record.sourceUrl)}</span>
               <ArrowUpRight size={11} strokeWidth={2} aria-hidden />
@@ -219,7 +220,7 @@ export default async function AtlasRecordPage({ params }: Props) {
 
           {record.organisation && (
             <div>
-              <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted font-semibold">
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted font-semibold">
                 Implementer
               </span>
               <div className="mt-2 font-serif text-[15px] text-ink leading-tight">
@@ -229,7 +230,7 @@ export default async function AtlasRecordPage({ params }: Props) {
           )}
 
           <div>
-            <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted font-semibold">
               Themes
             </span>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -238,7 +239,7 @@ export default async function AtlasRecordPage({ params }: Props) {
                   key={slug}
                   slug={slug}
                   name={prettyTheme(slug)}
-                  colourHex={THEME_COLOURS[slug] ?? "#334B4A"}
+                  colourHex={THEME_COLOURS[slug] ?? palette.deepTeal}
                   asLink={false}
                 />
               ))}
@@ -249,8 +250,8 @@ export default async function AtlasRecordPage({ params }: Props) {
 
       {/* Editorial note — what this kind of page is, why CAT routes it */}
       <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pb-16 lg:pb-20">
-        <div className="rounded-[8px] border border-line bg-paper p-6 sm:p-8 max-w-[68ch]">
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+        <div className="rounded-card border border-line bg-paper p-6 sm:p-8 max-w-[68ch]">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
             Why this is on the Hub
           </span>
           <p className="font-serif text-[16px] text-ink-soft leading-[1.65] mt-3 max-w-[60ch]">
@@ -261,7 +262,7 @@ export default async function AtlasRecordPage({ params }: Props) {
             the full programme material lives at the publisher. Self-submitted
             programmes go through the same editorial check before they appear.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3 items-center font-mono text-[10px] uppercase tracking-[0.14em]">
+          <div className="mt-5 flex flex-wrap gap-3 items-center font-mono text-[11px] uppercase tracking-[0.14em]">
             <Link
               href="/about#editorial-process"
               className="inline-flex items-center gap-1.5 text-teal border-b border-line-soft pb-0.5 hover:border-teal transition-colors"
@@ -282,7 +283,7 @@ export default async function AtlasRecordPage({ params }: Props) {
       </section>
 
       <footer className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-6 pb-12 border-t border-line">
-        <div className="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-mono-mid text-muted">
+        <div className="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-mono-mid text-muted">
           <span>
             Provenance: <span className="text-ink-soft">CAT-sourced</span>
           </span>

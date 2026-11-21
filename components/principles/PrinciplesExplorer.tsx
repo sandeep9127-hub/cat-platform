@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -24,14 +25,14 @@ const PALETTE: WheelPalette = {
   hubMuted: "#95b1af", // teal-soft
   hubRing: "rgba(255,255,255,.14)",
   levels: {
-    agro: { band: "#2e7573", sector: "#e1ede8", ink: "#334b4a" }, // teal ramp
-    food: { band: "#5e6990", sector: "#d0daef", ink: "#5e6990" }, // periwinkle ramp
+    agro: { band: palette.teal, sector: "#e1ede8", ink: "#334b4a" }, // teal ramp
+    food: { band: palette.periwinkleDeep, sector: "#d0daef", ink: palette.periwinkleDeep }, // periwinkle ramp
   },
 };
 
 const LEVEL_CHIP = {
-  agro: { dot: "#2e7573", text: "#2e7573" },
-  food: { dot: "#5e6990", text: "#5e6990" },
+  agro: { dot: palette.teal, text: palette.teal },
+  food: { dot: palette.periwinkleDeep, text: palette.periwinkleDeep },
 };
 
 type SolLink = { slug: string; title: string; state: string | null };
@@ -123,7 +124,7 @@ export function PrinciplesExplorer({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       className="ae-list-emblem"
-                      src={`/images/principle-icons/p${p.n}.png?v=4`}
+                      src={`/images/principle-icons/p${p.n}.png?v=5`}
                       alt=""
                       aria-hidden
                     />
@@ -210,7 +211,7 @@ function Detail({
         <div className="ae-eyebrow">The framework</div>
         <h2 className="ae-detail-intro-title">Two scales of transformation</h2>
         <p className="ae-intro-lead">
-          Agroecology applies ecological principles to farming and food systems — a science, a set
+          Agroecology applies ecological principles to farming and food systems: a science, a set
           of practices and a social movement. Its thirteen consolidated principles work at two
           scales: the first seven transform the <strong>agroecosystem</strong>, the last six
           transform the wider <strong>food system</strong>.
@@ -267,7 +268,7 @@ function Detail({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="ae-detail-emblem"
-          src={`/images/principle-icons/p${principle.n}.png?v=4`}
+          src={`/images/principle-icons/p${principle.n}.png?v=5`}
           alt=""
         />
         <div className="ae-detail-num">{String(principle.n).padStart(2, "0")}</div>
@@ -503,7 +504,7 @@ function Styles() {
       .ae-list-divider {
         display: flex; align-items: center; gap: 8px; white-space: nowrap;
         font-family: var(--font-jetbrains), monospace;
-        font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+        font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
         padding: 18px 12px 8px; color: var(--ae-ink); opacity: .92;
       }
       .ae-list-cell:first-child .ae-list-divider { padding-top: 4px; }
@@ -511,7 +512,7 @@ function Styles() {
       .ae-list-divider-range { margin-left: auto; opacity: .5; font-weight: 600; }
       .ae-list-item {
         width: 100%; display: flex; align-items: center; gap: 13px;
-        background: none; border: 0; cursor: pointer; padding: 12px 14px; border-radius: 10px;
+        background: none; border: 0; cursor: pointer; padding: 12px 14px; border-radius: var(--radius-card);
         color: var(--ae-ink); text-align: left; font-family: inherit;
         transition: background 150ms, color 150ms;
       }
@@ -534,7 +535,7 @@ function Styles() {
       .ae-legend-dot { width: 11px; height: 11px; border-radius: 999px; }
       .ae-legend-name { font-weight: 600; letter-spacing: -.1px; color: var(--ae-ink); }
       .ae-legend-range {
-        font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-ink);
+        font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-ink);
         padding: 2px 8px; border-radius: 999px; opacity: .85; border: 1px solid rgba(31,38,31,.22); white-space: nowrap;
       }
       .ae-wheel-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
@@ -543,7 +544,7 @@ function Styles() {
         flex: 0 0 auto; width: 52px; height: 52px; border-radius: 999px;
         border: 1px solid rgba(31,38,31,.18); background: #fbf8f2; color: var(--ae-forest);
         font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center;
-        font-family: var(--font-fraunces), Georgia, serif;
+        font-family: var(--font-inter), system-ui, sans-serif;
         box-shadow: 0 1px 2px rgba(31,38,31,.06); transition-property: background-color, border-color, color, transform; transition-duration: 180ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1);
       }
       .ae-rotate:hover { border-color: var(--ae-forest); background: var(--ae-forest); color: #fbf8f2; transform: scale(1.06); }
@@ -562,42 +563,42 @@ function Styles() {
       .ae-detail-level { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; flex-wrap: wrap; }
       .ae-chip-dot { width: 9px; height: 9px; border-radius: 999px; flex: 0 0 auto; }
       .ae-detail-op { color: rgba(31,38,31,.5); font-weight: 600; letter-spacing: .3px; text-transform: none; }
-      .ae-detail-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 32px; font-weight: 600; letter-spacing: -.6px; margin: 0 0 18px; line-height: 1.05; }
-      .ae-detail-def { font-family: var(--font-fraunces), Georgia, serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
+      .ae-detail-title { font-family: var(--font-inter), system-ui, sans-serif; font-size: 32px; font-weight: 600; letter-spacing: -.6px; margin: 0 0 18px; line-height: 1.05; }
+      .ae-detail-def { font-family: var(--font-inter), system-ui, sans-serif; font-size: 18px; line-height: 1.45; font-weight: 500; color: var(--ae-forest); margin: 0 0 16px; }
       .ae-detail-body { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.78); margin: 0 0 22px; }
       .ae-detail-india { border-top: 1px solid rgba(31,38,31,.12); padding-top: 18px; margin-bottom: 24px; }
-      .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
+      .ae-india-label { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--amber-deep); }
       .ae-india-text { font-size: 14px; line-height: 1.6; color: rgba(31,38,31,.8); margin: 8px 0 12px; }
       .ae-levers { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
-      .ae-lever { font-family: var(--font-jetbrains), monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); color: rgba(31,38,31,.7); }
+      .ae-lever { font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(31,38,31,.18); color: rgba(31,38,31,.7); }
       .ae-ask { margin-bottom: 24px; border-top: 1px solid var(--ae-line); padding-top: 18px; }
       .ae-ask-head { margin-bottom: 10px; }
-      .ae-ask-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
-      .ae-ask-btn { width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ae-forest); background: rgba(46,117,115,.07); border: 1px solid rgba(46,117,115,.22); border-radius: 12px; padding: 13px 15px; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 160ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+      .ae-ask-label { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--amber-deep); }
+      .ae-ask-btn { width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ae-forest); background: rgba(46,117,115,.07); border: 1px solid rgba(46,117,115,.22); border-radius: var(--radius-panel); padding: 13px 15px; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 160ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
       .ae-ask-btn:hover { background: rgba(46,117,115,.12); border-color: rgba(46,117,115,.4); }
-      .ae-ask-body { background: rgba(31,38,31,.03); border: 1px solid var(--ae-line); border-radius: 12px; padding: 15px 16px; }
+      .ae-ask-body { background: rgba(31,38,31,.03); border: 1px solid var(--ae-line); border-radius: var(--radius-panel); padding: 15px 16px; }
       .ae-ask-answer { font-size: 14.5px; line-height: 1.62; color: rgba(31,38,31,.85); margin: 0; }
       .ae-ask-loading { font-size: 14px; color: rgba(31,38,31,.5); margin: 0; font-style: italic; }
       .ae-ask-cites { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--ae-line); display: flex; flex-direction: column; gap: 5px; }
       .ae-ask-cite { font-family: var(--font-jetbrains), monospace; font-size: 11px; line-height: 1.4; color: #2e7573; text-decoration: none; }
       .ae-ask-cite:hover { text-decoration: underline; }
-      .ae-ask-again { margin-top: 12px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: rgba(31,38,31,.55); background: none; border: 0; cursor: pointer; padding: 0; }
+      .ae-ask-again { margin-top: 12px; font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: rgba(31,38,31,.55); background: none; border: 0; cursor: pointer; padding: 0; }
       .ae-ask-again:hover { color: var(--ae-forest); }
       /* solutions advancing this principle */
       .ae-sol { margin: 4px 0 22px; padding-top: 18px; border-top: 1px solid rgba(31,38,31,.12); }
       .ae-sol-head { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
-      .ae-sol-title { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; color: rgba(31,38,31,.6); }
-      .ae-sol-count { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; font-weight: 600; color: var(--ae-cream); background: var(--ae-forest); border-radius: 999px; min-width: 20px; height: 18px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
+      .ae-sol-title { font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(31,38,31,.6); }
+      .ae-sol-count { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-cream); background: var(--ae-forest); border-radius: 999px; min-width: 20px; height: 18px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
       .ae-sol-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-      .ae-sol-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px; border: 1px solid rgba(31,38,31,.12); text-decoration: none; color: var(--ae-ink); transition: border-color 150ms ease, transform 150ms ease, background 150ms ease; }
+      .ae-sol-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: var(--radius-card); border: 1px solid rgba(31,38,31,.12); text-decoration: none; color: var(--ae-ink); transition: border-color 150ms ease, transform 150ms ease, background 150ms ease; }
       .ae-sol-item:hover { border-color: var(--ae-forest); background: rgba(46,117,115,.05); transform: translateX(2px); }
       .ae-sol-name { font-size: 13.5px; line-height: 1.3; font-weight: 500; flex: 1 1 auto; }
-      .ae-sol-state { font-family: var(--font-jetbrains), monospace; font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: rgba(31,38,31,.5); flex: 0 0 auto; }
+      .ae-sol-state { font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: rgba(31,38,31,.5); flex: 0 0 auto; }
       .ae-sol-arrow { color: var(--ae-forest); flex: 0 0 auto; font-size: 14px; }
-      .ae-sol-more { display: inline-block; margin-top: 10px; font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--ae-forest); text-decoration: none; }
+      .ae-sol-more { display: inline-block; margin-top: 10px; font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--ae-forest); text-decoration: none; }
       .ae-sol-more:hover { text-decoration: underline; }
       .ae-detail-nav { display: flex; gap: 10px; margin-bottom: 22px; }
-      .ae-navbtn { flex: 1; padding: 11px 14px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(31,38,31,.18); background: none; color: var(--ae-ink); font-family: inherit; font-size: 14px; font-weight: 500; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 150ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+      .ae-navbtn { flex: 1; padding: 11px 14px; border-radius: var(--radius-card); cursor: pointer; border: 1px solid rgba(31,38,31,.18); background: none; color: var(--ae-ink); font-family: inherit; font-size: 14px; font-weight: 500; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 150ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
       .ae-navbtn:hover { background: var(--ae-forest); color: var(--ae-cream); border-color: var(--ae-forest); }
       .ae-practice { display: flex; flex-direction: column; gap: 9px; }
       .ae-practice-btn { display: inline-flex; align-items: center; justify-content: center; padding: 11px 16px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-ink); text-decoration: none; font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 150ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
@@ -608,7 +609,7 @@ function Styles() {
       /* empty state */
       .ae-detail--empty { display: flex; flex-direction: column; }
       .ae-eyebrow { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ae-forest); margin-bottom: 14px; }
-      .ae-detail-intro-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 30px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 0 0 18px; }
+      .ae-detail-intro-title { font-family: var(--font-inter), system-ui, sans-serif; font-size: 30px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 0 0 18px; }
       .ae-intro-lead { font-size: 15.5px; line-height: 1.55; color: rgba(31,38,31,.8); margin: 0 0 16px; }
       .ae-intro-hint { font-size: 14px; color: var(--ae-forest); font-weight: 500; margin: 0 0 30px; }
       .ae-intro-groups { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid rgba(31,38,31,.12); padding-top: 22px; }
@@ -618,10 +619,10 @@ function Styles() {
       .ae-intro-level-range { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 600; color: var(--ae-forest); opacity: .7; }
       .ae-intro-level-blurb { font-size: 13.5px; line-height: 1.5; color: rgba(31,38,31,.7); margin-top: 3px; }
       .ae-source { margin-top: 26px; border-top: 1px solid var(--ae-line); padding-top: 20px; }
-      .ae-source-label { font-family: var(--font-jetbrains), monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #946616; }
+      .ae-source-label { font-family: var(--font-jetbrains), monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--amber-deep); }
       .ae-source-text { font-size: 13.5px; line-height: 1.55; color: rgba(31,38,31,.72); margin: 7px 0 12px; }
       .ae-source-links { display: flex; flex-wrap: wrap; gap: 8px; }
-      .ae-source-link { font-family: var(--font-jetbrains), monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-forest); text-decoration: none; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 150ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+      .ae-source-link { font-family: var(--font-jetbrains), monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(31,38,31,.2); color: var(--ae-forest); text-decoration: none; transition-property: background-color, border-color, color, box-shadow, transform; transition-duration: 150ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
       .ae-source-link:hover { border-color: var(--ae-forest); background: var(--ae-forest); color: #fbf8f2; }
 
       @media (max-width: 1180px) { .ae { --ae-side-w: 240px; --ae-detail-w: 380px; } }

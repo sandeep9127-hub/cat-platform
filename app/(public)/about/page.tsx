@@ -12,7 +12,7 @@ export default function AboutPage() {
   return (
     <article className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-12 sm:pt-16 lg:pt-20 pb-24">
       <Reveal as="header" className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-end" delay={0}>
-        <div className="reveal-stagger" style={{ animationDelay: "0ms" }}>
+        <div>
           <span className="eyebrow">About</span>
           <h1 className="font-sans font-semibold text-hero-xl text-ink mt-4 tracking-[-0.035em] leading-[1.0]">
             A repository of <span className="text-teal">food systems</span> initiatives,
@@ -32,7 +32,7 @@ export default function AboutPage() {
             food systems together.
           </p>
         </div>
-        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0 reveal-stagger" style={{ animationDelay: "180ms" }}>
+        <aside className="lg:border-l lg:border-line lg:pl-7 lg:self-end lg:pb-2 border-t border-line pt-6 lg:border-t-0 lg:pt-0">
           <span className="eyebrow">CAT in one line</span>
           <p className="text-[18px] text-ink leading-[1.5] mt-3.5 max-w-[38ch]">
             A collaborative platform working to enable agroecological transformation at scale
@@ -176,7 +176,7 @@ export default function AboutPage() {
             <span className="text-teal">levers</span> for change
           </h2>
           <span className="flex-1 h-px bg-line mt-[14px] sm:mt-[18px] hidden sm:block" />
-          <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-muted">
+          <span className="font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-muted">
             Aligned across every landscape
           </span>
         </div>
@@ -189,7 +189,7 @@ export default function AboutPage() {
 
       {/* Vision */}
       <Reveal as="section" className="mt-24" delay={160}>
-        <div className="reveal-stagger max-w-[60ch]">
+        <div className="max-w-[60ch]">
           <span className="eyebrow">Our vision</span>
           <p className="text-[20px] sm:text-[22px] text-ink leading-[1.45] mt-4 max-w-[46ch]">
             A future where agroecology enables resilient livelihoods, healthy ecosystems, and
@@ -198,13 +198,13 @@ export default function AboutPage() {
           <div className="mt-6 flex gap-3.5 flex-wrap">
             <Link
               href="/landscapes"
-              className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal border-b-2 border-amber pb-1 hover:border-amber-deep transition-colors"
+              className="inline-flex items-center min-h-11 text-[15px] font-medium text-deep-teal underline decoration-2 decoration-amber underline-offset-[6px] hover:decoration-amber-deep transition-colors"
             >
               The CAT Landscapes →
             </Link>
             <a
               href="#editorial-process"
-              className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal border-b-2 border-line-soft pb-1 hover:border-teal transition-colors"
+              className="inline-flex items-center min-h-11 text-[15px] font-medium text-teal underline decoration-2 decoration-line underline-offset-[6px] hover:decoration-teal transition-colors"
             >
               Editorial process →
             </a>
@@ -218,7 +218,7 @@ export default function AboutPage() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="my-8">
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex gap-2 items-center mb-3">
         <span className="w-3.5 h-px bg-teal" />
         {label}
       </span>

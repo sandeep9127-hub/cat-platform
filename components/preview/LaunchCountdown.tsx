@@ -33,8 +33,8 @@ export function LaunchCountdown({ target }: { target: string }) {
 
   if (t?.done) {
     return (
-      <div className="mt-7 rounded-[12px] border border-line bg-paper px-5 py-4 text-center">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-teal font-semibold">
+      <div className="mt-7 rounded-panel border border-line bg-paper px-5 py-4 text-center">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-teal font-semibold">
           The Hub is live
         </span>
       </div>
@@ -50,20 +50,20 @@ export function LaunchCountdown({ target }: { target: string }) {
 
   return (
     <div className="mt-7" aria-label="Countdown to launch">
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep text-center mb-3">
+      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep text-center mb-3">
         Launches in
       </div>
       <div className="grid grid-cols-4 gap-2 sm:gap-3">
         {cells.map(([v, label]) => (
           <div
             key={label}
-            className="rounded-[11px] border border-line bg-paper py-3.5 flex flex-col items-center"
+            className="rounded-card border border-line bg-paper py-3.5 flex flex-col items-center"
             style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04)" }}
           >
             <span className="font-sans text-[26px] sm:text-[30px] font-semibold leading-none tracking-[-0.02em] text-deep-teal tabular-nums">
               {t ? String(v).padStart(2, "0") : "—"}
             </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-muted mt-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted mt-2">
               {label}
             </span>
           </div>

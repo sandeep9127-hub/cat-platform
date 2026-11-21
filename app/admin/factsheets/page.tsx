@@ -47,7 +47,7 @@ export default async function AdminFactSheets() {
           Verified, cited fact sheets for the Atlas — researched from allow-listed sources, auto-published
           when well-sourced, printable, with a Read-more link. Flagged ones need a glance.
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted mt-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-3">
           {published} published · {flagged} flagged · {sheets.length} total
         </p>
       </header>
@@ -57,7 +57,7 @@ export default async function AdminFactSheets() {
       {sheets.length === 0 ? (
         <p className="text-[13.5px] text-muted py-6">No fact sheets yet. Generate one above, or let the weekly discovery agent populate them.</p>
       ) : (
-        <ul className="rounded-[10px] border border-line divide-y divide-line list-none p-0 m-0">
+        <ul className="rounded-card border border-line divide-y divide-line list-none p-0 m-0">
           {sheets.map((s) => (
             <li key={s.slug} className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 px-4 py-3.5">
               <div className="min-w-0 flex-1">
@@ -65,14 +65,14 @@ export default async function AdminFactSheets() {
                   <Link href={`/factsheet/${s.slug}`} target="_blank" className="font-serif text-[16px] text-deep-teal hover:text-teal no-underline">
                     {s.title}
                   </Link>
-                  <span className={`font-mono text-[8.5px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full ${s.status === "published" ? "bg-teal/15 text-deep-teal" : "bg-amber/30 text-deep-teal"}`}>
+                  <span className={`font-mono text-[11px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full ${s.status === "published" ? "bg-teal/15 text-deep-teal" : "bg-amber/30 text-deep-teal"}`}>
                     {s.status}
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
                     conf {Math.round((s.confidence ?? 0) * 100)}%
                   </span>
                   {s.edited_by_human ? (
-                    <span className="font-mono text-[8.5px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full bg-line text-ink-soft">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] px-2 py-0.5 rounded-full bg-line text-ink-soft">
                       human-edited
                     </span>
                   ) : null}
@@ -83,7 +83,7 @@ export default async function AdminFactSheets() {
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0 pt-0.5">
-                <Link href={`/admin/factsheets/${s.slug}/edit`} className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal no-underline">
+                <Link href={`/admin/factsheets/${s.slug}/edit`} className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal no-underline">
                   Edit
                 </Link>
                 {s.status === "merged" ? (
@@ -95,15 +95,15 @@ export default async function AdminFactSheets() {
                   </span>
                 ) : s.status !== "published" ? (
                   <form action={setStatus}><input type="hidden" name="slug" value={s.slug} /><input type="hidden" name="status" value="published" />
-                    <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Publish</button>
+                    <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-deep-teal hover:text-teal">Publish</button>
                   </form>
                 ) : (
                   <form action={setStatus}><input type="hidden" name="slug" value={s.slug} /><input type="hidden" name="status" value="flagged" />
-                    <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-ink">Unpublish</button>
+                    <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-ink">Unpublish</button>
                   </form>
                 )}
                 <form action={remove}><input type="hidden" name="slug" value={s.slug} />
-                  <button className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">Delete</button>
+                  <button className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-red-alert">Delete</button>
                 </form>
               </div>
             </li>

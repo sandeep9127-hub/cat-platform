@@ -38,20 +38,20 @@ export function FactSheetGenerator() {
   }
 
   return (
-    <div className="rounded-[10px] border border-line bg-cream p-5 space-y-3">
-      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-teal">Generate a fact sheet</div>
+    <div className="rounded-card border border-line bg-cream p-5 space-y-3">
+      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-teal">Generate a fact sheet</div>
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !busy && generate()}
           placeholder="Programme name, e.g. Andhra Pradesh Community-Managed Natural Farming"
-          className="flex-1 px-3 py-2.5 rounded-[6px] border border-line bg-paper text-[14px] text-ink"
+          className="flex-1 px-3 py-2.5 rounded-card border border-line bg-paper text-[14px] text-ink"
         />
         <button
           onClick={generate}
           disabled={busy}
-          className="px-4 py-2.5 rounded-[6px] bg-deep-teal text-paper font-mono text-[10.5px] uppercase tracking-[0.12em] hover:bg-teal transition-colors disabled:opacity-60 whitespace-nowrap"
+          className="px-4 py-2.5 rounded-card bg-deep-teal text-paper font-mono text-[11px] uppercase tracking-[0.12em] hover:bg-teal transition-colors disabled:opacity-60 whitespace-nowrap"
         >
           {busy ? "Researching…" : "Generate"}
         </button>

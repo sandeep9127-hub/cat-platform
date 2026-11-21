@@ -21,24 +21,9 @@ const LOGOS: { file: string; name: string }[] = [
 
 export function Supporters() {
   return (
-    <section
-      className="relative overflow-hidden border-y border-line py-16 lg:py-24"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(232,240,234,0.50) 0%, rgba(232,240,234,0.20) 100%)",
-      }}
-    >
-      {/* Soft sage edge fades — top and bottom of section dissolve into paper */}
-      <div
-        aria-hidden
-        className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(180deg, rgba(251,248,242,0.65) 0%, transparent 100%)" }}
-      />
-      <div
-        aria-hidden
-        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(0deg, rgba(251,248,242,0.65) 0%, transparent 100%)" }}
-      />
+    // Same paper canvas as the rest of the page: no sage gradient band or edge
+    // fades, just a hairline to open the section.
+    <section className="relative overflow-hidden border-t border-line py-16 lg:py-24">
 
       {/* Ambient sprigs at corners */}
       <Sprig
@@ -67,14 +52,13 @@ export function Supporters() {
           blend seamlessly — no mismatched boxes on the cream/sage section. */}
       <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-12">
         <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-8 sm:gap-y-10 list-none p-0 rounded-[14px] bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-8 sm:gap-y-10 list-none p-0 rounded-panel bg-white border border-line/60 px-6 sm:px-8 py-10 sm:py-12"
           style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 18px 40px -28px rgba(26,38,37,0.18)" }}
         >
           {LOGOS.map((logo, i) => (
             <li
               key={logo.file}
-              className="group flex items-center justify-center reveal-stagger"
-              style={{ animationDelay: `${i * 35}ms` }}
+              className="group flex items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

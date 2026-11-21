@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Compass, Info, type LucideIcon } from "lucide-react";
 
@@ -19,17 +20,19 @@ export function Footer() {
       <div className="relative z-10 max-w-page mx-auto px-5 sm:px-7 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-10 lg:gap-14">
         <div>
           {/* CAT logo — official lockup as-is, website link left-aligned beneath it (#11) */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/cat-logo.png"
             alt="Consortium for Agroecological Transformations"
+            width={996}
+            height={382}
+            sizes="200px"
             className="h-[68px] sm:h-[76px] w-auto"
           />
           <a
             href="https://www.agroecologyindia.org"
             target="_blank"
             rel="noreferrer"
-            className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
+            className="group mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-teal hover:text-deep-teal transition-colors"
           >
             <span>agroecologyindia.org</span>
             <ArrowUpRight
@@ -40,9 +43,10 @@ export function Footer() {
             />
           </a>
 
-          <h3 className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[24ch] text-ink">
+          {/* A statement, not a heading: keeps the page outline clean. */}
+          <p className="mt-9 font-sans font-semibold text-[28px] sm:text-[34px] leading-[1.05] tracking-[-0.035em] max-w-[24ch] text-ink">
             A <span className="text-teal">repository</span> of food systems initiatives, landscapes, and learning from across India.
-          </h3>
+          </p>
           <p className="mt-4 text-[13.5px] leading-[1.6] text-ink-soft max-w-[42ch]">
             Run by the Consortium for Agroecological Transformations. Every entry is compiled
             from public sources and checked before it goes up. Missing a programme?{" "}
@@ -71,16 +75,16 @@ export function Footer() {
             { href: "/about", label: "About CAT" },
             { href: "/contact", label: "Contact" },
           ]}
-          external={[
-            { href: "https://www.agroecologyindia.org", label: "agroecologyindia.org" },
-          ]}
         />
       </div>
 
       <div className="relative z-10 max-w-page mx-auto mt-14 px-5 sm:px-7 lg:px-10">
         {/* Left-aligned so the bottom-right corner is free for the goat signature. */}
-        <p className="font-mono text-[10.5px] tracking-[0.05em] text-muted">
-          Copyright © 2026 Consortium for Agroecological Transformations
+        <p className="font-mono text-[11px] tracking-[0.05em] text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>Copyright © 2026 Consortium for Agroecological Transformations</span>
+          <span aria-hidden className="text-line">·</span>
+          <Link href="/privacy" className="hover:text-teal transition-colors py-2">Privacy</Link>
+          <Link href="/terms" className="hover:text-teal transition-colors py-2">Terms</Link>
         </p>
       </div>
 
@@ -102,16 +106,17 @@ function FooterCol({
   return (
     // lg:text-right — right-align the Explore / About columns (Option 1)
     <div className="lg:text-right">
-      <h4 className="font-mono text-[10.5px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
+      <h2 className="font-mono text-[11px] uppercase tracking-mono-wide text-amber-deep mb-3.5 font-semibold inline-flex items-center gap-2">
         {Icon ? <Icon size={12} strokeWidth={1.8} aria-hidden /> : <span className="w-3 h-px bg-amber-deep" />}
         {title}
-      </h4>
-      <ul className="space-y-2.5 list-none p-0">
+      </h2>
+      {/* 40px tap rows on phones; the tighter rhythm returns on desktop. */}
+      <ul className="lg:space-y-2.5 list-none p-0">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="footer-link relative inline-block text-[13.5px] text-ink-soft hover:text-teal transition-colors"
+              className="footer-link relative inline-flex items-center min-h-10 lg:min-h-0 text-[14px] text-ink-soft hover:text-teal transition-colors"
             >
               {l.label}
             </Link>

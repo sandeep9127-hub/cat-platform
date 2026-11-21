@@ -19,7 +19,7 @@ needs something the marketing site does not.
 | Pill radius `50px` | Adopt. CTAs are `rounded-full`. |
 | Motion `200 / 300 / 500ms` | Adopt. Paired with `ease-out-expo`. |
 | Tone: concise, confident, implementation-focused | Adopt verbatim. |
-| Primary font **Afacad** | **Do not adopt.** The Hub is all-**Inter** (broadsheet consistency across data-dense surfaces). |
+| Primary font **Afacad** | **Do not adopt.** The Hub is all-**Inter** (broadsheet consistency across data-dense surfaces); only the header wordmark is serif. |
 | Surface base `#000000` (pure black) | **Do not adopt.** The Hub is built on warm cream / near-black ink, never pure black or pure white. |
 
 Cross-linking is intentional and reciprocal: the Hub links out to
@@ -35,12 +35,26 @@ OKLCH-minded, every neutral tinted warm. Never `#000` / `#fff`.
 | `--cream` | `#f3f1ea` | Recessed / banded surface |
 | `--ink` | `#16130d` | Primary text (near-black, warm) |
 | `--ink-soft` | `#57544c` | Body / secondary text |
-| `--muted` | `#807c72` | Eyebrows, meta, mono labels |
+| `--muted` | `#6b675d` | Eyebrows, meta, mono labels (AA on paper, cream and teal-wash) |
 | `--line` | `#d7d4cc` | Hairlines, grid dividers |
 | `--teal` | `#2e7573` | **CTA / link / accent** (parent brand teal) |
 | `--deep-teal` | `#334b4a` | Solid CTA fill, headings-on-dark |
 | `--amber` | `#f8ca7c` | Highlight / alert fill, amber-on-dark |
-| `--amber-deep` | `#946616` | **Amber text on light surfaces** (eyebrow labels, hero highlight) |
+| `--amber-deep` | `#8a5f14` | **Amber text on light surfaces** (eyebrow labels, hero highlight) |
+
+Data-viz fills (charts, category colours, never body text):
+
+| Token | Hex | Role |
+|---|---|---|
+| `--periwinkle` | `#929cc5` | Periwinkle fill (community share, markets, technical assistance) |
+| `--periwinkle-text` | `#5c6796` | Periwinkle readable as text / icon on light |
+| `--ochre` | `#c68c2e` | Warm fill (livestock, grants). For ochre *text* use `--amber-deep` |
+| `--leaf` | `#5c8c2e` | Green fill (forestry, seeds) |
+| `--red-alert` | `#b85042` | Errors, debt, "what did not work" |
+
+Where JavaScript needs a raw hex (SVG fills, `${hex}1a` alpha), import
+`palette` from `lib/design/palette.ts`; it mirrors these tokens one for one.
+No hard-coded hex values in components.
 
 **Strategy: restrained.** Tinted neutrals carry the page; teal is the single
 working accent (CTA, links, the hero "food systems" highlight) and ties directly
@@ -48,13 +62,43 @@ to the parent brand teal; amber is held back as the one highlight/alert fill.
 
 ## Typography
 
-- **All Inter.** `--font-inter` is loaded locally; `--font-fraunces` and
-  `--font-jetbrains` are remapped to Inter. No serif revival.
+- **One typeface: Inter**, for body, UI, headings and figures. Served locally
+  as subset WOFF2 (`public/fonts/inter/*.woff2`, ~220 KB each for roman and
+  italic): Latin, Latin Extended (transliterated Indian names), punctuation,
+  currency (₹ €), arrows and maths. `tnum` is kept for `tabular-nums`.
+- **The one exception is the header wordmark** ("Transformation *Hub*"), set
+  in Fraunces via the `font-wordmark` token. That file is pinned to opsz 18,
+  weight 400-500 and basic Latin (~26 KB) and is not preloaded. Do not use
+  Fraunces anywhere else.
+- `font-serif` and `font-mono` are legacy tokens. Both resolve to Inter
+  (`--font-fraunces` and `--font-jetbrains` are remapped in `app/layout.tsx`),
+  so older markup still renders in the one typeface. Prefer `font-sans` in new
+  code. Pull-quotes stay Inter too (the parent brand's Spectral is not used on
+  the Hub).
 - Headings: `font-semibold`, tight tracking (`-0.03em` to `-0.04em`), short
   measures (`max-w-[15ch]` on the hero).
 - Body capped at 60–70ch. Hierarchy via scale + weight (≥1.25 ratio).
-- Mono (`--font-jetbrains` → Inter) only for eyebrows / meta / counts, uppercase
-  with `0.14em`–`0.18em` tracking.
+- Mono-style labels (eyebrows / meta / counts) are uppercase Inter with
+  `0.14em`–`0.18em` tracking.
+
+## Shape
+
+Three corner radii plus the pill. Nothing else.
+
+| Tailwind | Token | Value | Use |
+|---|---|---|---|
+| `rounded-tight` | `--radius-tight` | 4px | Chips, tags, data cells, small bars |
+| `rounded-card` | `--radius-card` | 8px | Cards, inputs, images, non-pill buttons |
+| `rounded-panel` | `--radius-panel` | 16px | Sheets, modals, the header bar, large framed panels |
+| `rounded-full` | | pill | CTAs, toggles, badges (parent brand pill) |
+
+## Lists and cards
+
+Browsable lists (Solutions Atlas rows, Organisations directory) share one row
+language: open rows on hairline dividers (`border-b border-line`), a
+`teal-wash/45` hover tint, an Inter semibold title with tight tracking that
+turns teal on hover, and uppercase 11px meta. Boxed cards are kept for
+dashboards and stat tiles, not for lists.
 
 ## Layout & motion
 

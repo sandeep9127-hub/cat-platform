@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ANCHORS } from "@/lib/data/anchors";
 
 /**
@@ -10,22 +11,23 @@ export function LandscapeAnchorPartner({ slug }: { slug: string }) {
   if (!a) return null;
   return (
     <div>
-      <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted">
+      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
         Anchor partner
       </span>
       <div className="mt-2 flex items-center gap-3">
-        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-[8px] bg-paper border border-line p-1.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-card bg-paper border border-line p-1.5">
+          <Image
             src={a.logo}
             alt={`${a.name} logo`}
-            className="max-h-full max-w-full object-contain"
+            width={36}
+            height={36}
+            className="w-full h-full object-contain"
           />
         </span>
         <span className="leading-tight">
           <span className="font-sans text-[14px] text-ink">{a.name}</span>
           {a.short && a.short !== a.name ? (
-            <span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-muted mt-0.5">
+            <span className="block font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-0.5">
               {a.short}
             </span>
           ) : null}

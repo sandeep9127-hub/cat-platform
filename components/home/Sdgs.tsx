@@ -1,18 +1,11 @@
+import Image from "next/image";
 import { SDGS } from "@/lib/data/sdgs";
 import { Sprig } from "@/components/ui/Sprig";
 import { SectionOpener } from "@/components/ui/SectionOpener";
 
 export function Sdgs() {
   return (
-    <section className="relative overflow-hidden py-16 lg:py-24">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,240,234,0.55), transparent 70%)",
-        }}
-      />
+    <section className="relative overflow-hidden border-t border-line py-16 lg:py-24">
       <Sprig
         variant="fern"
         className="absolute top-4 -left-4 opacity-55 select-none pointer-events-none hidden md:block"
@@ -39,11 +32,10 @@ export function Sdgs() {
         {SDGS.map((g, i) => (
           <li
             key={g.number}
-            className="group reveal-stagger"
-            style={{ animationDelay: `${i * 40}ms` }}
+            className="group"
           >
             <span
-              className="relative block aspect-square rounded-[10px] overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow,border-color] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)] group-hover:border-[color:var(--c)]"
+              className="relative block aspect-square rounded-card overflow-hidden border border-line bg-white shadow-[0_4px_14px_-9px_rgba(26,38,37,0.3)] transition-[transform,box-shadow,border-color] duration-200 ease-out-expo group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_-12px_rgba(26,38,37,0.35)] group-hover:border-[color:var(--c)]"
               style={{ ["--c" as string]: g.colour } as React.CSSProperties}
             >
               {/* Goal-colour hairline grows in on hover */}
@@ -53,13 +45,12 @@ export function Sdgs() {
                 style={{ background: "var(--c)" }}
               />
               {/* Official UN inverted SDG icon (colour art on white). */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={`/sdg/sdg-${String(g.number).padStart(2, "0")}.png`}
                 alt={`Sustainable Development Goal ${g.number}: ${g.label}`}
-                width={1500}
-                height={1500}
-                loading="lazy"
+                width={400}
+                height={400}
+                sizes="(min-width: 1024px) 180px, (min-width: 640px) 25vw, 33vw"
                 className="w-full h-full object-contain"
               />
             </span>
@@ -67,7 +58,7 @@ export function Sdgs() {
         ))}
       </ul>
 
-      <p className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted text-center">
+      <p className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 mt-10 font-mono text-[11px] uppercase tracking-[0.16em] text-muted text-center">
         Icons from the United Nations Sustainable Development Goals framework.
       </p>
     </section>

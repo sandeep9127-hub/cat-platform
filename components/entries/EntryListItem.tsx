@@ -31,27 +31,38 @@ export type EntryListItemData = {
 };
 
 export function EntryListItem({ data }: { data: EntryListItemData }) {
+  // Where it runs: the state when we have one; "All India" for national
+  // programmes without a single state; otherwise the segment is left out
+  // (never a bare dash).
+  const hasState = !!data.stateName && data.stateName !== "—";
+  const place = hasState
+    ? { label: "State", value: data.stateName }
+    : data.scaleBand === "national" || data.scaleBand === "multi_state"
+      ? { label: "Scope", value: data.scaleBand === "national" ? "All India" : "Multi-state" }
+      : null;
   const yearRange = data.endYear ? `${data.startYear} → ${data.endYear}` : `${data.startYear} → ongoing`;
   const wrapperClass =
-    "block group border-b border-line transition-colors hover:bg-[#e1ede8]/45 focus-visible:bg-[#e1ede8]/45 focus-visible:outline-none";
+    "block group border-b border-line transition-colors hover:bg-teal-wash/45 focus-visible:bg-teal-wash/45 focus-visible:outline-none";
   const body = (
     <article className="grid grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[80px_minmax(0,1fr)_auto] gap-x-5 sm:gap-x-7 py-7 sm:py-8 items-start">
         {/* Index — "No." sits on the eyebrow line, the numeral aligns to the title */}
         <div className="font-mono tracking-mono-mid text-muted flex flex-col gap-[5px] pt-[3px]">
-          <span className="hidden sm:inline text-[9px]">No.</span>
+          <span className="hidden sm:inline text-[11px]">No.</span>
           <span className="text-amber-deep font-semibold text-[11px] tabular-nums leading-none">
             {String(data.index).padStart(2, "0")}
             <span className="text-muted/70 font-normal"> / {data.total}</span>
           </span>
         </div>
         <div className="min-w-0">
-          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[10px] sm:text-[10.5px] uppercase tracking-mono-wide text-teal font-semibold">
-            <span>State</span>
-            <span className="text-line">/</span>
-            <span className="text-ink-soft normal-case font-normal tracking-mono-mid">
-              {data.stateName}
-            </span>
-            <span className="text-line">·</span>
+          <div className="flex flex-wrap gap-x-2 gap-y-1 items-center font-mono text-[11px] sm:text-[11px] uppercase tracking-mono-wide text-teal font-semibold">
+            {place && (
+              <>
+                <span>{place.label}</span>
+                <span className="text-line">/</span>
+                <span className="text-ink-soft normal-case font-normal tracking-mono-mid">{place.value}</span>
+                <span className="text-line">·</span>
+              </>
+            )}
             <span className="font-normal tracking-mono-mid">{yearRange}</span>
           </div>
           <h3 className="font-sans text-[20px] sm:text-[23px] font-semibold leading-[1.14] tracking-[-0.025em] text-ink mt-2.5 group-hover:text-teal transition-colors">
@@ -60,7 +71,7 @@ export function EntryListItem({ data }: { data: EntryListItemData }) {
           <p className="text-[14.5px] text-ink-soft leading-[1.55] max-w-[60ch] tracking-[-0.01em] mt-2">
             {data.tagline}
           </p>
-          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted">
+          <div className="flex gap-x-4 gap-y-1.5 mt-4 items-center flex-wrap font-sans text-[13px] text-muted">
             {data.themes.slice(0, 2).map((t) => {
               const Icon = categoryIconFor(t.slug);
               return (

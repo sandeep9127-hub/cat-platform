@@ -12,6 +12,11 @@ const nextConfig = {
   // Pin the workspace root so Next stops climbing up to the user's $HOME
   // and getting confused by any stray lockfile up there.
   outputFileTracingRoot: __dirname,
+  // Bundle the fact-sheet PDF art with its download function so it is read
+  // from disk (see app/(public)/factsheet/[slug]/download/route.ts).
+  outputFileTracingIncludes: {
+    "/factsheet/[slug]/download": ["./public/illustrations/solutions/pdf/**"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },

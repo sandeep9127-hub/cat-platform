@@ -33,7 +33,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
     return (
       <>
         <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-          <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+          <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
             <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
             <span className="text-line">/</span>
             <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -58,7 +58,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <header className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-6">
-        <div className="flex items-center gap-3 mb-4 font-mono text-[10.5px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
+        <div className="flex items-center gap-3 mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold flex-wrap">
           <a href="/landscapes" className="hover:text-teal-soft">CAT Landscapes</a>
           <span className="text-line">/</span>
           <span className="text-ink-soft font-normal tracking-[0.14em]">{p.name}</span>
@@ -69,6 +69,17 @@ export default async function BudgetPage({ params }: { params: Promise<{ slug: s
         <p className="text-[17px] sm:text-[19px] text-ink-soft leading-[1.55] tracking-[-0.01em] mt-5 max-w-[58ch]">
           Every intervention costed in the {p.name} investment plan, filterable by category. Numbers
           are 7-year totals across {lines.length} intervention lines unless filtered.
+        </p>
+        {/* Full tables are shared only on request (a personal, view-only,
+            expiring link after an editor approves), never as downloads. */}
+        <p className="mt-4 text-[14px] text-muted">
+          <a
+            href={`/request-access?${new URLSearchParams({ landscape: slug }).toString()}`}
+            className="inline-flex items-center min-h-11 font-medium text-teal hover:text-deep-teal"
+          >
+            Request the full investment table →
+          </a>
+          <span className="block sm:inline sm:ml-2">Shared on request with a personal, view-only link.</span>
         </p>
       </header>
 

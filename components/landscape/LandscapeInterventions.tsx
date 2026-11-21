@@ -1,5 +1,7 @@
 "use client";
 
+import { RaisedCount } from "@/components/ui/RaisedCount";
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { CATEGORIES } from "@/lib/data/categories";
@@ -125,17 +127,17 @@ export function LandscapeInterventions({
       <div
         data-int-card
         key={k}
-        className="relative overflow-hidden rounded-[11px] border border-line bg-paper"
+        className="relative overflow-hidden rounded-card border border-line bg-paper"
         style={{ boxShadow: "0 1px 2px rgba(26,38,37,0.04), 0 14px 32px -26px rgba(26,38,37,0.22)" }}
       >
         <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: colour }} />
         <div className="p-5 sm:p-6">
           <div className="flex items-center gap-3 mb-4">
             <span
-              className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] shrink-0 border border-line/70"
+              className="inline-flex items-center justify-center w-12 h-12 rounded-card shrink-0 border border-line/70"
               style={{ background: `${colour}12` }}
             >
-              <img
+              <Image
                 src={illustration}
                 alt=""
                 aria-hidden
@@ -146,8 +148,8 @@ export function LandscapeInterventions({
             </span>
             <h3 className="font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink leading-tight">
               {g.category}
+              <RaisedCount n={g.items.length} srLabel={`, ${g.items.length} interventions`} />
             </h3>
-            <span className="ml-auto font-mono text-[10px] tabular-nums text-muted">{g.items.length}</span>
           </div>
           <ul className="list-none p-0 m-0 flex flex-col">
             {g.items.map((it, i) => (
@@ -176,7 +178,7 @@ export function LandscapeInterventions({
             Priority interventions from the {landscapeName} Landscape Investment Plan, grouped by theme.
           </p>
         </div>
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted pb-1.5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted pb-1.5">
           <strong className="text-deep-teal text-[13px] font-semibold tabular-nums">{total}</strong> interventions
           <span className="text-line"> · </span>
           {groups.length} themes

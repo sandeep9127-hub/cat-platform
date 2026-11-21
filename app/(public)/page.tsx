@@ -21,6 +21,8 @@ import {
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { IndiaMap } from "@/components/map/IndiaMap";
+import { AskHubBand } from "@/components/home/AskHubBand";
+import { splitAtlasEntries } from "@/components/map/mapEntries";
 import { ApproachFilm } from "@/components/home/ApproachFilm";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { StaggerReveal } from "@/components/ui/StaggerReveal";
@@ -73,23 +75,10 @@ export default async function LandingPage() {
   // The Atlas is the fact-sheet engine only (uniformity) — same as /map.
   const allFactsheets = await listFactSheets();
   const publishedSheets = allFactsheets.filter((f) => f.status === "published");
-  const factsheets = publishedSheets.filter(
-    (f) => f.latitude != null && f.longitude != null
-  );
-
-  const mapEntries = factsheets.map((f) => ({
-    id: f.slug,
-    slug: f.slug,
-    title: f.title,
-    scaleBand: f.scale_band ?? "multi_district",
-    provenance: "sourced" as const,
-    stateCode: f.state_code ?? "",
-    latitude: f.latitude!,
-    longitude: f.longitude!,
-    internalHref: `/factsheet/${f.slug}`,
-    themes: f.themes ?? [],
-  }));
-  const combinedTotal = factsheets.length;
+  // Same placement rules as /map (components/map/mapEntries.ts): programmes
+  // with a district/state point go on the map, national ones in the strip.
+  const { mapped: mapEntries, nationwide: nationwideEntries } = splitAtlasEntries(publishedSheets);
+  const combinedTotal = mapEntries.length + nationwideEntries.length;
   const combinedStateCount = new Set(
     mapEntries.map((e) => e.stateCode).filter(Boolean)
   ).size;
@@ -107,34 +96,33 @@ export default async function LandingPage() {
     <>
       {/* HERO — the living map: the Atlas itself (47 pins dropping in) beside a
           calm headline panel. The product is the hero; no scrim, no stock art. */}
-      <section className="relative bg-cream">
-        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
-          {/* Left — headline panel */}
-          <div className="order-2 lg:order-1">
+      <section className="relative">
+        <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-10 sm:pt-14 lg:pt-16 pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-10 lg:gap-16 items-center">
+          {/* Left: headline panel. First on phones too, so a first-time
+              visitor reads what the site is before the map. */}
+          <div>
             {hasLastUpdate && (
-              <div className="flex items-center gap-2.5 mb-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted reveal-stagger">
+              <div className="flex items-center gap-2.5 mb-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
                 <Sparkles size={12} strokeWidth={1.8} className="text-teal" aria-hidden />
                 Updated {fmtDateUTC(lastUpdate)}
               </div>
             )}
 
             <h1
-              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)] reveal-stagger"
-              style={{ animationDelay: "100ms" }}
+              className="font-sans font-semibold text-ink tracking-[-0.04em] leading-[1.06] max-w-[15ch] text-[clamp(38px,5vw,78px)]"
             >
               What&apos;s actually working in India&apos;s{" "}
               <span className="text-teal">food systems</span>
             </h1>
 
             <p
-              className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em] reveal-stagger"
-              style={{ animationDelay: "240ms" }}
+              className="mt-6 max-w-[50ch] text-[16.5px] sm:text-[18px] leading-[1.55] text-ink-soft tracking-[-0.01em]"
             >
               A living atlas of pioneer programmes from across the country, each compiled
               and verified from public sources before it goes up.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4 reveal-stagger" style={{ animationDelay: "380ms" }}>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 href="/map"
                 className="group inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.97] transition-[transform,background-color] duration-150 ease-out-expo"
@@ -158,9 +146,10 @@ export default async function LandingPage() {
 
           {/* Right — the live Solutions Atlas (pins animate in on load), with
               its stat ledger docked underneath so map + numbers read as one. */}
-          <div className="order-1 lg:order-2 reveal-stagger" style={{ animationDelay: "200ms" }}>
+          <div>
             <IndiaMap
               entries={mapEntries}
+              nationwide={nationwideEntries}
               totalProgrammes={combinedTotal}
               totalStates={combinedStateCount}
               bare
@@ -177,7 +166,7 @@ export default async function LandingPage() {
                   <dt className="font-sans text-[23px] sm:text-[26px] font-semibold text-ink tabular-nums tracking-[-0.025em] leading-none">
                     <AnimatedNumber value={String(s.n)} />
                   </dt>
-                  <dd className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted">
+                  <dd className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                     {s.label}
                   </dd>
                 </div>
@@ -187,8 +176,9 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS — soft cream band (tonal flow, no hard rule) */}
-      <section className="relative bg-cream">
+      {/* HOW IT WORKS: same paper canvas, set off by a hairline (one surface
+          for the whole page; no alternating colour bands). */}
+      <section className="relative border-t border-line">
         <div className="relative max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-3 gap-y-8">
           {[
             {
@@ -212,7 +202,7 @@ export default async function LandingPage() {
               className={`flex items-start gap-3 ${i > 0 ? "sm:border-l sm:border-line/60 sm:pl-8" : ""}`}
             >
               <span
-                className="w-7 h-7 rounded-[6px] inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
+                className="w-7 h-7 rounded-card inline-flex items-center justify-center text-paper shrink-0 mt-0.5"
                 aria-hidden
                 style={{
                   background: "linear-gradient(155deg, #2E7573 0%, #334B4A 100%)",
@@ -223,7 +213,7 @@ export default async function LandingPage() {
                 <Icon size={13} strokeWidth={1.8} />
               </span>
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal font-semibold">
+                <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-teal font-semibold">
                   {title}
                 </div>
                 <p className="font-serif text-[13.5px] text-ink-soft leading-[1.5] mt-1.5 max-w-[42ch]">
@@ -235,11 +225,17 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* ASK THE HUB (Ask UI spec E3). The example answer will come from
+          exampleForToday() in lib/ask/examples.ts (Ask session, rotates daily
+          between 3 stored answers) once that module lands; until then the
+          band shows its composer only, with no placeholder answer text. */}
+      <AskHubBand example={null} />
+
       {/* THE APPROACH — short film from the Consortium, lazy-loaded facade */}
-      <Reveal as="section" className="bg-paper border-t border-line">
+      <Reveal as="section" className="border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-center">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">
               The approach
             </div>
             <h2 className="font-sans font-semibold text-[clamp(28px,3.4vw,44px)] leading-[1.04] tracking-[-0.03em] text-ink max-w-[16ch]">
@@ -268,9 +264,9 @@ export default async function LandingPage() {
       {/* CATEGORIES — Equals "spreadsheet grid" of category cells on cream.
           Each category's colour IS its icon (a flat block). Counts pulled live
           from the Atlas; each cell deep-links into the filtered Atlas. */}
-      <Reveal as="section" className="bg-cream mt-16 lg:mt-20 border-t border-line">
+      <Reveal as="section" className="mt-16 lg:mt-20 border-t border-line">
         <div className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 pt-16 lg:pt-20 pb-9">
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-deep mb-3">
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-deep mb-3">
             Ten themes
           </div>
           <h2 className="font-sans font-semibold text-[clamp(32px,4vw,52px)] leading-[1.0] tracking-[-0.035em] text-ink max-w-[18ch]">
@@ -314,7 +310,7 @@ export default async function LandingPage() {
                   {t.short}
                 </h3>
                 <span className="relative mt-auto flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
                     <strong className="text-ink text-[13px] font-semibold tabular-nums">{t.count}</strong>{" "}
                     {t.count === 1 ? "solution" : "solutions"}
                   </span>

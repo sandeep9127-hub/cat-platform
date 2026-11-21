@@ -18,7 +18,17 @@ const SCALE: Record<string, string> = {
   state: "State", multi_state: "Multi-state", national: "National",
 };
 
-export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
+/**
+ * Optional field-guide art (PNG bytes): the theme drawing beside the title and
+ * small pathway drawings beside each "at a glance" item. The download route
+ * fetches them (lib/design/solution-art); without them the PDF is text-only.
+ */
+export type FactSheetArt = {
+  hero?: Uint8Array | null;
+  glance?: Partial<Record<string, Uint8Array | null>>;
+};
+
+export async function buildFactSheetPdf(s: FactSheetRow, art: FactSheetArt = {}): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -59,7 +69,7 @@ export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
   }
 
   function heading(label: string) {
-    ensure(26);
+    ensure(56); // keep a heading with at least a few lines of its section
     y -= 10;
     page.drawText(label.toUpperCase(), { x: MX, y, size: 8, font: bold, color: TEAL });
     y -= 6;
@@ -67,17 +77,35 @@ export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
     y -= 12;
   }
 
-  // ── Header
+  // Embed art up front (bad bytes just mean no picture, never a failed PDF).
+  const embed = async (b?: Uint8Array | null) => {
+    if (!b) return null;
+    try { return await doc.embedPng(b); } catch { return null; }
+  };
+  const heroImg = await embed(art.hero);
+  const glanceImg: Record<string, Awaited<ReturnType<typeof embed>>> = {};
+  for (const [k, b] of Object.entries(art.glance ?? {})) glanceImg[k] = await embed(b);
+
+  // ── Header: title block on the left, the theme's field drawing on the right
+  const ART_W = heroImg ? 190 : 0;
+  const textW = W - MX * 2 - (heroImg ? ART_W + 18 : 0);
+  const headTop = y;
   page.drawText("SOLUTION FACT SHEET", { x: MX, y, size: 8, font: bold, color: TEAL });
   y -= 22;
-  for (const ln of wrap(s.title, bold, 20, W - MX * 2)) {
+  for (const ln of wrap(s.title, bold, 20, textW)) {
     ensure(26);
     page.drawText(ln, { x: MX, y, size: 20, font: bold, color: INK });
     y -= 25;
   }
   if (s.one_liner) {
     y -= 2;
-    para(s.one_liner, oblique, 11.5, MUTED);
+    para(s.one_liner, oblique, 11.5, MUTED, 1.45, textW);
+  }
+  if (heroImg) {
+    const h = (heroImg.height / heroImg.width) * ART_W;
+    const imgY = Math.max(y + 4, headTop - h - 6);
+    page.drawImage(heroImg, { x: W - MX - ART_W, y: imgY, width: ART_W, height: h });
+    y = Math.min(y, imgY - 6);
   }
 
   // meta line
@@ -101,11 +129,13 @@ export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
     s.metrics.slice(0, 4).forEach((m, i) => {
       const x = MX + i * colW;
       page.drawText(String(m.value).slice(0, 14), { x, y: rowY, size: 17, font: bold, color: INK });
-      for (const ln of wrap(m.label, font, 6.5, colW - 6).slice(0, 2)) {
-        page.drawText(ln.toUpperCase(), { x, y: rowY - 12 - 0, size: 6.5, font, color: MUTED });
-      }
+      // Label wraps to at most two lines, each on its own baseline (they used
+      // to be drawn on top of each other and run into the next column).
+      wrap(m.label, font, 7.5, colW - 10).slice(0, 2).forEach((ln, li) => {
+        page.drawText(ln, { x, y: rowY - 13 - li * 9.5, size: 7.5, font, color: MUTED });
+      });
     });
-    y = rowY - 26;
+    y = rowY - 36;
   }
 
   if (s.summary) {
@@ -124,18 +154,30 @@ export async function buildFactSheetPdf(s: FactSheetRow): Promise<Uint8Array> {
     heading("At a glance");
     for (const [k, v] of cards) {
       if (!v) continue;
-      ensure(20);
-      page.drawText(k.toUpperCase(), { x: MX, y, size: 7.5, font: bold, color: TEAL });
+      const icon = glanceImg[k];
+      const IND = icon ? 52 : 0; // drawing sits in a left gutter
+      ensure(icon ? 40 : 20);
+      const top = y;
+      if (icon) {
+        const iw = 40, ih = (icon.height / icon.width) * iw;
+        page.drawImage(icon, { x: MX, y: top - ih + 8, width: iw, height: ih });
+      }
+      page.drawText(k.toUpperCase(), { x: MX + IND, y, size: 7.5, font: bold, color: TEAL });
       y -= 11;
-      para(v, font, 9.5, INK, 1.4);
-      y -= 4;
+      for (const ln of wrap(v, font, 9.5, W - MX * 2 - IND)) {
+        ensure(9.5 * 1.4);
+        page.drawText(ln, { x: MX + IND, y, size: 9.5, font, color: INK });
+        y -= 9.5 * 1.4;
+      }
+      if (icon) y = Math.min(y, top - 34);
+      y -= 6;
     }
   }
 
   if (Array.isArray(s.outcomes) && s.outcomes.length) {
-    heading("Outcomes & evidence");
+    heading("Outcomes and evidence");
     for (const o of s.outcomes) {
-      const text = `${o.figure ? o.figure + " — " : ""}${o.claim}`;
+      const text = `${o.figure ? o.figure + ": " : ""}${o.claim}`;
       ensure(14);
       page.drawText("•", { x: MX, y, size: 10.5, font: bold, color: TEAL });
       const lines = wrap(text, font, 10, W - MX * 2 - 14);

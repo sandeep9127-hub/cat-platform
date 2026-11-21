@@ -1,5 +1,6 @@
 "use client";
 
+import { palette } from "@/lib/design/palette";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -189,7 +190,9 @@ export function OrganizationsExplorer() {
         .layers(
           { Satellite: esriSat, Clean: cleanBase },
           { "Tehsil boundaries": tehsilLayer },
-          { collapsed: true, position: "topright" }
+          // Bottom-right, so it never collides with the counter badge (top-right),
+          // matching the Solutions Atlas map's corner layout.
+          { collapsed: true, position: "bottomright" }
         )
         .addTo(map);
       // India outline from our own border-correct GeoJSON (the same geometry
@@ -203,7 +206,7 @@ export function OrganizationsExplorer() {
             // is strong enough to read over satellite imagery; fill stays barely
             // tinted so the imagery shows through (and gives the "Clean" base its
             // soft teal landmass). interactive:false so it never intercepts a pin.
-            style: { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04, className: "og-country" },
+            style: { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: palette.teal, fillOpacity: 0.04, className: "og-country" },
             interactive: false,
           }).addTo(map);
           india.bringToBack();
@@ -212,8 +215,8 @@ export function OrganizationsExplorer() {
           map.on("baselayerchange", (e: any) => {
             india.setStyle(
               e?.name === "Clean"
-                ? { color: "#2e7573", weight: 0.7, opacity: 0.5, fillColor: "#2e7573", fillOpacity: 0.08 }
-                : { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: "#2e7573", fillOpacity: 0.04 }
+                ? { color: palette.teal, weight: 0.7, opacity: 0.5, fillColor: palette.teal, fillOpacity: 0.08 }
+                : { color: "#e9efe9", weight: 0.9, opacity: 0.7, fillColor: palette.teal, fillOpacity: 0.04 }
             );
           });
           // Fit to where the data actually is (mainland) rather than the full
@@ -264,7 +267,7 @@ export function OrganizationsExplorer() {
         radius: 5,
         color: "#fbf8f2",
         weight: 1.4,
-        fillColor: "#2e7573",
+        fillColor: palette.teal,
         fillOpacity: 0.9,
         className: "og-dot",
       });
@@ -327,10 +330,15 @@ export function OrganizationsExplorer() {
         <div>
           <div className="og-eyebrow">Who’s working where</div>
           <h1 className="og-title">Organisations Atlas</h1>
-          <p className="og-sub">
-            {loading
-              ? "Loading the directory…"
-              : `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations.`}
+          <p className="og-sub" aria-live="polite">
+            {loading ? (
+              <>
+                <span className="og-skel og-skel-line" aria-hidden />
+                <span className="sr-only">Loading the directory</span>
+              </>
+            ) : (
+              `${orgs.length} organisations across ${locs.length.toLocaleString()} work locations.`
+            )}
           </p>
         </div>
         <button className="og-add" onClick={() => { setEditTarget(null); setFormOpen(true); }}>
@@ -342,23 +350,24 @@ export function OrganizationsExplorer() {
       <div className="og-filters">
         <input
           className="og-input"
+          aria-label="Search organisations"
           placeholder="Search organisations…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <select className="og-select" value={stateF} onChange={(e) => setStateF(e.target.value)}>
+        <select className="og-select" aria-label="Filter by state" value={stateF} onChange={(e) => setStateF(e.target.value)}>
           <option value="">All states</option>
           {states.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <select className="og-select" value={typeF} onChange={(e) => setTypeF(e.target.value)}>
+        <select className="og-select" aria-label="Filter by organisation type" value={typeF} onChange={(e) => setTypeF(e.target.value)}>
           <option value="">All types</option>
           {TYPE_ORDER.filter((t) => orgs.some((o) => o.orgType === t)).map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <select className="og-select" value={domainF} onChange={(e) => setDomainF(e.target.value)}>
+        <select className="og-select og-select-wide" aria-label="Filter by domain" value={domainF} onChange={(e) => setDomainF(e.target.value)}>
           <option value="">All domains</option>
           {domains.map((d) => (
             <option key={d} value={d}>{d}</option>
@@ -374,7 +383,19 @@ export function OrganizationsExplorer() {
 
       {/* split: list + map */}
       <div className="og-split">
-        <div className="og-list">
+        <div className="og-list" aria-busy={loading}>
+          {loading &&
+            Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="og-card og-card-skel" aria-hidden>
+                <span className="og-skel" style={{ width: `${62 - (i % 3) * 12}%`, height: 16 }} />
+                <span className="og-skel" style={{ width: "34%", height: 11, marginTop: 10 }} />
+                <span className="og-skel-row">
+                  <span className="og-skel" style={{ width: 84, height: 18 }} />
+                  <span className="og-skel" style={{ width: 110, height: 18 }} />
+                  <span className="og-skel" style={{ width: 70, height: 18 }} />
+                </span>
+              </div>
+            ))}
           {shown.map((o) => (
             <article key={o.id} className="og-card" onClick={() => setDetailOrg(o)}>
               <div className="og-card-top">
@@ -390,7 +411,7 @@ export function OrganizationsExplorer() {
                   {o.domains.slice(0, 4).map((d) => (
                     <span key={d} className="og-domain">{d}</span>
                   ))}
-                  {o.domains.length > 4 && <span className="og-domain-more">+{o.domains.length - 4}</span>}
+                  {o.domains.length > 4 && <span className="og-domain-more">{o.domains.length - 4} more</span>}
                 </div>
               )}
               <div className="og-card-actions">
@@ -476,6 +497,45 @@ function esc(s: string) {
 
 // Render a modal at the document root so it escapes any ancestor stacking
 // context (the sticky header was otherwise painting over the sheet's top).
+/**
+ * Dialog behaviour for the Organisations sheets: Escape closes, Tab stays
+ * inside the sheet, focus moves in on open and returns to the opener on close.
+ */
+function useDialog(onClose: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    const sheet = ref.current;
+    const focusables = () =>
+      sheet
+        ? Array.from(
+            sheet.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+    (focusables()[1] ?? focusables()[0] ?? sheet)?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === "Tab") {
+        const els = focusables();
+        if (!els.length) return;
+        const first = els[0], last = els[els.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
+  }, [onClose]);
+  return ref;
+}
+
 function portal(node: ReactNode) {
   if (typeof document === "undefined") return null;
   return createPortal(node, document.body);
@@ -496,13 +556,22 @@ function OrgDetail({
     byState.set(st, arr);
   }
   const states = Array.from(byState.keys()).sort();
+  const sheetRef = useDialog(onClose);
 
   return portal(
     <div className="og-modal" onClick={onClose}>
-      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className="og-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="og-detail-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
         <span className="og-type" style={{ display: "inline-block", marginBottom: 8 }}>{org.orgType}</span>
-        <h2 className="og-sheet-title">{org.name}</h2>
+        <h2 id="og-detail-title" className="og-sheet-title">{org.name}</h2>
 
         <div className="og-detail-contact">
           <div className="og-dc-label">Contact</div>
@@ -582,6 +651,9 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  // Which field the current error belongs to, so it can be announced on it.
+  const [errField, setErrField] = useState<"name" | "email" | null>(null);
+  const sheetRef = useDialog(onClose);
 
   const up = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
   const addLoc = () =>
@@ -590,9 +662,13 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
     setLocations((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
 
   async function submit() {
-    if (!f.name.trim()) { setErr("Organisation name is required."); return; }
-    if (!f.contactEmail.trim()) { setErr("Your email is required so we can verify the entry."); return; }
-    setBusy(true); setErr("");
+    if (!f.name.trim()) { setErr("Enter the organisation's name."); setErrField("name"); return; }
+    if (!/^\S+@\S+\.\S+$/.test(f.contactEmail.trim())) {
+      setErr("Enter your email, like name@organisation.org, so we can verify the entry.");
+      setErrField("email");
+      return;
+    }
+    setBusy(true); setErr(""); setErrField(null);
     try {
       const cleanLocations = locations
         .map((l) => ({
@@ -622,7 +698,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
       if (!res.ok) throw new Error();
       setDone(true);
     } catch {
-      setErr("Could not submit. Please try again.");
+      setErr("Couldn't send that. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
@@ -630,20 +706,28 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
 
   return portal(
     <div className="og-modal" onClick={onClose}>
-      <div className="og-sheet" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className="og-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="og-form-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="og-close" onClick={onClose} aria-label="Close">×</button>
         {done ? (
           <div className="og-thanks">
-            <h2>Thank you</h2>
+            <h2 id="og-form-title">Thank you</h2>
             <p>Your submission has been received and will be reviewed before it appears in the directory.</p>
             <button className="og-submit" onClick={onClose}>Close</button>
           </div>
         ) : (
           <>
-            <h2 className="og-sheet-title">Add or update an organisation</h2>
-            <div className="og-toggle">
-              <button className={mode === "new" ? "on" : ""} onClick={() => setMode("new")}>New organisation</button>
-              <button className={mode === "edit" ? "on" : ""} onClick={() => setMode("edit")}>Suggest an edit</button>
+            <h2 id="og-form-title" className="og-sheet-title">Add or update an organisation</h2>
+            <div className="og-toggle" role="group" aria-label="What would you like to do?">
+              <button type="button" aria-pressed={mode === "new"} className={mode === "new" ? "on" : ""} onClick={() => setMode("new")}>New organisation</button>
+              <button type="button" aria-pressed={mode === "edit"} className={mode === "edit" ? "on" : ""} onClick={() => setMode("edit")}>Suggest an edit</button>
             </div>
 
             {mode === "edit" && (
@@ -660,8 +744,15 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               </label>
             )}
 
-            <label className="og-field"><span>Organisation name *</span>
-              <input value={f.name} onChange={(e) => up("name", e.target.value)} /></label>
+            <label className="og-field"><span>Organisation name <em className="og-req">(required)</em></span>
+              <input
+                value={f.name}
+                onChange={(e) => { up("name", e.target.value); if (errField === "name") { setErr(""); setErrField(null); } }}
+                autoComplete="organization"
+                aria-required="true"
+                aria-invalid={errField === "name" || undefined}
+                aria-describedby={errField === "name" ? "og-form-err" : undefined}
+              /></label>
             <div className="og-row">
               <label className="og-field"><span>Type</span>
                 <select value={f.orgType} onChange={(e) => up("orgType", e.target.value)}>
@@ -695,7 +786,7 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <GeographyPicker
                       key={loc.geographyId || `row-${i}`}
-                      placeholder="Type a district or place — pick the exact one"
+                      placeholder="Type a district or place, then pick the exact one"
                       defaultValue={
                         loc.geographyId
                           ? {
@@ -744,13 +835,22 @@ function SubmitForm({ orgs, editTarget, onClose }: { orgs: Org[]; editTarget: Or
               <div className="og-pii-label">Your details (not published, used only to verify the entry)</div>
               <div className="og-row">
                 <label className="og-field"><span>Your name</span>
-                  <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} /></label>
-                <label className="og-field"><span>Your email *</span>
-                  <input value={f.contactEmail} onChange={(e) => up("contactEmail", e.target.value)} /></label>
+                  <input value={f.contactPerson} onChange={(e) => up("contactPerson", e.target.value)} autoComplete="name" /></label>
+                <label className="og-field"><span>Your email <em className="og-req">(required)</em></span>
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={f.contactEmail}
+                    onChange={(e) => { up("contactEmail", e.target.value); if (errField === "email") { setErr(""); setErrField(null); } }}
+                    aria-required="true"
+                    aria-invalid={errField === "email" || undefined}
+                    aria-describedby={errField === "email" ? "og-form-err" : undefined}
+                  /></label>
               </div>
             </div>
 
-            {err && <p className="og-err">{err}</p>}
+            <p id="og-form-err" className="og-err" role="alert" aria-live="assertive">{err}</p>
             <button className="og-submit" onClick={submit} disabled={busy}>
               {busy ? "Submitting…" : mode === "new" ? "Submit new organisation" : "Submit edit"}
             </button>
@@ -769,16 +869,16 @@ function Styles() {
         background: var(--paper); font-family: var(--font-inter), system-ui, sans-serif; color: var(--ink); }
       .og-head { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap;
         max-width:1280px; margin:0 auto; padding:32px 24px 16px; }
-      .og-eyebrow { font-family: var(--font-jetbrains),monospace; font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:#b5793a; }
+      .og-eyebrow { font-family: var(--font-jetbrains),monospace; font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:#b5793a; }
       .og-title { font-family: var(--font-inter),sans-serif; font-size:clamp(40px,5vw,68px); font-weight:600; letter-spacing:-.04em; line-height:1.0; margin:6px 0 6px; }
       .og-sub { font-size:15px; color:var(--ink-soft); max-width:70ch; }
       .og-add { flex:0 0 auto; font-size:13px; font-weight:500; letter-spacing:-.01em;
         padding:11px 20px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:transform .15s, background .15s; }
-      .og-add:hover { background:var(--teal-2,#2e7573); opacity:.94; }
+      .og-add:hover { background:var(--teal); opacity:.94; }
       .og-add:active { transform:scale(.97); }
       .og-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; max-width:1280px; margin:0 auto; padding:10px 24px 16px; }
-      .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:0; background:#fff; color:var(--ink); }
-      .og-input:focus,.og-select:focus { outline:none; border-color:var(--rule); }
+      .og-input,.og-select { font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--paper); color:var(--ink); }
+      .og-input:focus,.og-select:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 2px color-mix(in srgb, var(--teal) 25%, transparent); }
       .og-input { min-width:220px; flex:1 1 220px; }
       .og-clear { font-size:12px; color:var(--muted); background:none; border:0; cursor:pointer; text-decoration:underline; }
       .og-count { margin-left:auto; font-family:var(--font-jetbrains),monospace; font-size:11px; color:var(--muted); }
@@ -788,27 +888,31 @@ function Styles() {
       /* flex-shrink:0 — the list is a fixed-height flex column; without this the
          cards squash to fit and overflow:hidden clips them into cramped, overlapping
          rows. Keep each card at its natural height and let the list scroll. */
-      .og-card { flex:0 0 auto; position:relative; overflow:hidden; border:1px solid var(--line); border-top:0; border-radius:0; padding:16px; background:var(--paper); cursor:pointer; transition:background .2s; }
-      .og-card::before { content:""; position:absolute; top:0; left:0; right:0; height:2px; background:#2e7573; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.2,.8,.2,1); }
-      .og-card:hover::before { transform:scaleX(1); }
+      /* List rows share the Solutions Atlas row language (EntryListItem):
+         open rows on hairline dividers, teal-wash hover, title turns teal. */
+      .og-card { flex:0 0 auto; position:relative; overflow:hidden; border-bottom:1px solid var(--line); padding:18px 12px; background:transparent; cursor:pointer; transition:background .2s; }
       .og-list > .og-card:first-child { border-top:1px solid var(--line); }
-      .og-card:hover { background:rgba(225,237,232,.45); }
+      .og-card:hover, .og-card:focus-within { background:color-mix(in srgb, var(--teal-wash) 45%, transparent); }
+      .og-card:hover .og-card-name { color:var(--teal); }
       .og-card-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-      .og-card-name { font-family:var(--font-fraunces),Georgia,serif; font-size:16.5px; font-weight:600; line-height:1.25; min-width:0;
-        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-      .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em;
+      .og-card-name { font-family:var(--font-inter), system-ui, sans-serif; font-size:17px; font-weight:600; line-height:1.22; letter-spacing:-0.015em; min-width:0; transition:color .2s;
+        overflow-wrap:anywhere; } /* full names, never truncated */
+      .og-type { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
         color:var(--td); background:rgba(45,117,116,.08); border:1px solid rgba(45,117,116,.2); border-radius:999px; padding:3px 8px; white-space:nowrap; }
       .og-card-meta { font-size:12.5px; color:var(--muted); margin-top:5px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
       .og-meta-ic { color:var(--td); opacity:.7; flex:0 0 auto; }
       .og-domains { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
       .og-domain { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(31,38,31,.05); color:var(--ink); }
       .og-domain-more { font-size:11px; color:var(--muted); padding:2px 4px; }
-      .og-card-actions { display:flex; gap:14px; margin-top:11px; align-items:center; }
-      .og-view, .og-edit { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; padding:6px 0; min-height:32px; display:inline-flex; align-items:center;
+      .og-card-actions { display:flex; flex-wrap:wrap; gap:0 18px; margin-top:4px; align-items:center; }
+      .og-card-actions > * { white-space:nowrap; }
+      /* Actions in sentence case at reading size (Refero review: co2.is chevron
+         links), with a 44px touch height. */
+      .og-view, .og-edit { font-family:inherit; font-size:14px; letter-spacing:0; min-height:44px; display:inline-flex; align-items:center;
         background:none; border:0; cursor:pointer; padding:0; }
-      .og-view { color:var(--td); font-weight:600; }
+      .og-view { color:var(--td); font-weight:500; }
       .og-edit { color:var(--muted); }
-      .og-card-web { font-family:var(--font-jetbrains),monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--td); text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
+      .og-card-web { font-family:inherit; font-size:14px; letter-spacing:0; min-height:44px; color:var(--td); text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
       .og-view:hover, .og-edit:hover, .og-card-web:hover { text-decoration:underline; }
       /* website in detail */
       /* contact links — stacked with breathing room, icon-led */
@@ -821,19 +925,19 @@ function Styles() {
       .og-locations { margin:4px 0 2px; }
       .og-loc-head { display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
       .og-loc-head > span:first-child { font-size:12.5px; font-weight:600; color:var(--ink); }
-      .og-loc-hint { font-family:var(--font-jetbrains),monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+      .og-loc-hint { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
       .og-loc-row { display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center; }
-      .og-loc-in { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--cream); transition:background .15s, border-color .15s; }
+      .og-loc-in { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius: var(--radius-card); font-size:14px; background:var(--cream); transition:background .15s, border-color .15s; }
       .og-loc-in:focus { outline:none; border-color:var(--td); background:#fff; }
-      .og-loc-del { width:34px; height:34px; flex:0 0 auto; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
-      .og-loc-del:hover:not(:disabled) { color:#B85042; border-color:#B85042; }
+      .og-loc-del { width:34px; height:34px; flex:0 0 auto; border:1px solid var(--line); border-radius: var(--radius-card); background:#fff; color:var(--muted); font-size:17px; line-height:1; cursor:pointer; transition:color .15s, border-color .15s; }
+      .og-loc-del:hover:not(:disabled) { color:var(--red-alert); border-color:var(--red-alert); }
       .og-loc-del:disabled { opacity:.35; cursor:not-allowed; }
       /* Quiet ghost action (Skiff "Skip for now" register). */
       .og-add-loc { font-family:inherit; font-size:13px; color:var(--td); background:none; border:0; padding:6px 0; cursor:pointer; transition:color .15s; }
       .og-add-loc:hover { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
       /* detail panel */
-      .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius:12px; padding:14px 16px; margin:6px 0 16px; }
-      .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
+      .og-detail-contact { background:rgba(45,117,116,.06); border:1px solid rgba(45,117,116,.18); border-radius: var(--radius-panel); padding:14px 16px; margin:6px 0 16px; }
+      .og-dc-label { font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--td); margin-bottom:6px; }
       .og-dc-row { font-size:15px; }
       .og-dc-desig { color:var(--muted); }
       .og-muted { color:var(--muted); }
@@ -842,15 +946,25 @@ function Styles() {
       .og-where li { font-size:13.5px; line-height:1.4; }
       .og-detail-actions { display:flex; gap:10px; margin-top:6px; }
       .og-detail-edit { flex:0 0 auto; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
-        padding:0 16px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+        padding:0 16px; border-radius: var(--radius-card); border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
       .og-detail-edit:hover { border-color:var(--td); color:var(--td); }
       .og-empty { color:var(--muted); padding:30px 0; }
+      /* Loading skeleton: quiet warm bars, pulse only when motion is allowed. */
+      .og-skel { display:block; border-radius: var(--radius-tight); background:var(--line-soft); }
+      .og-skel-line { width:min(340px,80%); height:15px; margin-top:4px; }
+      .og-skel-row { display:flex; gap:6px; margin-top:12px; }
+      .og-card-skel { cursor:default; }
+      .og-card-skel:hover { background:transparent; }
+      @media (prefers-reduced-motion: no-preference) {
+        .og-skel { animation: og-skel-pulse 1.4s ease-in-out infinite; }
+        @keyframes og-skel-pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+      }
       .og-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 2px 30px; font-size:12.5px; color:var(--muted); }
-      .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+      .og-pager button { font-family:inherit; font-size:12.5px; padding:6px 12px; border:1px solid var(--line); border-radius: var(--radius-card); background:#fff; cursor:pointer; }
       .og-pager button:disabled { opacity:.4; cursor:default; }
       /* ── Map styled to match the Landscapes / Solutions Atlas basemap ── */
       .og-mapwrap { position:relative; height:100%; min-height:520px; }
-      .og-map { border:1px solid var(--line); border-radius:10px; overflow:hidden; height:100%; min-height:520px; z-index:0;
+      .og-map { border:1px solid var(--line); border-radius: var(--radius-card); overflow:hidden; height:100%; min-height:520px; z-index:0;
         box-shadow: 0 1px 2px rgba(26,38,37,.04), 0 12px 32px -16px rgba(46,117,115,.20); }
       .og-map .leaflet-container { height:100%; width:100%;
         background: radial-gradient(ellipse 70% 55% at 50% 10%, rgba(232,242,235,.65), transparent 70%),
@@ -859,23 +973,35 @@ function Styles() {
       .og-map .leaflet-overlay-pane path.og-country { filter: drop-shadow(0 5px 12px rgba(26,38,37,.10)); }
       .og-map .leaflet-overlay-pane path.og-dot { filter: drop-shadow(0 0 4px rgba(46,117,115,.55)); }
       /* dashed inner frame, echoing the Landscapes map */
-      .og-map-frame { position:absolute; inset:11px; border:1px dashed var(--line); border-radius:6px; pointer-events:none; z-index:650; }
+      .og-map-frame { position:absolute; inset:14px; border:1px dashed var(--line); border-radius: var(--radius-card); pointer-events:none; z-index:650; }
+      /* Leaflet controls in the same cream, hairline, mono language as the
+         legend and the Solutions Atlas map (no default white Leaflet chrome). */
+      .og-map .leaflet-top.leaflet-left { top:12px; left:12px; }
+      .og-map .leaflet-bottom.leaflet-right { bottom:12px; right:12px; }
+      .og-map .leaflet-bar, .og-map .leaflet-control-layers { border:1px solid var(--line) !important; border-radius: var(--radius-card) !important; overflow:hidden;
+        background:rgba(251,248,242,.92) !important; backdrop-filter:blur(6px); box-shadow:0 6px 16px -10px rgba(26,38,37,.20), 0 1px 2px rgba(26,38,37,.04) !important; }
+      .og-map .leaflet-bar a { background:transparent; color:var(--ink-soft); border-bottom:1px solid var(--line); width:32px; height:32px; line-height:32px; font-weight:400; }
+      .og-map .leaflet-bar a:last-child { border-bottom:0; }
+      .og-map .leaflet-bar a:hover { background:var(--teal-wash); color:var(--teal); }
+      .og-map .leaflet-control-layers-expanded { padding:10px 12px; font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-soft); }
+      .og-map .leaflet-control-layers-separator { border-top-color:var(--line); }
+      .og-map .leaflet-control-attribution { background:rgba(251,248,242,.85); color:var(--muted); font-size:11px; border-radius: var(--radius-tight) 0 0 0; }
       /* teal counter badge, top-right */
-      .og-map-badge { position:absolute; top:14px; right:14px; z-index:660; display:flex; align-items:center; gap:6px;
-        font-family:var(--font-jetbrains),monospace; font-size:10px; text-transform:uppercase; letter-spacing:.13em; color:#f3efe6;
-        background: linear-gradient(135deg,#334B4A 0%,#2E7573 60%,#334B4A 100%); padding:8px 12px; border-radius:8px;
+      .og-map-badge { position:absolute; top:24px; right:24px; z-index:660; display:flex; align-items:center; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--cream);
+        background: linear-gradient(135deg,var(--deep-teal) 0%,var(--teal) 60%,var(--deep-teal) 100%); padding:8px 12px; border-radius: var(--radius-card);
         border:1px solid rgba(251,248,242,.12); box-shadow:0 10px 28px -12px rgba(26,38,37,.45), inset 0 1px 0 rgba(255,255,255,.10); }
-      .og-map-badge .n { color:#f8ca7c; font-size:12px; font-weight:600; }
+      .og-map-badge .n { color:var(--amber); font-size:12px; font-weight:600; }
       .og-map-badge .dot { opacity:.45; }
       /* legend, bottom-left */
-      .og-map-legend { position:absolute; bottom:14px; left:14px; z-index:660; display:flex; flex-direction:column; gap:6px;
-        font-family:var(--font-jetbrains),monospace; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
-        background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:8px; padding:9px 11px;
+      .og-map-legend { position:absolute; bottom:24px; left:24px; z-index:660; display:flex; flex-direction:column; gap:6px;
+        font-family:var(--font-jetbrains),monospace; font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-soft);
+        background:rgba(251,248,242,.92); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius: var(--radius-card); padding:9px 11px;
         box-shadow:0 6px 16px -10px rgba(26,38,37,.20); }
       .og-map-legend > div { display:flex; align-items:center; gap:7px; }
       .lg-dot { width:10px; height:10px; border-radius:999px; flex:0 0 auto; }
-      .lg-dot.t { background:#2e7573; box-shadow:0 0 0 3px rgba(46,117,115,.18); }
-      .lg-dot.c { background:linear-gradient(135deg,#2E7573,#1F5957); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      .lg-dot.t { background:var(--teal); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
+      .lg-dot.c { background:linear-gradient(135deg,var(--teal),var(--navy-teal)); box-shadow:0 0 0 3px rgba(46,117,115,.18); }
       /* cluster bubbles → teal halo to match the dot language */
       .og .marker-cluster { background:transparent; }
       .og .marker-cluster div { background:linear-gradient(135deg, rgba(46,117,115,.94), rgba(31,89,87,.94)); color:#fbf8f2;
@@ -888,43 +1014,59 @@ function Styles() {
 
       /* modal */
       .og-modal { position:fixed; inset:0; background:rgba(26,38,37,.5); display:flex; align-items:flex-start; justify-content:center; z-index:1000; padding:40px 16px; overflow-y:auto; }
-      .og-sheet { background:var(--paper); border-radius:16px; max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
+      .og-sheet { background:var(--paper); border-radius: var(--radius-panel); max-width:560px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 30px 80px -30px rgba(0,0,0,.5); }
       .og-close { position:absolute; top:14px; right:16px; width:32px; height:32px; border-radius:999px; border:1px solid var(--line); background:none; cursor:pointer; font-size:20px; color:var(--muted); }
-      .og-sheet-title { font-family:var(--font-fraunces),Georgia,serif; font-size:24px; font-weight:600; margin:0 0 14px; }
-      .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius:10px; padding:4px; margin-bottom:16px; }
-      .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius:7px; background:none; cursor:pointer; color:var(--muted); }
+      .og-sheet-title { font-family:var(--font-inter), system-ui, sans-serif; font-size:24px; font-weight:600; margin:0 0 14px; }
+      .og-toggle { display:flex; gap:6px; background:rgba(31,38,31,.05); border-radius: var(--radius-card); padding:4px; margin-bottom:16px; }
+      .og-toggle button { flex:1; font-family:inherit; font-size:13px; padding:8px; border:0; border-radius: var(--radius-card); background:none; cursor:pointer; color:var(--muted); }
       .og-toggle button.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06); }
       .og-field { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
-      .og-field > span { font-size:11.5px; color:var(--muted); }
+      .og-field > span { font-size:13px; color:var(--ink-soft); }
+      .og-req { font-style:normal; color:var(--muted); }
+      .og-field [aria-invalid="true"] { border-color:var(--red-alert); box-shadow:0 0 0 2px color-mix(in srgb, var(--red-alert) 18%, transparent); }
       /* Soft, calm form inputs (Skiff register) — distinct from the sharp data inputs. */
-      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius:11px; background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
-      .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:#fff; }
+      .og-field input,.og-field select,.og-field textarea { font-family:inherit; font-size:14px; padding:11px 13px; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); color:var(--ink); transition:background .15s, border-color .15s; }
+      .og-field input:focus,.og-field select:focus,.og-field textarea:focus { outline:none; border-color:var(--td); background:var(--paper); box-shadow:0 0 0 2px color-mix(in srgb, var(--teal) 25%, transparent); }
       /* Inline affix input (https:// prefix). */
-      .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius:11px; background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
+      .og-affix { display:flex; align-items:stretch; border:1px solid var(--line); border-radius: var(--radius-card); background:var(--cream); overflow:hidden; transition:border-color .15s, background .15s; }
       .og-affix:focus-within { border-color:var(--td); background:#fff; }
       .og-affix-pre { display:inline-flex; align-items:center; padding:0 4px 0 13px; font-size:14px; color:var(--muted); }
       .og-affix-in { flex:1; min-width:0; border:0; background:transparent; padding:11px 13px 11px 2px; font-family:inherit; font-size:14px; color:var(--ink); }
       .og-affix-in:focus { outline:none; }
       .og-row { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
       .og-pii { border-top:1px solid var(--line); margin-top:10px; padding-top:16px; }
-      .og-pii-label { font-size:11.5px; color:#b5793a; margin-bottom:8px; }
-      .og-err { color:#b3261e; font-size:13px; margin:4px 0; }
+      .og-pii-label { font-size:13px; color:var(--amber-deep); margin-bottom:8px; }
+      .og-err { color:var(--red-alert); font-size:13px; margin:4px 0; min-height:0; }
+      .og-err:empty { margin:0; }
       .og-submit { width:100%; margin-top:12px; font-family:inherit; font-size:14px; font-weight:500; letter-spacing:-.01em;
         padding:13px; border-radius:999px; border:0; cursor:pointer; background:var(--td); color:#fff; transition:background .15s, transform .15s; }
-      .og-submit:hover:not(:disabled) { background:#2e7573; }
+      .og-submit:hover:not(:disabled) { background:var(--teal); }
       .og-submit:active:not(:disabled) { transform:scale(.99); }
       .og-submit:disabled { opacity:.5; }
       .og-note { font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; }
       .og-thanks { text-align:center; padding:20px 0; }
-      .og-thanks h2 { font-family:var(--font-fraunces),Georgia,serif; font-size:26px; margin-bottom:8px; }
+      .og-thanks h2 { font-family:var(--font-inter), system-ui, sans-serif; font-size:26px; margin-bottom:8px; }
       .og-thanks p { color:var(--muted); font-size:14px; margin-bottom:18px; }
 
+      /* Phones: an even two-column grid instead of wrapped controls of
+         uneven widths. Search and domain span the full row. */
+      @media (max-width: 640px) {
+        .og-filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 24px 14px; }
+        .og-input, .og-select-wide { grid-column:1 / -1; min-width:0; }
+        .og-select { width:100%; min-width:0; }
+        .og-count { grid-column:1 / -1; margin-left:0; }
+        /* Type pill drops below the name so long names get the full width. */
+        .og-card-top { flex-direction:column; align-items:flex-start; gap:6px; }
+        .og-clear { justify-self:start; }
+      }
       @media (max-width: 900px) {
         .og-split { grid-template-columns:1fr; height:auto; }
         .og-list { padding-right:0; max-height:none; }
         .og-mapwrap { height:420px; min-height:0; margin-top:12px; }
         .og-map { height:420px; min-height:0; }
         .og-row { grid-template-columns:1fr; }
+        /* 16px stops iOS Safari zooming the page when a field gets focus. */
+        .og-field input,.og-field select,.og-field textarea,.og-affix-pre,.og-affix-in,.og-loc-in { font-size:16px; }
       }
     `}</style>
   );

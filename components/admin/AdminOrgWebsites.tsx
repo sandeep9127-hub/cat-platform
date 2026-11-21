@@ -63,7 +63,7 @@ export function AdminOrgWebsites({ orgs }: { orgs: Org[] }) {
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] ${
+              className={`px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] ${
                 filter === f ? "bg-deep-teal text-paper" : "text-ink-soft hover:bg-cream"
               }`}
             >
@@ -71,7 +71,7 @@ export function AdminOrgWebsites({ orgs }: { orgs: Org[] }) {
             </button>
           ))}
         </div>
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted ml-auto">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted ml-auto">
           {withSite}/{rows.length} have a website
         </span>
       </div>
@@ -87,7 +87,7 @@ export function AdminOrgWebsites({ orgs }: { orgs: Org[] }) {
             <div className="min-w-0">
               <div className="text-[14px] font-medium text-ink leading-tight truncate">{o.name}</div>
               {o.states.length > 0 && (
-                <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted mt-0.5 truncate">
+                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted mt-0.5 truncate">
                   {o.states.slice(0, 3).join(", ")}
                 </div>
               )}
@@ -120,7 +120,7 @@ export function AdminOrgWebsites({ orgs }: { orgs: Org[] }) {
               {saving[o.id] === "saving" ? (
                 <Loader2 size={14} className="animate-spin text-muted inline" />
               ) : saving[o.id] === "saved" ? (
-                <span className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-teal">
+                <span className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.12em] text-teal">
                   <Check size={12} strokeWidth={2.2} /> Saved
                 </span>
               ) : null}
@@ -128,7 +128,7 @@ export function AdminOrgWebsites({ orgs }: { orgs: Org[] }) {
           </div>
         ))}
         {shown.length === 0 && (
-          <div className="px-4 py-8 text-center font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
+          <div className="px-4 py-8 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
             No organisations match.
           </div>
         )}
