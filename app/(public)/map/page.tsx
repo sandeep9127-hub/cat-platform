@@ -4,6 +4,7 @@ import { MapFilterBar } from "@/components/entries/MapFilterBar";
 import { MapExplorer } from "@/components/entries/MapExplorer";
 import { IndiaMap } from "@/components/map/IndiaMap";
 import { listFactSheets } from "@/lib/factsheet/generate";
+import { factsheetToMapEntry, splitAtlasEntries } from "@/components/map/mapEntries";
 import { CATEGORIES, CATEGORY_BY_SLUG, categoryName } from "@/lib/data/categories";
 import { PRINCIPLES, getPrincipleBySlug } from "@/lib/data/principles";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -140,17 +141,10 @@ export default async function MapPage({
   // pin is an auto-compiled, cited fact sheet.
   const combinedTotal = factsheets.length;
 
-  const factsheetMapEntries = factsheets.map((f) => ({
-    id: f.slug,
-    slug: f.slug,
-    title: f.title,
-    scaleBand: f.scale_band ?? "multi_district",
-    provenance: "sourced" as const,
-    stateCode: f.state_code ?? "",
-    latitude: f.latitude!,
-    longitude: f.longitude!,
-    internalHref: `/factsheet/${f.slug}`,
-  }));
+  // Map placement (district/state point vs. the Nationwide strip) is decided
+  // in one place, shared with the home page: components/map/mapEntries.ts.
+  const factsheetMapEntries = factsheets.map(factsheetToMapEntry);
+  const { mapped: mappedEntries, nationwide: nationwideEntries } = splitAtlasEntries(factsheets);
 
   const factsheetListEntries = factsheets.map((f, i) => ({
     id: f.slug,
@@ -257,7 +251,8 @@ export default async function MapPage({
         <MapExplorer
           map={
             <IndiaMap
-              entries={mapEntries}
+              entries={mappedEntries}
+              nationwide={nationwideEntries}
               totalProgrammes={mapEntries.length}
               totalStates={stateCount}
             />

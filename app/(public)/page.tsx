@@ -21,6 +21,7 @@ import {
 import { Supporters } from "@/components/home/Supporters";
 import { Sdgs } from "@/components/home/Sdgs";
 import { IndiaMap } from "@/components/map/IndiaMap";
+import { splitAtlasEntries } from "@/components/map/mapEntries";
 import { ApproachFilm } from "@/components/home/ApproachFilm";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { StaggerReveal } from "@/components/ui/StaggerReveal";
@@ -73,23 +74,10 @@ export default async function LandingPage() {
   // The Atlas is the fact-sheet engine only (uniformity) — same as /map.
   const allFactsheets = await listFactSheets();
   const publishedSheets = allFactsheets.filter((f) => f.status === "published");
-  const factsheets = publishedSheets.filter(
-    (f) => f.latitude != null && f.longitude != null
-  );
-
-  const mapEntries = factsheets.map((f) => ({
-    id: f.slug,
-    slug: f.slug,
-    title: f.title,
-    scaleBand: f.scale_band ?? "multi_district",
-    provenance: "sourced" as const,
-    stateCode: f.state_code ?? "",
-    latitude: f.latitude!,
-    longitude: f.longitude!,
-    internalHref: `/factsheet/${f.slug}`,
-    themes: f.themes ?? [],
-  }));
-  const combinedTotal = factsheets.length;
+  // Same placement rules as /map (components/map/mapEntries.ts): programmes
+  // with a district/state point go on the map, national ones in the strip.
+  const { mapped: mapEntries, nationwide: nationwideEntries } = splitAtlasEntries(publishedSheets);
+  const combinedTotal = mapEntries.length + nationwideEntries.length;
   const combinedStateCount = new Set(
     mapEntries.map((e) => e.stateCode).filter(Boolean)
   ).size;
@@ -159,6 +147,7 @@ export default async function LandingPage() {
           <div className="order-1 lg:order-2">
             <IndiaMap
               entries={mapEntries}
+              nationwide={nationwideEntries}
               totalProgrammes={combinedTotal}
               totalStates={combinedStateCount}
               bare
