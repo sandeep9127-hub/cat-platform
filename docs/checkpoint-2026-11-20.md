@@ -67,6 +67,12 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
   - Full table: INR/USD/EUR switch and a "changed recently" marker.
   - Switch-over runbook: `docs/cutover-runbook.md`.
   - `release/hub-v2` rebuilt and smoke-tested.
+- **Built 21 Nov evening (no longer "after launch"):**
+  - Admin Inbox, now the admin home: one list of everything waiting, with age, assign and snooze.
+  - Documents page with upload-and-publish (PDF/Word; nightly sync finishes long ones). Needs R2 CORS for the site.
+  - Source changes review screen.
+  - Automatic landscape briefs: Patratu sample generated ($0.05); the other ten wait for Sandeep's OK on the format.
+  - Monday.com parked by Sandeep.
 - Still needs Sandeep: Vercel login + project, GitHub secrets, Pangi file, voice go-ahead (AI session asking), data catch-up before switching, open decisions below.
 - Architecture whiteboard: https://claude.ai/artifact/SZw46XxNtif7JHkhFLeqGt
 - Enhanced AI features (Ask v2 onwards) move to a fresh session. Notes for it:
