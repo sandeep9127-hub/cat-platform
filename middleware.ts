@@ -24,7 +24,9 @@ function isAlwaysAllowed(pathname: string): boolean {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/cron") ||
     // Private share links are opened by people outside CAT (funders, partners).
-    pathname.startsWith("/share/")
+    pathname.startsWith("/share/") ||
+    // Approvers open one-click approval links from email, without signing in.
+    pathname.startsWith("/access/decide/")
   );
 }
 
