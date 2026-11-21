@@ -14,7 +14,7 @@ import { hybridSearch, type Hit } from "@/lib/rag/search";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 import { readOrMintSession, readSession } from "@/lib/ask/session";
-import { classifyQuestion, mightNeedRouting } from "@/lib/ask/intent";
+import { classifyQuestion, mightNeedRouting, namesLandscape } from "@/lib/ask/intent";
 import { runCompare } from "@/lib/ask/compare";
 import { runMatch } from "@/lib/ask/match";
 import { runNote } from "@/lib/ask/note";
@@ -266,15 +266,20 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // Route and retrieve. A first question searches in parallel with routing, so
   // plain answers don't wait for it; a follow-up needs the rewritten query first.
   let hits: Hit[] = [];
+  // For voice, Claude answers the cleaned-up question (misheard place names fixed).
+  let askedQuestion = question;
   try {
     const search = (q: string) =>
       hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
     const early = history.length ? null : search(question);
     early?.catch(() => {}); // awaited below if used
+    // A spoken question that names no landscape may have misheard one ("Patriarchal"
+    // for Patratu): the rewrite step, told about speech errors, corrects it.
     const routed =
-      history.length || (!voice && mightNeedRouting(question))
-        ? await classifyQuestion(question, history, req.signal)
+      history.length || (!voice && mightNeedRouting(question)) || (voice && !namesLandscape(question))
+        ? await classifyQuestion(question, history, req.signal, { voice })
         : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] };
+    if (voice && routed.query !== question) askedQuestion = routed.query;
     // Voice keeps the rewritten follow-up query but always answers in speakable prose.
     const intent = voice ? { ...routed, intent: "answer" as const } : routed;
     const ctx = { req, question, scope, conversationId, started, setCookie };
@@ -343,7 +348,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
             voice
               ? ` This answer will be read aloud: at most three short sentences, no lists, and say figures the way the passage writes them.${voiceHindi ? " Answer in Hindi, in Devanagari script." : ""}`
               : ""
-          }\n\nReader question: ${question}`,
+          }\n\nReader question: ${askedQuestion}`,
         },
       ],
     },

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 import { isJson, mintKey, releaseVoice, reserveVoice, SESSION_MAX_USD, SESSION_SEC, voiceEnabled } from "@/lib/ask/voice-keys";
+import { sttContext, voicePlaceNames } from "@/lib/ask/voice-context";
 
 /**
  * POST /api/agent/voice → start a voice session (docs/hub-v2-design.md §6.1).
@@ -27,7 +28,12 @@ export async function POST(req: NextRequest) {
   }
   try {
     const stt = await mintKey("transcribe_websocket", { expiresIn: 60, maxSession: SESSION_SEC });
-    return NextResponse.json({ stt, session, maxSeconds: SESSION_SEC }, { headers: { "Cache-Control": "no-store" } });
+    // The browser passes `context` to speech-to-text (landscape names, places,
+    // scheme names) and snaps near-miss spellings to `places`.
+    return NextResponse.json(
+      { stt, session, maxSeconds: SESSION_SEC, context: sttContext(), places: voicePlaceNames() },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (e) {
     await releaseVoice(session).catch(() => {});
     console.error("[ask_voice] session key failed:", (e as Error).message);
