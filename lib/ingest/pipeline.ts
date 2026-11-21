@@ -56,7 +56,8 @@ function pagesText(blocks: Block[]): Map<number, string> {
 }
 
 export type IngestInput = {
-  landscapeSlug: string;
+  /** null for documents that belong to no landscape (e.g. the HLPE report). */
+  landscapeSlug: string | null;
   landscapeName: string;
   title: string;
   docType: "lip" | "report" | "other";
@@ -65,8 +66,11 @@ export type IngestInput = {
   bytes: Uint8Array;
   mime: string;
   fileName: string;
-  drive: { fileId: string; path: string; modifiedTime: string; md5?: string | null };
+  /** Present for Drive-synced files; absent for documents added by hand (source 'manual'). */
+  drive?: { fileId: string; path: string; modifiedTime: string; md5?: string | null };
   parsed: { blocks: Block[]; pageCount: number };
+  /** Parser id stored with the version (default: the DOCX parser). */
+  parser?: string;
   /** Previous version to compare against when it isn't stored in the DB (first import). */
   previous?: { label: string; parsed: { blocks: Block[]; pageCount: number } };
   runId?: string | null;
@@ -91,11 +95,12 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
 
   // Guard first, before any lookup can return: the same Drive file must never
   // be attached to another landscape's document.
-  const clash = rows<{ landscape_slug: string | null }>(
-    await db.execute(sql`SELECT landscape_slug FROM "cat".documents WHERE drive_file_id = ${input.drive.fileId}`),
-  )[0];
-  if (clash && clash.landscape_slug !== input.landscapeSlug) {
-    throw new Error(`Drive file ${input.drive.fileId} already belongs to ${clash.landscape_slug}, not ${input.landscapeSlug}`);
+  const drive = input.drive ?? null;
+  const clash = drive ? rows<{ landscape_slug: string | null }>(
+    await db.execute(sql`SELECT landscape_slug FROM "cat".documents WHERE drive_file_id = ${drive.fileId}`),
+  )[0] : undefined;
+  if (drive && clash && clash.landscape_slug !== input.landscapeSlug) {
+    throw new Error(`Drive file ${drive.fileId} already belongs to ${clash.landscape_slug}, not ${input.landscapeSlug}`);
   }
 
   // Idempotent: the same content is never ingested twice. Either the exact
@@ -108,12 +113,12 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
     await db.execute(sql`
       SELECT v.id, v.document_id, v.version_no
       FROM "cat".document_versions v JOIN "cat".documents d ON d.id = v.document_id
-      WHERE d.landscape_slug = ${input.landscapeSlug} AND d.doc_type = ${input.docType}
+      WHERE d.landscape_slug IS NOT DISTINCT FROM ${input.landscapeSlug} AND d.doc_type = ${input.docType}
         AND (v.sha256 = ${sha256}
-         OR (d.drive_file_id = ${input.drive.fileId} AND v.is_current
-             AND v.drive_modified_time = ${input.drive.modifiedTime}::timestamptz
-             AND ((${input.drive.md5 ?? null}::text IS NOT NULL AND v.drive_md5 = ${input.drive.md5 ?? null})
-                  OR (${contentHash}::text IS NOT NULL AND v.content_hash = ${contentHash}))))
+         ${drive ? sql`OR (d.drive_file_id = ${drive.fileId} AND v.is_current
+             AND v.drive_modified_time = ${drive.modifiedTime}::timestamptz
+             AND ((${drive.md5 ?? null}::text IS NOT NULL AND v.drive_md5 = ${drive.md5 ?? null})
+                  OR (${contentHash}::text IS NOT NULL AND v.content_hash = ${contentHash})))` : sql``})
       ORDER BY (v.sha256 = ${sha256}) DESC
       LIMIT 1`),
   )[0];
@@ -131,11 +136,17 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
   // document as a new version, so it gets a change summary and the old
   // version is removed. Lookup order: same Drive file, else the landscape's
   // existing synced document of this type.
+  // Manual documents (no Drive file) continue the document with the same title.
   const existing = rows<{ id: string; landscape_slug: string | null }>(
-    await db.execute(sql`
+    await db.execute(drive ? sql`
       SELECT id, landscape_slug FROM "cat".documents
-      WHERE source = 'drive' AND landscape_slug = ${input.landscapeSlug} AND doc_type = ${input.docType}
-      ORDER BY (drive_file_id = ${input.drive.fileId}) DESC, updated_at DESC
+      WHERE source = 'drive' AND landscape_slug IS NOT DISTINCT FROM ${input.landscapeSlug} AND doc_type = ${input.docType}
+      ORDER BY (drive_file_id = ${drive.fileId}) DESC, updated_at DESC
+      LIMIT 1` : sql`
+      SELECT id, landscape_slug FROM "cat".documents
+      WHERE source = 'manual' AND landscape_slug IS NOT DISTINCT FROM ${input.landscapeSlug}
+        AND doc_type = ${input.docType} AND title = ${input.title}
+      ORDER BY updated_at DESC
       LIMIT 1`),
   )[0];
 
@@ -143,14 +154,14 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
     ? rows<{ id: string }>(
         await db.execute(sql`
           UPDATE "cat".documents
-          SET title = ${input.title}, drive_file_id = ${input.drive.fileId}, drive_path = ${input.drive.path}, updated_at = now()
+          SET title = ${input.title}, drive_file_id = ${drive?.fileId ?? null}, drive_path = ${drive?.path ?? null}, updated_at = now()
           WHERE id = ${existing.id}
           RETURNING id`),
       )[0]
     : rows<{ id: string }>(
         await db.execute(sql`
           INSERT INTO "cat".documents (landscape_slug, title, doc_type, source, drive_file_id, drive_path)
-          VALUES (${input.landscapeSlug}, ${input.title}, ${input.docType}, 'drive', ${input.drive.fileId}, ${input.drive.path})
+          VALUES (${input.landscapeSlug}, ${input.title}, ${input.docType}, ${drive ? "drive" : "manual"}, ${drive?.fileId ?? null}, ${drive?.path ?? null})
           RETURNING id`),
       )[0];
 
@@ -166,11 +177,11 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
 
   // Originals and parse output to R2 first (cheap to clean up if later steps fail).
   const ext = input.fileName.match(/\.(\w+)$/)?.[1]?.toLowerCase() ?? (input.mime.includes("word") ? "docx" : "bin");
-  const base = `docs/${input.landscapeSlug}/${doc.id}/v${versionNo}`;
+  const base = `docs/${input.landscapeSlug ?? "general"}/${doc.id}/v${versionNo}`;
   const originalKey = `${base}/original.${ext}`;
   const parsedKey = `${base}/parsed.json`;
   await putObject(originalKey, input.bytes, input.mime, { sha256 });
-  await putObject(parsedKey, JSON.stringify({ parser: PARSER, pageCount: input.parsed.pageCount, pagesReliable: reliable, blocks: input.parsed.blocks }), "application/json");
+  await putObject(parsedKey, JSON.stringify({ parser: input.parser ?? PARSER, pageCount: input.parsed.pageCount, pagesReliable: reliable, blocks: input.parsed.blocks }), "application/json");
 
   let cost = 0;
   try {
@@ -221,7 +232,7 @@ export async function ingestDocumentVersion(input: IngestInput): Promise<IngestR
              page_count, published_on, parser, parser_version, drive_modified_time, drive_md5, content_hash)
           VALUES (${doc.id}, ${versionNo}, ${input.versionLabel}, 'embedding', ${originalKey}, ${parsedKey}, ${sha256},
                   ${input.mime}, ${input.bytes.length}, ${reliable ? input.parsed.pageCount : null}, ${input.publishedOn ?? null},
-                  ${PARSER}, ${PARSER}, ${input.drive.modifiedTime}, ${input.drive.md5 ?? null}, ${contentHash})
+                  ${input.parser ?? PARSER}, ${input.parser ?? PARSER}, ${drive?.modifiedTime ?? null}, ${drive?.md5 ?? null}, ${contentHash})
           RETURNING id`),
       )[0];
 

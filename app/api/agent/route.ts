@@ -123,6 +123,7 @@ export async function GET(req: NextRequest) {
     maxTurns: askV2Enabled() ? 20 : MAX_TURNS,
     v2: askV2Enabled(),
     library: askV2Enabled() ? await libraryStats().catch(() => null) : null,
+    notePdf: askV2Enabled() && process.env.NOTE_PDF === "on",
   });
 }
 

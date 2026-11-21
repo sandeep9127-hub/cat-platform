@@ -13,6 +13,11 @@ const numOrNull = (v: unknown) => {
 };
 
 export async function POST(req: NextRequest) {
+  // Public form: cap submissions per connection (also bounds editor notification emails).
+  const { getClientIp, rateLimit } = await import("@/lib/security/ratelimit");
+  const limited = await rateLimit({ key: "org-submit", ip: getClientIp(req), limit: 10, windowSec: 3600 });
+  if (!limited.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+
   let body: Record<string, unknown>;
   try {
     body = (await req.json()) as Record<string, unknown>;
@@ -68,9 +73,35 @@ export async function POST(req: NextRequest) {
 
   try {
     await insertSubmission(submission);
+    await notifyEditors(submission).catch((e) => console.error("[org-submit] editor email failed", (e as Error).message));
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("organizations/submit failed:", e);
     return NextResponse.json({ error: "submit_failed" }, { status: 500 });
   }
+}
+
+/**
+ * Tell the editors a submission is waiting (it used to sit unseen in the
+ * queue). Off with SUBMISSION_EMAIL=off or when email isn't configured.
+ */
+async function notifyEditors(s: Submission): Promise<void> {
+  if (process.env.SUBMISSION_EMAIL === "off") return;
+  const { sql } = await import("drizzle-orm");
+  const { db } = await import("@/lib/db");
+  const { sendEmail } = await import("@/lib/notify/email");
+  const { siteUrl } = await import("@/lib/share/links");
+  const to = ((await db.execute(sql`
+    SELECT email FROM "cat".users WHERE role IN ('admin', 'editor') AND email IS NOT NULL`)) as unknown as { rows: { email: string }[] })
+    .rows.map((u) => u.email);
+  if (!to.length) return;
+  // Nothing the submitter typed goes into the email: only the count and the admin link.
+  const pending = ((await db.execute(sql`
+    SELECT count(*)::int AS n FROM "cat".org_submissions WHERE status = 'pending'`)) as unknown as { rows: { n: number }[] }).rows[0]?.n ?? 1;
+  const link = (await siteUrl("/admin/submissions")) ?? "the Hub admin, under Submissions";
+  await sendEmail({
+    to,
+    subject: `Organisation submissions waiting: ${pending}`,
+    text: `A ${s.submissionType === "new" ? "new organisation" : "change to an organisation"} was submitted to the Organisations map. ${pending} submission${pending === 1 ? " is" : "s are"} waiting for review.\n\nReview them at ${link}.`,
+  });
 }

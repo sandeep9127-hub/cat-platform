@@ -17,6 +17,8 @@ import { readOrMintSession, readSession } from "@/lib/ask/session";
 import { classifyQuestion, mightNeedRouting } from "@/lib/ask/intent";
 import { runCompare } from "@/lib/ask/compare";
 import { runMatch } from "@/lib/ask/match";
+import { runNote } from "@/lib/ask/note";
+import { runVisual } from "@/lib/ask/visual";
 import {
   historyText,
   LIP_KINDS,
@@ -194,12 +196,13 @@ export async function askV2History(req: NextRequest) {
   return json({
     conversationId: conv.id,
     messages: msgs.map((m) => ({
+      id: m.id,
       role: m.role,
       content: m.content,
       refused: m.refused,
       interrupted: m.interrupted,
       followUps: (m.artifacts ?? []).find((a) => a.type === "follow_ups")?.items ?? [],
-      artifact: (m.artifacts ?? []).find((a) => a.type === "compare" || a.type === "match") ?? null,
+      artifact: (m.artifacts ?? []).find((a) => ["compare", "match", "note", "chart", "diagram"].includes(a.type)) ?? null,
       citations: (m.citations ?? []).map(({ chunkId: _c, documentId: _d, quotes: _q, cited: _x, ...c }) => c),
     })),
   });
@@ -274,6 +277,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
       if (landscapes.length >= 2) return await runCompare(ctx, { query: intent.query, topic: intent.topic, landscapes });
     }
     if (intent.intent === "match") return await runMatch(ctx, { query: intent.query });
+    if (intent.intent === "note") return await runNote(ctx, { query: intent.query, topic: intent.topic, landscapes: intent.landscapes });
+    if (intent.intent === "visual") {
+      // A chart or diagram we can't draw well (e.g. numbers outside the budget table) is answered in prose.
+      const visual = await runVisual(ctx, { query: intent.query, landscapes: intent.landscapes });
+      if (visual) return visual;
+    }
 
     hits = early && intent.query === question ? await early : await search(intent.query);
   } catch (e) {

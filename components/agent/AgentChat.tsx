@@ -21,6 +21,7 @@ import { SourcesPanel, SourcesSheet } from "./ask/Sources";
 import { FirstScreen, type AskExample } from "./ask/FirstScreen";
 import { CompareTable } from "./ask/Compare";
 import { MatchCards } from "./ask/Match";
+import { ChartView, DiagramView, NoteCard } from "./ask/Visuals";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
 
 /**
@@ -65,6 +66,13 @@ export function AgentChat({
   const [active, setActive] = useState<{ mid: number; n: number | null } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const [isV2, setIsV2] = useState(false);
+  const [notePdf, setNotePdf] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast((t) => (t === msg ? null : t)), 2200);
+  }, []);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const conversationIdRef = useRef<string | null>(null);
@@ -157,8 +165,9 @@ export function AgentChat({
               conversationId?: string;
               questions?: string[];
               closest?: { label: string; url: string } | null;
-              mode?: "compare" | "match";
+              mode?: Msg["mode"];
               artifact?: Msg["artifact"];
+              messageId?: string;
             };
             try {
               evt = JSON.parse(t.slice(5).trimStart());
@@ -173,6 +182,9 @@ export function AgentChat({
             } else if (evt.type === "artifact" && evt.artifact) {
               const artifact = evt.artifact;
               patchLast((m) => ({ ...m, artifact }));
+            } else if (evt.type === "saved" && evt.messageId) {
+              const id = evt.messageId;
+              patchLast((m) => ({ ...m, id }));
             } else if (evt.type === "delta" && evt.text) {
               acc += evt.text;
               patchLast((m) => ({ ...m, content: acc, phase: "writing" }));
@@ -258,6 +270,8 @@ export function AgentChat({
       try {
         const info = await fetch("/api/agent").then((r) => r.json());
         if (!info?.v2) return;
+        setIsV2(true);
+        setNotePdf(!!info.notePdf);
         const h = await fetch("/api/agent?history=latest").then((r) => r.json());
         if (!h?.conversationId || !Array.isArray(h.messages) || !h.messages.length) return;
         conversationIdRef.current = h.conversationId;
@@ -363,6 +377,9 @@ export function AgentChat({
                     busy={busy}
                     activeN={active?.mid === i ? active.n : null}
                     onCite={(n) => selectCite(i, n)}
+                    showBudgetPanel={!isV2}
+                    notePdf={notePdf}
+                    onToast={showToast}
                     onRetry={() => retry(i)}
                     onAsk={(q) => send(q)}
                     onShowSources={() => {
@@ -384,6 +401,16 @@ export function AgentChat({
               <SourcesPanel citations={panelCites} cited={panelCited} activeN={panelActiveN} onSelect={(n) => setActive({ mid: panelMid, n })} />
             </div>
           </aside>
+        </div>
+      )}
+
+      {toast && (
+        <div
+          role="status"
+          className="fixed left-1/2 -translate-x-1/2 z-50 bg-ink text-paper text-[13px] px-3.5 py-2 rounded-[8px] shadow-lg"
+          style={{ bottom: "max(96px, calc(env(safe-area-inset-bottom) + 96px))" }}
+        >
+          {toast}
         </div>
       )}
 
@@ -411,6 +438,9 @@ function Answer({
   onRetry,
   onAsk,
   onShowSources,
+  showBudgetPanel,
+  notePdf,
+  onToast,
 }: {
   msg: Msg;
   mid: number;
@@ -421,8 +451,14 @@ function Answer({
   onRetry: () => void;
   onAsk: (q: string) => void;
   onShowSources: () => void;
+  showBudgetPanel: boolean;
+  notePdf: boolean;
+  onToast: (msg: string) => void;
 }) {
   const cites = msg.citations ?? [];
+  const art = msg.refused ? null : msg.artifact;
+  // Notes, charts and diagrams carry their own text; the summary isn't shown twice.
+  const ownText = art?.type === "note" || art?.type === "chart" || art?.type === "diagram";
   const cited = citedNumbers(msg.content, cites.length, msg.artifact);
   const landscapeSlugs =
     msg.phase === "done" && msg.content && !msg.refused
@@ -467,14 +503,19 @@ function Answer({
             </Link>
           </div>
         </div>
-      ) : msg.content ? (
+      ) : msg.content && !ownText ? (
         <div className="text-[16px] leading-[1.7] text-ink max-w-[68ch]">
           <Markdown text={msg.content} chip={chip} maxCite={cites.length} />
         </div>
       ) : null}
 
-      {!msg.refused && msg.artifact?.type === "compare" && <CompareTable a={msg.artifact} citations={cites} chip={chip} />}
-      {!msg.refused && msg.artifact?.type === "match" && <MatchCards a={msg.artifact} chip={chip} />}
+      {art?.type === "compare" && <CompareTable a={art} citations={cites} chip={chip} />}
+      {art?.type === "match" && <MatchCards a={art} chip={chip} />}
+      {art?.type === "note" && (
+        <NoteCard a={art} citations={cites} chip={chip} messageId={notePdf ? msg.id : undefined} plainText={msg.content.replace(/\[\d+\]/g, "")} onToast={onToast} />
+      )}
+      {art?.type === "chart" && <ChartView a={art} chip={chip} max={cites.length} />}
+      {art?.type === "diagram" && <DiagramView a={art} caption={msg.content} chip={chip} max={cites.length} />}
 
       {msg.interrupted && (
         <p className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
@@ -489,7 +530,7 @@ function Answer({
 
       {msg.phase === "done" && (
         <div className="flex flex-wrap items-center gap-1">
-          {msg.content && !msg.refused && !msg.error && <CopyButton text={msg.content} />}
+          {msg.content && !msg.refused && !msg.error && !ownText && <CopyButton text={msg.content} />}
           {isLast && !busy && (msg.interrupted || msg.error || msg.content) && (
             <ActionButton onClick={onRetry} icon={<RotateCcw size={13} strokeWidth={1.8} />}>Retry</ActionButton>
           )}
@@ -519,7 +560,8 @@ function Answer({
         </div>
       )}
 
-      {landscapeSlugs.length > 0 && isLast && <VisualizePanel slugs={landscapeSlugs} answerText={msg.content} />}
+      {/* Legacy budget charts (old tables); Ask v2 draws charts from the approved budget instead. */}
+      {showBudgetPanel && landscapeSlugs.length > 0 && isLast && <VisualizePanel slugs={landscapeSlugs} answerText={msg.content} />}
       <span className="sr-only">Answer {mid}</span>
     </div>
   );
@@ -548,7 +590,13 @@ function Status({ msg }: { msg: Msg }) {
         ? "Compared from the library"
         : msg.mode === "match" || msg.artifact?.type === "match"
           ? "Matched against the Solutions Atlas"
-          : "Answered from the library";
+          : msg.artifact?.type === "note"
+            ? "Note made from the library"
+            : msg.artifact?.type === "chart"
+              ? "Chart drawn from the approved budget"
+              : msg.artifact?.type === "diagram"
+                ? "Diagram drawn from the library"
+                : "Answered from the library";
     const label = msg.refused
       ? `Searched the library${secs}`
       : msg.interrupted
@@ -580,7 +628,11 @@ function Status({ msg }: { msg: Msg }) {
           ? `Comparing ${n} passages across landscapes`
           : msg.mode === "match"
             ? `Weighing ${n} Atlas programmes against your problem`
-            : n ? `Reading ${n} sources` : "Reading sources",
+            : msg.mode === "note"
+              ? `Making a note from ${n} sources`
+              : msg.mode === "visual"
+                ? `Drawing from ${n} source${n === 1 ? "" : "s"}`
+                : n ? `Reading ${n} sources` : "Reading sources",
       state: phase === "searching" ? "wait" : phase === "reading" ? "now" : "done",
     },
     { key: "w", label: msg.mode ? "Laying out the result" : "Writing the answer", state: phase === "writing" ? "now" : "wait" },

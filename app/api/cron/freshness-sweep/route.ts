@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import {
   authoriseCronRequest,
   contentHash,
@@ -13,10 +13,12 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Daily freshness sweep. For every published entry that has a source URL
- * recorded in external_links, re-fetch the source, hash it, and compare
- * against the last seen hash. If changed, mark the entry as needs_update
- * and create a FreshnessFlag for the editor to triage.
+ * Weekly freshness sweep. For every published entry that has a source URL
+ * recorded in external_links, re-fetch the source, fingerprint its visible
+ * text, and compare with the last fingerprint (cat.source_snapshots). The first
+ * visit only records a baseline. A real change creates a FreshnessFlag for an
+ * editor to review; the entry stays published (a changed source is a prompt to
+ * check, not proof the entry is wrong).
  *
  * In v1 we look at the first external_link as the canonical source. The
  * AI draft writer fills source_passages with proper provenance; richer
@@ -56,30 +58,37 @@ export async function GET(req: NextRequest) {
         const timeout = setTimeout(() => ctrl.abort(), 25_000);
         const text = await politeFetch(link.url, ctrl.signal);
         clearTimeout(timeout);
-        const hash = await contentHash(text);
+        // Fingerprint the visible text only, so scripts, styles and markup churn don't count.
+        // Bounded input (2 MB of text) before any regex work.
+        const visible = text
+          .slice(0, 2_000_000)
+          .replace(/<script\b[^>]*>[^]*?<\/script>/gi, " ")
+          .replace(/<style\b[^>]*>[^]*?<\/style>/gi, " ")
+          .replace(/<[^>]{0,2000}>/g, " ")
+          .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (_m, e: string) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", nbsp: " " } as Record<string, string>)[e] ?? " ")
+          .replace(/&#(\d{1,6});/g, (_m, d: string) => String.fromCodePoint(Math.min(Number(d), 0x10ffff)))
+          .replace(/\s+/g, " ")
+          .trim();
+        const hash = await contentHash(visible);
 
-        // Compare against most recent freshness flag for the same source
-        const [last] = await db
-          .select()
-          .from(schema.freshnessFlags)
-          .where(eq(schema.freshnessFlags.entryId, e.id))
-          .limit(1);
+        const prev = (await db.execute(sql`
+          SELECT hash FROM "cat".source_snapshots WHERE entry_id = ${e.id} AND url = ${link.url}`) as unknown as {
+          rows: { hash: string }[];
+        }).rows[0];
+        await db.execute(sql`
+          INSERT INTO "cat".source_snapshots (entry_id, url, hash, checked_at, changed_at)
+          VALUES (${e.id}, ${link.url}, ${hash}, now(), NULL)
+          ON CONFLICT (entry_id, url) DO UPDATE SET hash = EXCLUDED.hash, checked_at = now(),
+            changed_at = CASE WHEN "cat".source_snapshots.hash <> EXCLUDED.hash THEN now() ELSE "cat".source_snapshots.changed_at END`);
 
-        if (!last || last.diffSummary !== hash) {
+        if (prev && prev.hash !== hash) {
           await db.insert(schema.freshnessFlags).values({
             entryId: e.id,
             detectedInRunId: run.id,
             sourceUrl: link.url,
-            diffSummary: `Source content hash changed: ${hash.slice(0, 12)}…`,
+            diffSummary: `Source page changed since the last weekly check (${new Date().toISOString().slice(0, 10)}).`,
             status: "pending_review",
           });
-          await db
-            .update(schema.entries)
-            .set({
-              editorialStatus: "needs_update",
-              needsUpdateReason: `Source updated. Last sweep: ${new Date().toISOString().slice(0, 10)}.`,
-            })
-            .where(eq(schema.entries.id, e.id));
           run.incrementYielded();
         }
       } catch (err) {

@@ -16,7 +16,7 @@ import { taskConfig, type AiTask } from "@/lib/ai/models";
 
 const TASKS: AiTask[] = [
   "ask_hub", "ask_landscape", "ask_v2", "ask_rewrite", "visualize",
-  "factsheet", "discovery", "draft_writer", "chunk_context", "version_diff",
+  "factsheet", "discovery", "draft_writer", "chunk_context", "version_diff", "note",
 ];
 const SONIOX_STT = "stt-rt-v6";
 const SONIOX_TTS = "tts-rt-v2";

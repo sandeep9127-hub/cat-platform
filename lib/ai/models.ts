@@ -37,12 +37,14 @@ export type AiTask =
   | "ask_followups"
   | "compare"
   | "matchmaker"
+  | "note"
   | "visualize"
   | "factsheet"
   | "discovery"
   | "draft_writer"
   | "chunk_context"
-  | "version_diff";
+  | "version_diff"
+  | "eval_build";
 
 export type TaskConfig = {
   model: ModelId;
@@ -78,10 +80,16 @@ const DEFAULTS: Record<AiTask, TaskConfig> = {
   // design (a Haiku executor with a Sonnet advisor is to be proven on the test set first).
   compare: { model: MODELS.sonnet, effort: "low", maxTokens: 8000, pool: "public", maxWebSearches: 0 },
   matchmaker: { model: MODELS.sonnet, effort: "low", maxTokens: 8000, pool: "public", maxWebSearches: 0 },
+  // "Make me a note on X": 3 to 5 cited bullets from retrieved passages (Haiku, per the v2 design).
+  note: { model: MODELS.haiku, effort: "low", maxTokens: 3000, pool: "public", maxWebSearches: 0, thinking: "off" },
+  // Ask charts/diagrams: picks a chart over the approved budget table (numbers never
+  // come from the model) or drafts a cited flow diagram from passages.
   visualize: { model: MODELS.haiku, effort: "low", maxTokens: 2000, pool: "public", maxWebSearches: 0 },
 
   // Research + writing that becomes published content.
   factsheet: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
+  // Drafts test-set questions from library passages (scripts/build-eval-set.ts); editors review them.
+  eval_build: { model: MODELS.haiku, effort: "low", maxTokens: 4000, pool: "ingestion", maxWebSearches: 0, thinking: "off" },
   discovery: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 8 },
   draft_writer: { model: MODELS.sonnet, effort: "medium", maxTokens: 16000, pool: "ingestion", maxWebSearches: 0 },
 

@@ -45,7 +45,7 @@ function Meter({ label, spent, cap }: { label: string; spent: number; cap: numbe
 }
 
 export default async function Quality() {
-  const [publicSpent, ingestSpent, byDay, byTask, health, syncs, docs, queues, ask] = await Promise.all([
+  const [publicSpent, ingestSpent, byDay, byTask, health, syncs, docs, queues, ask, evals] = await Promise.all([
     poolSpentTodayUsd("public").catch(() => 0),
     poolSpentTodayUsd("ingestion").catch(() => 0),
     rows<{ day: string; usd: number; calls: number }>(sql`
@@ -70,6 +70,8 @@ export default async function Quality() {
     rows<{ what: string; n: number; href: string }>(sql`
       SELECT 'Budget changes' AS what, count(*)::int AS n, '/admin/budget-changes' AS href FROM "cat".intervention_changes WHERE status = 'pending'
       UNION ALL SELECT 'Access requests', count(*)::int, '/admin/access-requests' FROM "cat".access_requests WHERE status = 'pending'
+      UNION ALL SELECT 'Source changes to review', count(*)::int, '/admin/quality' FROM "cat".freshness_flags WHERE status = 'pending_review'
+      UNION ALL SELECT 'Organisation submissions', count(*)::int, '/admin/submissions' FROM "cat".org_submissions WHERE status = 'pending'
       UNION ALL SELECT 'Discovery candidates', count(*)::int, '/admin/candidates' FROM "cat".discovery_candidates WHERE status = 'pending_triage'
       UNION ALL SELECT 'Flagged fact sheets', count(*)::int, '/admin/factsheets' FROM "cat".solution_factsheets WHERE status = 'flagged'
       UNION ALL SELECT 'Open triage items', count(*)::int, '/admin/budget-changes' FROM "cat".triage_items WHERE status IN ('new','in_review','needs_info')`),
@@ -80,6 +82,9 @@ export default async function Quality() {
              count(*) FILTER (WHERE feedback = 1)::int AS up, count(*) FILTER (WHERE feedback = -1)::int AS down,
              count(DISTINCT conversation_id)::int AS conversations
       FROM "cat".messages WHERE role = 'assistant' AND created_at > now() - interval '7 days'`),
+    rows<{ label: string; finished_at: string; scores: Record<string, number | null> }>(sql`
+      SELECT label, finished_at, scores FROM "cat".eval_runs
+      WHERE finished_at IS NOT NULL AND scores IS NOT NULL ORDER BY finished_at DESC LIMIT 5`),
   ]);
   const a = ask[0];
 
@@ -160,6 +165,38 @@ export default async function Quality() {
                 ))}
               </tbody>
             </table>
+          )}
+        </Card>
+
+        <Card title="Search quality (test set)">
+          {evals.length === 0 ? (
+            <p className="text-[13px] text-muted">No test-set run yet. Run <code>npx tsx scripts/run-eval.ts</code>.</p>
+          ) : (
+            <>
+              <dl className="grid grid-cols-3 gap-3 text-[13px]">
+                {[
+                  ["Right report in top 5", `${evals[0].scores.doc5 ?? "–"}%`],
+                  ["Exact page in top 1", `${evals[0].scores.hit1 ?? "–"}%`],
+                  ["Exact page in top 10", `${evals[0].scores.hit10 ?? "–"}%`],
+                  ["Off-topic declined", `${evals[0].scores.refusalCorrect ?? "–"}%`],
+                  ["Answerable but would decline", evals[0].scores.falseRefusals ?? "–"],
+                  ["Questions", evals[0].scores.questions ?? "–"],
+                ].map(([k, v]) => (
+                  <div key={String(k)}><dt className="text-muted text-[12px]">{k}</dt><dd className="text-[18px] tabular-nums">{v}</dd></div>
+                ))}
+              </dl>
+              <table className="w-full text-[12.5px]">
+                <tbody>
+                  {evals.map((e) => (
+                    <tr key={e.finished_at} className="border-t border-line">
+                      <td className="py-1">{e.label}</td>
+                      <td className="py-1 text-right tabular-nums">top 5: {e.scores.hit5 ?? "–"}%</td>
+                      <td className="py-1 text-right text-muted">{when(e.finished_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </Card>
 

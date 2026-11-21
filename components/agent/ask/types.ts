@@ -13,6 +13,7 @@ export type Citation = {
 
 import type { CompareArtifact } from "./Compare";
 import type { MatchArtifact } from "./Match";
+import type { ChartArtifact, DiagramArtifact, NoteArtifact } from "./Visuals";
 
 export type Phase = "searching" | "reading" | "writing" | "done";
 
@@ -33,8 +34,10 @@ export type Msg = {
   /** Which request owns this placeholder, so late events never patch a newer answer. */
   reqId?: number;
   /** Compare and the matchmaker answer with a structured block under the summary. */
-  mode?: "compare" | "match";
-  artifact?: CompareArtifact | MatchArtifact | null;
+  mode?: "compare" | "match" | "note" | "visual";
+  artifact?: CompareArtifact | MatchArtifact | NoteArtifact | ChartArtifact | DiagramArtifact | null;
+  /** Stored message id (notes need it for Download PDF). */
+  id?: string;
 };
 
 export type ScopeOption = { slug: string; label: string; ready: boolean };
@@ -68,5 +71,8 @@ export function citedNumbers(text: string, max: number, artifact?: Msg["artifact
   for (const m of text.matchAll(/\[(\d+)\]/g)) add(Number(m[1]));
   if (artifact?.type === "compare") artifact.rows.forEach((r) => r.cells.forEach((c) => c.sources.forEach(add)));
   if (artifact?.type === "match") artifact.matches.forEach((m) => add(m.citation));
+  if (artifact?.type === "note") artifact.bullets.forEach((b) => b.sources.forEach(add));
+  if (artifact?.type === "diagram") artifact.steps.forEach((s) => s.sources.forEach(add));
+  if (artifact?.type === "chart") for (const m of artifact.caption.matchAll(/\[(\d+)\]/g)) add(Number(m[1]));
   return seen;
 }

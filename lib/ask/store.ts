@@ -12,7 +12,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export type StoredCitation = {
   index: number;
-  chunkId: string;
+  /** Null for data sources that aren't a chunk (e.g. a chart drawn from the approved budget table). */
+  chunkId: string | null;
   documentId: string | null;
   type: string;
   label: string;
@@ -100,19 +101,31 @@ export async function addAssistantMessage(m: {
   outputTokens: number | null;
   costUsd: number | null;
   latencyMs: number;
-}): Promise<void> {
-  await db.transaction(async (tx) => {
-    await tx.execute(sql`
+}): Promise<string> {
+  return db.transaction(async (tx) => {
+    const ins = await tx.execute(sql`
       INSERT INTO "cat".messages
         (conversation_id, role, content, citations, artifacts, interrupted, refused, model,
          input_tokens, output_tokens, cost_usd, latency_ms)
       VALUES (${m.conversationId}::uuid, 'assistant', ${m.content}, ${JSON.stringify(m.citations)}::jsonb,
               ${JSON.stringify(m.artifacts ?? [])}::jsonb,
               ${m.interrupted}, ${m.refused}, ${m.model}, ${m.inputTokens}, ${m.outputTokens},
-              ${m.costUsd}, ${m.latencyMs})`);
+              ${m.costUsd}, ${m.latencyMs})
+      RETURNING id`);
     await tx.execute(sql`
       UPDATE "cat".conversations
       SET cost_usd = cost_usd + ${m.costUsd ?? 0}, last_active_at = now()
       WHERE id = ${m.conversationId}::uuid`);
+    return rows<{ id: string }>(ins)[0].id;
   });
+}
+
+/** One assistant message, only if its conversation belongs to this session. */
+export async function findMessageForSession(id: string, tokenHash: string): Promise<StoredMessage | null> {
+  if (!UUID_RE.test(id)) return null;
+  const r = rows<StoredMessage>(await db.execute(sql`
+    SELECT m.id, m.role, m.content, m.citations, m.interrupted, m.refused, m.artifacts, m.created_at AS "createdAt"
+    FROM "cat".messages m JOIN "cat".conversations c ON c.id = m.conversation_id
+    WHERE m.id = ${id}::uuid AND m.role = 'assistant' AND c.session_token_hash = ${tokenHash}`));
+  return r[0] ?? null;
 }

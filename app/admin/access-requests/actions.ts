@@ -25,6 +25,7 @@ export async function decideAccessAction(_prev: DecideState, form: FormData): Pr
       days: Number(form.get("days") ?? 90) || 90,
       landscape: String(form.get("landscape") ?? "all"),
       sendLink: form.get("sendLink") === "on",
+      via: "admin", byEmail: user.email ?? null,
     });
     if (!r.error) {
       await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "access_request.approve", entityType: "access_request", entityId: id, meta: { emailed: r.emailed ?? null } });
@@ -32,7 +33,7 @@ export async function decideAccessAction(_prev: DecideState, form: FormData): Pr
     }
     return r.error ? { error: r.error } : { ...r, done: "approved" };
   }
-  const r = await declineAccessRequest({ id, userId: user.id ?? null, note, tellThem: form.get("tellThem") === "on" });
+  const r = await declineAccessRequest({ id, userId: user.id ?? null, note, tellThem: form.get("tellThem") === "on", via: "admin", byEmail: user.email ?? null });
   if (!r.error) {
     await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "access_request.decline", entityType: "access_request", entityId: id });
     revalidatePath("/admin/access-requests");

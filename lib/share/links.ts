@@ -71,11 +71,20 @@ export async function listShareLinks(landscapeSlug?: string | null): Promise<Sha
  * Host header is trusted only on localhost (dev). Null when neither applies.
  */
 export async function shareUrl(token: string): Promise<string | null> {
+  return siteUrl(`/share/${token}`);
+}
+
+/** Absolute URL on this site (same trust rules as share links). Null if the site address is unknown. */
+export async function siteUrl(path: string): Promise<string | null> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
-  if (/^https?:\/\/[^/]+$/.test(base)) return `${base}/share/${token}`;
-  const { headers } = await import("next/headers");
-  const host = (await headers()).get("host") ?? "";
-  return /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? `http://${host}/share/${token}` : null;
+  if (/^https?:\/\/[^/]+$/.test(base)) return `${base}${path}`;
+  try {
+    const { headers } = await import("next/headers");
+    const host = (await headers()).get("host") ?? "";
+    return /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? `http://${host}${path}` : null;
+  } catch {
+    return null; // outside a request (scripts) without NEXT_PUBLIC_SITE_URL
+  }
 }
 
 /** The plain-text email that delivers a link. */
