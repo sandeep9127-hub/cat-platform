@@ -32,3 +32,16 @@ export async function getBudgetSummaries(): Promise<LandscapeBudgetSummary[]> {
     FROM "cat".interventions GROUP BY 1 ORDER BY 1`);
   return (r as unknown as { rows: LandscapeBudgetSummary[] }).rows;
 }
+
+/**
+ * Rows whose figures changed through an approved sheet edit (Drive sync, not the
+ * first baseline load) in the last 90 days, as "<landscape>:<row_key>".
+ */
+export async function getRecentlyChanged(landscapeSlug: string | null): Promise<string[]> {
+  const where = landscapeSlug ? sql`AND landscape_slug = ${landscapeSlug}` : sql``;
+  const r = await db.execute(sql`
+    SELECT DISTINCT landscape_slug || ':' || row_key AS k FROM "cat".intervention_changes
+    WHERE status = 'approved' AND sync_run_id IS NOT NULL AND change_type <> 'remove'
+      AND decided_at > now() - interval '90 days' ${where}`);
+  return (r as unknown as { rows: { k: string }[] }).rows.map((x) => x.k);
+}

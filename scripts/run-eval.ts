@@ -33,7 +33,7 @@ type Q = {
     VALUES (${label}, ${JSON.stringify({ k: 10, refusalFloor: REFUSAL_FLOOR, sourceKinds: ["document", "intervention"] })}::jsonb)
     RETURNING id`)).rows[0] as { id: string };
 
-  let answerable = 0, h1 = 0, h5 = 0, h10 = 0, rr = 0, refuseOk = 0, refuseN = 0, falseRefusals = 0;
+  let answerable = 0, h1 = 0, h5 = 0, h10 = 0, rr = 0, refuseOk = 0, refuseN = 0, falseRefusals = 0, doc5 = 0;
   const misses: string[] = [];
   for (const q of qs) {
     const hits = await hybridSearch({ query: q.question, k: 10, sourceKinds: ["document", "intervention"] });
@@ -45,6 +45,8 @@ type Q = {
         h.documentId === e.document_id && h.pageStart !== null
         && h.pageStart <= e.page_end + 1 && (h.pageEnd ?? h.pageStart) >= e.page_start - 1));
       rank = i >= 0 ? i + 1 : null;
+      // The plans repeat topics across chapters, so also count the right report anywhere in the top 5.
+      if (hits.slice(0, 5).some((h) => q.expected_sources.some((e) => h.documentId === e.document_id))) doc5++;
       if (rank === 1) h1++;
       if (rank && rank <= 5) h5++;
       if (rank) { h10++; rr += 1 / rank; } else misses.push(q.question);
@@ -62,7 +64,7 @@ type Q = {
   const pct = (n: number, d: number) => (d ? Math.round((n / d) * 1000) / 10 : null);
   const scores = {
     questions: qs.length, answerable,
-    hit1: pct(h1, answerable), hit5: pct(h5, answerable), hit10: pct(h10, answerable),
+    hit1: pct(h1, answerable), hit5: pct(h5, answerable), hit10: pct(h10, answerable), doc5: pct(doc5, answerable),
     mrr: answerable ? Number((rr / answerable).toFixed(3)) : null,
     offTopic: refuseN, refusalCorrect: pct(refuseOk, refuseN),
     falseRefusals,

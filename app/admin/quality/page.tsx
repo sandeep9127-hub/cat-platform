@@ -175,9 +175,9 @@ export default async function Quality() {
             <>
               <dl className="grid grid-cols-3 gap-3 text-[13px]">
                 {[
-                  ["Right page in top 1", `${evals[0].scores.hit1 ?? "–"}%`],
-                  ["Right page in top 5", `${evals[0].scores.hit5 ?? "–"}%`],
-                  ["Right page in top 10", `${evals[0].scores.hit10 ?? "–"}%`],
+                  ["Right report in top 5", `${evals[0].scores.doc5 ?? "–"}%`],
+                  ["Exact page in top 1", `${evals[0].scores.hit1 ?? "–"}%`],
+                  ["Exact page in top 10", `${evals[0].scores.hit10 ?? "–"}%`],
                   ["Off-topic declined", `${evals[0].scores.refusalCorrect ?? "–"}%`],
                   ["Answerable but would decline", evals[0].scores.falseRefusals ?? "–"],
                   ["Questions", evals[0].scores.questions ?? "–"],

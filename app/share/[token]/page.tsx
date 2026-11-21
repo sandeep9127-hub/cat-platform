@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { InteractiveBudgetTable } from "@/components/budget/InteractiveBudgetTable";
-import { getInterventions } from "@/lib/budget/table";
+import { getInterventions, getRecentlyChanged } from "@/lib/budget/table";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { getClientIp, rateLimit } from "@/lib/security/ratelimit";
 import { logShareView, resolveShareToken } from "@/lib/share/links";
@@ -43,7 +43,7 @@ export default async function SharedTable({ params }: { params: Promise<{ token:
   await logShareView(link.id, ip, h.get("user-agent"), "view");
 
   const all = link.scope === "all_landscapes_full_table";
-  const rows = await getInterventions(all ? null : link.landscape_slug);
+  const [rows, changed] = await Promise.all([getInterventions(all ? null : link.landscape_slug), getRecentlyChanged(all ? null : link.landscape_slug)]);
   const expires = new Date(link.expires_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
@@ -57,7 +57,7 @@ export default async function SharedTable({ params }: { params: Promise<{ token:
           Shared with {link.label}. Approved figures from the landscape investment plans. This link expires on {expires}.
         </p>
       </header>
-      <InteractiveBudgetTable rows={rows} multi={all}
+      <InteractiveBudgetTable rows={rows} multi={all} changed={changed}
         landscapeNames={Object.fromEntries(Object.entries(LANDSCAPES).map(([k, v]) => [k, v.name]))} />
       <p className="text-[12px] text-muted">View only. Amounts in Indian rupees. Phase 1 and Phase 2 follow each landscape investment plan.</p>
     </main>

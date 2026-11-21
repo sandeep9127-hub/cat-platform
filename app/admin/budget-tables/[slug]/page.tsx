@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InteractiveBudgetTable } from "@/components/budget/InteractiveBudgetTable";
-import { getInterventions } from "@/lib/budget/table";
+import { getInterventions, getRecentlyChanged } from "@/lib/budget/table";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { listShareLinks } from "@/lib/share/links";
 import { revokeLinkAction } from "../actions";
@@ -17,7 +17,7 @@ export default async function BudgetTable({ params }: { params: Promise<{ slug: 
   const all = slug === "all";
   if (!all && !LANDSCAPES[slug]) notFound();
   const name = all ? "All landscapes" : LANDSCAPES[slug].name;
-  const [rows, links] = await Promise.all([getInterventions(all ? null : slug), listShareLinks(all ? null : slug)]);
+  const [rows, links, changed] = await Promise.all([getInterventions(all ? null : slug), listShareLinks(all ? null : slug), getRecentlyChanged(all ? null : slug)]);
   const now = Date.now();
 
   return (
@@ -77,7 +77,7 @@ export default async function BudgetTable({ params }: { params: Promise<{ slug: 
         )}
       </section>
 
-      <InteractiveBudgetTable rows={rows} multi={all} landscapeNames={landscapeNames()} />
+      <InteractiveBudgetTable rows={rows} multi={all} landscapeNames={landscapeNames()} changed={changed} />
     </div>
   );
 }

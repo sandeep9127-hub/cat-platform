@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { COLUMNS, toNumber, type Column, type InterventionRecord } from "@/lib/budget/columns";
 
 /**
@@ -18,15 +18,27 @@ const TAGS: { key: string; label: string }[] = [
   { key: "capital", label: "Capital" },
 ];
 const inr = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
-const crore = (n: number) => `₹${(n / 1e7).toLocaleString("en-IN", { maximumFractionDigits: 2 })} cr`;
+const intl = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const pinned = (c: Column) => c.key === "row_key" || c.key === "sub_intervention";
 const numeric = (c: Column) => c.kind === "money" || c.kind === "number";
 
-function fmt(c: Column, v: string | number | null) {
+type Cur = "INR" | "USD" | "EUR";
+type Rates = Record<Cur, number>; // INR per 1 unit
+const SYM: Record<Cur, string> = { INR: "₹", USD: "$", EUR: "€" };
+/** Exact amount in the chosen currency (INR with Indian grouping). */
+const moneyFmt = (cur: Cur, rates: Rates) => (n: number) =>
+  cur === "INR" ? `₹${inr.format(n)}` : `${SYM[cur]}${intl.format(n / rates[cur])}`;
+/** Headline amount: crore for INR, millions for USD/EUR. */
+const bigFmt = (cur: Cur, rates: Rates) => (n: number) =>
+  cur === "INR"
+    ? `₹${(n / 1e7).toLocaleString("en-IN", { maximumFractionDigits: 2 })} cr`
+    : `${SYM[cur]}${(n / rates[cur] / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 })}M`;
+
+function fmt(c: Column, v: string | number | null, money: (n: number) => string) {
   if (v === null || v === undefined || v === "") return null;
   if (numeric(c)) {
     const n = toNumber(v);
-    return n === null ? String(v) : `${c.kind === "money" ? "₹" : ""}${inr.format(n)}`;
+    return n === null ? String(v) : c.kind === "money" ? money(n) : inr.format(n);
   }
   return String(v);
 }
@@ -37,11 +49,27 @@ export function InteractiveBudgetTable({
   rows,
   landscapeNames,
   multi = false,
+  changed = [],
 }: {
   rows: InterventionRecord[];
   landscapeNames: Record<string, string>;
   multi?: boolean;
+  /** "<landscape>:<row_key>" of rows changed by an approved sheet edit recently. */
+  changed?: string[];
 }) {
+  const [cur, setCur] = useState<Cur>("INR");
+  const [rates, setRates] = useState<Rates>({ INR: 1, USD: 95, EUR: 100 });
+  const [ratesAsOf, setRatesAsOf] = useState<string | null>(null);
+  useEffect(() => {
+    // Live ECB reference rates (indicative); keeps the fallback if unavailable.
+    fetch("/api/rates").then((r) => (r.ok ? r.json() : null)).then((j: { USD?: number; EUR?: number; asOf?: string } | null) => {
+      if (j?.USD && j?.EUR && isFinite(j.USD) && isFinite(j.EUR)) { setRates({ INR: 1, USD: j.USD, EUR: j.EUR }); setRatesAsOf(j.asOf ?? null); }
+    }).catch(() => {});
+  }, []);
+  const money = useMemo(() => moneyFmt(cur, rates), [cur, rates]);
+  const big = useMemo(() => bigFmt(cur, rates), [cur, rates]);
+  const changedSet = useMemo(() => new Set(changed), [changed]);
+  const [onlyChanged, setOnlyChanged] = useState(false);
   const [q, setQ] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [shown, setShown] = useState<Set<Group>>(new Set(["Totals"]));
@@ -71,7 +99,8 @@ export function InteractiveBudgetTable({
         : k === "payee" ? (r.totals?.payee as string | null) : r.tags?.[k];
     let out = rows.filter((r, i) =>
       terms.every((t) => searchIndex[i].includes(t))
-      && Object.entries(filters).every(([k, v]) => !v || value(r, k) === v));
+      && Object.entries(filters).every(([k, v]) => !v || value(r, k) === v)
+      && (!onlyChanged || changedSet.has(`${r.landscape_slug}:${r.row_key}`)));
     if (sort) {
       const col = COLUMNS.find((c) => c.key === sort.key)!;
       out = [...out].sort((a, b) => {
@@ -161,14 +190,33 @@ export function InteractiveBudgetTable({
               {g === "none" ? "No grouping" : g === "theme" ? "Theme" : g[0].toUpperCase() + g.slice(1)}
             </button>
           ))}
+          <span className="text-muted ml-3 mr-1">Currency:</span>
+          {(["INR", "USD", "EUR"] as Cur[]).map((c) => (
+            <button key={c} type="button" aria-pressed={cur === c} onClick={() => setCur(c)}
+              className={`rounded-full border px-2.5 py-0.5 ${cur === c ? "bg-deep-teal text-paper border-deep-teal" : "border-line text-ink-soft hover:border-teal"}`}>
+              {c}
+            </button>
+          ))}
+          {changedSet.size > 0 && (
+            <button type="button" aria-pressed={onlyChanged} onClick={() => setOnlyChanged(!onlyChanged)}
+              className={`ml-3 rounded-full border px-2.5 py-0.5 ${onlyChanged ? "bg-amber text-ink border-amber" : "border-amber/60 text-ink-soft hover:border-amber"}`}>
+              <span className="inline-block h-2 w-2 rounded-full bg-amber mr-1.5 align-middle" aria-hidden="true" />
+              Changed recently ({changedSet.size})
+            </button>
+          )}
         </div>
+        {cur !== "INR" && (
+          <p className="text-[12px] text-muted">
+            {cur} amounts are indicative, converted at ECB reference rates{ratesAsOf ? ` of ${ratesAsOf}` : ""} (₹{rates[cur].toFixed(2)} = 1 {cur}). The plans are budgeted in rupees.
+          </p>
+        )}
       </div>
 
       {/* Summary of what's shown */}
       <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          ["Rows", `${filtered.length} of ${rows.length}`], ["Total cost", crore(grand)], ["Investment ask", crore(ask)],
-          ["Government", crore(govt)], ["Community", crore(community)], ["Households (both phases)", inr.format(households)],
+          ["Rows", `${filtered.length} of ${rows.length}`], ["Total cost", big(grand)], ["Investment ask", big(ask)],
+          ["Government", big(govt)], ["Community", big(community)], ["Households (both phases)", inr.format(households)],
         ].map(([k, v]) => (
           <div key={k} className="rounded-[8px] border border-line bg-paper px-3 py-2">
             <dt className="text-[11.5px] text-muted">{k}</dt>
@@ -202,7 +250,8 @@ export function InteractiveBudgetTable({
           <tbody>
             {groups.map((g, gi) => (
               <GroupRows key={`${gi}:${g.name}`} name={g.name} rows={g.rows} cols={cols} sticky={sticky}
-                landscapeNames={multi && groupBy !== "landscape" ? landscapeNames : null} onOpen={setOpen} />
+                landscapeNames={multi && groupBy !== "landscape" ? landscapeNames : null} onOpen={setOpen}
+                money={money} changed={changedSet} />
             ))}
             {filtered.length === 0 && (
               <tr><td colSpan={cols.length} className="px-4 py-8 text-center text-muted">No rows match. Clear a filter or the search.</td></tr>
@@ -211,14 +260,16 @@ export function InteractiveBudgetTable({
         </table>
       </div>
 
-      {open && <DetailPanel row={open} landscapeName={landscapeNames[open.landscape_slug] ?? open.landscape_slug} onClose={() => setOpen(null)} />}
+      {open && <DetailPanel row={open} landscapeName={landscapeNames[open.landscape_slug] ?? open.landscape_slug} onClose={() => setOpen(null)}
+        money={money} changed={changedSet.has(`${open.landscape_slug}:${open.row_key}`)} />}
     </div>
   );
 }
 
-function GroupRows({ name, rows, cols, sticky, landscapeNames, onOpen }: {
+function GroupRows({ name, rows, cols, sticky, landscapeNames, onOpen, money, changed }: {
   name: string; rows: InterventionRecord[]; cols: Column[]; sticky: (c: Column) => string;
   landscapeNames: Record<string, string> | null; onOpen: (r: InterventionRecord) => void;
+  money: (n: number) => string; changed: Set<string>;
 }) {
   return (
     <>
@@ -229,7 +280,7 @@ function GroupRows({ name, rows, cols, sticky, landscapeNames, onOpen }: {
           </td>
           {cols.slice(2).map((c) => (
             <td key={c.key} className="px-3 py-1.5 text-right tabular-nums text-ink-soft whitespace-nowrap">
-              {c.kind === "money" ? `₹${inr.format(sumOf(rows, c.get))}` : ""}
+              {c.kind === "money" ? money(sumOf(rows, c.get)) : ""}
             </td>
           ))}
         </tr>
@@ -239,9 +290,12 @@ function GroupRows({ name, rows, cols, sticky, landscapeNames, onOpen }: {
           onKeyDown={(e) => { if (e.key === "Enter") onOpen(r); }}
           className="bg-paper hover:bg-teal/5 focus:bg-teal/10 cursor-pointer align-top outline-none">
           {cols.map((c) => {
-            const v = fmt(c, c.get(r));
+            const v = fmt(c, c.get(r), money);
             return (
               <td key={c.key} className={`${sticky(c)} bg-inherit border-t border-line px-3 py-1.5 ${numeric(c) ? "text-right whitespace-nowrap tabular-nums" : c.kind === "long" || c.key === "sub_intervention" ? "" : "whitespace-nowrap"}`}>
+                {c.key === "row_key" && changed.has(`${r.landscape_slug}:${r.row_key}`) ? (
+                  <span className="inline-block h-2 w-2 rounded-full bg-amber mr-1.5 align-middle" title="Changed in a recent update" aria-label="Changed recently" />
+                ) : null}
                 {c.key === "sub_intervention" && landscapeNames ? (
                   <span className="block text-[11px] text-muted">{landscapeNames[r.landscape_slug]}</span>
                 ) : null}
@@ -256,7 +310,9 @@ function GroupRows({ name, rows, cols, sticky, landscapeNames, onOpen }: {
   );
 }
 
-function DetailPanel({ row, landscapeName, onClose }: { row: InterventionRecord; landscapeName: string; onClose: () => void }) {
+function DetailPanel({ row, landscapeName, onClose, money, changed }: {
+  row: InterventionRecord; landscapeName: string; onClose: () => void; money: (n: number) => string; changed: boolean;
+}) {
   const groups: Group[] = ["Intervention", "Unit cost", "Phase 1", "Phase 2", "Totals", "Tags"];
   return (
     <div role="dialog" aria-modal="true" aria-label={row.sub_intervention}
@@ -265,7 +321,10 @@ function DetailPanel({ row, landscapeName, onClose }: { row: InterventionRecord;
       <aside className="h-full w-full max-w-[520px] overflow-y-auto bg-paper shadow-xl p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start gap-3">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{landscapeName} · {row.row_key}</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+              {landscapeName} · {row.row_key}
+              {changed ? <span className="ml-2 normal-case tracking-normal text-amber">· changed in a recent update</span> : null}
+            </p>
             <h2 className="font-serif text-[21px] text-deep-teal leading-tight mt-1">{row.sub_intervention}</h2>
           </div>
           <button type="button" onClick={onClose} autoFocus aria-label="Close"
@@ -273,7 +332,7 @@ function DetailPanel({ row, landscapeName, onClose }: { row: InterventionRecord;
         </div>
         {groups.map((g) => {
           const cs = COLUMNS.filter((c) => c.group === g && c.key !== "sub_intervention" && c.key !== "row_key");
-          const items = cs.map((c) => [c, fmt(c, c.get(row))] as const).filter(([, v]) => v !== null);
+          const items = cs.map((c) => [c, fmt(c, c.get(row), money)] as const).filter(([, v]) => v !== null);
           return items.length ? (
             <section key={g}>
               <h3 className="font-mono text-[11px] uppercase tracking-[0.12em] text-teal mb-1.5">{g}</h3>
