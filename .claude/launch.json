@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "cat-hub-v2",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-cat.mjs", "3100"],
+      "port": 3100
     }
   ]
 }

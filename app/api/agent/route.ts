@@ -13,6 +13,7 @@ import {
 import { embedQuery as embedQueryVector, embeddingsEnabled } from "@/lib/ai/embed";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
+import { askV2, askV2History } from "@/lib/ask/v2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,11 +106,22 @@ const STARTERS = [
   "Which entries are CAT-authored versus self-submitted?",
 ];
 
-export async function GET() {
+/**
+ * Ask v2 (hybrid search + native citations + stored conversations) runs only
+ * when ASK_V2=on. It needs the CAT database (cat.chunks, cat.conversations),
+ * so leave it off wherever DATABASE_URL is still the legacy database.
+ */
+const askV2Enabled = () => process.env.ASK_V2 === "on";
+
+export async function GET(req: NextRequest) {
+  if (askV2Enabled() && req.nextUrl.searchParams.get("history") === "latest") {
+    return askV2History(req);
+  }
   return NextResponse.json({
     enabled: claudeEnabled() && embeddingsEnabled(),
     starters: STARTERS,
-    maxTurns: MAX_TURNS,
+    maxTurns: askV2Enabled() ? 20 : MAX_TURNS,
+    v2: askV2Enabled(),
   });
 }
 
@@ -299,6 +311,7 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
+  if (askV2Enabled()) return askV2(req);
 
   // Per-IP rate limit: stops a single anonymous client from driving unbounded
   // (paid) LLM calls. 10 questions / minute is generous for a human reader.

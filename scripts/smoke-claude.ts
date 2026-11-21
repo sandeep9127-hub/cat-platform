@@ -69,7 +69,7 @@ async function main() {
   let streamed = "";
   for await (const e of s) {
     if (e.type === "delta") streamed += e.text;
-    else console.log(`   → "${streamed.trim()}"  $${e.costUsd.toFixed(5)} stop=${e.stopReason}`);
+    else if (e.type === "done") console.log(`   → "${streamed.trim()}"  $${e.costUsd.toFixed(5)} stop=${e.stopReason}`);
   }
 
   if (process.argv.includes("--factsheet")) {

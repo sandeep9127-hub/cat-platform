@@ -195,6 +195,7 @@ export async function claudeMessage(task: AiTask, opts: CallOpts): Promise<CallR
             ...(opts.jsonSchema ? { format: { type: "json_schema", schema: opts.jsonSchema } } : {}),
           },
           ...(tools ? { tools } : {}),
+          ...(cfg.thinking === "off" ? { thinking: { type: "disabled" } } : {}),
           ...(supportsFallback(cfg.model)
             ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
             : {}),
@@ -232,7 +233,14 @@ export async function claudeMessage(task: AiTask, opts: CallOpts): Promise<CallR
 
 export type StreamEvent =
   | { type: "delta"; text: string }
-  | { type: "done"; inputTokens: number; outputTokens: number; costUsd: number; stopReason: string | null };
+  /** A native citation on the current text block (search_result sources only). */
+  | { type: "citation"; searchResultIndex: number; citedText: string }
+  /** End of a content block; cited claims end here, so callers place markers on it. */
+  | { type: "block_end" }
+  | { type: "done"; inputTokens: number; outputTokens: number; costUsd: number; stopReason: string | null; model: string };
+
+/** A chat turn whose content may carry content blocks (e.g. search_result sources). */
+export type StreamTurn = ChatTurn | { role: "user" | "assistant"; content: Anthropic.ContentBlockParam[] };
 
 /**
  * Streams text deltas, then a final "done" event with usage and cost.
@@ -241,7 +249,7 @@ export type StreamEvent =
  */
 export async function claudeStream(
   task: AiTask,
-  opts: Omit<CallOpts, "webSearch" | "jsonSchema">,
+  opts: Omit<CallOpts, "webSearch" | "jsonSchema" | "messages"> & { messages: StreamTurn[] },
 ): Promise<AsyncGenerator<StreamEvent, void, unknown>> {
   const cfg = taskConfig(task);
   await assertBudget(cfg.pool);
@@ -253,6 +261,7 @@ export async function claudeStream(
       system: opts.system,
       messages: opts.messages.map((m) => ({ role: m.role, content: m.content })),
       output_config: { effort: cfg.effort },
+      ...(cfg.thinking === "off" ? { thinking: { type: "disabled" as const } } : {}),
     },
     { signal: opts.signal },
   );
@@ -276,6 +285,18 @@ export async function claudeStream(
           stopReason = event.delta.stop_reason ?? stopReason;
         } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
           yield { type: "delta", text: event.delta.text };
+        } else if (
+          event.type === "content_block_delta" &&
+          event.delta.type === "citations_delta" &&
+          event.delta.citation.type === "search_result_location"
+        ) {
+          yield {
+            type: "citation",
+            searchResultIndex: event.delta.citation.search_result_index,
+            citedText: event.delta.citation.cited_text,
+          };
+        } else if (event.type === "content_block_stop") {
+          yield { type: "block_end" };
         }
       }
       const final = await stream.finalMessage();
@@ -284,7 +305,7 @@ export async function claudeStream(
       stopReason = final.stop_reason;
       finished = true;
       const cost = costUsd(model, usage);
-      yield { type: "done", inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, costUsd: cost, stopReason };
+      yield { type: "done", inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, costUsd: cost, stopReason, model };
     } catch (e) {
       error = (e as Error).message.slice(0, 500);
       throw e;

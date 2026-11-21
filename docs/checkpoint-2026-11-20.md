@@ -52,6 +52,16 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
   - Plan: put v2 behind an `ASK_V2=on` env flag so the legacy path stays intact for the live site. v2 = `hybridSearch` (lib/rag/search.ts) -> Claude Haiku stream with citations carrying document, section path and page; a rerank-score refusal floor (calibrate on real questions); server-issued httpOnly session cookie, stored only as sha256 in `cat.conversations.session_token_hash`; history loaded from `cat.messages` (not trusted from the client); partial answer saved with `interrupted = true` when the reader presses Stop; "New chat" = new conversation id. Keep the SSE event shape so AgentChat keeps working, adding `conversationId` to `meta`.
   - Check whether fact-sheet and entry embeddings in the CAT DB are Voyage-compatible before mixing them into v2 retrieval.
   - No `psql` on this Mac: query the CAT DB with a small `npx tsx` script placed inside the repo (imports of `@/lib/db` don't resolve from the scratchpad).
+- **Ask v2 built (behind `ASK_V2=on`, off by default; the legacy `/api/agent` path is unchanged):**
+  - `lib/ask/v2.ts`: optional follow-up rewrite (Haiku, `ask_rewrite`), then `hybridSearch`, then the refusal floor, then Claude Haiku (`ask_v2`, thinking off) with each passage as a `search_result` block. Native citations become `[n]` markers placed at the end of the cited text, so every marker points at a passage Claude actually cited. Citations carry document, section path and page.
+  - Refusal floor **0.55** on the top rerank score, from `scripts/calibrate-ask-floor.ts`: 20 real questions scored 0.61–0.93 (median 0.89); 10 off-topic ones 0.25–0.49. Below the floor, Claude isn't called.
+  - `lib/ask/session.ts` + `lib/ask/store.ts`: httpOnly `cat_ask_sid` cookie (SameSite=Lax, path `/api/agent`), stored only as sha256. Every read is scoped to that hash, so an unknown or someone else's conversation id starts a new conversation. History comes from `cat.messages`, never from the client.
+  - Stop saves the partial answer with `interrupted = true`. New chat starts a new conversation. `GET /api/agent?history=latest` restores the latest conversation after a refresh.
+  - SSE contract unchanged (meta/delta/done/error), with `conversationId` added to `meta`.
+  - Measured locally: sources about 2 s, first word about 3 s, full answer 4–6 s; follow-ups about 3 s longer because of the rewrite. About $0.0015 per answer.
+  - Dev against the CAT DB: `node scripts/dev-cat.mjs` (launch config `cat-hub-v2`, port 3100) sets `DATABASE_URL=$DATABASE_URL_CAT` for that process only.
+  - Known gaps: "what changed" questions score low (0.66) because change summaries live in `version_diffs`, not in `chunks`. Multi-landscape comparisons (0.61) need per-landscape retrieval, which is the Compare feature's job. Citation links go to `/landscape/<slug>` until the page viewer exists.
+- **UI/UX research running in parallel** (separate session): Refero search, then curated ideas, then clickable demos for Sandeep to agree or disagree with, covering the Ask entry points ("Ask the Hub doesn't invite people to chat"), the Ask page, Compare, Matchmaker, notes/charts and voice.
 
 ## Open decisions for Sandeep
 - Who receives the sync email digest. The DB currently has 2 admins and 2 editors copied from the old site.

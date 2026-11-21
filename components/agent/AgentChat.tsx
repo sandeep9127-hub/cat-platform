@@ -23,6 +23,8 @@ import {
   Sprout,
   Copy,
   Check,
+  Square,
+  SquarePen,
 } from "lucide-react";
 import { VisualizePanel } from "./VisualizePanel";
 
@@ -40,6 +42,8 @@ type Msg = {
   content: string;
   citations?: Citation[];
   refused?: boolean;
+  /** Reader pressed Stop before the answer finished. */
+  interrupted?: boolean;
 };
 
 const PROMPT_POOL: Array<{
@@ -191,9 +195,48 @@ export function AgentChat({
     () => [ALL_SCOPE, ...landscapes],
     [landscapes]
   );
-  const [cards, setCards] = useState(() => sampleFour());
+  // Fixed first render (server and client agree), shuffled after mount.
+  const [cards, setCards] = useState(() => PROMPT_POOL.slice(0, 4));
+  useEffect(() => setCards(sampleFour()), []);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Ask v2: the server owns the conversation; we only carry its id.
+  const conversationIdRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Ask v2 keeps history across refreshes: restore this browser's latest
+  // conversation (identified by the server's httpOnly cookie).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const info = await fetch("/api/agent").then((r) => r.json());
+        if (!info?.v2 || cancelled) return;
+        const h = await fetch("/api/agent?history=latest").then((r) => r.json());
+        if (cancelled || !h?.conversationId || !Array.isArray(h.messages) || !h.messages.length) return;
+        conversationIdRef.current = h.conversationId;
+        setMessages((curr) => (curr.length ? curr : (h.messages as Msg[])));
+      } catch {
+        // No history is fine; the reader starts a fresh chat.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function stop() {
+    abortRef.current?.abort();
+  }
+
+  function newChat() {
+    abortRef.current?.abort();
+    conversationIdRef.current = null;
+    setMessages([]);
+    setError(null);
+    setInput("");
+    setCards(sampleFour());
+  }
 
   // Auto-scroll the chat to the latest delta — but only when the user
   // is already near the bottom. If they've scrolled UP to re-read an
@@ -222,13 +265,18 @@ export function AgentChat({
     setInput("");
     setBusy(true);
     setError(null);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let acc = "";
 
     try {
       const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           sessionToken: getSessionToken(),
+          conversationId: conversationIdRef.current,
           messages: next.map((m) => ({ role: m.role, content: m.content })),
           scope,
         }),
@@ -260,7 +308,6 @@ export function AgentChat({
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let acc = "";
       let citations: Citation[] = [];
       let refused = false;
 
@@ -281,6 +328,7 @@ export function AgentChat({
             citations?: Citation[];
             refused?: boolean;
             message?: string;
+            conversationId?: string;
           };
           try {
             evt = JSON.parse(payload);
@@ -289,6 +337,7 @@ export function AgentChat({
           }
           if (evt.type === "meta") {
             citations = evt.citations ?? [];
+            if (evt.conversationId) conversationIdRef.current = evt.conversationId;
             // Update placeholder citations immediately
             setMessages((curr) => {
               const idx = curr.length - 1;
@@ -322,10 +371,23 @@ export function AgentChat({
         }
       }
     } catch (e) {
-      // Drop the placeholder on error so the user can retry cleanly
-      setMessages(next);
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      if (controller.signal.aborted) {
+        // Stop: keep what arrived (the server saves it as interrupted).
+        // New chat also aborts, but it has already cleared the messages.
+        setMessages((curr) => {
+          const idx = curr.length - 1;
+          if (idx < 0 || curr[idx].role !== "assistant") return curr;
+          const updated = curr.slice();
+          updated[idx] = { ...updated[idx], content: acc, interrupted: true };
+          return updated;
+        });
+      } else {
+        // Drop the placeholder on error so the user can retry cleanly
+        setMessages(next);
+        setError(e instanceof Error ? e.message : "Something went wrong.");
+      }
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       setBusy(false);
     }
   }
@@ -352,6 +414,7 @@ export function AgentChat({
       input={input}
       setInput={setInput}
       send={send}
+      stop={stop}
       busy={busy}
       charCount={charCount}
       remaining={remaining}
@@ -458,6 +521,18 @@ export function AgentChat({
 
       {/* Composer at the bottom during a conversation; the empty state renders
           it as the centered hero above. */}
+      {messages.length > 0 && (
+        <div className="flex justify-end mt-4 -mb-4">
+          <button
+            type="button"
+            onClick={newChat}
+            className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted hover:text-deep-teal transition-colors"
+          >
+            <SquarePen size={12} strokeWidth={1.8} aria-hidden />
+            New chat
+          </button>
+        </div>
+      )}
       {messages.length > 0 && composerEl}
 
       {error && (
@@ -473,6 +548,7 @@ function Composer({
   input,
   setInput,
   send,
+  stop,
   busy,
   charCount,
   remaining,
@@ -486,6 +562,7 @@ function Composer({
   input: string;
   setInput: (v: string) => void;
   send: (text: string) => void;
+  stop: () => void;
   busy: boolean;
   charCount: number;
   remaining: number;
@@ -616,14 +693,25 @@ function Composer({
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted tabular-nums ml-2">
             {charCount}/1000
           </span>
-          <button
-            type="submit"
-            disabled={!input.trim() || busy}
-            aria-label="Send"
-            className="group inline-flex items-center justify-center w-10 h-10 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed transition-[transform,background-color] duration-150 ease-out-expo"
-          >
-            <ArrowUp size={14} strokeWidth={2} className="group-hover:translate-y-[-1px] transition-transform" />
-          </button>
+          {busy ? (
+            <button
+              type="button"
+              onClick={stop}
+              aria-label="Stop answering"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-ink text-paper hover:bg-deep-teal active:scale-[0.94] transition-[transform,background-color] duration-150 ease-out-expo"
+            >
+              <Square size={12} strokeWidth={2.4} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              aria-label="Send"
+              className="group inline-flex items-center justify-center w-10 h-10 rounded-full bg-deep-teal text-paper hover:bg-teal active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed transition-[transform,background-color] duration-150 ease-out-expo"
+            >
+              <ArrowUp size={14} strokeWidth={2} className="group-hover:translate-y-[-1px] transition-transform" />
+            </button>
+          )}
         </div>
       </form>
     </div>
@@ -670,6 +758,12 @@ function MessageBubble({ msg, mid }: { msg: Msg; mid: number }) {
       <div className="font-sans text-[16px] text-ink leading-[1.7] mt-2.5 whitespace-pre-wrap max-w-[68ch]">
         {renderInlineMarkdown(msg.content, { mid, maxCite: msg.citations?.length ?? 0 })}
       </div>
+
+      {msg.interrupted && (
+        <p className="mt-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted">
+          Stopped
+        </p>
+      )}
 
       {msg.content.length > 0 && !msg.refused && <AnswerActions text={msg.content} />}
 

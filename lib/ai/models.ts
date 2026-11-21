@@ -32,6 +32,8 @@ export type BudgetPool = "public" | "ingestion";
 export type AiTask =
   | "ask_hub"
   | "ask_landscape"
+  | "ask_v2"
+  | "ask_rewrite"
   | "visualize"
   | "factsheet"
   | "discovery"
@@ -47,12 +49,24 @@ export type TaskConfig = {
   pool: BudgetPool;
   /** Max web searches per call (server tool, billed at $10 / 1,000). 0 = no web. */
   maxWebSearches: number;
+  /**
+   * "off" sends thinking: disabled (Haiku 5.5 accepts it at effort high or
+   * below). For grounded look-ups where time to first word matters more than
+   * planning. Omitted = the model's default (adaptive).
+   */
+  thinking?: "off";
 };
 
 const DEFAULTS: Record<AiTask, TaskConfig> = {
   // Public reads: cheap, fast, grounded strictly in retrieved passages.
   ask_hub: { model: MODELS.haiku, effort: "low", maxTokens: 4000, pool: "public", maxWebSearches: 0 },
   ask_landscape: { model: MODELS.haiku, effort: "low", maxTokens: 3000, pool: "public", maxWebSearches: 0 },
+  // Ask v2 answers over hybrid search with native citations. Thinking off:
+  // the answer is a grounded read-out of the cited passages, and adaptive
+  // thinking added ~4 s before the first word in testing (21 Nov 2026).
+  ask_v2: { model: MODELS.haiku, effort: "low", maxTokens: 3000, pool: "public", maxWebSearches: 0, thinking: "off" },
+  // Ask v2: turns a follow-up ("and in Vempalli?") into a standalone search query.
+  ask_rewrite: { model: MODELS.haiku, effort: "low", maxTokens: 400, pool: "public", maxWebSearches: 0, thinking: "off" },
   visualize: { model: MODELS.haiku, effort: "low", maxTokens: 2000, pool: "public", maxWebSearches: 0 },
 
   // Research + writing that becomes published content.
