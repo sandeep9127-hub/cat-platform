@@ -58,6 +58,16 @@ Branch `feat/claude-model-routing`, all work committed. The live site and produc
 - Sandeep's rule: reports and full tables are shared only on request, view-only, no downloads anywhere.
 - Interactive view-only investment table (search, filters, sort, column groups, grouping, row details) for editors and share links. Access requests: public `/request-access` form, then `/admin/access-requests` approve or decline; approval emails a personal expiring link. Requests by email are recorded in the same queue. Optional editor notification with `ACCESS_REQUEST_EMAIL=on`.
 - **Merge notes (feat/ui-refresh ↔ feat/claude-model-routing):** port the merged-slug redirect into `app/(public)/factsheet/[slug]/page.tsx`; the Budget page's "Request the full investment table" link (ui-refresh 82ae2bd) needs `/request-access` from this branch; take ui-refresh's class tokens on admin pages; brand-colour opacity classes render correctly only after the merge.
+- **Review pass (21 Nov, afternoon):**
+  - One-click email approval for table access (`/access/decide/<token>`).
+  - HLPE Report 14 summary added to the library (manual PDF route).
+  - Live-site bugs fixed: the freshness sweep was unpublishing weekly; organisation submissions now notify editors (22 waiting); the dead promote route is removed.
+  - Admin Report changes page added.
+  - Test set built: 48 questions. Search finds the right report in the top 5 for 100%, the exact page first for 67%; off-topic questions are declined 100%.
+  - Full table: INR/USD/EUR switch and a "changed recently" marker.
+  - Switch-over runbook: `docs/cutover-runbook.md`.
+  - `release/hub-v2` rebuilt and smoke-tested.
+- Still needs Sandeep: Vercel login + project, GitHub secrets, Pangi file, voice go-ahead (AI session asking), data catch-up before switching, open decisions below.
 - Architecture whiteboard: https://claude.ai/artifact/SZw46XxNtif7JHkhFLeqGt
 - Enhanced AI features (Ask v2 onwards) move to a fresh session. Notes for it:
   - Today `/api/agent` (`app/api/agent/route.ts`) still uses the legacy retrieval (entries FTS + old landscape/factsheet chunk tables). `components/agent/AgentChat.tsx` posts `{sessionToken, messages, scope}` and reads SSE events `meta {citations}`, `delta {text}`, `done {refused}`, `error`.
