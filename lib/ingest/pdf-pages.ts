@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { sql } from "drizzle-orm";
@@ -27,7 +27,6 @@ const run = promisify(execFile);
 const MAX_ZIP_ENTRIES = 5000;
 const MAX_RELS_BYTES = 2 * 1024 * 1024;
 const MAX_INFLATED_BYTES = 300 * 1024 * 1024;
-const HYPERLINK_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 const rows = <T>(r: unknown) => (r as { rows: T[] }).rows;
 const MAX_PDF_BYTES = 150 * 1024 * 1024;
 
@@ -58,8 +57,7 @@ const PROFILE_XCU = `<?xml version="1.0" encoding="UTF-8"?>
 
 /**
  * Remove external relationships that could make a renderer fetch something
- * (linked images, templates, OLE objects, sub-documents, frames). Hyperlinks
- * stay: they are only drawn, never fetched.
+ * (linked images, templates, OLE objects, sub-documents, frames, hyperlinks).
  */
 export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array> {
   const zip = await JSZip.loadAsync(docx);
@@ -95,8 +93,10 @@ export async function stripExternalTargets(docx: Uint8Array): Promise<Uint8Array
       throw new Error(`Rejected document: ${name} is not well-formed`);
     }
     const rels = doc.Relationships?.Relationship ?? [];
-    const kept = rels.filter((r) =>
-      decode(r.TargetMode).trim().toLowerCase() !== "external" || decode(r.Type).trim() === HYPERLINK_REL);
+    // Every external relationship goes, hyperlinks included (they render as plain
+    // text in the PDF). The Type attribute is document-controlled, so it can't be
+    // trusted to exempt anything.
+    const kept = rels.filter((r) => decode(r.TargetMode).trim().toLowerCase() !== "external");
     // Rebuild every .rels file from parsed attributes only (nothing else survives).
     const out = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
       + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
@@ -128,16 +128,23 @@ export async function renderDocxPdf(docx: Uint8Array): Promise<Uint8Array | null
     await writeFile(join(profile, "user", "registrymodifications.xcu"), PROFILE_XCU);
     const input = join(dir, "report.docx");
     await writeFile(input, await stripExternalTargets(docx));
-    // Where possible (Linux CI, SOFFICE_NO_NETWORK=1), run with no network at all.
-    const isolate = process.platform === "linux" && process.env.SOFFICE_NO_NETWORK === "1";
-    await run(isolate ? "unshare" : soffice, [
-      ...(isolate ? ["--user", "--map-root-user", "--net", "--", soffice] : []),
+    const cleanEnv = { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: dir, TMPDIR: dir, LANG: "en_US.UTF-8" };
+    const args = [
       `-env:UserInstallation=file://${profile}`,
       "--headless", "--norestore", "--nolockcheck", "--convert-to", "pdf:writer_pdf_Export", "--outdir", dir, input,
-    ], {
+    ];
+    // On CI (Linux, SOFFICE_NO_NETWORK=1): root only creates an empty network
+    // namespace, then LibreOffice runs as the normal (unprivileged) user inside
+    // it, with a clean environment. No kernel settings are relaxed.
+    const isolate = process.platform === "linux" && process.env.SOFFICE_NO_NETWORK === "1";
+    const [cmd, argv] = isolate
+      ? ["sudo", ["-n", "unshare", "--net", "--", "sudo", "-n", "-u", userInfo().username, "env", "-i",
+          ...Object.entries(cleanEnv).map(([k, v]) => `${k}=${v}`), soffice, ...args]]
+      : [soffice, args];
+    await run(cmd, argv, {
       timeout: 300_000,
       maxBuffer: 10 * 1024 * 1024,
-      env: { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: dir, TMPDIR: dir, LANG: "en_US.UTF-8" } as unknown as NodeJS.ProcessEnv,
+      env: cleanEnv as unknown as NodeJS.ProcessEnv,
     });
     const out = join(dir, "report.pdf");
     if ((await stat(out)).size > MAX_PDF_BYTES) throw new Error("Rendered PDF too large");
