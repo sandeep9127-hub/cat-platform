@@ -13,8 +13,9 @@ export const SESSION_SEC = 600;
 export const ANSWERS_PER_SESSION = 40;
 // Soniox list prices: real-time STT ≈ $0.12/h, TTS ≈ $0.70/h of speech.
 export const SESSION_MAX_USD = (SESSION_SEC / 3600) * 0.12;
-/** One spoken answer is capped at 2 minutes of audio by Soniox. */
-export const ANSWER_MAX_USD = (120 / 3600) * 0.7;
+/** One spoken answer: the speech key is cut at this length, and this much is reserved. */
+export const ANSWER_MAX_SEC = 120;
+export const ANSWER_MAX_USD = (ANSWER_MAX_SEC / 3600) * 0.7;
 
 const IST_DAY_START = sql`(date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata')`;
 
