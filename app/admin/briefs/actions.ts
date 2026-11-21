@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { writeAudit } from "@/lib/audit";
@@ -13,12 +14,18 @@ export async function generateBriefAction(form: FormData): Promise<void> {
   if (user?.role !== "admin" && user?.role !== "editor") return;
   const slug = String(form.get("slug") ?? "");
   const actor = { actorUserId: user.id ?? null, actorEmail: user.email ?? null };
-  // Denials are logged, but at most 20 per editor per hour, and an unknown landscape's text is never stored.
+  // Every denial is auditable. Rate-limited attempts are always logged; other denials are
+  // capped at 20 per editor per hour, and reaching the cap is itself logged once, so
+  // suppression is visible. The attempted landscape is kept in a cleaned, bounded form.
+  const attempted = slug.replace(/[^\w-]/g, "?").slice(0, 80);
+  const principal = user.id ? createHash("sha256").update(`brief-denied|${user.id}`).digest("hex").slice(0, 32) : null;
   const denied = async (reason: string) => {
-    const cap = await rateLimit({ key: `brief-denied:${user.id ?? user.email ?? "editor"}`, ip: "audit", limit: 20, windowSec: 3600 });
-    if (!cap.ok) return;
-    await writeAudit({ ...actor, action: "brief.generate.denied", entityType: "landscape",
-      entityId: reason === "unknown-landscape" ? null : slug, meta: { reason, ran: false } });
+    const write = (action: string, meta: Record<string, unknown>) =>
+      writeAudit({ ...actor, action, entityType: "landscape", entityId: attempted, meta: { reason, ran: false, ...meta } });
+    if (reason === "rate-limited" || !principal) return write("brief.generate.denied", {});
+    const cap = await rateLimit({ key: `brief-denied:${principal}`, ip: "audit", limit: 21, windowSec: 3600 });
+    if (cap.ok && cap.remaining > 0) return write("brief.generate.denied", {});
+    if (cap.ok) return write("brief.generate.denied.suppressing", { note: "further denials this hour are not logged individually" });
   };
   if (!Object.hasOwn(LANDSCAPES, slug)) return void (await denied("unknown-landscape"));
   // Only rebuild when it's genuinely missing or out of date (the server decides, not the form),

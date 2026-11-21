@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Copy,
   Loader2,
+  Mic,
   RotateCcw,
   Sparkles,
   Square,
@@ -22,6 +23,8 @@ import { FirstScreen, type AskExample } from "./ask/FirstScreen";
 import { CompareTable } from "./ask/Compare";
 import { MatchCards } from "./ask/Match";
 import { ChartView, DiagramView, NoteCard } from "./ask/Visuals";
+import { useVoice, type AnswerHandlers, type VoiceLang, type VoiceName } from "./voice/useVoice";
+import { VoiceBar, VoiceScreen } from "./voice/VoiceUI";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
 
 /**
@@ -68,6 +71,9 @@ export function AgentChat({
   const [announce, setAnnounce] = useState("");
   const [isV2, setIsV2] = useState(false);
   const [notePdf, setNotePdf] = useState(false);
+  const [voiceAvailable, setVoiceAvailable] = useState(false);
+  const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
+  const [voiceLang, setVoiceLang] = useState<VoiceLang>("en");
   const [toast, setToast] = useState<string | null>(null);
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -99,7 +105,7 @@ export function AgentChat({
 
   /* ─── send ─── */
   const send = useCallback(
-    async (text: string, opts?: { scope?: string | null; history?: Msg[] }) => {
+    async (text: string, opts?: { scope?: string | null; history?: Msg[]; voice?: boolean; handlers?: AnswerHandlers }) => {
       const trimmed = text.trim();
       if (!trimmed || answeringRef.current) return;
       // A previous answer may still be fetching its follow-ups: let it go.
@@ -110,9 +116,11 @@ export function AgentChat({
       const useScope = opts?.scope ?? scope;
       if (opts?.scope) setScope(opts.scope);
       const base = opts?.history ?? messages;
-      const next: Msg[] = [...base, { role: "user", content: trimmed }];
+      const voiceTurn = !!opts?.voice;
+      const h = opts?.handlers;
+      const next: Msg[] = [...base, { role: "user", content: trimmed, voice: voiceTurn }];
       const startedAt = Date.now();
-      setMessages([...next, { role: "assistant", content: "", citations: [], phase: "searching", startedAt, reqId }]);
+      setMessages([...next, { role: "assistant", content: "", citations: [], phase: "searching", startedAt, reqId, voice: voiceTurn }]);
       setActive({ mid: next.length, n: null });
       // The reader just asked: bring the new turn into view.
       requestAnimationFrame(() => endRef.current?.scrollIntoView({ block: "end" }));
@@ -133,6 +141,7 @@ export function AgentChat({
             conversationId: conversationIdRef.current,
             messages: next.map((m) => ({ role: m.role, content: m.content })),
             scope: useScope,
+            ...(voiceTurn ? { voice: true, language: voiceLang } : {}),
           }),
         });
 
@@ -140,6 +149,8 @@ export function AgentChat({
           const j = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(j.error || j.refusal || `Request failed (${res.status})`);
           patchLast((m) => ({ ...m, content: j.text ?? "", citations: j.citations ?? [], refused: j.refused, phase: "done", elapsedMs: Date.now() - startedAt }));
+          if (j.text) h?.onDelta(j.text);
+          h?.onDone();
           setAnnounce(j.refused ? "Not in the library" : "Answer ready");
           return;
         }
@@ -188,12 +199,14 @@ export function AgentChat({
             } else if (evt.type === "delta" && evt.text) {
               acc += evt.text;
               patchLast((m) => ({ ...m, content: acc, phase: "writing" }));
+              h?.onDelta(evt.text);
             } else if (evt.type === "done") {
               const refused = Boolean(evt.refused);
               patchLast((m) => ({ ...m, refused, closest: evt.closest ?? null, phase: "done", elapsedMs: Date.now() - startedAt }));
               setAnnounce(refused ? "Not in the library" : "Answer ready");
               answeringRef.current = false;
               setBusy(false); // the composer frees up; follow-ups may still arrive
+              h?.onDone();
             } else if (evt.type === "followups" && Array.isArray(evt.questions)) {
               patchLast((m) => ({ ...m, followUps: evt.questions!.slice(0, 3) }));
             } else if (evt.type === "error") {
@@ -207,7 +220,9 @@ export function AgentChat({
           // also aborts, but it has already cleared the thread.
           patchLast((m) => (m.phase === "done" ? m : { ...m, content: acc, interrupted: true, phase: "done", elapsedMs: Date.now() - startedAt }));
         } else {
-          patchLast((m) => ({ ...m, content: acc, error: e instanceof Error ? e.message : "Something went wrong.", phase: "done" }));
+          const message = e instanceof Error ? e.message : "Something went wrong.";
+          patchLast((m) => ({ ...m, content: acc, error: message, phase: "done" }));
+          h?.onError(message);
         }
       } finally {
         if (abortRef.current === controller) {
@@ -217,7 +232,7 @@ export function AgentChat({
         }
       }
     },
-    [messages, scope, patchReq],
+    [messages, scope, patchReq, voiceLang],
   );
 
   const stop = () => abortRef.current?.abort();
@@ -233,6 +248,36 @@ export function AgentChat({
     setBusy(false);
     inputRef.current?.focus();
   };
+
+  /* ─── voice ─── */
+  const voice = useVoice({
+    ask: (q, handlers) => void send(q, { voice: true, handlers }),
+    stopAnswer: () => abortRef.current?.abort(),
+    // Talking over a spoken answer tags it "Interrupted", even when its text had finished.
+    onInterrupt: () =>
+      setMessages((curr) => {
+        const idx = curr.length - 1;
+        if (idx < 0 || curr[idx].role !== "assistant" || !curr[idx].voice) return curr;
+        const updated = curr.slice();
+        updated[idx] = { ...updated[idx], interrupted: true };
+        return updated;
+      }),
+    voiceName,
+    language: voiceLang,
+  });
+  const voiceOn = voice.state !== "off";
+  const voiceSince = useRef<number | null>(null);
+  useEffect(() => {
+    if (voice.startedAt) voiceSince.current = voice.startedAt;
+    if (voice.state === "off" && !voice.startedAt && voiceSince.current) {
+      const s = Math.round((Date.now() - voiceSince.current) / 1000);
+      showToast(`Voice session ended · ${Math.floor(s / 60)} min ${s % 60} s`);
+      voiceSince.current = null;
+    }
+  }, [voice.state, voice.startedAt, showToast]);
+  useEffect(() => {
+    if (voice.error) showToast(voice.error);
+  }, [voice.error, showToast]);
 
   /** Retry the last turn: drop it and ask the same question again. */
   const retry = (mid: number) => {
@@ -272,6 +317,7 @@ export function AgentChat({
         if (!info?.v2) return;
         setIsV2(true);
         setNotePdf(!!info.notePdf);
+        setVoiceAvailable(!!info.voice);
         const h = await fetch("/api/agent?history=latest").then((r) => r.json());
         if (!h?.conversationId || !Array.isArray(h.messages) || !h.messages.length) return;
         conversationIdRef.current = h.conversationId;
@@ -312,8 +358,22 @@ export function AgentChat({
   const panelCited = panelMsg ? citedNumbers(panelMsg.content, panelCites.length, panelMsg.artifact) : [];
   const panelActiveN = active && active.mid === panelMid ? active.n : null;
 
-  const composer = (
+  const composer = voiceOn ? (
+    <div className="hidden lg:block">
+      <VoiceBar
+        state={voice.state}
+        heard={voice.heard}
+        caption={voice.caption}
+        level={voice.level}
+        voiceName={voiceName}
+        setVoiceName={setVoiceName}
+        onEnd={voice.end}
+        startedAt={voice.startedAt}
+      />
+    </div>
+  ) : (
     <Composer
+      onVoice={voiceAvailable ? () => void voice.start() : undefined}
       input={input}
       setInput={setInput}
       onSubmit={() => send(input.trim() || starterPlaceholder || "")}
@@ -412,6 +472,22 @@ export function AgentChat({
         >
           {toast}
         </div>
+      )}
+
+      {voiceOn && (
+        <VoiceScreen
+          state={voice.state}
+          heard={voice.heard}
+          caption={voice.caption}
+          level={voice.level}
+          voiceName={voiceName}
+          setVoiceName={setVoiceName}
+          language={voiceLang}
+          setLanguage={setVoiceLang}
+          onEnd={voice.end}
+          onKeyboard={voice.end}
+          startedAt={voice.startedAt}
+        />
       )}
 
       <SourcesSheet
@@ -517,11 +593,16 @@ function Answer({
       {art?.type === "chart" && <ChartView a={art} chip={chip} max={cites.length} />}
       {art?.type === "diagram" && <DiagramView a={art} caption={msg.content} chip={chip} max={cites.length} />}
 
-      {msg.interrupted && (
-        <p className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
-          <Square size={9} fill="currentColor" aria-hidden /> Stopped
-        </p>
-      )}
+      {msg.interrupted &&
+        (msg.voice ? (
+          <p className="inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-deep bg-amber/25 rounded-[3px] px-1.5 py-0.5">
+            Interrupted
+          </p>
+        ) : (
+          <p className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
+            <Square size={9} fill="currentColor" aria-hidden /> Stopped
+          </p>
+        ))}
       {msg.error && (
         <p className="text-[14px] text-amber-deep" role="alert">
           {msg.error}
@@ -692,6 +773,7 @@ function CopyButton({ text }: { text: string }) {
 /* ─── composer ─── */
 
 function Composer({
+  onVoice,
   input,
   setInput,
   onSubmit,
@@ -705,6 +787,7 @@ function Composer({
   placeholder,
   inputRef,
 }: {
+  onVoice?: () => void;
   input: string;
   setInput: (v: string) => void;
   onSubmit: () => void;
@@ -816,6 +899,17 @@ function Composer({
         </div>
         <span className="flex-1" />
         {input.length > 800 && <span className="text-[11.5px] text-ink-soft tabular-nums">{input.length}/1000</span>}
+        {onVoice && !busy && (
+          <button
+            type="button"
+            onClick={onVoice}
+            aria-label="Talk to the Hub"
+            title="Talk to the Hub"
+            className="w-10 h-10 grid place-items-center rounded-full border border-line bg-paper text-deep-teal hover:bg-cream active:scale-[0.95] transition-[transform,background-color]"
+          >
+            <Mic size={17} strokeWidth={1.8} />
+          </button>
+        )}
         {busy ? (
           <button
             type="button"

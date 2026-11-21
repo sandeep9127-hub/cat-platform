@@ -124,6 +124,7 @@ export async function GET(req: NextRequest) {
     v2: askV2Enabled(),
     library: askV2Enabled() ? await libraryStats().catch(() => null) : null,
     notePdf: askV2Enabled() && process.env.NOTE_PDF === "on",
+    voice: askV2Enabled() && process.env.ASK_VOICE === "on" && !!process.env.SONIOX_API_KEY,
   });
 }
 

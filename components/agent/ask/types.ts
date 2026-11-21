@@ -38,6 +38,8 @@ export type Msg = {
   artifact?: CompareArtifact | MatchArtifact | NoteArtifact | ChartArtifact | DiagramArtifact | null;
   /** Stored message id (notes need it for Download PDF). */
   id?: string;
+  /** Asked or answered by voice. */
+  voice?: boolean;
 };
 
 export type ScopeOption = { slug: string; label: string; ready: boolean };

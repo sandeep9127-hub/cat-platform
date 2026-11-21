@@ -26,6 +26,8 @@
 | `ASK_V2` | `on` |
 | `PREVIEW_GATE` | `on` until launch, then `off` |
 | `AGENT_DAILY_USD_CEILING`, `INGESTION_DAILY_USD_CEILING`, `INGESTION_RUN_USD_CEILING` | `15`, `25`, `25` |
+| `ASK_VOICE` | `on` to enable voice conversation in Ask (needs `SONIOX_API_KEY`; try it with a real microphone on the test deploy first) |
+| `VOICE_DAILY_USD_CEILING` | `3` (daily cap for voice; each session reserves about $0.14) |
 | Optional | `ACCESS_APPROVER_EMAILS` (who approves table requests; default: all admins and editors), `NOTE_PDF=on` (notes downloadable as PDF; default off), `ACCESS_REQUEST_EMAIL=off` / `SUBMISSION_EMAIL=off` (switch those emails off) |
 
 Not needed on Vercel: `DATABASE_URL_RAG`, `NEON_API_KEY`, `NVIDIA_API_KEY`, `OPENROUTER_*` (old), and the Google service account (the Drive sync runs in GitHub Actions).
