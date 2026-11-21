@@ -367,6 +367,10 @@ export function useVoice(opts: {
     try {
       // Audio contexts must start inside the click that opened voice.
       c.playCtx = new AudioContext();
+      // Microphone first: a blocked mic shouldn't reserve a paid session.
+      c.media = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+      });
       const res = await fetch("/api/agent/voice", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
       const keys = (await res.json().catch(() => ({}))) as {
         stt?: string;
@@ -380,10 +384,6 @@ export function useVoice(opts: {
       c.session = keys.session;
       if (Array.isArray(keys.places) && keys.places.length) c.places = keys.places;
       const sttContext = keys.context;
-
-      c.media = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
-      });
 
       // Level meter for the waveform.
       c.micCtx = new AudioContext();
