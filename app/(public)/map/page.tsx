@@ -74,10 +74,11 @@ export default async function MapPage({
   const sp = await searchParams;
 
   const allFactsheets = await listFactSheets();
-  // Published, geocoded fact sheets are the Atlas (decoupled engine).
-  const publishedFactsheets = allFactsheets.filter(
-    (f) => f.status === "published" && f.latitude != null && f.longitude != null
-  );
+  // Every published fact sheet is in the Atlas. Whether it gets a map point,
+  // goes to the Nationwide strip, or is list-only is decided by the shared
+  // placement rules (components/map/mapEntries.ts), not by lat/lon here; the
+  // old lat/lon filter hid national and geo_points-only programmes.
+  const publishedFactsheets = allFactsheets.filter((f) => f.status === "published");
 
   // Live per-axis counts over the full published set (so chip counts stay
   // stable regardless of the active filter), then apply the active filters.
