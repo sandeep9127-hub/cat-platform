@@ -59,11 +59,14 @@ export async function GET(req: NextRequest) {
         const text = await politeFetch(link.url, ctrl.signal);
         clearTimeout(timeout);
         // Fingerprint the visible text only, so scripts, styles and markup churn don't count.
+        // Bounded input (2 MB of text) before any regex work.
         const visible = text
-          .replace(/<script[\s\S]*?<\/script>/gi, " ")
-          .replace(/<style[\s\S]*?<\/style>/gi, " ")
-          .replace(/<[^>]+>/g, " ")
-          .replace(/&[a-z#0-9]+;/gi, " ")
+          .slice(0, 2_000_000)
+          .replace(/<script\b[^>]*>[^]*?<\/script>/gi, " ")
+          .replace(/<style\b[^>]*>[^]*?<\/style>/gi, " ")
+          .replace(/<[^>]{0,2000}>/g, " ")
+          .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (_m, e: string) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", nbsp: " " } as Record<string, string>)[e] ?? " ")
+          .replace(/&#(\d{1,6});/g, (_m, d: string) => String.fromCodePoint(Math.min(Number(d), 0x10ffff)))
           .replace(/\s+/g, " ")
           .trim();
         const hash = await contentHash(visible);

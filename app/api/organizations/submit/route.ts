@@ -13,6 +13,11 @@ const numOrNull = (v: unknown) => {
 };
 
 export async function POST(req: NextRequest) {
+  // Public form: cap submissions per connection (also bounds editor notification emails).
+  const { getClientIp, rateLimit } = await import("@/lib/security/ratelimit");
+  const limited = await rateLimit({ key: "org-submit", ip: getClientIp(req), limit: 10, windowSec: 3600 });
+  if (!limited.ok) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+
   let body: Record<string, unknown>;
   try {
     body = (await req.json()) as Record<string, unknown>;
@@ -90,11 +95,13 @@ async function notifyEditors(s: Submission): Promise<void> {
     SELECT email FROM "cat".users WHERE role IN ('admin', 'editor') AND email IS NOT NULL`)) as unknown as { rows: { email: string }[] })
     .rows.map((u) => u.email);
   if (!to.length) return;
-  const name = String(s.name ?? "an organisation").slice(0, 120);
+  // Nothing the submitter typed goes into the email: only the count and the admin link.
+  const pending = ((await db.execute(sql`
+    SELECT count(*)::int AS n FROM "cat".org_submissions WHERE status = 'pending'`)) as unknown as { rows: { n: number }[] }).rows[0]?.n ?? 1;
   const link = (await siteUrl("/admin/submissions")) ?? "the Hub admin, under Submissions";
   await sendEmail({
     to,
-    subject: `New organisation submission: ${name}`,
-    text: `A ${s.submissionType === "new" ? "new organisation" : "change to an organisation"} was submitted to the Organisations map: ${name}.\n\nReview it at ${link}.`,
+    subject: `Organisation submissions waiting: ${pending}`,
+    text: `A ${s.submissionType === "new" ? "new organisation" : "change to an organisation"} was submitted to the Organisations map. ${pending} submission${pending === 1 ? " is" : "s are"} waiting for review.\n\nReview them at ${link}.`,
   });
 }
