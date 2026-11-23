@@ -77,6 +77,12 @@ const nextConfig = {
       `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' https://unpkg.com https://static.cloudflareinsights.com${devScriptToken}; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self' data:; ${connectSrc}; frame-src https://www.youtube-nocookie.com https://www.youtube.com; media-src 'self' https:`;
     return [
       {
+        // Test copies on *.vercel.app must never be indexed next to the real site.
+        source: "/:path*",
+        has: [{ type: "host", value: "(?<vhost>.*\\.vercel\\.app)" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
         // /hr is Team Flow, which sends its own security headers (it loads its own fonts).
         source: "/((?!hr(?:/|$)).*)",
         headers: [
