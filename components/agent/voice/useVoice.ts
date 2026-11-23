@@ -1,6 +1,7 @@
 "use client";
 
 import { LANGUAGES, dominantLanguage, sttHints, type LangCode } from "@/lib/ask/languages";
+import { toSpoken } from "@/lib/ask/spoken";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -254,8 +255,10 @@ export function useVoice(opts: {
     if (cut <= 0 && !end) return;
     const piece = c.textBuf.slice(0, cut + (end ? 0 : 1));
     c.textBuf = c.textBuf.slice(piece.length);
-    sendTts({ stream_id: c.streamId, text: piece, text_end: end });
-    sendAgentText(piece, false);
+    // Figures are spoken as words ("65.11 crore rupees"); the on-screen answer keeps "₹65.11 cr".
+    const spoken = toSpoken(piece, c.replyLang);
+    sendTts({ stream_id: c.streamId, text: spoken, text_end: end });
+    sendAgentText(spoken, false);
   };
 
   const startSpeechStream = () => {
