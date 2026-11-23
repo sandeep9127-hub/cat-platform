@@ -32,8 +32,9 @@ export default function OpengraphImage() {
             </g>
           </svg>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ color: "#1A2625", fontSize: 26, lineHeight: 1, letterSpacing: "-0.01em" }}>
-              Transformation <span style={{ color: "#2E7573", fontStyle: "italic" }}>Hub</span>
+            <span style={{ display: "flex", color: "#1A2625", fontSize: 26, lineHeight: 1, letterSpacing: "-0.01em" }}>
+              <span>Transformation</span>
+              <span style={{ color: "#2E7573", marginLeft: 7 }}>Hub</span>
             </span>
             <span
               style={{
@@ -67,21 +68,24 @@ export default function OpengraphImage() {
           >
             Vol. 01 · Edition 2026
           </span>
-          <h1
+          {/* One element per line: the image renderer (Satori) overlaps text
+              when a heading mixes inline spans with <br />. */}
+          <div
             style={{
+              display: "flex",
+              flexDirection: "column",
               color: "#1A2625",
-              fontSize: 92,
-              lineHeight: 1.02,
+              fontSize: 80,
+              lineHeight: 1.08,
               letterSpacing: "-0.025em",
-              margin: 0,
-              fontWeight: 400,
             }}
           >
-            A dashboard for{" "}
-            <span style={{ color: "#2E7573", fontStyle: "italic" }}>sustainable</span>
-            <br />
-            food systems.
-          </h1>
+            <span>A dashboard for</span>
+            <span style={{ display: "flex" }}>
+              <span style={{ color: "#2E7573" }}>sustainable</span>
+              <span style={{ marginLeft: 22 }}>food systems.</span>
+            </span>
+          </div>
         </div>
 
         {/* bottom rule */}
@@ -100,9 +104,9 @@ export default function OpengraphImage() {
             fontFamily: "monospace",
           }}
         >
-          <span>
-            <span style={{ color: "#D9A655", marginRight: 12 }}>─</span>
-            Edited by hand
+          <span style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ display: "flex", width: 24, height: 2, background: "#D9A655", marginRight: 12 }} />
+            Eleven focus landscapes · Solutions Atlas
           </span>
           <span>agroecologyindia.org</span>
         </div>
