@@ -51,7 +51,7 @@ About 8 working days. Steps 2 and 3 can be built side by side.
 
 - **May:** search the library, read budget figures, compare landscapes, make a note of the conversation, show things on screen, ask one clarifying question, end the call.
 - **Never:**
-  - send anything (email, message, share link);
+  - send anything (email, message, share link), until an email policy exists;
   - change data;
   - answer from outside the library;
   - give figures it did not read from a tool result;
@@ -157,7 +157,7 @@ Memory across visits stays off unless Sandeep decides otherwise (section 4).
 
 **The voice prompt:**
 
-- one name (Sandeep decides), warm and direct, like a colleague who has read every plan;
+- named "Agent Hub", warm and direct, like a colleague who has read every plan;
 - two or three short sentences, one idea per sentence;
 - numbers said naturally ("about three point seven crore");
 - "the plan doesn't say" when the answer isn't there;
@@ -276,11 +276,28 @@ A read-only search of open-source voice agents (Pipecat, LiveKit Agents), Soniox
   - admin page for marking wrong turns;
   - first weekly tuning.
 
-## 5. Decisions for Sandeep
+## 5. Decisions (Sandeep, 25 Nov)
 
-1. **Name.** What the agent calls itself, in English and Hindi ("Hub", or a name)?
-2. **Agent text input cost.** OK to pay the small text-token cost for playback-aligned agent text? (Diarization is free; no decision needed.)
-3. **Recordings.** OK to record about 20 staff test sessions locally, with consent, keeping transcripts only?
-4. **Latency.** OK to accept about 0.4 s extra per turn for the turn judge?
-5. **Memory.** Should the agent remember a reader across visits? Recommended: no.
-6. **Charter.** Is the may/never list in step 1 right? In particular, should "send this to me" stay out until there is an email policy?
+1. **Name:** "Agent Hub", in English and Hindi.
+2. **Agent text input cost:** open until the cost below is confirmed. Soniox's exact text-token rate gets checked on day 1.
+3. **Staff recordings:** yes. About 20 sessions, locally, with consent, transcripts only.
+4. **Turn judge latency:** 0.4 s is fine.
+5. **Memory across visits:** no.
+6. **Email / "send this to me":** out of scope until an email policy is introduced.
+
+### Expected cost per conversation
+
+Averages from `cat.ai_usage`, taken 25 Nov:
+
+| Item | Per unit today | Per 10-turn conversation |
+|---|---|---|
+| Claude answer (`ask_v2`, Haiku, about 6.4k tokens in, 440 out) | $0.0009 | agent loop of about 2 calls per turn: about $0.02 |
+| Router / turn judge (`ask_rewrite`) | $0.00014 | about $0.0014 |
+| Soniox listening (`voice_session`, reserved) | $0.061 per session | $0.06 |
+| Soniox speech (`voice_answer`, reserved per answer) | $0.023 per answer | $0.23 |
+| Agent text input (about 150 text tokens per answer) | rate to confirm | expected under $0.01 |
+| **Total** | | **about $0.10 to $0.30** |
+
+- **Speech is the main cost.** Soniox listening and speaking make up most of the total, and the Claude agent loop adds only a few cents.
+- **The voice figures are reservations,** the maximum a session or answer can use, so real spend is lower.
+- **The daily voice cap** (`VOICE_DAILY_USD_CEILING`, default $3) counts reservations. That allows roughly 10 to 30 conversations a day. For the staff week, raise it to about $10 on the test copy (a setting, no code). That needs Sandeep's OK as spend.
