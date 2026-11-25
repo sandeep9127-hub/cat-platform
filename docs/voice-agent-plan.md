@@ -157,7 +157,7 @@ Memory across visits stays off unless Sandeep decides otherwise (section 4).
 
 **The voice prompt:**
 
-- named "Agent Hub", warm and direct, like a colleague who has read every plan;
+- named "Agents of Change", warm and direct, like a colleague who has read every plan;
 - two or three short sentences, one idea per sentence;
 - numbers said naturally ("about three point seven crore");
 - "the plan doesn't say" when the answer isn't there;
@@ -278,7 +278,7 @@ A read-only search of open-source voice agents (Pipecat, LiveKit Agents), Soniox
 
 ## 5. Decisions (Sandeep, 25 Nov)
 
-1. **Name:** "Agent Hub", in English and Hindi.
+1. **Name:** "Agents of Change" (Sandeep, 25 Nov; changed from "Agent Hub"). It is used in English and Hindi. In speech it introduces itself once, for example "This is Agents of Change."
 2. **Agent text input cost:** open until the cost below is confirmed. Soniox's exact text-token rate gets checked on day 1.
 3. **Staff recordings:** yes. About 20 sessions, locally, with consent, transcripts only.
 4. **Turn judge latency:** 0.4 s is fine.
