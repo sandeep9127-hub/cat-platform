@@ -70,16 +70,41 @@ About 8 working days. Steps 2 and 3 can be built side by side.
 
 Rules:
 
-1. **Main speaker lock.** Turn on Soniox speaker diarization (check its price first). Whoever speaks first after Start is the main speaker. Other voices never interrupt and never become questions, unless they address the Hub by name.
+1. **Main speaker lock.** Turn on Soniox speaker diarization (`enable_speaker_diarization`; included in the real-time price, verified). Whoever speaks first after Start is the main speaker.
+   - Decide the speaker by majority over a rolling window of words, not per word. Real-time labels flicker, and endpoint detection makes that worse.
+   - Another voice never interrupts the Hub.
+   - Its turns go to the turn judge marked as "other speaker". They are never dropped on the label alone.
 2. **Fillers don't interrupt.** While the Hub speaks, fillers are ignored: hmm, haan, accha, okay, right, theek hai, and others per language.
 3. **Stop words stop at once:** wait, stop, hold on, ruko, ek minute, bas.
-4. **Duck, then decide.** Other speech from the main speaker lowers the Hub's volume to about 25% at once. After 3 words or 700 ms of speech, the Hub stops and listens. If the speech ends sooner, it carries on.
-5. **Unfinished sentences wait.** A turn ending in a connector (and, but, so, the, of, aur, lekin, ki, ke, ka, ya) or "what about" waits up to 1.8 s more, and the parts are joined into one turn.
-6. **One stray word is ignored** when the Hub is idle. This doesn't apply to stop words, greetings, or a yes/no answer to the Hub's own question.
+4. **Duck, then decide.** Other speech from the main speaker lowers the Hub's volume to about 25% at once.
+   - The Hub stops and listens after 3 words or 700 ms of speech.
+   - If no real words arrive within 2 s, it restores volume and carries on. This is false-interruption recovery, LiveKit's default.
+   - The word threshold applies only while the Hub speaks. When the Hub is silent, one word can start a turn.
+   - In the first second of the Hub speaking, any speech that isn't a filler is a real interruption: a quick correction should win.
+5. **Unfinished sentences wait.** Soniox's end-of-turn signal already weighs meaning and intonation, not just silence.
+   - Set it deliberately:
+     - `endpoint_latency_adjustment_level` 2
+     - `endpoint_sensitivity` 0.3
+     - `max_endpoint_delay_ms` 1500
+   - Soniox recommends these as a voice-agent starting point; tune them with the replay harness.
+   - On top of that, a turn ending in a connector (and, but, so, the, of, aur, lekin, ki, ke, ka, ya) or "what about" waits up to 0.8 s more, and the parts are joined into one turn.
+   - A longer wait would stack with Soniox's own delay to nearly 4 s of silence.
+6. **One stray word is ignored** when the Hub is idle. This doesn't apply to stop words, greetings, or a yes/no answer to the Hub's own question. "haan" or "theek hai" right after the Hub asks a question is an answer, not a filler.
+7. **The Hub's own voice never interrupts it.** `enable_agent_text_input` is already on, but today the Hub's text goes to Soniox when it's sent for speech, not when it's heard.
+   - Align it with playback using TTS `return_timestamps`, sent 0.5 to 1 s ahead of what the reader hears.
+   - On an interruption, send only what was actually played, then `end_of_segment`.
+   - Soniox then removes the Hub's voice that leaks back into the mic. Browser echo cancellation stays on too.
+   - Billed as input text tokens, a small new cost.
 
 Fillers, stop words and connectors become columns in `lib/ask/languages.ts`, so a new language adds them in its one row.
 
-**2b. Turn judge.** A Haiku check on every finished turn, with the last few exchanges as context. It returns `question`, `addition` (adds to the last question), `side_talk`, `command` (stop, repeat, slower, shorter, switch language, show sources, end) or `unfinished`.
+**2b. Turn judge.** A Haiku check on every finished turn. Its inputs:
+- the last few exchanges (giving the previous turn cut false accepts by about 42% in Apple's device-directed speech research, arXiv 2411.00023);
+- the speaker label (main or other);
+- average token confidence;
+- whether the Hub just asked a question.
+
+The same research found a language model prompted without fine-tuning did badly on its own, so the judge is one signal among several and is graded on a labelled test set before we trust it. The judge It returns `question`, `addition` (adds to the last question), `side_talk`, `command` (stop, repeat, slower, shorter, switch language, show sources, end) or `unfinished`.
 
 - **Side talk:** silence, and the logo fades back to listening.
 - **Unsure:** the Hub asks "Was that for me?" once, never twice in a row.
@@ -156,7 +181,12 @@ Memory across visits stays off unless Sandeep decides otherwise (section 4).
 - **Hard caps:** tool calls per turn, tokens per turn, voice daily budget.
 - **A security review** on every commit, as now.
 
-**Evals:**
+**Evals** follow a three-stage build (OpenAI's voice-agent eval guide):
+1. single turns;
+2. recordings with noise, echo and background-speech variants;
+3. whole conversations with a simulated reader.
+
+Report P50 and P90 over repeated runs.
 
 - **`scripts/voice-replay.ts`** feeds recorded token streams (JSON, no audio) through the turn engine and prints each decision.
 - **`scripts/voice-agent-eval.ts`** runs about 30 scripted multi-turn conversations through the agent and scores them:
@@ -173,7 +203,7 @@ Memory across visits stays off unless Sandeep decides otherwise (section 4).
 | Real questions ignored | under 3% |
 | Hub stopped by a filler or background voice | under 5% |
 | Real interruption not obeyed within 1 s | under 2% |
-| Wrong tool chosen | under 10% |
+| Wrong tool chosen (exact match of tool and arguments) | under 10% |
 | Figure spoken without a citation | 0 |
 | First sound after the question | median under 1.2 s |
 
@@ -197,11 +227,31 @@ Each week:
 2. Staff use it for a week; the weekly loop runs once.
 3. Public site, with today's voice path kept as the fallback.
 
-## 3. Build order
+## 3. What the research changed (25 Nov)
+
+A read-only search of open-source voice agents (Pipecat, LiveKit Agents), Soniox's docs and research papers. Nothing was downloaded.
+
+- **Soniox already does most of the hard work.**
+  - Its end-of-turn signal weighs meaning and intonation.
+  - Speaker diarization is free in the real-time price.
+  - Agent text input removes the Hub's own voice from the mic.
+  - We tune these instead of building our own.
+- **Thresholds borrowed from LiveKit and Pipecat defaults:**
+  - false-interruption recovery after 2 s;
+  - word threshold only while the Hub speaks;
+  - quick corrections in the first second count as interruptions.
+- **Side-talk detection is a known research area** ("device-directed speech"). Context and multiple signals matter more than the prompt.
+- **No Hindi or Hinglish filler list exists in the literature.** We build ours from our logs, starting with:
+  - fillers: haan, haan ji, hmm, achha, theek hai, sahi, ji, okay;
+  - filler words: matlab, woh, toh, yaani, basically;
+  - stop words: ruko, bas, band karo, chup, stop, wait.
+- **Later, needs your OK (download):** Pipecat Smart Turn v3.2. It is an 8 MB BSD-licensed model that hears from the voice whether a turn is finished, and it covers Hindi. Running it in the browser is untested. Try it only if Soniox's end-of-turn signal plus our rules miss the targets.
+
+## 4. Build order
 
 - **Day 1:**
   - charter;
-  - Soniox diarization check and price;
+  - Soniox settings: diarization, end-of-turn tuning, playback-aligned agent text;
   - turn engine (2a) and replay harness;
   - `cat.voice_turns` table.
 - **Day 2:**
@@ -226,10 +276,10 @@ Each week:
   - admin page for marking wrong turns;
   - first weekly tuning.
 
-## 4. Decisions for Sandeep
+## 5. Decisions for Sandeep
 
 1. **Name.** What the agent calls itself, in English and Hindi ("Hub", or a name)?
-2. **Diarization.** OK to turn on Soniox speaker diarization, if it costs extra? Priced on day 1.
+2. **Agent text input cost.** OK to pay the small text-token cost for playback-aligned agent text? (Diarization is free; no decision needed.)
 3. **Recordings.** OK to record about 20 staff test sessions locally, with consent, keeping transcripts only?
 4. **Latency.** OK to accept about 0.4 s extra per turn for the turn judge?
 5. **Memory.** Should the agent remember a reader across visits? Recommended: no.
