@@ -312,9 +312,18 @@ Done, behind `VOICE_AGENT=on` (local dev only so far):
 - **Turn judge** folded into the router: side talk is never stored or answered, and the agent asks "Was that for me?" once when unsure. Commands handled: repeat, end, shorter, show sources. The "Agents of Change" identity line is in place.
 - **Spoken "one moment"** if nothing comes back within 1.3 s.
 
+Part 2, also done:
+
+- **Agent loop with tools:** `claudeToolStream` in `lib/ai/claude.ts`. It streams each round, runs tools in parallel, allows up to 3 tool rounds, checks the budget and logs cost per round, and drops narration written just before a tool call. The tools in `lib/ask/voice-agent.ts`:
+  - `search_library`: citations stay numbered correctly across tool calls;
+  - `show_on_screen`: sources, or a landscape card;
+  - `end_conversation`.
+- **No pop-ups.** The agent never opens a window or tab, because pop-up blockers stop anything not started by a click. Sources open inside talk mode, and a landscape appears as a card the reader taps. "Show me the sources" opens them directly.
+- **Known issue:** in Hindi voice answers, Claude sometimes copies one English summary sentence from a source. Typed Hindi answers are clean.
+
 Next:
 
-- the agent loop with tools (step 3), on-screen actions (step 4), conversation state (step 5);
+- conversation state (step 5);
 - playback-aligned agent text (rule 7);
 - the `cat.voice_turns` decision log;
 - the eval script and the staff recordings.

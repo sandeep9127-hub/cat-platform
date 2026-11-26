@@ -40,6 +40,8 @@ export type Msg = {
   id?: string;
   /** Asked or answered by voice. */
   voice?: boolean;
+  /** Voice agent: link cards it put on screen (the reader taps them; nothing opens by itself). */
+  cards?: { title: string; href: string }[];
 };
 
 export type ScopeOption = { slug: string; label: string; ready: boolean };

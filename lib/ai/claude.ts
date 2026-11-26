@@ -321,6 +321,141 @@ export async function claudeStream(
   return run();
 }
 
+/* ─── Streaming tool loop (voice agent) ───────────────── */
+
+/** One client tool: its definition and the function that runs it. */
+export type LoopTool = {
+  def: Anthropic.Tool;
+  /** Returns tool_result content (text and/or search_result blocks). Throwing becomes an is_error result. */
+  run: (input: Record<string, unknown>) => Promise<Anthropic.ToolResultBlockParam["content"]>;
+};
+
+export type LoopEvent = StreamEvent | { type: "tool"; name: string; input: Record<string, unknown> };
+
+/**
+ * Claude with tools, streamed (docs/voice-agent-plan.md, step 3). Each round
+ * streams text and citations; when Claude asks for tools, they run (in
+ * parallel), their results go back in one user turn, and the next round
+ * streams. Stops after `maxToolRounds` rounds of tool calls: the last round
+ * gets no tools, so it must answer. Every round checks the budget first and
+ * is logged to cat.ai_usage like any other call. Citation indexes count
+ * every search_result block in the request in order (initial turns first,
+ * then each tool result as returned), so callers number sources the same way.
+ */
+export async function claudeToolStream(
+  task: AiTask,
+  opts: Omit<CallOpts, "webSearch" | "jsonSchema" | "messages"> & {
+    messages: StreamTurn[];
+    tools: LoopTool[];
+    maxToolRounds?: number;
+  },
+): Promise<AsyncGenerator<LoopEvent, void, unknown>> {
+  const cfg = taskConfig(task);
+  await assertBudget(cfg.pool);
+  const byName = new Map(opts.tools.map((t) => [t.def.name, t]));
+  const maxRounds = opts.maxToolRounds ?? 3;
+
+  async function* run(): AsyncGenerator<LoopEvent, void, unknown> {
+    const messages: Anthropic.MessageParam[] = opts.messages.map((m) => ({ role: m.role, content: m.content }));
+    let total: UsageLike = { ...EMPTY_USAGE };
+    let cost = 0;
+    let model: string = cfg.model;
+    let stopReason: string | null = null;
+
+    for (let round = 0; ; round++) {
+      if (round > 0) await assertBudget(cfg.pool);
+      const toolsThisRound = round < maxRounds ? opts.tools.map((t) => t.def) : [];
+      // The tool list stays in every round's request (changing it would break caching and
+      // confuse the model); the last round just says no more tools.
+      const stream = getClient().messages.stream(
+        {
+          model: cfg.model,
+          max_tokens: cfg.maxTokens,
+          system: opts.system,
+          messages,
+          tools: opts.tools.map((t) => t.def),
+          ...(toolsThisRound.length ? {} : { tool_choice: { type: "none" as const } }),
+          output_config: { effort: cfg.effort },
+          ...(cfg.thinking === "off" ? { thinking: { type: "disabled" as const } } : {}),
+        },
+        { signal: opts.signal },
+      );
+      let usage: UsageLike = { ...EMPTY_USAGE };
+      let finished = false;
+      let error: string | null = null;
+      let final: Anthropic.Message | null = null;
+      // A finished text block is held until we see what follows it: if a tool call comes next,
+      // the text was narration ("I'll search for Mau…") and is dropped; otherwise it is released.
+      let held: StreamEvent[] = [];
+      let current: StreamEvent[] = [];
+      try {
+        for await (const event of stream) {
+          if (event.type === "message_start") {
+            usage = { ...(event.message.usage as UsageLike) };
+            model = event.message.model;
+          } else if (event.type === "message_delta") {
+            usage = { ...usage, output_tokens: event.usage.output_tokens };
+            for (const e of held.splice(0)) yield e;
+          } else if (event.type === "content_block_start") {
+            if (event.content_block.type === "tool_use") held = [];
+            else for (const e of held.splice(0)) yield e;
+          } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+            current.push({ type: "delta", text: event.delta.text });
+          } else if (
+            event.type === "content_block_delta" &&
+            event.delta.type === "citations_delta" &&
+            event.delta.citation.type === "search_result_location"
+          ) {
+            current.push({ type: "citation", searchResultIndex: event.delta.citation.search_result_index, citedText: event.delta.citation.cited_text });
+          } else if (event.type === "content_block_stop") {
+            if (current.length) held.push(...current, { type: "block_end" });
+            current = [];
+          }
+        }
+        for (const e of held.splice(0)) yield e;
+        final = await stream.finalMessage();
+        usage = final.usage as UsageLike;
+        model = final.model;
+        stopReason = final.stop_reason;
+        finished = true;
+      } catch (e) {
+        error = (e as Error).message.slice(0, 500);
+        throw e;
+      } finally {
+        if (!finished) stream.abort();
+        const c = costUsd(model, usage);
+        cost += c;
+        total = addUsage(total, usage);
+        await logUsage({ task, pool: cfg.pool, model, usage, cost: c, stopReason: finished ? stopReason : "cancelled", error, runId: opts.runId });
+      }
+
+      if (!final || final.stop_reason !== "tool_use") break;
+      const calls = final.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
+      if (!calls.length) break;
+      messages.push({ role: "assistant", content: final.content });
+      // Run every call of this round in parallel; all results go back in one user turn, in call order.
+      const results = await Promise.all(
+        calls.map(async (call): Promise<Anthropic.ToolResultBlockParam> => {
+          const tool = byName.get(call.name);
+          const input = call.input && typeof call.input === "object" ? (call.input as Record<string, unknown>) : {};
+          if (!tool) return { type: "tool_result", tool_use_id: call.id, content: `Unknown tool ${call.name}.`, is_error: true };
+          try {
+            return { type: "tool_result", tool_use_id: call.id, content: await tool.run(input) };
+          } catch (e) {
+            // Internal error details stay in the server log, never in what the model can repeat aloud.
+            console.error(`[tool_loop] ${call.name} failed:`, (e as Error).message);
+            return { type: "tool_result", tool_use_id: call.id, content: "The tool failed. Answer from what you have, or say you couldn't check.", is_error: true };
+          }
+        }),
+      );
+      for (const call of calls) yield { type: "tool", name: call.name, input: (call.input ?? {}) as Record<string, unknown> };
+      messages.push({ role: "user", content: results });
+    }
+    yield { type: "done", inputTokens: total.input_tokens, outputTokens: total.output_tokens, costUsd: cost, stopReason, model };
+  }
+  return run();
+}
+
 /** Parse JSON from model text that may be wrapped in fences or prose. */
 export function safeJsonParse<T>(raw: string): T | null {
   const stripped = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();

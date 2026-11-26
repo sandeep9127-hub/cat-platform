@@ -77,6 +77,8 @@ export function AgentChat({
   const [notePdf, setNotePdf] = useState(false);
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceAgent, setVoiceAgent] = useState(false);
+  /** Voice agent asked to show the sources inside talk mode. */
+  const [talkSourcesOpen, setTalkSourcesOpen] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
   const [voiceLang, setVoiceLang] = useState<VoiceLang>("auto");
   const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking" inside talk mode
@@ -128,6 +130,7 @@ export function AgentChat({
       const voiceTurn = !!opts?.voice;
       const h = opts?.handlers;
       const next: Msg[] = [...base, { role: "user", content: trimmed, voice: voiceTurn }];
+      if (voiceTurn) setTalkSourcesOpen(false); // a new spoken question: the old sources list goes away
       const startedAt = Date.now();
       setMessages([...next, { role: "assistant", content: "", citations: [], phase: "searching", startedAt, reqId, voice: voiceTurn }]);
       setActive({ mid: next.length, n: null });
@@ -196,6 +199,7 @@ export function AgentChat({
               artifact?: Msg["artifact"];
               messageId?: string;
               endVoice?: boolean;
+              action?: { type?: string; name?: string; href?: string };
             };
             try {
               evt = JSON.parse(t.slice(5).trimStart());
@@ -207,6 +211,19 @@ export function AgentChat({
               const citations = evt.citations ?? [];
               const mode = evt.mode;
               patchLast((m) => ({ ...m, citations, mode, phase: citations.length ? "reading" : m.phase }));
+            } else if (evt.type === "sources" && Array.isArray(evt.citations)) {
+              // Voice agent: a tool found more sources mid-answer.
+              const citations = evt.citations;
+              patchLast((m) => ({ ...m, citations }));
+            } else if (evt.type === "action" && evt.action) {
+              // Voice agent screen actions: in-page only, from a fixed list. Nothing opens a window
+              // (pop-up blockers stop windows that don't come from a click); links become cards to tap.
+              const a = evt.action;
+              if (a.type === "open_sources") setTalkSourcesOpen(true);
+              else if (a.type === "show_landscape" && typeof a.href === "string" && /^\/landscape\/[a-z0-9-]+$/.test(a.href)) {
+                const card = { title: String(a.name ?? "Landscape").slice(0, 80), href: a.href };
+                patchLast((m) => ({ ...m, cards: [...(m.cards ?? []).filter((c) => c.href !== card.href), card].slice(-3) }));
+              }
             } else if (evt.type === "artifact" && evt.artifact) {
               const artifact = evt.artifact;
               patchLast((m) => ({ ...m, artifact }));
@@ -499,8 +516,8 @@ export function AgentChat({
                     </div>
                   </div>
                 ) : (
+                  <div key={i}>
                   <Answer
-                    key={i}
                     msg={m}
                     mid={i}
                     isLast={i === messages.length - 1}
@@ -517,6 +534,16 @@ export function AgentChat({
                       setSheetOpen(true);
                     }}
                   />
+                  {!!m.cards?.length && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {m.cards.map((c) => (
+                        <a key={c.href} href={c.href} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13.5px] text-ink hover:border-teal">
+                          {c.title} <span aria-hidden>→</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  </div>
                 ),
               )}
               {/* scroll-margin keeps the end of the thread clear of the pinned composer */}
@@ -558,6 +585,9 @@ export function AgentChat({
         language={voiceLang}
         setLanguage={setVoiceLang}
         sources={talkSources}
+        sourcesOpen={talkSourcesOpen}
+        onSourcesOpen={setTalkSourcesOpen}
+        cards={[...messages].reverse().find((m) => m.role === "assistant" && m.voice)?.cards ?? []}
         needsTap={voicePrompt || (voice.state === "off" && !!voice.error)}
         message={voice.error}
         onStart={startVoice}

@@ -73,6 +73,11 @@ export function TalkMode(props: {
   setLanguage: (l: VoiceLang) => void;
   /** Titles of the current answer's sources (full details stay in the chat). */
   sources: string[];
+  /** The sources list is open inside talk mode (the reader tapped Sources, or the agent showed them). */
+  sourcesOpen?: boolean;
+  onSourcesOpen?: (open: boolean) => void;
+  /** Link cards the voice agent put on screen. They open only when tapped (pop-up blockers stop anything else). */
+  cards?: { title: string; href: string }[];
   /** Voice isn't running and needs a tap (sound or mic blocked, or not started yet). */
   needsTap: boolean;
   message: string | null;
@@ -212,11 +217,38 @@ export function TalkMode(props: {
               </p>
             )}
             {state === "speaking" && <p className="text-[13px] text-ink-soft">Speak over it to interrupt.</p>}
-            {props.sources.length > 0 && state === "speaking" && (
-              <p className="text-[12.5px] text-ink-soft max-w-[60ch]">
-                From: {props.sources.slice(0, 2).join(" · ")}
-                {props.sources.length > 2 ? ` and ${props.sources.length - 2} more` : ""}. Full sources stay in the chat.
-              </p>
+            {props.sourcesOpen && props.sources.length > 0 ? (
+              <div className="w-full max-w-[60ch] rounded-[12px] border border-line bg-cream/60 p-3 text-left">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-soft">Sources</span>
+                  <button type="button" onClick={() => props.onSourcesOpen?.(false)} className="text-[12.5px] text-ink-soft hover:text-ink">
+                    Hide
+                  </button>
+                </div>
+                <ol className="list-decimal pl-5 space-y-1 max-h-[22vh] overflow-y-auto text-[13.5px] text-ink">
+                  {props.sources.map((t, i) => (
+                    <li key={i}>{t}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : (
+              props.sources.length > 0 &&
+              (state === "speaking" || state === "listening") && (
+                <button type="button" onClick={() => props.onSourcesOpen?.(true)} className="text-[12.5px] text-ink-soft underline underline-offset-2 hover:text-ink max-w-[60ch]">
+                  From: {props.sources.slice(0, 2).join(" · ")}
+                  {props.sources.length > 2 ? ` and ${props.sources.length - 2} more` : ""}. Show sources
+                </button>
+              )
+            )}
+            {!!props.cards?.length && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {props.cards.map((c) => (
+                  // A new tab from the reader's own tap: never blocked, and the conversation keeps going here.
+                  <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-teal bg-teal-wash px-4 py-2 text-[14px] text-ink">
+                    Open {c.title} <span aria-hidden>↗</span>
+                  </a>
+                ))}
+              </div>
             )}
           </div>
         )}

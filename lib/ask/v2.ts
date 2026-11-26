@@ -6,7 +6,9 @@ import {
   BudgetExceededError,
   claudeMessage,
   claudeStream,
+  claudeToolStream,
   safeJsonParse,
+  type LoopEvent,
   type StreamEvent,
   type StreamTurn,
 } from "@/lib/ai/claude";
@@ -21,6 +23,7 @@ import { runNote } from "@/lib/ask/note";
 import { runVisual } from "@/lib/ask/visual";
 import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
 import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode } from "@/lib/ask/languages";
+import { voiceAgentTools, VOICE_AGENT_NOTE, type ScreenAction } from "@/lib/ask/voice-agent";
 import {
   historyText,
   LIP_KINDS,
@@ -427,19 +430,41 @@ export async function askV2(req: NextRequest): Promise<Response> {
           type: "text",
           text: `Answer from the search results above only, citing them for each claim.${
             voice
-              ? ` This answer will be read aloud: ${shorter ? "one or two short sentences" : "at most three short sentences"}, no lists, and say figures the way the passage writes them.${
-                  agentOn ? " You are Agents of Change, the voice of the CAT Transformation Hub; say so if asked who you are." : ""
+              ? ` This answer will be read aloud: ${shorter ? "one or two short sentences" : "at most three short sentences"}, no lists, in your own words; copy only the figures (amounts, units, percentages) exactly as written.${
+                  agentOn ? VOICE_AGENT_NOTE : ""
                 }`
               : ""
-          }${replyInstruction(lang)}\n\nReader question: ${askedQuestion}`,
+          }\n\nReader question: ${askedQuestion}${lang !== "en" ? `\n\n${replyInstruction(lang).trim()}` : ""}`,
         },
       ],
     },
   ];
 
-  let modelStream: AsyncGenerator<StreamEvent, void, unknown>;
+  // Voice agent: Claude may search again, put things on screen, or end the call (tools only read).
+  const actions: ScreenAction[] = [];
+  let endVoice = false;
+  // "Show me the sources" is clear enough not to leave to the model.
+  if (agentOn && /\b(show|open|see)\b.{0,20}\b(sources?|references?)\b|स्रोत (दिखा|दिखाओ|दिखाइए)|sources? dikha/i.test(question)) actions.push({ type: "open_sources" });
+  let modelStream: AsyncGenerator<LoopEvent, void, unknown>;
   try {
-    modelStream = await claudeStream("ask_v2", { system: SYSTEM_PROMPT, messages: turns, signal: req.signal });
+    modelStream = agentOn
+      ? await claudeToolStream("ask_v2", {
+          system: SYSTEM_PROMPT,
+          messages: turns,
+          signal: req.signal,
+          maxToolRounds: 3,
+          tools: voiceAgentTools({
+            hits,
+            citations,
+            block: searchResultBlock,
+            scope,
+            onAction: (a) => actions.push(a),
+            onEnd: () => {
+              endVoice = true;
+            },
+          }),
+        })
+      : await claudeStream("ask_v2", { system: SYSTEM_PROMPT, messages: turns, signal: req.signal });
   } catch (e) {
     const msg =
       e instanceof BudgetExceededError
@@ -461,6 +486,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
         }
       };
       send({ type: "meta", citations, scope: scope ?? "all", conversationId });
+      for (const a of actions.splice(0)) send({ type: "action", action: a });
 
       let text = "";
       let head = ""; // first characters, buffered to scrub a forbidden opener
@@ -500,6 +526,10 @@ export async function askV2(req: NextRequest): Promise<Response> {
             // A cited text block ends at its claim: put the markers right after it.
             if (blockCites.size) emit([...blockCites].sort((a, b) => a - b).map((n) => `[${n}]`).join(""));
             blockCites = new Set();
+          } else if (evt.type === "tool") {
+            // New sources and screen actions reach the browser as soon as the tool has run.
+            if (evt.name === "search_library") send({ type: "sources", citations });
+            for (const a of actions.splice(0)) send({ type: "action", action: a });
           } else if (evt.type === "done") {
             done = evt;
           }
@@ -524,7 +554,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
       const latencyMs = Date.now() - started;
 
       if (failed && !req.signal.aborted) send({ type: "error", message: "The assistant is temporarily unavailable." });
-      else if (!failed) send({ type: "done", refused });
+      else if (!failed) send({ type: "done", refused, ...(endVoice ? { endVoice: true } : {}) });
 
       // "Ask next" questions arrive just after done, so the answer never waits on them.
       const followUps =
