@@ -1,8 +1,8 @@
 -- Voice agent decision log (docs/voice-agent-plan.md, step 7): one row per
 -- spoken turn the server saw, so wrong calls (side talk answered, real
 -- questions ignored, wrong tool) can be found, marked and turned into eval
--- cases. No audio is ever stored. Turns judged as side talk keep no text:
--- they may be people talking to each other, not to the Hub.
+-- cases. No audio is ever stored. Turns judged as side talk, and anything a
+-- second speaker said, keep no text: they may not have been meant for the Hub.
 -- Additive and idempotent. Apply to the CAT database only:
 --   npx tsx scripts/apply-sql.ts drizzle/sql/2026-11-26_voice_turns.sql --cat
 CREATE TABLE IF NOT EXISTS "cat".voice_turns (

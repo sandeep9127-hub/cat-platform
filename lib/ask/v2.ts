@@ -313,7 +313,10 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // Search the library while the turn judge decides, so a real question doesn't wait for both.
   const searchLib = (q: string) =>
     hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
-  const early = history.length ? null : searchLib(question);
+  // Not for a second speaker or a mumbled turn: those are likely side talk, and their words
+  // shouldn't reach the search provider before the judge has looked at them.
+  const maybeSideTalk = agentOn && (signals?.speaker === "other" || (signals?.confidence ?? 1) < 0.6);
+  const early = history.length || maybeSideTalk ? null : searchLib(question);
   early?.catch(() => {}); // awaited below if used
   // Side talk is never stored or answered: the agent stays quiet and keeps listening.
   const judged = agentOn ? await classifyQuestion(question, history, req.signal, { voice: true, agent: signals ?? true }) : null;

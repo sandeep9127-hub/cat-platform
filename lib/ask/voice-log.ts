@@ -4,7 +4,9 @@ import { db } from "@/lib/db";
 /**
  * Voice agent decision log (cat.voice_turns, docs/voice-agent-plan.md step 7).
  * One row per spoken turn the server saw. Never stores audio, and never the
- * words of a turn judged as side talk. Logging must never break a turn.
+ * words of a turn that may not have been meant for the Hub: anything judged
+ * as side talk (ignored, or "was that for me?") and anything a second speaker
+ * said. Logging must never break a turn.
  */
 
 export type VoiceDecision =
@@ -38,7 +40,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export async function logVoiceTurn(row: VoiceTurnRow): Promise<void> {
   try {
-    const transcript = row.decision === "ignored_side_talk" ? null : row.transcript.slice(0, 500);
+    const bystander = row.decision === "ignored_side_talk" || row.decision === "asked_was_that_for_me" || row.speaker === "other";
+    const transcript = bystander ? null : row.transcript.slice(0, 500);
     const tools = (row.tools ?? []).filter((t) => /^[a-z_]{1,40}$/.test(t)).slice(0, 10);
     await db.execute(sql`
       INSERT INTO "cat".voice_turns
