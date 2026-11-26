@@ -25,7 +25,7 @@ import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
 import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode } from "@/lib/ask/languages";
 import { voiceAgentTools, VOICE_AGENT_NOTE, type ScreenAction } from "@/lib/ask/voice-agent";
 import { nextVoiceState, readVoiceState, voiceStateLine } from "@/lib/ask/conv-state";
-import { logVoiceTurn, type VoiceDecision } from "@/lib/ask/voice-log";
+import { likelyBystander, logVoiceTurn, type VoiceDecision } from "@/lib/ask/voice-log";
 import {
   historyText,
   LIP_KINDS,
@@ -315,7 +315,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
     hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
   // Not for a second speaker or a mumbled turn: those are likely side talk, and their words
   // shouldn't reach the search provider before the judge has looked at them.
-  const maybeSideTalk = agentOn && (signals?.speaker === "other" || (signals?.confidence ?? 1) < 0.6);
+  const maybeSideTalk = agentOn && likelyBystander({ speaker: signals?.speaker, confidence: signals?.confidence });
   const early = history.length || maybeSideTalk ? null : searchLib(question);
   early?.catch(() => {}); // awaited below if used
   // Side talk is never stored or answered: the agent stays quiet and keeps listening.

@@ -36,11 +36,21 @@ export type VoiceTurnRow = {
   costUsd?: number | null;
 };
 
+/**
+ * A turn that may not have been meant for the Hub: a second speaker, or words
+ * recognised with low confidence. The one rule for both privacy controls: such
+ * turns aren't searched before the turn judge has looked at them, and their
+ * words are never logged.
+ */
+export function likelyBystander(t: { speaker?: "main" | "other" | null; confidence?: number | null }): boolean {
+  return t.speaker === "other" || (t.confidence ?? 1) < 0.6;
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function logVoiceTurn(row: VoiceTurnRow): Promise<void> {
   try {
-    const bystander = row.decision === "ignored_side_talk" || row.decision === "asked_was_that_for_me" || row.speaker === "other";
+    const bystander = row.decision === "ignored_side_talk" || row.decision === "asked_was_that_for_me" || likelyBystander(row);
     const transcript = bystander ? null : row.transcript.slice(0, 500);
     const tools = (row.tools ?? []).filter((t) => /^[a-z_]{1,40}$/.test(t)).slice(0, 10);
     await db.execute(sql`
