@@ -99,6 +99,13 @@ const json = (body: unknown, status = 200, setCookie?: string | null) => {
   return res;
 };
 
+/** Words a short figure piece may contain: currency, units, and landscape names. */
+const FIGURE_WORDS = new Set([
+  "rs", "inr", "cr", "crore", "crores", "lakh", "lakhs", "l", "lac", "per", "cent", "ha", "hectare", "hectares",
+  "households", "hh", "villages", "units", "acres", "km", "kg", "ti", "phase", "m",
+  ...Object.values(LANDSCAPES).flatMap((l) => l.name.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 1)),
+]);
+
 /**
  * Translate one answer sentence that came out in English into the reader's language, keeping
  * names and figures. The sentence is model output drawn from library passages: it is wrapped as
@@ -113,7 +120,14 @@ async function translateBlock(text: string, lang: LangCode, signal: AbortSignal)
       signal: AbortSignal.any([signal, AbortSignal.timeout(4000)]),
     });
     const out = r.text.trim().replace(/^<sentence>|<\/sentence>$/g, "").trim();
-    return out && out.length < text.length * 3 ? `${out}${/\s$/.test(text) ? " " : ""}` : null;
+    if (!out || out.length > text.length * 3) return null;
+    // Shape: one plain sentence or two, no links, markup or line breaks.
+    if (/https?:|www\.|[<>{}`]|\n/i.test(out) || (out.match(/[.!?।]/g) ?? []).length > 3) return null;
+    // Facts: every figure in the original appears unchanged, and nothing new is added, so the
+    // translation still says only what its cited passage says.
+    const figures = (x: string) => (x.match(/\d[\d,]*(?:\.\d+)?/g) ?? []).map((n) => n.replace(/,/g, "")).sort();
+    if (figures(text).join("|") !== figures(out).join("|")) return null;
+    return `${out}${/\s$/.test(text) ? " " : ""}`;
   } catch {
     return null;
   }
@@ -623,9 +637,13 @@ export async function askV2(req: NextRequest): Promise<Response> {
       };
       const inScript = (t: string) => {
         const letters = t.replace(/\[\d+\]/g, "").match(/\p{L}/gu) ?? [];
-        // A short piece (a figure such as "Rs 2.82 Cr", a name) is never judged on its own.
-        return letters.length < 15 || letters.filter((c) => guardScript!.test(c)).length / letters.length >= 0.5;
+        if (!letters.length) return true;
+        // A short piece made only of figures, units and landscape names ("Rs 2.82 Cr") passes; any
+        // other short English text is judged like the rest.
+        if (letters.length < 15 && (t.match(/[A-Za-z]+/g) ?? []).every((w) => FIGURE_WORDS.has(w.toLowerCase()))) return true;
+        return letters.filter((c) => guardScript!.test(c)).length / letters.length >= 0.5;
       };
+      const hasScript = (t: string) => [...t].some((c) => guardScript!.test(c));
       try {
         for await (const evt of modelStream) {
           if (evt.type === "delta") {
@@ -652,7 +670,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
               // An English sentence in a Hindi answer: translate it (same fact, same source), else hold it back.
               const translated = t && !inScript(t) ? await translateBlock(t, lang, req.signal) : null;
               if (translated && inScript(translated)) {
-                saidInScript = true;
+                if (hasScript(translated)) saidInScript = true;
                 pushText(translated);
                 for (const [n, q] of blockQuotes) {
                   emittedCites.add(n);
@@ -674,7 +692,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
                 blockQuotes = new Map();
                 continue;
               }
-              if (/\p{L}/u.test(t)) saidInScript = true;
+              if (hasScript(t)) saidInScript = true;
               pushText(t);
               for (const [n, q] of blockQuotes) {
                 emittedCites.add(n);
