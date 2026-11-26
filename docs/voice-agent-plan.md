@@ -321,10 +321,12 @@ Part 2, also done:
 - **No pop-ups.** The agent never opens a window or tab, because pop-up blockers stop anything not started by a click. Sources open inside talk mode, and a landscape appears as a card the reader taps. "Show me the sources" opens them directly.
 - **Known issue:** in Hindi voice answers, Claude sometimes copies one English summary sentence from a source. Typed Hindi answers are clean.
 
-Next:
+Part 3, also done:
 
-- conversation state (step 5);
-- playback-aligned agent text (rule 7);
+- **Conversation state** (`lib/ask/conv-state.ts`, column `cat.conversations.voice_state`, applied to the CAT database only): the current landscape, topic, last figures and language. Tested: after a Patratu livestock answer, "And how much for goats?" stayed on Patratu and the agent asked which goat line was meant.
+- **Playback-aligned agent text** (rule 7): TTS `return_timestamps` gives each character's time, and the Hub's words go to speech-to-text about 0.6 s before they are heard. On an interruption, only what was actually heard is sent, then `end_of_segment`. Not yet tested with a live microphone.
+
+Next:
 - the `cat.voice_turns` decision log;
 - the eval script and the staff recordings.
 

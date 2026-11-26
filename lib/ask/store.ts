@@ -38,13 +38,13 @@ export type StoredMessage = {
   createdAt: string;
 };
 
-export type Conversation = { id: string; turnCount: number };
+export type Conversation = { id: string; turnCount: number; voiceState?: unknown };
 
 /** The conversation if it belongs to this session, else null. */
 export async function findConversation(id: string | null | undefined, tokenHash: string): Promise<Conversation | null> {
   if (!id || !UUID_RE.test(id)) return null;
   const r = rows<Conversation>(await db.execute(sql`
-    SELECT id, turn_count AS "turnCount" FROM "cat".conversations
+    SELECT id, turn_count AS "turnCount", voice_state AS "voiceState" FROM "cat".conversations
     WHERE id = ${id}::uuid AND session_token_hash = ${tokenHash}`));
   return r[0] ?? null;
 }
@@ -63,6 +63,12 @@ export async function createConversation(tokenHash: string, scope: string | null
     VALUES (${tokenHash}, 'text', ${scope})
     RETURNING id, turn_count AS "turnCount"`));
   return r[0];
+}
+
+/** Voice agent conversation state (lib/ask/conv-state.ts), for this conversation only. */
+export async function saveVoiceState(conversationId: string, state: unknown): Promise<void> {
+  await db.execute(sql`
+    UPDATE "cat".conversations SET voice_state = ${JSON.stringify(state)}::jsonb WHERE id = ${conversationId}::uuid`);
 }
 
 /** Most recent `limit` messages, oldest first. */

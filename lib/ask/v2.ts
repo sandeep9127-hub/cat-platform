@@ -24,6 +24,7 @@ import { runVisual } from "@/lib/ask/visual";
 import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
 import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode } from "@/lib/ask/languages";
 import { voiceAgentTools, VOICE_AGENT_NOTE, type ScreenAction } from "@/lib/ask/voice-agent";
+import { nextVoiceState, readVoiceState, voiceStateLine } from "@/lib/ask/conv-state";
 import {
   historyText,
   LIP_KINDS,
@@ -35,6 +36,7 @@ import {
 } from "@/lib/ask/shared";
 import {
   addAssistantMessage,
+  saveVoiceState,
   addUserMessage,
   createConversation,
   findConversation,
@@ -278,6 +280,8 @@ export async function askV2(req: NextRequest): Promise<Response> {
   const voice = body.voice === true;
   // Reply language: the one the voice client heard (or the reader fixed), else the question's own.
   const lang: LangCode = isLangCode(body.language) ? body.language : detectLanguage(question);
+  // What the router made of this turn, kept for the voice agent's conversation state.
+  let routedInfo = { landscapes: [] as string[], topic: "" };
   // Voice agent (VOICE_AGENT=on): every spoken turn goes through the turn judge first.
   const agentOn = voice && process.env.VOICE_AGENT === "on";
   const signals = agentOn ? cleanTurnSignals(body.turn) : null;
@@ -288,6 +292,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
 
   // An unknown or someone else's conversation id silently starts a new one.
   let conv = await findConversation(typeof body.conversationId === "string" ? body.conversationId : null, tokenHash);
+  const prevState = agentOn ? readVoiceState(conv?.voiceState) : null;
   if (conv && conv.turnCount >= MAX_TURNS) {
     return json(
       { refusal: `This conversation has reached ${MAX_TURNS} questions. Start a new chat to keep going.` },
@@ -366,6 +371,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
     }
     // Voice keeps the rewritten follow-up query but always answers in speakable prose.
     const intent = voice ? { ...routed, intent: "answer" as const } : routed;
+    routedInfo = { landscapes: routed.landscapes, topic: routed.topic || (routed.query !== question ? routed.query.slice(0, 80) : "") };
     const ctx = { req, question, scope, conversationId, started, setCookie, lang };
 
     if (intent.intent === "compare") {
@@ -431,7 +437,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
           text: `Answer from the search results above only, citing them for each claim.${
             voice
               ? ` This answer will be read aloud: ${shorter ? "one or two short sentences" : "at most three short sentences"}, no lists, in your own words; copy only the figures (amounts, units, percentages) exactly as written.${
-                  agentOn ? VOICE_AGENT_NOTE : ""
+                  agentOn ? VOICE_AGENT_NOTE + voiceStateLine(prevState) : ""
                 }`
               : ""
           }\n\nReader question: ${askedQuestion}${lang !== "en" ? `\n\n${replyInstruction(lang).trim()}` : ""}`,
@@ -579,6 +585,17 @@ export async function askV2(req: NextRequest): Promise<Response> {
         });
       } catch (e) {
         console.error("[ask_v2] saving answer failed:", (e as Error).message);
+      }
+      // Voice agent: remember what this conversation is about for the next turn.
+      if (agentOn && !refused && text) {
+        const state = nextVoiceState(prevState, {
+          routedLandscapes: routedInfo.landscapes,
+          topic: routedInfo.topic,
+          citedLandscapes: hits.filter((_, i) => cited.has(i + 1)).map((h) => h.landscapeSlug),
+          answer: text,
+          lang,
+        });
+        await saveVoiceState(conversationId, state).catch((e) => console.error("[ask_v2] saving voice state failed:", (e as Error).message));
       }
       if (!closed) {
         closed = true;

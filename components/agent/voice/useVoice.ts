@@ -113,6 +113,14 @@ export function useVoice(opts: {
     engineTick: 0 as unknown as ReturnType<typeof setInterval>,
     /** The answer being spoken, to tell whether it ended with a question. */
     lastAnswer: "",
+    /**
+     * Voice agent: the Hub's words waiting to be sent to speech-to-text as agent text,
+     * each timed to when the reader hears it (from TTS character timestamps), so Soniox
+     * can tell the Hub's own voice in the mic from the reader's.
+     */
+    agentQueue: [] as { at: number; text: string }[],
+    /** Seconds of this answer's audio received so far (TTS timestamps count from 0 per stream). */
+    ttsStreamTime: 0,
     raf: 0,
     finalText: "",
     /** This turn's final tokens with their language tags (language identification). */
@@ -199,14 +207,42 @@ export function useVoice(opts: {
       for (const m of c.ttsQueue.splice(0)) ws.send(m);
     };
     ws.onmessage = (ev) => {
-      let m: { stream_id?: string; audio?: string; audio_end?: boolean; terminated?: boolean; error_message?: string };
+      let m: {
+        stream_id?: string;
+        audio?: string;
+        audio_end?: boolean;
+        terminated?: boolean;
+        error_message?: string;
+        timestamps?: { characters?: string[]; character_start_times_seconds?: number[] };
+      };
       try {
         m = JSON.parse(typeof ev.data === "string" ? ev.data : "");
       } catch {
         return;
       }
       if (!m.stream_id || m.stream_id !== c.streamId) return; // an old, cancelled turn
-      if (m.audio) playChunk(m.audio);
+      if (m.audio) {
+        const t0 = c.ttsStreamTime;
+        const played = playChunk(m.audio);
+        if (played) {
+          c.ttsStreamTime += played.dur;
+          // Each character is heard at (when this chunk plays) + (its time within the stream − the chunk's start).
+          const chars = m.timestamps?.characters ?? [];
+          const starts = m.timestamps?.character_start_times_seconds ?? [];
+          if (optsRef.current.agent && chars.length && starts.length === chars.length) {
+            let word = "";
+            let wordAt = 0;
+            for (let i = 0; i < chars.length; i++) {
+              if (!word) wordAt = played.at + Math.max(0, starts[i] - t0);
+              word += chars[i];
+              if (/\s/.test(chars[i]) || i === chars.length - 1) {
+                c.agentQueue.push({ at: wordAt, text: word });
+                word = "";
+              }
+            }
+          }
+        }
+      }
       if (m.audio_end || m.terminated || m.error_message) {
         c.audioEnded = true;
         maybeFinished();
@@ -217,6 +253,20 @@ export function useVoice(opts: {
   const sendAgentText = (text: string, end: boolean) => {
     const ws = r.current.stt;
     if (ws?.readyState === WebSocket.OPEN && (text || end)) ws.send(JSON.stringify({ type: "agent_text", text, end_of_segment: end }));
+  };
+
+  /** Agent text lead: Soniox wants each piece 0.5–1 s before the reader hears it. */
+  const AGENT_TEXT_LEAD = 0.6;
+
+  /** Send the Hub's words that are about to be heard (or, with `upTo`, everything heard so far). */
+  const flushAgentText = (upTo?: number) => {
+    const c = r.current;
+    const ctx = c.playCtx;
+    if (!ctx || !c.agentQueue.length) return;
+    const limit = upTo ?? ctx.currentTime + AGENT_TEXT_LEAD;
+    let text = "";
+    while (c.agentQueue.length && c.agentQueue[0].at <= limit) text += c.agentQueue.shift()!.text;
+    if (text) sendAgentText(text, false);
   };
 
   const stopPlayback = () => {
@@ -230,6 +280,9 @@ export function useVoice(opts: {
   };
 
   const cancelSpeech = useCallback(() => {
+    // Cut off mid-answer: tell speech-to-text only what the reader actually heard, then close the segment.
+    if (r.current.playCtx) flushAgentText(r.current.playCtx.currentTime);
+    r.current.agentQueue = [];
     const { tts, streamId } = r.current;
     if (streamId && tts?.readyState === WebSocket.OPEN) tts.send(JSON.stringify({ stream_id: streamId, cancel: true }));
     try {
@@ -259,18 +312,21 @@ export function useVoice(opts: {
       }
       if (stateRef.current === "speaking" || stateRef.current === "thinking") {
         c.streamId = "";
+        flushAgentText(Infinity);
+        c.agentQueue = [];
         sendAgentText("", true);
         setState("listening");
       }
     }, wait + 150);
   };
 
-  const playChunk = (b64: string) => {
+  /** Schedule one chunk of the Hub's voice; returns when it plays and how long it is (seconds). */
+  const playChunk = (b64: string): { at: number; dur: number } | null => {
     const ctx = r.current.playCtx;
-    if (!ctx || !b64) return;
+    if (!ctx || !b64) return null;
     const bin = atob(b64);
     const n = Math.floor(bin.length / 2);
-    if (!n) return;
+    if (!n) return null;
     const buf = ctx.createBuffer(1, n, TTS_RATE);
     const ch = buf.getChannelData(0);
     for (let i = 0; i < n; i++) {
@@ -288,6 +344,7 @@ export function useVoice(opts: {
       r.current.sources = r.current.sources.filter((x) => x !== src);
     };
     if (stateRef.current === "thinking") setState("speaking");
+    return { at, dur: buf.duration };
   };
 
   /** Send answer text to TTS in sentence-sized pieces (citation markers removed). */
@@ -306,7 +363,8 @@ export function useVoice(opts: {
     // Figures are spoken as words ("65.11 crore rupees"); the on-screen answer keeps "₹65.11 cr".
     const spoken = toSpoken(piece, c.replyLang);
     sendTts({ stream_id: c.streamId, text: spoken, text_end: end });
-    sendAgentText(spoken, false);
+    // Voice agent: agent text follows playback (TTS timestamps) instead of being sent now.
+    if (!optsRef.current.agent) sendAgentText(spoken, false);
   };
 
   const startSpeechStream = () => {
@@ -316,6 +374,8 @@ export function useVoice(opts: {
     c.audioEnded = false;
     c.textBuf = "";
     c.ttsQueue = [];
+    c.agentQueue = [];
+    c.ttsStreamTime = 0;
     // The previous answer's connection used up its single-use key: never reuse it.
     try {
       c.tts?.close();
@@ -340,6 +400,8 @@ export function useVoice(opts: {
       voice: optsRef.current.voiceName,
       audio_format: "pcm_s16le",
       sample_rate: TTS_RATE,
+      // Character timings, so agent text reaches speech-to-text as the reader hears it.
+      ...(optsRef.current.agent ? { return_timestamps: true } : {}),
     });
   };
 
@@ -510,6 +572,7 @@ export function useVoice(opts: {
         let peak = 0;
         for (const v of data) peak = Math.max(peak, Math.abs(v - 128));
         setLevel(Math.min(1, peak / 64));
+        if (optsRef.current.agent) flushAgentText();
         if (c.outAnalyser) {
           c.outAnalyser.getByteTimeDomainData(out);
           let sum = 0;
