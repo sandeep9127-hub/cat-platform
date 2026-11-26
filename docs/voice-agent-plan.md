@@ -342,10 +342,20 @@ Part 5, also done:
 - **Marking.** Each turn can be marked Right, or Wrong with what it should have done (answered, stayed quiet, asked first, ended the call, searched again, other) and a note. Marks are written to the audit log. Side-talk rows show "(words not kept)".
 - **Eval from marks.** `scripts/voice-agent-eval.ts --marked` adds every marked-wrong turn that kept its words as an eval case, with the expectation taken from the mark.
 
+Part 6, also done (on the Neon dev branch):
+
+- **Faster first words.** Timing marks now show where the wait goes (reported outside production only; `voice-agent-eval.ts --timing`). Three changes:
+  - follow-ups search early, with the conversation's landscape and topic added;
+  - strong early passages are used in any language, not only English;
+  - long opening sentences stream at once instead of being held back.
+- **Result:** P50 4.2 s → 3.7 s, P90 6.4 s → 4.9 s. Hindi 6.1 s → about 3.5 s; follow-ups 5.6 s → 3.8 s.
+- **Hindi copying fixed with a guard.** In a Hindi voice answer, a sentence less than half Devanagari is held back and never spoken, and its citation moves onto the next sentence kept. If nothing in Hindi was said, the held sentences are sent anyway. The Hindi cases passed 8/8 across four runs; the full eval passes 20/20.
+- **Staff recording mode.** Open talk mode with `?record=1` and it shows a "Test recording (words only)" badge. After the call, "Download test recording" saves the turn engine's events and decisions as JSON, on that device only, with no audio. `scripts/voice-replay.ts --file <recording>` replays it through the current rules and lists any decision that changed.
+
 Next:
 
-- the staff recordings (add their token streams to `scripts/voice-replay.ts` and their transcripts to the eval);
-- time to first words: the 4.2 s median is still slow for voice; the spoken "one moment" covers the gap after 1.3 s;
-- the one Hindi copying case.
+- the staff recordings themselves: about 20 sessions, with consent, recorded with `?record=1`;
+- a 30-day cleanup of `cat.voice_turns` (needs a schedule; ask Sandeep first);
+- the comparison case is still the slowest (about 7 s), because the agent's own second search is a full extra round.
 
 Not yet tested with a live microphone: the test pane blocks the mic.

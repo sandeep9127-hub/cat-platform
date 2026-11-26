@@ -4,6 +4,9 @@
  *
  *   npx tsx scripts/voice-replay.ts            # all cases
  *   npx tsx scripts/voice-replay.ts --verbose  # print every action
+ *   npx tsx scripts/voice-replay.ts --file voice-test-2026-11-27T10-00-00.json
+ *       # a staff test recording (talk mode with ?record=1): replays it through the
+ *       # current rules and lists every decision that differs from the recording
  *
  * A case is a list of events (Soniox-like tokens, endpoints, the Hub's mode,
  * clock ticks) and the actions expected, in order (only the listed types are
@@ -11,6 +14,7 @@
  * staff sessions (token JSON, no audio) are added here as they come in.
  */
 
+import { readFileSync } from "node:fs";
 import { replayTurns, type Tok, type TurnAction, type TurnEvent } from "@/lib/voice/turns";
 
 type Expect = { type: TurnAction["type"]; speaker?: "main" | "other"; lang?: string; text?: string };
@@ -85,6 +89,45 @@ const CASES: Case[] = [
   { name: "two real words while thinking cancel the answer", events: [hub(0, "thinking"), tokens(400, said("sorry Rajnagar", { final: false }))], expect: [{ type: "stop" }] },
   { name: "bare stop word is not a question", events: [...speakingSince(0), tokens(2000, said("stop")), endpoint(2400)], expect: [{ type: "stop" }] },
 ];
+
+const describe = (a: TurnAction) =>
+  a.type === "submit" ? `submit[${a.speaker},${a.lang}] "${a.text}"` : a.type === "stop" ? `stop(${a.reason})` : a.type === "ignore" ? `ignore(${a.reason}) "${a.text}"` : a.type;
+
+/** Replay a downloaded staff recording and compare decisions with what happened live. */
+function replayFile(path: string) {
+  const rec = JSON.parse(readFileSync(path, "utf8")) as { kind?: string; startedAt?: string; steps?: { ev: TurnEvent; actions: TurnAction[] }[] };
+  if (rec.kind !== "cat-voice-recording" || !Array.isArray(rec.steps)) throw new Error(`${path} is not a voice test recording`);
+  const steps = rec.steps;
+  // The recording keeps only ticks that did something; put back a tick every 100 ms in between.
+  const events: TurnEvent[] = [];
+  for (let i = 0; i < steps.length; i++) {
+    const ev = steps[i].ev;
+    if (ev.type !== "tick") events.push(ev);
+    const next = steps[i + 1]?.ev.now ?? ev.now + 3000;
+    for (let t = ev.now + 100; t < next; t += 100) events.push({ type: "tick", now: t });
+  }
+  const { actions } = replayTurns(events);
+  const was = steps.flatMap((s) => s.actions.map((a) => ({ at: s.ev.now, action: a })));
+  const t0 = steps[0]?.ev.now ?? 0;
+  const fmt = (x: { at: number; action: TurnAction }) => `${((x.at - t0) / 1000).toFixed(1).padStart(6)} s  ${describe(x.action)}`;
+  const nowList = actions.map(fmt);
+  const wasList = was.map(fmt);
+  console.log(`Recording ${path} (${rec.startedAt ?? "?"}): ${steps.length} steps, ${was.length} decisions live, ${actions.length} now`);
+  let diffs = 0;
+  for (let i = 0; i < Math.max(nowList.length, wasList.length); i++) {
+    if (nowList[i] === wasList[i]) {
+      if (process.argv.includes("--verbose")) console.log(`  same  ${nowList[i]}`);
+      continue;
+    }
+    diffs++;
+    if (wasList[i]) console.log(`  live  ${wasList[i]}`);
+    if (nowList[i]) console.log(`  now   ${nowList[i]}`);
+  }
+  console.log(diffs ? `\n${diffs} decision(s) differ from the live session` : "\nEvery decision matches the live session");
+  process.exit(0);
+}
+
+if (process.argv.includes("--file")) replayFile(process.argv[process.argv.indexOf("--file") + 1]);
 
 const verbose = process.argv.includes("--verbose");
 let failed = 0;

@@ -76,7 +76,7 @@ const CASES: Case[] = [
   { name: "low-confidence noise is not answered", tags: ["side"], turns: [{ text: "uh the the okay so", confidence: 0.4 }], expect: { notAnswered: true } },
 ];
 
-type Result = { status: number; ignored: boolean; text: string; citations: number; markers: number[]; actions: string[]; searched: boolean; endVoice: boolean; firstMs: number | null; totalMs: number; mode: string | null };
+type Result = { timing?: Record<string, number>; status: number; ignored: boolean; text: string; citations: number; markers: number[]; actions: string[]; searched: boolean; endVoice: boolean; firstMs: number | null; totalMs: number; mode: string | null };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let lastRequestAt = 0;
@@ -133,7 +133,10 @@ async function askTurn(t: Turn, conversationId: string | null, cookie: string): 
       else if (e.type === "delta") {
         if (r.firstMs === null) r.firstMs = Date.now() - started;
         r.text += e.text;
-      } else if (e.type === "done") r.endVoice = !!e.endVoice;
+      } else if (e.type === "done") {
+        r.endVoice = !!e.endVoice;
+        if (e.timing) r.timing = e.timing;
+      }
     }
   }
   r.markers = [...new Set([...r.text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])))];
@@ -244,6 +247,7 @@ async function main() {
     const fails = check(c.expect, last!, prev);
     if (!fails.length) passed++;
     console.log(`${fails.length ? "FAIL" : "ok  "} ${c.name.padEnd(44)} ${String(last!.firstMs ?? "-").padStart(5)} ms${fails.length ? `  ${fails.join("; ")}` : ""}`);
+    if (last!.timing && process.argv.includes("--timing")) console.log(`       timing ${JSON.stringify(last!.timing)}`);
     if (verbose || fails.length) console.log(`       ${last!.ignored ? "(ignored)" : last!.text.slice(0, 220).replace(/\s+/g, " ")}`);
   }
   console.log(`\n${passed}/${cases.length} cases pass · first words P50 ${pct(first, 50)} ms, P90 ${pct(first, 90)} ms (answered turns)`);

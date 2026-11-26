@@ -1,7 +1,7 @@
 "use client";
 
 import { LANGUAGES, dominantLanguage, sttHints, type LangCode } from "@/lib/ask/languages";
-import { initialTurnState, stepTurn, type TurnEvent } from "@/lib/voice/turns";
+import { initialTurnState, stepTurn, type TurnAction, type TurnEvent } from "@/lib/voice/turns";
 import { toSpoken } from "@/lib/ask/spoken";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -81,6 +81,11 @@ export function useVoice(opts: {
   language: VoiceLang;
   /** Voice agent turn-taking (VOICE_AGENT=on): the turn engine decides when to answer, duck, stop or ignore. */
   agent?: boolean;
+  /**
+   * Staff test sessions (?record=1): keep what the turn engine saw and decided, words
+   * and timings only, never audio, in this tab until "Download test recording".
+   */
+  record?: boolean;
 }) {
   const [state, setStateRaw] = useState<VoiceState>("off");
   const [heard, setHeard] = useState(""); // live words while listening
@@ -110,6 +115,9 @@ export function useVoice(opts: {
     outGain: null as GainNode | null,
     /** Voice agent turn engine state (lib/voice/turns.ts). */
     engine: initialTurnState(),
+    /** ?record=1: the engine's events and decisions this session (no audio). */
+    recording: [] as { ev: TurnEvent; actions: TurnAction[] }[],
+    recordingStarted: "",
     engineTick: 0 as unknown as ReturnType<typeof setInterval>,
     /** The answer being spoken, to tell whether it ended with a question. */
     lastAnswer: "",
@@ -162,6 +170,10 @@ export function useVoice(opts: {
     const c = r.current;
     const { state: next, actions } = stepTurn(c.engine, ev);
     c.engine = next;
+    if (optsRef.current.record && (ev.type !== "tick" || actions.length)) {
+      c.recording.push({ ev, actions });
+      if (c.recording.length > 20000) c.recording.shift(); // a long session: keep the latest
+    }
     for (const a of actions) {
       if (a.type === "duck") setDuck(true);
       else if (a.type === "resume") setDuck(false);
@@ -541,6 +553,8 @@ export function useVoice(opts: {
       c.outGain = c.playCtx.createGain();
       c.outGain.connect(c.outAnalyser);
       c.engine = initialTurnState(Date.now());
+      c.recording = [];
+      c.recordingStarted = new Date().toISOString();
       c.lastAnswer = "";
       // Microphone first: a blocked mic shouldn't reserve a paid session.
       c.media = await navigator.mediaDevices.getUserMedia({
@@ -698,5 +712,24 @@ export function useVoice(opts: {
   endRef.current = end;
   useEffect(() => () => end(), [end]);
 
-  return { state, heard, caption, lastQuestion, level, outLevel, error, start, end, startedAt, interrupt };
+  /** The test recording as JSON (scripts/voice-replay.ts --file), or null when there is none. */
+  const exportRecording = useCallback((): string | null => {
+    const c = r.current;
+    if (!c.recording.length) return null;
+    return JSON.stringify(
+      {
+        kind: "cat-voice-recording",
+        version: 1,
+        startedAt: c.recordingStarted,
+        note: "Turn engine events and decisions from a staff test session. Words and timings only; no audio.",
+        voice: optsRef.current.voiceName,
+        language: optsRef.current.language,
+        steps: c.recording,
+      },
+      null,
+      1,
+    );
+  }, []);
+
+  return { state, heard, caption, lastQuestion, level, outLevel, error, start, end, startedAt, interrupt, exportRecording };
 }

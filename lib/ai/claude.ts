@@ -388,6 +388,7 @@ export async function claudeToolStream(
       // the text was narration ("I'll search for Mau…") and is dropped; otherwise it is released.
       let held: StreamEvent[] = [];
       let current: StreamEvent[] = [];
+      let streaming = false; // this block is known to be answer text
       try {
         for await (const event of stream) {
           if (event.type === "message_start") {
@@ -401,15 +402,27 @@ export async function claudeToolStream(
             else for (const e of held.splice(0)) yield e;
           } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
             current.push({ type: "delta", text: event.delta.text });
+            // A long block is the answer, not a pre-tool aside ("I'll check Mau."): stream it now.
+            if (!streaming && current.reduce((n, e) => n + (e.type === "delta" ? e.text.length : 0), 0) > 120) streaming = true;
+            if (streaming) {
+              for (const e of held.splice(0)) yield e;
+              for (const e of current.splice(0)) yield e;
+            }
           } else if (
             event.type === "content_block_delta" &&
             event.delta.type === "citations_delta" &&
             event.delta.citation.type === "search_result_location"
           ) {
-            current.push({ type: "citation", searchResultIndex: event.delta.citation.search_result_index, citedText: event.delta.citation.cited_text });
+            const c: StreamEvent = { type: "citation", searchResultIndex: event.delta.citation.search_result_index, citedText: event.delta.citation.cited_text };
+            if (streaming) yield c;
+            else current.push(c);
           } else if (event.type === "content_block_stop") {
-            if (current.length) held.push(...current, { type: "block_end" });
+            if (streaming) {
+              for (const e of current.splice(0)) yield e;
+              yield { type: "block_end" };
+            } else if (current.length) held.push(...current, { type: "block_end" });
             current = [];
+            streaming = false;
           }
         }
         for (const e of held.splice(0)) yield e;

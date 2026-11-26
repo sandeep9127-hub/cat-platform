@@ -316,10 +316,25 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // Not for a second speaker or a mumbled turn: those are likely side talk, and their words
   // shouldn't reach the search provider before the judge has looked at them.
   const maybeSideTalk = agentOn && likelyBystander({ speaker: signals?.speaker, confidence: signals?.confidence });
-  const early = history.length || maybeSideTalk ? null : searchLib(question);
+  // A follow-up in a voice conversation is searched together with the landscape and topic it is
+  // about ("and goats?" -> "and goats? Patratu livestock budget"), so it needn't wait for the rewrite.
+  const earlyQuery =
+    history.length === 0
+      ? question
+      : agentOn && prevState?.landscape
+        ? `${question} ${LANDSCAPES[prevState.landscape]?.name ?? ""} ${prevState.topic}`.trim()
+        : null;
+  const early = !earlyQuery || maybeSideTalk ? null : searchLib(earlyQuery);
   early?.catch(() => {}); // awaited below if used
   // Side talk is never stored or answered: the agent stays quiet and keeps listening.
+  // Where the time goes (ms from the request), reported outside production only.
+  const timing: Record<string, number> = {};
+  const mark = (k: string) => {
+    if (!(k in timing)) timing[k] = Date.now() - started;
+  };
+  early?.then(() => mark("search"), () => {});
   const judged = agentOn ? await classifyQuestion(question, history, req.signal, { voice: true, agent: signals ?? true }) : null;
+  mark("judge");
   const lastAssistant = [...history].reverse().find((t) => t.role === "assistant");
   const lastAssistantText = lastAssistant && typeof lastAssistant.content === "string" ? lastAssistant.content.replace(/ \(answer interrupted by the reader\)$/, "") : "";
   const wasThatForMe = LANGUAGES[lang].turns.wasThatForMe;
@@ -427,8 +442,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
     // The early search on the reader's own words is used when the rewrite didn't change them, or,
     // for a first English voice-agent question, when it already found strong passages.
     const earlyHits = early ? await early.catch(() => [] as Hit[]) : [];
-    const earlyStrong = agentOn && lang === "en" && (earlyHits[0]?.score ?? 0) >= REFUSAL_FLOOR;
+    // Strong early passages are good enough for the voice agent in any language (the search
+    // and reranker are multilingual); the rewrite still decides compare/match/notes.
+    const earlyStrong = agentOn && (earlyHits[0]?.score ?? 0) >= REFUSAL_FLOOR;
     hits = early && (intent.query === question || earlyStrong) ? earlyHits : await search(intent.query);
+    mark("hits");
+    if (!(early && (intent.query === question || earlyStrong))) timing.searchedAgain = 1;
   } catch (e) {
     console.error("[ask_v2] retrieval failed:", (e as Error).message);
     return json({ error: "Search is temporarily unavailable." }, 502, setCookie);
@@ -504,6 +523,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
   }
   let modelStream: AsyncGenerator<LoopEvent, void, unknown>;
   try {
+    mark("modelStart");
     modelStream = agentOn
       ? await claudeToolStream("ask_v2", {
           system,
@@ -554,6 +574,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
       let failed = false;
 
       const emit = (t: string) => {
+        if (t) mark("firstWords");
         if (!t) return;
         text += t;
         send({ type: "delta", text: t });
@@ -565,11 +586,29 @@ export async function askV2(req: NextRequest): Promise<Response> {
         head = "";
       };
 
+      // Voice answers in another script (Hindi): each text block is checked before it is sent, and a
+      // block in English (a passage copied instead of translated) is held back and never spoken. If
+      // nothing else was said, the held blocks are sent at the end rather than leaving no answer.
+      const guardScript = agentOn && lang !== "en" ? LANGUAGES[lang].script : null;
+      let blockText = "";
+      let saidInScript = false;
+      const heldBack: { text: string; cites: Set<number> }[] = [];
+      // A held-back block's sources move onto the next block that is kept (its Hindi usually restates the fact).
+      let carriedCites = new Set<number>();
+      const pushText = (t: string) => {
+        if (headDone) emit(t);
+        else if ((head += t).length >= 60) flushHead();
+      };
+      const inScript = (t: string) => {
+        const letters = t.replace(/\[\d+\]/g, "").match(/\p{L}/gu) ?? [];
+        return !letters.length || letters.filter((c) => guardScript!.test(c)).length / letters.length >= 0.5;
+      };
       try {
         for await (const evt of modelStream) {
           if (evt.type === "delta") {
-            if (headDone) emit(evt.text);
-            else if ((head += evt.text).length >= 60) flushHead();
+            mark("modelFirstToken");
+            if (guardScript) blockText += evt.text;
+            else pushText(evt.text);
           } else if (evt.type === "citation") {
             const n = evt.searchResultIndex + 1;
             if (n >= 1 && n <= citations.length) {
@@ -579,6 +618,22 @@ export async function askV2(req: NextRequest): Promise<Response> {
               cited.set(n, q);
             }
           } else if (evt.type === "block_end") {
+            if (guardScript) {
+              const t = blockText;
+              blockText = "";
+              if (t && !inScript(t)) {
+                heldBack.push({ text: t, cites: new Set(blockCites) });
+                for (const n of blockCites) carriedCites.add(n);
+                blockCites = new Set();
+                continue;
+              }
+              if (/\p{L}/u.test(t)) saidInScript = true;
+              pushText(t);
+              if (t.trim()) {
+                for (const n of carriedCites) blockCites.add(n);
+                carriedCites = new Set();
+              }
+            }
             flushHead();
             // A cited text block ends at its claim: put the markers right after it.
             if (blockCites.size) emit([...blockCites].sort((a, b) => a - b).map((n) => `[${n}]`).join(""));
@@ -592,6 +647,18 @@ export async function askV2(req: NextRequest): Promise<Response> {
             done = evt;
           }
         }
+        if (guardScript && blockText) pushText(blockText);
+        if (guardScript && saidInScript && carriedCites.size) {
+          flushHead();
+          emit([...carriedCites].sort((a, b) => a - b).map((n) => `[${n}]`).join(""));
+        }
+        // Everything came out in English: better an English answer than none.
+        if (guardScript && !saidInScript)
+          for (const h of heldBack) {
+            pushText(h.text);
+            flushHead();
+            if (h.cites.size) emit([...h.cites].sort((a, b) => a - b).map((n) => `[${n}]`).join(""));
+          }
         flushHead();
       } catch (e) {
         failed = true;
@@ -612,7 +679,8 @@ export async function askV2(req: NextRequest): Promise<Response> {
       const latencyMs = Date.now() - started;
 
       if (failed && !req.signal.aborted) send({ type: "error", message: "The assistant is temporarily unavailable." });
-      else if (!failed) send({ type: "done", refused, ...(endVoice ? { endVoice: true } : {}) });
+      else if (!failed)
+        send({ type: "done", refused, ...(endVoice ? { endVoice: true } : {}), ...(process.env.NODE_ENV !== "production" ? { timing } : {}) });
 
       // "Ask next" questions arrive just after done, so the answer never waits on them.
       const followUps =

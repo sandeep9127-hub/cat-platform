@@ -77,6 +77,8 @@ export function AgentChat({
   const [notePdf, setNotePdf] = useState(false);
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceAgent, setVoiceAgent] = useState(false);
+  /** ?record=1: a staff test session; talk mode offers "Download test recording" after the call. */
+  const [recordSession, setRecordSession] = useState(false);
   /** Voice agent asked to show the sources inside talk mode. */
   const [talkSourcesOpen, setTalkSourcesOpen] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
@@ -299,6 +301,7 @@ export function AgentChat({
     voiceName,
     language: voiceLang,
     agent: voiceAgent,
+    record: voiceAgent && recordSession,
   });
   const voiceOn = voice.state !== "off";
   voiceStartRef.current = voice.start;
@@ -347,6 +350,7 @@ export function AgentChat({
     if (startedRef.current) return;
     startedRef.current = true;
     const url = new URL(window.location.href);
+    if (url.searchParams.get("record") === "1") setRecordSession(true);
     // ?voice=1 comes from the header's "Talk" button.
     const wantVoice = url.searchParams.get("voice") === "1";
     if (initialQuestion || wantVoice) {
@@ -584,6 +588,18 @@ export function AgentChat({
         setVoiceName={setVoiceName}
         language={voiceLang}
         setLanguage={setVoiceLang}
+        recording={voiceAgent && recordSession}
+        onDownloadRecording={() => {
+          const json = voice.exportRecording();
+          if (!json) return "Nothing recorded yet: talk first, then end the call.";
+          // A download from the reader's own click (never a pop-up): a file on this device only.
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+          a.download = `voice-test-${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}.json`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+          return "Saved to your downloads. It holds words and timings only, no audio.";
+        }}
         sources={talkSources}
         sourcesOpen={talkSourcesOpen}
         onSourcesOpen={setTalkSourcesOpen}

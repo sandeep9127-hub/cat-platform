@@ -76,6 +76,10 @@ export function TalkMode(props: {
   /** The sources list is open inside talk mode (the reader tapped Sources, or the agent showed them). */
   sourcesOpen?: boolean;
   onSourcesOpen?: (open: boolean) => void;
+  /** Staff test session (?record=1): words and timings are kept on this device for download. */
+  recording?: boolean;
+  /** Returns a short message to show in the talk view. */
+  onDownloadRecording?: () => string;
   /** Link cards the voice agent put on screen. They open only when tapped (pop-up blockers stop anything else). */
   cards?: { title: string; href: string }[];
   /** Voice isn't running and needs a tap (sound or mic blocked, or not started yet). */
@@ -88,6 +92,7 @@ export function TalkMode(props: {
   const { open, state } = props;
   const [mounted, setMounted] = useState(false);
   const [odiaNote, setOdiaNote] = useState(false);
+  const [recNote, setRecNote] = useState<string | null>(null);
   const endRef = useRef<HTMLButtonElement | null>(null);
   const elapsed = useElapsed(props.startedAt);
   useEffect(() => setMounted(true), []);
@@ -147,6 +152,11 @@ export function TalkMode(props: {
           {s.label}
         </span>
         <span className="text-[13px] tabular-nums text-ink-soft">{live ? elapsed : ""}</span>
+        {props.recording && (
+          <span className="rounded-full border border-amber bg-amber/15 px-2.5 py-0.5 text-[11.5px] text-ink" title="Words and timings only, kept on this device. No audio.">
+            Test recording (words only)
+          </span>
+        )}
         <span className="flex-1" />
         <div className="inline-flex rounded-full border border-line bg-paper p-0.5" role="radiogroup" aria-label="Voice">
           {VOICES.map((v) => (
@@ -254,8 +264,18 @@ export function TalkMode(props: {
         )}
       </div>
 
+      {recNote && <p className="w-full max-w-[880px] mx-auto text-center text-[13px] text-ink-soft pb-2" role="status">{recNote}</p>}
       {/* Bottom: End, within thumb reach */}
       <div className="w-full max-w-[880px] mx-auto flex items-center justify-center gap-4 shrink-0">
+        {!live && props.recording && (
+          <button
+            type="button"
+            onClick={() => setRecNote(props.onDownloadRecording?.() ?? null)}
+            className="rounded-full border border-amber bg-paper px-5 h-14 text-[15px] text-ink hover:bg-cream"
+          >
+            Download test recording
+          </button>
+        )}
         {!live && (
           <button
             type="button"
