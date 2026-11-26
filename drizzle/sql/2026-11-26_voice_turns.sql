@@ -3,8 +3,9 @@
 -- questions ignored, wrong tool) can be found, marked and turned into eval
 -- cases. No audio is ever stored. Turns judged as side talk, and anything a
 -- second speaker said, keep no text: they may not have been meant for the Hub.
--- Additive and idempotent. Apply to the CAT database only:
---   npx tsx scripts/apply-sql.ts drizzle/sql/2026-11-26_voice_turns.sql --cat
+-- Additive and idempotent. Applied to the CAT database on 26 Nov 2026 (now the live one).
+-- Try changes on the dev branch first:
+--   npx tsx scripts/apply-sql.ts drizzle/sql/2026-11-26_voice_turns.sql --dev
 CREATE TABLE IF NOT EXISTS "cat".voice_turns (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at      timestamptz NOT NULL DEFAULT now(),

@@ -13,8 +13,9 @@
  *
  * Costs real money: about 25 cases, a few Haiku calls each, roughly $0.02 a run
  * (logged to cat.ai_usage under the daily caps). Writes conversations and
- * voice_turns rows to whichever database the server uses (the CAT database
- * locally); never point it at production.
+ * voice_turns rows to whichever database the server uses: locally the CAT dev
+ * branch (scripts/dev-cat.mjs). Never point it at the live site. --marked reads
+ * editors' marks from the live CAT database (read only).
  */
 
 const BASE = process.env.EVAL_BASE ?? "http://localhost:3100";
