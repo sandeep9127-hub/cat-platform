@@ -29,6 +29,25 @@ export type Language = {
   refusal: string;
   /** One-line replies to conversational turns (lib/ask/smalltalk.ts). */
   smallTalk: { closing: string; closingVoice: string; thanks: string; greeting: string; ack: string };
+  /** Voice turn-taking (lib/voice/turns.ts). Phrases are lower case, without punctuation. */
+  turns: {
+    /** Listening noises that never interrupt the Hub ("hmm", "haan"). */
+    fillers: string[];
+    /** Words that stop the Hub at once ("wait", "ruko"). */
+    stopWords: string[];
+    /** A turn ending in one of these is probably unfinished ("and", "aur"). */
+    connectors: string[];
+    /** One-word turns that still count when the Hub is idle (greetings, yes/no). */
+    shortAnswers: string[];
+    /** Spoken while the agent looks something up ("{topic}" is filled in when known). */
+    ack: { withTopic: string; plain: string };
+    /** Asked once when the turn judge can't tell whether a turn was meant for the agent. */
+    wasThatForMe: string;
+    /** The voice agent's answer to "who are you?". */
+    whoAmI: string;
+    sourcesInChat: string;
+    nothingToRepeat: string;
+  };
 };
 
 const HINDI_ROMAN = new Set(
@@ -59,6 +78,17 @@ export const LANGUAGES: Record<LangCode, Language> = {
       greeting: "Hello. Ask me about any of the landscape plans, for example Patratu's livestock or Rajnagar's water budget.",
       ack: "Okay. What would you like to know next?",
     },
+    turns: {
+      fillers: ["hmm", "hm", "mm", "mhm", "uh huh", "uh", "um", "ah", "oh", "okay", "ok", "right", "yeah", "yes", "sure", "i see", "got it", "nice", "great", "cool", "alright"],
+      stopWords: ["wait", "stop", "hold on", "one second", "one sec", "hang on", "pause", "sorry", "excuse me", "no no"],
+      connectors: ["and", "but", "or", "so", "the", "of", "to", "for", "with", "in", "on", "about", "what about", "like", "because", "which", "that", "a", "an"],
+      shortAnswers: ["yes", "no", "yeah", "nope", "hello", "hi", "hey", "thanks", "bye", "repeat", "again"],
+      ack: { withTopic: "{topic}, one moment.", plain: "One moment, let me check." },
+      wasThatForMe: "Sorry, was that for me?",
+      whoAmI: "I'm Agents of Change, the voice of the CAT Transformation Hub. Ask me about any landscape plan, its budget, or programmes that could help.",
+      sourcesInChat: "The sources are in the chat, under the answer.",
+      nothingToRepeat: "I haven't said anything yet. What would you like to know?",
+    },
   },
   hi: {
     code: "hi",
@@ -78,6 +108,17 @@ export const LANGUAGES: Record<LangCode, Language> = {
       thanks: "आपका स्वागत है। लैंडस्केप योजनाओं के बारे में कुछ और पूछना हो तो पूछिए।",
       greeting: "नमस्ते। किसी भी लैंडस्केप योजना के बारे में पूछिए, जैसे पतरातू का पशुधन या राजनगर का पानी का बजट।",
       ack: "ठीक है। आगे क्या जानना चाहेंगे?",
+    },
+    turns: {
+      fillers: ["haan", "haan ji", "han", "hmm", "ji", "ji haan", "achha", "accha", "acha", "theek hai", "thik hai", "theek", "sahi", "sahi hai", "okay", "matlab", "woh", "toh", "yaani", "हाँ", "हां", "हाँ जी", "जी", "हम्म", "अच्छा", "ठीक है", "सही", "सही है", "मतलब", "वो", "तो", "यानी"],
+      stopWords: ["ruko", "rukiye", "ruk jao", "bas", "band karo", "chup", "ek minute", "ek second", "रुको", "रुकिए", "रुक जाओ", "बस", "बंद करो", "चुप", "एक मिनट", "एक सेकंड"],
+      connectors: ["aur", "lekin", "par", "ki", "ke", "ka", "ya", "to", "jo", "kyunki", "matlab", "और", "लेकिन", "पर", "की", "के", "का", "या", "तो", "जो", "क्योंकि", "मतलब"],
+      shortAnswers: ["haan", "nahi", "nahin", "ji", "namaste", "dhanyavaad", "shukriya", "हाँ", "हां", "नहीं", "जी", "नमस्ते", "धन्यवाद", "शुक्रिया"],
+      ack: { withTopic: "{topic} देख रहा हूँ, एक पल।", plain: "एक पल, देख रहा हूँ।" },
+      wasThatForMe: "माफ़ कीजिए, क्या आप मुझसे पूछ रहे थे?",
+      whoAmI: "मैं Agents of Change हूँ, CAT ट्रांसफ़ॉर्मेशन हब की आवाज़। किसी भी लैंडस्केप योजना, उसके बजट या मददगार कार्यक्रमों के बारे में पूछिए।",
+      sourcesInChat: "स्रोत चैट में, जवाब के नीचे हैं।",
+      nothingToRepeat: "मैंने अभी कुछ नहीं कहा है। आप क्या जानना चाहेंगे?",
     },
   },
 };

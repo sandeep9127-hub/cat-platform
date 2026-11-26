@@ -12,6 +12,6 @@ if (!process.env.DATABASE_URL_CAT) {
 }
 const port = process.argv[2] ?? "3100";
 // Voice uses the Soniox key from .env.local (paid, capped by VOICE_DAILY_USD_CEILING).
-const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL_CAT, ASK_V2: "on", ASK_VOICE: "on" };
+const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL_CAT, ASK_V2: "on", ASK_VOICE: "on", VOICE_AGENT: process.env.VOICE_AGENT ?? "on" };
 const child = spawn("npx", ["next", "dev", "-p", port], { stdio: "inherit", env });
 child.on("exit", (code) => process.exit(code ?? 0));

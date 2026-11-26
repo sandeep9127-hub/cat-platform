@@ -14,7 +14,7 @@ import { hybridSearch, type Hit } from "@/lib/rag/search";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { rateLimit, getClientIp } from "@/lib/security/ratelimit";
 import { readOrMintSession, readSession } from "@/lib/ask/session";
-import { classifyQuestion, mightNeedRouting, namesLandscape } from "@/lib/ask/intent";
+import { classifyQuestion, mightNeedRouting, namesLandscape, type TurnSignals } from "@/lib/ask/intent";
 import { runCompare } from "@/lib/ask/compare";
 import { runMatch } from "@/lib/ask/match";
 import { runNote } from "@/lib/ask/note";
@@ -78,6 +78,8 @@ type ClientBody = {
   /** Voice turn: answer briefly for listening, never as a table or cards. */
   voice?: unknown;
   language?: unknown;
+  /** Voice agent: what the browser's turn engine knew about this turn. */
+  turn?: unknown;
   conversationId?: unknown;
   messages?: unknown;
   message?: unknown;
@@ -90,6 +92,14 @@ const json = (body: unknown, status = 200, setCookie?: string | null) => {
   if (setCookie) res.headers.append("Set-Cookie", setCookie);
   return res;
 };
+
+/** The browser turn engine's signals for a spoken turn, validated. */
+function cleanTurnSignals(raw: unknown): TurnSignals | null {
+  if (!raw || typeof raw !== "object") return null;
+  const t = raw as Record<string, unknown>;
+  const confidence = typeof t.confidence === "number" && Number.isFinite(t.confidence) ? Math.min(1, Math.max(0, t.confidence)) : 1;
+  return { speaker: t.speaker === "other" ? "other" : "main", confidence, afterQuestion: t.afterQuestion === true };
+}
 
 function cleanScope(raw: unknown): string | null {
   const s = typeof raw === "string" ? raw.trim() : "";
@@ -265,6 +275,9 @@ export async function askV2(req: NextRequest): Promise<Response> {
   const voice = body.voice === true;
   // Reply language: the one the voice client heard (or the reader fixed), else the question's own.
   const lang: LangCode = isLangCode(body.language) ? body.language : detectLanguage(question);
+  // Voice agent (VOICE_AGENT=on): every spoken turn goes through the turn judge first.
+  const agentOn = voice && process.env.VOICE_AGENT === "on";
+  const signals = agentOn ? cleanTurnSignals(body.turn) : null;
   const refusalText = LANGUAGES[lang].refusal;
 
   const { tokenHash, setCookie } = readOrMintSession(req);
@@ -288,6 +301,15 @@ export async function askV2(req: NextRequest): Promise<Response> {
             : m.content,
       }))
     : [];
+  // Side talk is never stored or answered: the agent stays quiet and keeps listening.
+  const judged = agentOn ? await classifyQuestion(question, history, req.signal, { voice: true, agent: signals ?? true }) : null;
+  const lastAssistant = [...history].reverse().find((t) => t.role === "assistant");
+  const lastAssistantText = lastAssistant && typeof lastAssistant.content === "string" ? lastAssistant.content.replace(/ \(answer interrupted by the reader\)$/, "") : "";
+  const wasThatForMe = LANGUAGES[lang].turns.wasThatForMe;
+  if (judged?.addressed === "side_talk") {
+    const askOnce = !judged.sure && signals?.speaker !== "other" && lastAssistantText !== wasThatForMe;
+    if (!askOnce) return json({ ignored: true }, 200, setCookie);
+  }
   if (!conv) conv = await createConversation(tokenHash, scope);
   const conversationId = conv.id;
   await addUserMessage(conversationId, question, scope);
@@ -299,6 +321,17 @@ export async function askV2(req: NextRequest): Promise<Response> {
     const text = smallTalkReply(kind, { voice, lang });
     return chatResponse({ conversationId, scope, setCookie, started, text, endVoice: voice && kind === "closing" });
   };
+  if (judged?.addressed === "side_talk") return chatResponse({ conversationId, scope, setCookie, started, text: wasThatForMe, endVoice: false });
+  if (judged?.addressed === "command") {
+    const t = LANGUAGES[lang].turns;
+    if (judged.command === "end") return reply("closing");
+    if (judged.command === "repeat")
+      return chatResponse({ conversationId, scope, setCookie, started, text: lastAssistantText || t.nothingToRepeat, endVoice: false });
+    if (judged.command === "show_sources") return chatResponse({ conversationId, scope, setCookie, started, text: t.sourcesInChat, endVoice: false });
+  }
+  const shorter = judged?.addressed === "command" && judged.command === "shorter";
+  if (agentOn && /\b(who are you|what are you|your name|who is this|aap kaun|tum kaun|aapka naam)\b|आप कौन|तुम कौन|आपका नाम/i.test(question))
+    return chatResponse({ conversationId, scope, setCookie, started, text: LANGUAGES[lang].turns.whoAmI, endVoice: false });
   const small = smallTalk(question);
   if (small) return reply(small);
 
@@ -315,10 +348,11 @@ export async function askV2(req: NextRequest): Promise<Response> {
     // A spoken question that names no landscape may have misheard one ("Patriarchal"
     // for Patratu): the rewrite step, told about speech errors, corrects it.
     const routed =
+      judged ??
       // A question in another language always goes through the rewrite, which searches in English.
-      history.length || lang !== "en" || (!voice && mightNeedRouting(question)) || (voice && !namesLandscape(question))
+      (history.length || lang !== "en" || (!voice && mightNeedRouting(question)) || (voice && !namesLandscape(question))
         ? await classifyQuestion(question, history, req.signal, { voice })
-        : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] };
+        : { intent: "answer" as const, query: question, topic: "", landscapes: [] as string[] });
     if (voice && routed.query !== question) askedQuestion = routed.query;
     // The router may also spot a conversational turn the phrase list missed.
     if (routed.intent === "chat") {
@@ -393,7 +427,9 @@ export async function askV2(req: NextRequest): Promise<Response> {
           type: "text",
           text: `Answer from the search results above only, citing them for each claim.${
             voice
-              ? " This answer will be read aloud: at most three short sentences, no lists, and say figures the way the passage writes them."
+              ? ` This answer will be read aloud: ${shorter ? "one or two short sentences" : "at most three short sentences"}, no lists, and say figures the way the passage writes them.${
+                  agentOn ? " You are Agents of Change, the voice of the CAT Transformation Hub; say so if asked who you are." : ""
+                }`
               : ""
           }${replyInstruction(lang)}\n\nReader question: ${askedQuestion}`,
         },

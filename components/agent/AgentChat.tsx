@@ -24,7 +24,7 @@ import { CompareTable } from "./ask/Compare";
 import { MatchCards } from "./ask/Match";
 import { ChartView, DiagramView, NoteCard } from "./ask/Visuals";
 import type { LangCode } from "@/lib/ask/languages";
-import { useVoice, type AnswerHandlers, type VoiceLang, type VoiceName } from "./voice/useVoice";
+import { useVoice, type AnswerHandlers, type TurnMeta, type VoiceLang, type VoiceName } from "./voice/useVoice";
 import { TalkMode } from "./voice/VoiceUI";
 import { citeParts, citedNumbers, type Citation, type Msg, type ScopeOption } from "./ask/types";
 
@@ -76,6 +76,7 @@ export function AgentChat({
   const [isV2, setIsV2] = useState(false);
   const [notePdf, setNotePdf] = useState(false);
   const [voiceAvailable, setVoiceAvailable] = useState(false);
+  const [voiceAgent, setVoiceAgent] = useState(false);
   const [voiceName, setVoiceName] = useState<VoiceName>("Ashok");
   const [voiceLang, setVoiceLang] = useState<VoiceLang>("auto");
   const [voicePrompt, setVoicePrompt] = useState(false); // "Tap to start talking" inside talk mode
@@ -113,7 +114,7 @@ export function AgentChat({
 
   /* ─── send ─── */
   const send = useCallback(
-    async (text: string, opts?: { scope?: string | null; history?: Msg[]; voice?: boolean; handlers?: AnswerHandlers; lang?: LangCode }) => {
+    async (text: string, opts?: { scope?: string | null; history?: Msg[]; voice?: boolean; handlers?: AnswerHandlers; lang?: LangCode; turn?: TurnMeta }) => {
       const trimmed = text.trim();
       if (!trimmed || answeringRef.current) return;
       // A previous answer may still be fetching its follow-ups: let it go.
@@ -150,13 +151,19 @@ export function AgentChat({
             messages: next.map((m) => ({ role: m.role, content: m.content })),
             scope: useScope,
             // Voice turns carry the language heard (or fixed in the picker); typed ones are detected on the server.
-            ...(voiceTurn ? { voice: true, ...(opts?.lang ? { language: opts.lang } : {}) } : {}),
+            ...(voiceTurn ? { voice: true, ...(opts?.lang ? { language: opts.lang } : {}), ...(opts?.turn ? { turn: opts.turn } : {}) } : {}),
           }),
         });
 
         if (!(res.headers.get("content-type") ?? "").includes("text/event-stream")) {
           const j = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(j.error || j.refusal || `Request failed (${res.status})`);
+          if (j.ignored) {
+            // Voice agent: side talk, not meant for the Hub. Take the turn back out of the chat and keep listening.
+            setMessages((curr) => (curr.length >= 2 && curr[curr.length - 1].reqId === reqId ? curr.slice(0, -2) : curr));
+            h?.onDone();
+            return;
+          }
           patchLast((m) => ({ ...m, content: j.text ?? "", citations: j.citations ?? [], refused: j.refused, phase: "done", elapsedMs: Date.now() - startedAt }));
           if (j.text) h?.onDelta(j.text);
           h?.onDone();
@@ -261,7 +268,7 @@ export function AgentChat({
 
   /* ─── voice ─── */
   const voice = useVoice({
-    ask: (q, handlers, lang) => void send(q, { voice: true, handlers, lang }),
+    ask: (q, handlers, lang, turn) => void send(q, { voice: true, handlers, lang, turn }),
     stopAnswer: () => abortRef.current?.abort(),
     // Talking over a spoken answer tags it "Interrupted", even when its text had finished.
     onInterrupt: () =>
@@ -274,6 +281,7 @@ export function AgentChat({
       }),
     voiceName,
     language: voiceLang,
+    agent: voiceAgent,
   });
   const voiceOn = voice.state !== "off";
   voiceStartRef.current = voice.start;
@@ -349,6 +357,7 @@ export function AgentChat({
         setIsV2(true);
         setNotePdf(!!info.notePdf);
         setVoiceAvailable(!!info.voice);
+        setVoiceAgent(!!info.voiceAgent);
         if (wantVoice && info.voice && !initialQuestion) {
           // Browsers often block sound on a page nobody has tapped yet; then
           // offer a clear button instead of starting a session that can't speak.

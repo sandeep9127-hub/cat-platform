@@ -125,6 +125,8 @@ export async function GET(req: NextRequest) {
     library: askV2Enabled() ? await libraryStats().catch(() => null) : null,
     notePdf: askV2Enabled() && process.env.NOTE_PDF === "on",
     voice: askV2Enabled() && process.env.ASK_VOICE === "on" && !!process.env.SONIOX_API_KEY,
+    // Voice agent turn-taking and tools (docs/voice-agent-plan.md); off unless VOICE_AGENT=on.
+    voiceAgent: askV2Enabled() && process.env.ASK_VOICE === "on" && process.env.VOICE_AGENT === "on",
   });
 }
 

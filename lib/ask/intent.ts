@@ -14,7 +14,15 @@ export type Intent = {
   query: string;
   topic: string;
   landscapes: string[];
+  /** Voice agent only: was the turn meant for the assistant (docs/voice-agent-plan.md, step 2b)? */
+  addressed?: "question" | "side_talk" | "command";
+  command?: "none" | "repeat" | "end" | "shorter" | "show_sources";
+  /** The judge is confident about `addressed`. */
+  sure?: boolean;
 };
+
+/** What the browser's turn engine knew about a spoken turn. */
+export type TurnSignals = { speaker: "main" | "other"; confidence: number; afterQuestion: boolean };
 
 const SCHEMA = {
   type: "object",
@@ -40,6 +48,24 @@ Return:
 - topic: for "compare", the aspect being compared in a few words (e.g. "water budgets"); for "note" and "visual", the subject in a few words. Otherwise "".
 - landscapes: slugs from the list above that the question names or clearly refers to, including through the conversation. Otherwise [].`;
 }
+
+const AGENT_SCHEMA = {
+  ...SCHEMA,
+  properties: {
+    ...SCHEMA.properties,
+    addressed: { type: "string", enum: ["question", "side_talk", "command"] },
+    command: { type: "string", enum: ["none", "repeat", "end", "shorter", "show_sources"] },
+    sure: { type: "boolean" },
+  },
+  required: [...SCHEMA.required, "addressed", "command", "sure"],
+};
+
+const AGENT_NOTE = `
+You are also the turn judge for a voice conversation. The microphone hears everything in the room, so decide whether the latest turn was meant for the assistant:
+- addressed: "question" when it asks or tells the assistant something about the landscapes, programmes or this conversation (including follow-ups like "and Mau?" and answers to the assistant's own question). "command" when it tells the assistant to repeat, stop or end the conversation, be shorter, or show the sources. "side_talk" when it is meant for someone else in the room or on the phone, thinking aloud, or talk that has nothing to do with the assistant or the library (e.g. "did you send the invoice", "chai lao", "one minute, I'm on a call").
+- command: for "command", which one; otherwise "none".
+- sure: false when you can't tell whether it was meant for the assistant.
+Signals help: a turn from a second speaker is more likely side talk; a turn right after the assistant asked a question is more likely an answer; low recognition confidence means the words may be wrong.`;
 
 const COMPARE_CUES = /\b(compare|comparison|contrast|versus|vs\.?|differ|difference|side by side|both|between)\b/i;
 const MATCH_CUES =
@@ -80,7 +106,7 @@ export async function classifyQuestion(
   question: string,
   history: StreamTurn[],
   signal: AbortSignal,
-  opts?: { voice?: boolean },
+  opts?: { voice?: boolean; agent?: TurnSignals | true },
 ): Promise<Intent> {
   const fallback: Intent = { intent: "answer", query: question, topic: "", landscapes: [] };
   try {
@@ -88,10 +114,15 @@ export async function classifyQuestion(
       .slice(-6)
       .map((t) => `${t.role === "user" ? "Reader" : "Assistant"}: ${String(t.content).slice(0, 600)}`)
       .join("\n");
+    const agent = opts?.agent;
+    const signals =
+      agent && agent !== true
+        ? `\nSignals: speaker=${agent.speaker === "main" ? "the main speaker" : "a second speaker"}; recognition confidence=${agent.confidence.toFixed(2)}; ${agent.afterQuestion ? "the assistant had just asked a question" : "the assistant had not just asked a question"}.`
+        : "";
     const r = await claudeMessage("ask_rewrite", {
-      system: prompt() + (opts?.voice ? VOICE_NOTE : ""),
-      messages: [{ role: "user", content: `${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}` }],
-      jsonSchema: SCHEMA,
+      system: prompt() + (opts?.voice ? VOICE_NOTE : "") + (agent ? AGENT_NOTE : ""),
+      messages: [{ role: "user", content: `${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}${signals}` }],
+      jsonSchema: agent ? AGENT_SCHEMA : SCHEMA,
       signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
     });
     const p = safeJsonParse<Partial<Intent>>(r.text);
@@ -102,7 +133,10 @@ export async function classifyQuestion(
       ? [...new Set(p.landscapes.filter((s): s is string => typeof s === "string" && !!LANDSCAPES[s]))]
       : [];
     const topic = typeof p.topic === "string" ? p.topic.trim().slice(0, 120) : "";
-    return { intent, query, topic, landscapes };
+    if (!agent) return { intent, query, topic, landscapes };
+    const addressed = (["side_talk", "command"] as const).find((x) => x === p.addressed) ?? "question";
+    const command = (["repeat", "end", "shorter", "show_sources"] as const).find((x) => x === p.command) ?? "none";
+    return { intent, query, topic, landscapes, addressed, command, sure: p.sure !== false };
   } catch (e) {
     if (!(e instanceof BudgetExceededError) && !signal.aborted) console.error("[ask_v2] intent failed:", (e as Error).message);
     return fallback; // a plain answer on the raw question still works

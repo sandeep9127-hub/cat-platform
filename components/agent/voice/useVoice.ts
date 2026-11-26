@@ -1,6 +1,7 @@
 "use client";
 
 import { LANGUAGES, dominantLanguage, sttHints, type LangCode } from "@/lib/ask/languages";
+import { initialTurnState, stepTurn, type TurnEvent } from "@/lib/voice/turns";
 import { toSpoken } from "@/lib/ask/spoken";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -22,6 +23,9 @@ export type VoiceState = "off" | "connecting" | "listening" | "thinking" | "spea
 export type VoiceName = "Ashok" | "Shalini";
 /** "auto" follows the speaker turn by turn; a language code fixes the reply language. */
 export type VoiceLang = "auto" | LangCode;
+
+/** What the turn engine knew about a spoken turn (sent to the server's turn judge). */
+export type TurnMeta = { speaker: "main" | "other"; confidence: number; afterQuestion: boolean };
 
 export type AnswerHandlers = {
   onDelta: (text: string) => void;
@@ -68,13 +72,15 @@ export function fixPlaceNames(text: string, places: string[] = DEFAULT_PLACES): 
 
 export function useVoice(opts: {
   /** Ask the Hub one spoken question in `lang`; the handlers stream the answer back. */
-  ask: (question: string, handlers: AnswerHandlers, lang: LangCode) => void;
+  ask: (question: string, handlers: AnswerHandlers, lang: LangCode, turn?: TurnMeta) => void;
   /** Cancel the answer in flight (marks it interrupted). */
   stopAnswer: () => void;
   /** The reader talked over the Hub: tag the cut-off answer. */
   onInterrupt?: () => void;
   voiceName: VoiceName;
   language: VoiceLang;
+  /** Voice agent turn-taking (VOICE_AGENT=on): the turn engine decides when to answer, duck, stop or ignore. */
+  agent?: boolean;
 }) {
   const [state, setStateRaw] = useState<VoiceState>("off");
   const [heard, setHeard] = useState(""); // live words while listening
@@ -100,6 +106,13 @@ export function useVoice(opts: {
     micCtx: null as AudioContext | null,
     playCtx: null as AudioContext | null,
     outAnalyser: null as AnalyserNode | null,
+    /** Volume of the Hub's voice: lowered ("ducked") while the reader may be cutting in. */
+    outGain: null as GainNode | null,
+    /** Voice agent turn engine state (lib/voice/turns.ts). */
+    engine: initialTurnState(),
+    engineTick: 0 as unknown as ReturnType<typeof setInterval>,
+    /** The answer being spoken, to tell whether it ended with a question. */
+    lastAnswer: "",
     raf: 0,
     finalText: "",
     /** This turn's final tokens with their language tags (language identification). */
@@ -124,7 +137,42 @@ export function useVoice(opts: {
   const setState = (s: VoiceState) => {
     stateRef.current = s;
     setStateRaw(s);
+    if (optsRef.current.agent) {
+      const mode = s === "thinking" ? "thinking" : s === "speaking" ? "speaking" : s === "listening" ? "idle" : null;
+      if (mode) runEngineRef.current?.({ type: "hub", mode, now: Date.now(), askedQuestion: mode === "idle" ? /[?？]\s*$/.test(r.current.lastAnswer.trim()) : undefined });
+    }
   };
+
+  /** Lower or restore the Hub's voice smoothly. */
+  const setDuck = (on: boolean) => {
+    const c = r.current;
+    if (c.outGain && c.playCtx) c.outGain.gain.setTargetAtTime(on ? 0.25 : 1, c.playCtx.currentTime, 0.04);
+  };
+
+  /** Feed one event to the turn engine and carry out what it decides. */
+  const runEngine = (ev: TurnEvent) => {
+    const c = r.current;
+    const { state: next, actions } = stepTurn(c.engine, ev);
+    c.engine = next;
+    for (const a of actions) {
+      if (a.type === "duck") setDuck(true);
+      else if (a.type === "resume") setDuck(false);
+      else if (a.type === "stop") {
+        setDuck(false);
+        if (stateRef.current === "thinking" || stateRef.current === "speaking") interrupt();
+      } else if (a.type === "submit") {
+        if (stateRef.current !== "listening") continue;
+        const q = fixPlaceNames(a.text, c.places);
+        const pick = optsRef.current.language;
+        if (q.length > 1) askTurn(q, pick === "auto" ? a.lang : pick, { speaker: a.speaker, confidence: a.confidence, afterQuestion: a.afterQuestion });
+      } else if (a.type === "ignore") setHeard("");
+    }
+    if (stateRef.current === "listening" && ev.type === "tokens") {
+      setHeard([...c.engine.turn, ...c.engine.live].map((t) => t.text).join("").trim());
+    }
+  };
+  const runEngineRef = useRef<((ev: TurnEvent) => void) | null>(null);
+  runEngineRef.current = runEngine;
 
   /* ─── speech out ─── */
 
@@ -231,7 +279,7 @@ export function useVoice(opts: {
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.connect(r.current.outAnalyser ?? ctx.destination);
+    src.connect(r.current.outGain ?? r.current.outAnalyser ?? ctx.destination);
     const at = Math.max(r.current.nextTime, ctx.currentTime + 0.05);
     src.start(at);
     r.current.nextTime = at + buf.duration;
@@ -297,8 +345,9 @@ export function useVoice(opts: {
 
   /* ─── a spoken turn ─── */
 
-  const askTurn = (question: string, lang: LangCode) => {
+  const askTurn = (question: string, lang: LangCode, turn?: TurnMeta) => {
     r.current.replyLang = lang;
+    r.current.lastAnswer = "";
     setHeard("");
     setCaption("");
     setLastQuestion(question);
@@ -323,18 +372,36 @@ export function useVoice(opts: {
       })
       .catch(() => null);
     let said = "";
+    let settled = false;
+    // Voice agent: if nothing has come back after a moment, say so instead of sitting in silence.
+    // Side talk is dropped by the server well before this, so it never triggers the line.
+    const ackTimer = optsRef.current.agent
+      ? window.setTimeout(() => {
+          if (settled || said || stateRef.current !== "thinking") return;
+          speak(`${LANGUAGES[lang].turns.ack.plain} `, false);
+        }, 1300)
+      : 0;
+    const settle = () => {
+      settled = true;
+      window.clearTimeout(ackTimer);
+    };
     optsRef.current.ask(question, {
       onDelta: (t) => {
+        settle();
         said += t;
+        r.current.lastAnswer = said;
         setCaption(said.replace(/\[\d+\]/g, ""));
         speak(t, false);
       },
       onDone: (o) => {
+        settle();
         if (o?.endVoice) r.current.endAfter = true;
         speak("", true);
         r.current.answerDone = true;
         r.current.wantSpeech = false;
         if (!r.current.streamId || !said) {
+          // Nothing to say (side talk dropped, or empty): stop a "one moment" line that may have started.
+          if (r.current.streamId) cancelSpeech();
           if (r.current.endAfter) {
             r.current.endAfter = false;
             endRef.current?.();
@@ -346,11 +413,12 @@ export function useVoice(opts: {
         maybeFinished();
       },
       onError: (m) => {
+        settle();
         setError(m);
         cancelSpeech();
         setState("listening");
       },
-    }, lang);
+    }, lang, turn);
   };
 
   const interrupt = () => {
@@ -367,6 +435,7 @@ export function useVoice(opts: {
     const c = r.current;
     clearTimeout(c.endTimer);
     clearInterval(c.keepalive);
+    clearInterval(c.engineTick);
     cancelAnimationFrame(c.raf);
     if (stateRef.current === "thinking" || stateRef.current === "speaking") {
       cancelSpeech();
@@ -385,7 +454,7 @@ export function useVoice(opts: {
     } catch {}
     void c.micCtx?.close().catch(() => {});
     void c.playCtx?.close().catch(() => {});
-    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, outAnalyser: null, finalText: "", turnTokens: [], streamId: "" });
+    Object.assign(c, { stt: null, tts: null, session: "", speechKey: null, ttsQueue: [], media: null, rec: null, micCtx: null, playCtx: null, outAnalyser: null, outGain: null, finalText: "", turnTokens: [], streamId: "" });
     setHeard("");
     setCaption("");
     setLevel(0);
@@ -407,6 +476,10 @@ export function useVoice(opts: {
       c.outAnalyser = c.playCtx.createAnalyser();
       c.outAnalyser.fftSize = 512;
       c.outAnalyser.connect(c.playCtx.destination);
+      c.outGain = c.playCtx.createGain();
+      c.outGain.connect(c.outAnalyser);
+      c.engine = initialTurnState(Date.now());
+      c.lastAnswer = "";
       // Microphone first: a blocked mic shouldn't reserve a paid session.
       c.media = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
@@ -463,6 +536,11 @@ export function useVoice(opts: {
             enable_agent_text_input: true,
             // Landscape names, places and scheme names, so "Patratu" isn't heard as "Patriarchal".
             ...(sttContext ? { context: sttContext } : {}),
+            // Voice agent: who is speaking (free in the real-time price), and end-of-turn
+            // detection tuned as Soniox suggests for voice agents (docs/voice-agent-plan.md).
+            ...(optsRef.current.agent
+              ? { enable_speaker_diarization: true, endpoint_latency_adjustment_level: 2, endpoint_sensitivity: 0.3, max_endpoint_delay_ms: 1500 }
+              : {}),
           }),
         );
         const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find((t) => MediaRecorder.isTypeSupported(t));
@@ -478,9 +556,14 @@ export function useVoice(opts: {
         }, 10_000);
         setState("listening");
         setStartedAt(Date.now());
+        if (optsRef.current.agent) c.engineTick = setInterval(() => runEngineRef.current?.({ type: "tick", now: Date.now() }), 100);
       };
       stt.onmessage = (ev) => {
-        let m: { tokens?: { text: string; is_final: boolean; language?: string }[]; error_message?: string; finished?: boolean };
+        let m: {
+          tokens?: { text: string; is_final: boolean; language?: string; speaker?: string; start_ms?: number; end_ms?: number; confidence?: number }[];
+          error_message?: string;
+          finished?: boolean;
+        };
         try {
           m = JSON.parse(String(ev.data));
         } catch {
@@ -489,6 +572,20 @@ export function useVoice(opts: {
         if (m.error_message) {
           setError("Voice stopped. You can type your question instead.");
           end();
+          return;
+        }
+        if (optsRef.current.agent) {
+          // The turn engine decides: answer, wait, duck, stop or ignore.
+          const toks = m.tokens ?? [];
+          const now = Date.now();
+          runEngine({
+            type: "tokens",
+            now,
+            tokens: toks
+              .filter((t) => t.text !== "<end>")
+              .map((t) => ({ text: t.text, isFinal: t.is_final, speaker: t.speaker, language: t.language, startMs: t.start_ms, endMs: t.end_ms, confidence: t.confidence })),
+          });
+          if (toks.some((t) => t.text === "<end>" && t.is_final)) runEngine({ type: "endpoint", now });
           return;
         }
         let nonFinal = "";

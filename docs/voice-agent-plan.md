@@ -301,3 +301,22 @@ Averages from `cat.ai_usage`, taken 25 Nov:
 - **Speech is the main cost.** Soniox listening and speaking make up most of the total, and the Claude agent loop adds only a few cents.
 - **The voice figures are reservations,** the maximum a session or answer can use, so real spend is lower.
 - **The daily voice cap** (`VOICE_DAILY_USD_CEILING`, default $3) counts reservations. That allows roughly 10 to 30 conversations a day. For the staff week, raise it to about $10 on the test copy (a setting, no code). That needs Sandeep's OK as spend.
+
+## 6. Build status (26 Nov)
+
+Done, behind `VOICE_AGENT=on` (local dev only so far):
+
+- **Turn engine** in `lib/voice/turns.ts`, a pure function with rules 1 to 7 except playback alignment. `scripts/voice-replay.ts` holds 25 cases, all passing.
+- **Language table columns** for fillers, stop words, connectors, short answers and spoken lines, in English and Hindi.
+- **Live voice wiring** in `useVoice.ts`: the engine drives submit, duck, resume and stop. Diarization and Soniox end-of-turn tuning are on.
+- **Turn judge** folded into the router: side talk is never stored or answered, and the agent asks "Was that for me?" once when unsure. Commands handled: repeat, end, shorter, show sources. The "Agents of Change" identity line is in place.
+- **Spoken "one moment"** if nothing comes back within 1.3 s.
+
+Next:
+
+- the agent loop with tools (step 3), on-screen actions (step 4), conversation state (step 5);
+- playback-aligned agent text (rule 7);
+- the `cat.voice_turns` decision log;
+- the eval script and the staff recordings.
+
+Not yet tested with a live microphone: the test pane blocks the mic.
