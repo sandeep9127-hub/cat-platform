@@ -326,6 +326,16 @@ Part 3, also done:
 - **Conversation state** (`lib/ask/conv-state.ts`, column `cat.conversations.voice_state`, applied to the CAT database only): the current landscape, topic, last figures and language. Tested: after a Patratu livestock answer, "And how much for goats?" stayed on Patratu and the agent asked which goat line was meant.
 - **Playback-aligned agent text** (rule 7): TTS `return_timestamps` gives each character's time, and the Hub's words go to speech-to-text about 0.6 s before they are heard. On an interruption, only what was actually heard is sent, then `end_of_segment`. Not yet tested with a live microphone.
 
+Part 4, also done:
+
+- **Decision log** `cat.voice_turns` (`2026-11-26_voice_turns.sql`, CAT database only). One row per spoken turn: decision, judge reason, speaker, confidence, language, tools, latency, cost. Side-talk turns keep no text, and no audio is ever stored. The `marked_wrong` / `marked_note` columns are ready for the admin page.
+- **Eval** `scripts/voice-agent-eval.ts`: 20 scripted conversations against the local server, covering answers, side talk (second speaker, chai, phone call, office chatter, noise), Hindi and Hinglish, follow-ups, tools, screen actions, goodbyes, repeat, identity and off-topic. It reports the pass rate and P50/P90 time to first words, costs about $0.02 a run, and refuses non-local addresses.
+- **First run** (26 Nov): 14/20 passed, first words P50 6.3 s. Fixes followed:
+  - search runs in parallel with the turn judge;
+  - "show me its page" now opens the landscape card directly;
+  - the reader's language also goes in the system prompt.
+- **After the fixes:** 19/20 pass, P50 4.2 s, P90 6.4 s. One Hinglish case still copies one English summary sentence.
+
 Next:
 - the `cat.voice_turns` decision log;
 - the eval script and the staff recordings.

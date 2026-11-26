@@ -25,6 +25,7 @@ import { smallTalk, smallTalkReply, type SmallTalk } from "@/lib/ask/smalltalk";
 import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode } from "@/lib/ask/languages";
 import { voiceAgentTools, VOICE_AGENT_NOTE, type ScreenAction } from "@/lib/ask/voice-agent";
 import { nextVoiceState, readVoiceState, voiceStateLine } from "@/lib/ask/conv-state";
+import { logVoiceTurn, type VoiceDecision } from "@/lib/ask/voice-log";
 import {
   historyText,
   LIP_KINDS,
@@ -309,14 +310,39 @@ export async function askV2(req: NextRequest): Promise<Response> {
             : m.content,
       }))
     : [];
+  // Search the library while the turn judge decides, so a real question doesn't wait for both.
+  const searchLib = (q: string) =>
+    hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
+  const early = history.length ? null : searchLib(question);
+  early?.catch(() => {}); // awaited below if used
   // Side talk is never stored or answered: the agent stays quiet and keeps listening.
   const judged = agentOn ? await classifyQuestion(question, history, req.signal, { voice: true, agent: signals ?? true }) : null;
   const lastAssistant = [...history].reverse().find((t) => t.role === "assistant");
   const lastAssistantText = lastAssistant && typeof lastAssistant.content === "string" ? lastAssistant.content.replace(/ \(answer interrupted by the reader\)$/, "") : "";
   const wasThatForMe = LANGUAGES[lang].turns.wasThatForMe;
+  // Decision log (cat.voice_turns): one row per spoken turn, voice agent only.
+  const vlog = (decision: VoiceDecision, extra: { reason?: string; tools?: string[]; costUsd?: number | null } = {}) =>
+    agentOn
+      ? logVoiceTurn({
+          conversationId: conv?.id ?? null,
+          transcript: question,
+          speaker: signals?.speaker ?? "main",
+          confidence: signals?.confidence ?? null,
+          afterQuestion: signals?.afterQuestion ?? false,
+          lang,
+          decision,
+          reason: extra.reason ?? (judged ? `judge: ${judged.addressed}${judged.sure === false ? " (unsure)" : ""}` : null),
+          tools: extra.tools,
+          latencyMs: Date.now() - started,
+          costUsd: extra.costUsd ?? null,
+        })
+      : Promise.resolve();
   if (judged?.addressed === "side_talk") {
     const askOnce = !judged.sure && signals?.speaker !== "other" && lastAssistantText !== wasThatForMe;
-    if (!askOnce) return json({ ignored: true }, 200, setCookie);
+    if (!askOnce) {
+      await vlog("ignored_side_talk");
+      return json({ ignored: true }, 200, setCookie);
+    }
   }
   if (!conv) conv = await createConversation(tokenHash, scope);
   const conversationId = conv.id;
@@ -325,21 +351,32 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // Conversational turns ("thanks", "we can stop", "theek hai") get one short
   // line: no search, no Claude call, no "Not in the library" card. A voice
   // closing also ends the voice session once the line is spoken.
-  const reply = (kind: SmallTalk) => {
+  const reply = async (kind: SmallTalk, decision: VoiceDecision = "small_talk") => {
+    await vlog(decision);
     const text = smallTalkReply(kind, { voice, lang });
     return chatResponse({ conversationId, scope, setCookie, started, text, endVoice: voice && kind === "closing" });
   };
-  if (judged?.addressed === "side_talk") return chatResponse({ conversationId, scope, setCookie, started, text: wasThatForMe, endVoice: false });
+  if (judged?.addressed === "side_talk") {
+    await vlog("asked_was_that_for_me");
+    return chatResponse({ conversationId, scope, setCookie, started, text: wasThatForMe, endVoice: false });
+  }
   if (judged?.addressed === "command") {
     const t = LANGUAGES[lang].turns;
-    if (judged.command === "end") return reply("closing");
-    if (judged.command === "repeat")
+    if (judged.command === "end") return reply("closing", "command_end");
+    if (judged.command === "repeat") {
+      await vlog("command_repeat");
       return chatResponse({ conversationId, scope, setCookie, started, text: lastAssistantText || t.nothingToRepeat, endVoice: false });
-    if (judged.command === "show_sources") return chatResponse({ conversationId, scope, setCookie, started, text: t.sourcesInChat, endVoice: false });
+    }
+    if (judged.command === "show_sources") {
+      await vlog("command_show_sources");
+      return chatResponse({ conversationId, scope, setCookie, started, text: t.sourcesInChat, endVoice: false });
+    }
   }
   const shorter = judged?.addressed === "command" && judged.command === "shorter";
-  if (agentOn && /\b(who are you|what are you|your name|who is this|aap kaun|tum kaun|aapka naam)\b|आप कौन|तुम कौन|आपका नाम/i.test(question))
+  if (agentOn && /\b(who are you|what are you|your name|who is this|aap kaun|tum kaun|aapka naam)\b|आप कौन|तुम कौन|आपका नाम/i.test(question)) {
+    await vlog("identity");
     return chatResponse({ conversationId, scope, setCookie, started, text: LANGUAGES[lang].turns.whoAmI, endVoice: false });
+  }
   const small = smallTalk(question);
   if (small) return reply(small);
 
@@ -349,10 +386,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
   // For voice, Claude answers the cleaned-up question (misheard place names fixed).
   let askedQuestion = question;
   try {
-    const search = (q: string) =>
-      hybridSearch({ query: q, landscapeSlug: scope, k: TOP_K, sourceKinds: LIP_KINDS }).then((r) => r.filter((h) => h.score >= PASSAGE_MIN));
-    const early = history.length ? null : search(question);
-    early?.catch(() => {}); // awaited below if used
+    const search = searchLib;
     // A spoken question that names no landscape may have misheard one ("Patriarchal"
     // for Patratu): the rewrite step, told about speech errors, corrects it.
     const routed =
@@ -387,7 +421,11 @@ export async function askV2(req: NextRequest): Promise<Response> {
       if (visual) return visual;
     }
 
-    hits = early && intent.query === question ? await early : await search(intent.query);
+    // The early search on the reader's own words is used when the rewrite didn't change them, or,
+    // for a first English voice-agent question, when it already found strong passages.
+    const earlyHits = early ? await early.catch(() => [] as Hit[]) : [];
+    const earlyStrong = agentOn && lang === "en" && (earlyHits[0]?.score ?? 0) >= REFUSAL_FLOOR;
+    hits = early && (intent.query === question || earlyStrong) ? earlyHits : await search(intent.query);
   } catch (e) {
     console.error("[ask_v2] retrieval failed:", (e as Error).message);
     return json({ error: "Search is temporarily unavailable." }, 502, setCookie);
@@ -409,6 +447,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
 
   // Below the floor: refuse without calling Claude.
   if (!hits.length || topScore < REFUSAL_FLOOR) {
+    await vlog("refused", { reason: `top score ${topScore.toFixed(2)} below floor` });
     await addAssistantMessage({
       conversationId, content: refusalText, citations: [], interrupted: false, refused: true,
       model: null, inputTokens: null, outputTokens: null, costUsd: null, latencyMs: Date.now() - started,
@@ -447,15 +486,24 @@ export async function askV2(req: NextRequest): Promise<Response> {
   ];
 
   // Voice agent: Claude may search again, put things on screen, or end the call (tools only read).
+  // The reader's language also goes in the system prompt: for Hindi, the per-turn instruction alone
+  // wasn't enough to stop English sentences being copied from cited passages.
+  const system = lang === "en" ? SYSTEM_PROMPT : `${SYSTEM_PROMPT}\n\n${replyInstruction(lang).trim()} Translate cited passages into ${LANGUAGES[lang].name}; a citation marks where a fact came from, it is never a reason to quote the passage's English words.`;
   const actions: ScreenAction[] = [];
+  const toolsUsed: string[] = [];
   let endVoice = false;
   // "Show me the sources" is clear enough not to leave to the model.
   if (agentOn && /\b(show|open|see)\b.{0,20}\b(sources?|references?)\b|स्रोत (दिखा|दिखाओ|दिखाइए)|sources? dikha/i.test(question)) actions.push({ type: "open_sources" });
+  if (agentOn && /\b(show|open|see)\b.{0,25}\b(page|landscape)\b|पेज (दिखा|खोल)/i.test(question)) {
+    const slug = routedInfo.landscapes.length === 1 ? routedInfo.landscapes[0] : prevState?.landscape ?? null;
+    if (slug && Object.prototype.hasOwnProperty.call(LANDSCAPES, slug))
+      actions.push({ type: "show_landscape", slug, name: LANDSCAPES[slug].name, href: `/landscape/${slug}` });
+  }
   let modelStream: AsyncGenerator<LoopEvent, void, unknown>;
   try {
     modelStream = agentOn
       ? await claudeToolStream("ask_v2", {
-          system: SYSTEM_PROMPT,
+          system,
           messages: turns,
           signal: req.signal,
           maxToolRounds: 3,
@@ -470,7 +518,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
             },
           }),
         })
-      : await claudeStream("ask_v2", { system: SYSTEM_PROMPT, messages: turns, signal: req.signal });
+      : await claudeStream("ask_v2", { system, messages: turns, signal: req.signal });
   } catch (e) {
     const msg =
       e instanceof BudgetExceededError
@@ -533,6 +581,7 @@ export async function askV2(req: NextRequest): Promise<Response> {
             if (blockCites.size) emit([...blockCites].sort((a, b) => a - b).map((n) => `[${n}]`).join(""));
             blockCites = new Set();
           } else if (evt.type === "tool") {
+            toolsUsed.push(evt.name);
             // New sources and screen actions reach the browser as soon as the tool has run.
             if (evt.name === "search_library") send({ type: "sources", citations });
             for (const a of actions.splice(0)) send({ type: "action", action: a });
@@ -587,6 +636,12 @@ export async function askV2(req: NextRequest): Promise<Response> {
         console.error("[ask_v2] saving answer failed:", (e as Error).message);
       }
       // Voice agent: remember what this conversation is about for the next turn.
+      // Decision log: the answer, the tools it used, how long it took, what it cost.
+      await vlog(failed ? "error" : refused ? "refused" : shorter ? "command_shorter" : "answered", {
+        tools: toolsUsed,
+        costUsd: done?.costUsd ?? null,
+        reason: interrupted && !failed ? "interrupted" : undefined,
+      });
       if (agentOn && !refused && text) {
         const state = nextVoiceState(prevState, {
           routedLandscapes: routedInfo.landscapes,
