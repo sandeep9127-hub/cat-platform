@@ -337,7 +337,10 @@ Part 4, also done:
 - **After the fixes:** 19/20 pass, P50 4.2 s, P90 6.4 s. One Hinglish case still copies one English summary sentence.
 
 Next:
-- the `cat.voice_turns` decision log;
-- the eval script and the staff recordings.
+
+- the staff recordings (add their token streams to `scripts/voice-replay.ts` and their transcripts to the eval);
+- the admin page for marking wrong turns;
+- time to first words: the 4.2 s median is still slow for voice; the spoken "one moment" covers the gap after 1.3 s;
+- the one Hindi copying case.
 
 Not yet tested with a live microphone: the test pane blocks the mic.
