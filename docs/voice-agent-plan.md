@@ -336,10 +336,15 @@ Part 4, also done:
   - the reader's language also goes in the system prompt.
 - **After the fixes:** 19/20 pass, P50 4.2 s, P90 6.4 s. One Hinglish case still copies one English summary sentence.
 
+Part 5, also done:
+
+- **Admin page `/admin/voice`** (editors and admins; Voice in the desk menu). It shows stats for 24 h / 7 / 30 days: turns, answered, side talk, reviewed and marked wrong, answer time P50/P90, and Claude cost. Filters: to review, marked wrong, side talk, answered, all.
+- **Marking.** Each turn can be marked Right, or Wrong with what it should have done (answered, stayed quiet, asked first, ended the call, searched again, other) and a note. Marks are written to the audit log. Side-talk rows show "(words not kept)".
+- **Eval from marks.** `scripts/voice-agent-eval.ts --marked` adds every marked-wrong turn that kept its words as an eval case, with the expectation taken from the mark.
+
 Next:
 
 - the staff recordings (add their token streams to `scripts/voice-replay.ts` and their transcripts to the eval);
-- the admin page for marking wrong turns;
 - time to first words: the 4.2 s median is still slow for voice; the spoken "one moment" covers the gap after 1.3 s;
 - the one Hindi copying case.
 

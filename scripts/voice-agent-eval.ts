@@ -9,6 +9,7 @@
  *   node scripts/dev-cat.mjs                      # in another terminal (VOICE_AGENT on)
  *   npx tsx scripts/voice-agent-eval.ts           # all cases
  *   npx tsx scripts/voice-agent-eval.ts --only hindi --verbose
+ *   npx tsx scripts/voice-agent-eval.ts --marked   # also the turns editors marked wrong in /admin/voice
  *
  * Costs real money: about 25 cases, a few Haiku calls each, roughly $0.02 a run
  * (logged to cat.ai_usage under the daily caps). Writes conversations and
@@ -150,6 +151,7 @@ function check(e: Expect, r: Result, prev: Result | null): string[] {
   if (r.status !== 200) fail.push(`HTTP ${r.status}`);
   if (e.ignored !== undefined && r.ignored !== e.ignored) fail.push(e.ignored ? "was answered, expected silence" : "was ignored");
   if (e.notAnswered && answeredFromLibrary) fail.push("answered from the library, expected no answer");
+  if (e.notAnswered === false && (r.ignored || r.mode === "chat")) fail.push("not answered, expected an answer");
   if (e.endVoice !== undefined && r.endVoice !== e.endVoice) fail.push(e.endVoice ? "didn't end the call" : "ended the call");
   if (e.action && !r.actions.includes(e.action)) fail.push(`no ${e.action} action`);
   if (e.searched && !r.searched) fail.push("didn't search again");
@@ -171,6 +173,48 @@ const pct = (xs: number[], p: number) => {
   return s[Math.min(s.length - 1, Math.floor((p / 100) * s.length))];
 };
 
+/**
+ * Turns an editor marked wrong in /admin/voice (cat.voice_turns, CAT database),
+ * as cases: the expectation comes from what they said it should have done.
+ * Only turns that kept their words (never side talk or a second speaker).
+ */
+async function markedCases(): Promise<Case[]> {
+  const { config } = await import("dotenv");
+  config({ path: ".env.local", quiet: true });
+  if (!process.env.DATABASE_URL_CAT) throw new Error("DATABASE_URL_CAT is not set in .env.local");
+  const postgres = (await import("postgres")).default;
+  const sql = postgres(process.env.DATABASE_URL_CAT, { max: 1 });
+  try {
+    const rows = await sql<{ transcript: string; lang: string; speaker: "main" | "other"; after_question: boolean; confidence: number | null; marked_note: string | null; created_at: Date }[]>`
+      SELECT transcript, lang, speaker, after_question, confidence, marked_note, created_at FROM cat.voice_turns
+      WHERE marked_wrong = true AND transcript IS NOT NULL ORDER BY created_at DESC LIMIT 100`;
+    return rows.flatMap((r): Case[] => {
+      const note = r.marked_note ?? "";
+      const expect: Expect | null = /answered/i.test(note)
+        ? { notAnswered: false, ignored: false }
+        : /quiet/i.test(note)
+          ? { notAnswered: true }
+          : /ended/i.test(note)
+            ? { endVoice: true }
+            : /searched again/i.test(note)
+              ? { searched: true }
+              : /asked first/i.test(note)
+                ? { question: true }
+                : null;
+      if (!expect) return [];
+      const lang = r.lang === "hi" ? "hi" : "en";
+      return [{
+        name: `marked ${r.created_at.toISOString().slice(0, 10)}: ${r.transcript.slice(0, 32)}`,
+        tags: ["marked"],
+        turns: [{ text: r.transcript, lang, speaker: r.speaker, afterQuestion: r.after_question, confidence: r.confidence ?? 0.95 }],
+        expect,
+      }];
+    });
+  } finally {
+    await sql.end();
+  }
+}
+
 async function main() {
   const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : null;
   const verbose = process.argv.includes("--verbose");
@@ -179,7 +223,8 @@ async function main() {
     console.error(`${BASE} doesn't have the voice agent on (VOICE_AGENT=on). Start it with: node scripts/dev-cat.mjs`);
     process.exit(1);
   }
-  const cases = CASES.filter((c) => !only || c.tags.includes(only) || c.name.includes(only));
+  const all = process.argv.includes("--marked") ? [...CASES, ...(await markedCases())] : CASES;
+  const cases = all.filter((c) => !only || c.tags.includes(only) || c.name.includes(only));
   const first: number[] = [];
   let passed = 0;
   for (const c of cases) {
