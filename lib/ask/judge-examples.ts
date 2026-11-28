@@ -2,14 +2,15 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 
 /**
- * Worked examples for the voice turn judge, taken from turns an editor marked
+ * Worked examples for the voice turn judge, taken from turns an admin marked
  * wrong and ticked "Teach the agent" in /admin/voice. The judge then calls
  * similar turns the way the editor said it should have, so the agent improves
  * with every reviewed session and no code change.
  *
- * Safety: only editor-approved turns are used, never raw conversation. The
- * words are visitor speech, so they are cleaned, shortened and wrapped as data;
- * the correct call is built here from a fixed list, never from free text.
+ * Safety: only admin-approved turns are used, never raw conversation. The
+ * words are visitor speech, so they are cleaned, shortened (120 characters) and
+ * sent as data in the user message, never in the system prompt; the correct call
+ * is built here from a fixed list, never from free text. Cached 30 s per server.
  */
 
 export type JudgeCall = { addressed: "question" | "side_talk" | "command"; command: "none" | "end"; sure: boolean };
@@ -25,7 +26,8 @@ export const TEACH_CALL: Record<string, JudgeCall | null> = {
 };
 
 const MAX_EXAMPLES = 12;
-const TTL_MS = 5 * 60_000;
+// Short, so un-teaching a turn reaches every server instance within 30 seconds.
+const TTL_MS = 30_000;
 let cache: { at: number; text: string } | null = null;
 let generation = 0;
 
@@ -35,13 +37,13 @@ export function forgetJudgeExamples(): void {
   generation++; // a lookup already running started before the change; don't let it refill the cache
 }
 
-/** Visitor words as one safe line: no markup or brackets, no line breaks, at most 200 characters. */
+/** Visitor words as one safe line: no markup or brackets, no line breaks, at most 120 characters. */
 export function cleanWords(s: string): string {
   return s
     .replace(/[<>{}\[\]`\\]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 200);
+    .slice(0, 120);
 }
 
 type Row = { transcript: string; speaker: string; confidence: number | null; after_question: boolean; should_have: string };
@@ -86,7 +88,7 @@ function load(): Promise<string> {
       // The judge works without examples; try again in a minute.
       console.error("[judge_examples] lookup failed:", (e as Error).message);
       const text = cache?.text ?? "";
-      if (gen === generation) cache = { at: Date.now() - TTL_MS + 60_000, text };
+      if (gen === generation) cache = { at: Date.now(), text };
       return text;
     })
     .finally(() => {

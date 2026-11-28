@@ -19,7 +19,8 @@ export async function markTurnAction(form: FormData): Promise<void> {
   const raw = form.get("should")?.toString() ?? "";
   const shouldHave = (SHOULD_HAVE as readonly string[]).includes(raw) ? (raw as ShouldHave) : null;
   const note = form.get("note")?.toString().slice(0, 300) ?? null;
-  const teach = wrong === true && form.get("teach") === "on";
+  // Teaching puts visitor words in front of the turn judge: admins only, not editors.
+  const teach = wrong === true && user.role === "admin" && form.get("teach") === "on";
   const ok = await markVoiceTurn({ id, wrong, shouldHave, note, teach });
   if (ok) {
     await writeAudit({

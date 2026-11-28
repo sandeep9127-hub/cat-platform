@@ -362,9 +362,9 @@ Not yet tested with a live microphone: the test pane blocks the mic.
 
 ### Learning from editors (28 Nov)
 
-The agent now improves from reviewed sessions without code changes. In `/admin/voice`, an editor who marks a turn wrong can tick **Teach the agent**. The turn's words and the correct call ("should have stayed quiet", "should have answered", "should have asked first", "should have ended") become a worked example in the turn judge's instructions (`lib/ask/judge-examples.ts`): the 12 most recent, cached for 5 minutes, refreshed at once on the server where the mark was made.
+The agent now improves from reviewed sessions without code changes. In `/admin/voice`, an admin (not an editor) who marks a turn wrong can tick **Teach the agent**. The turn's words and the correct call ("should have stayed quiet", "should have answered", "should have asked first", "should have ended") become a worked example in the turn judge's instructions (`lib/ask/judge-examples.ts`): the 12 most recent, sent in the judge's user message as data (never its system prompt), cached 30 seconds so un-teaching reaches every server within half a minute.
 
-- Only editor-approved turns teach, never raw conversation. Visitor words are cleaned (no markup, brackets or line breaks, at most 200 characters) and wrapped as data; the correct call comes from a fixed list.
+- Only admin-approved turns teach, never raw conversation. Visitor words are cleaned (no markup, brackets or line breaks, at most 120 characters) and wrapped as data; the correct call comes from a fixed list.
 - Turns judged as side talk, or said by a second speaker, keep no words, so they can't teach. The database refuses `teach` without words, a wrong mark and a known correct call.
 - A slow lookup never holds a turn up more than 800 ms; the judge works without examples.
 - Check: `npx tsx scripts/judge-examples-check.ts --judge` (dev database only). Before teaching, "Is the Mau field visit still on for Tuesday?" made the judge unsure (it would ask "was that for me?"); after one taught example about a Rajnagar field visit, it is sure it's side talk.

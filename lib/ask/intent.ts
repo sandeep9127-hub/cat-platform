@@ -120,11 +120,12 @@ export async function classifyQuestion(
       agent && agent !== true
         ? `\nSignals: speaker=${agent.speaker === "main" ? "the main speaker" : "a second speaker"}; recognition confidence=${agent.confidence.toFixed(2)}; ${agent.afterQuestion ? "the assistant had just asked a question" : "the assistant had not just asked a question"}.`
         : "";
-    // Voice agent: editor-approved worked examples from /admin/voice (cached; "" when none).
+    // Voice agent: admin-approved worked examples from /admin/voice (cached 30 s; "" when none).
     const examples = agent ? await judgeExamples() : "";
     const r = await claudeMessage("ask_rewrite", {
-      system: prompt() + (opts?.voice ? VOICE_NOTE : "") + (agent ? AGENT_NOTE + examples : ""),
-      messages: [{ role: "user", content: `${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}${signals}` }],
+      // Examples hold visitor words, so they ride in the user message (data), never the system prompt.
+      system: prompt() + (opts?.voice ? VOICE_NOTE : "") + (agent ? AGENT_NOTE : ""),
+      messages: [{ role: "user", content: `${examples ? `${examples.trim()}\n\n` : ""}${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}${signals}` }],
       jsonSchema: agent ? AGENT_SCHEMA : SCHEMA,
       signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
     });

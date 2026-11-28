@@ -10,6 +10,7 @@ import {
   type VoiceTurnRow,
 } from "@/lib/admin/voice-turns";
 import { markTurnAction } from "./actions";
+import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Voice agent · Admin" };
@@ -51,7 +52,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   );
 }
 
-function TurnItem({ t, back }: { t: VoiceTurnRow; back: string }) {
+function TurnItem({ t, back, canTeach }: { t: VoiceTurnRow; back: string; canTeach: boolean }) {
   const signals = [
     t.speaker === "other" ? "second speaker" : null,
     t.confidence != null && t.confidence < 0.8 ? `confidence ${t.confidence.toFixed(2)}` : null,
@@ -115,7 +116,7 @@ function TurnItem({ t, back }: { t: VoiceTurnRow; back: string }) {
               Note (optional)
               <input name="note" maxLength={300} className="mt-1 w-full rounded-[6px] border border-line bg-paper px-2 py-1.5 text-[13px] text-ink" />
             </label>
-            {t.transcript ? (
+            {!canTeach ? null : t.transcript ? (
               <label className="flex items-start gap-2 text-[12px] text-ink-soft">
                 <input type="checkbox" name="teach" defaultChecked={t.teach} className="mt-0.5" />
                 <span>Teach the agent: these words become an example, so it judges similar turns this way. Leave unticked if the words are private.</span>
@@ -140,6 +141,8 @@ function TurnItem({ t, back }: { t: VoiceTurnRow; back: string }) {
 
 export default async function VoiceAdminPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
+  const session = await auth();
+  const canTeach = (session?.user as { role?: string } | undefined)?.role === "admin";
   const filter: TurnFilter = isFilter(sp.f) ? sp.f : "unreviewed";
   const days = DAYS.includes(Number(sp.d)) ? Number(sp.d) : 7;
   const page = Math.max(0, Number(sp.p) || 0);
@@ -205,7 +208,7 @@ export default async function VoiceAdminPage({ searchParams }: { searchParams: P
           {data && data.turns.length ? (
             <ul className="border-b border-line">
               {data.turns.map((t) => (
-                <TurnItem key={t.id} t={t} back={back} />
+                <TurnItem key={t.id} t={t} back={back} canTeach={canTeach} />
               ))}
             </ul>
           ) : (
