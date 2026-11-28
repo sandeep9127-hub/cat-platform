@@ -2,8 +2,8 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 import { RequestAccessForm } from "./RequestAccessForm";
 
 export const metadata = {
-  title: "Request access to the full investment tables",
-  description: "Ask CAT for view-only access to a landscape's full investment table.",
+  title: "Request access to the full investment dashboard",
+  description: "Ask CAT for view-only access to the full investment dashboard.",
 };
 
 export default async function RequestAccess({ searchParams }: { searchParams: Promise<{ landscape?: string }> }) {
@@ -14,11 +14,11 @@ export default async function RequestAccess({ searchParams }: { searchParams: Pr
     <main className="max-w-[880px] mx-auto px-5 sm:px-8 py-12 space-y-8">
       <header className="space-y-3">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Investment plans</p>
-        <h1 className="font-serif text-[34px] leading-tight text-deep-teal">Request access to the full investment tables</h1>
+        <h1 className="font-serif text-[34px] leading-tight text-deep-teal">Request access to the full investment dashboard</h1>
         <p className="text-[16px] text-ink-soft max-w-[640px]">
-          Each landscape&apos;s Budget page shows the summary. The full table, with every intervention, unit cost, phase
-          and source of funds, is shared on request. Tell us who you are and how you&apos;ll use it. If the CAT team
-          approves, you&apos;ll get a personal, view-only link by email.
+          Each landscape&apos;s Budget page shows its own summary. The full investment dashboard compares all ten
+          landscapes and lists every cost line, with its tags and sources of funds. It is shared on request: tell us
+          who you are and how you&apos;ll use it. If the CAT team approves, you&apos;ll get a personal, view-only link by email.
         </p>
       </header>
       <RequestAccessForm landscapes={landscapes} initial={initial} />

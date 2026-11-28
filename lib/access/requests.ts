@@ -155,11 +155,11 @@ export async function declineAccessRequest(opts: {
   if (!opts.tellThem) return {};
   const res = await sendEmail({
     to: req.email,
-    subject: "Your request to view the CAT investment tables",
+    subject: "Your request to view the CAT investment dashboard",
     text: [
       `Dear ${req.name},`,
       "",
-      "Thank you for your interest in the landscape investment plans. We aren't able to share the full investment table with you at this time.",
+      "Thank you for your interest in the landscape investment plans. We aren't able to share the full investment dashboard with you at this time.",
       ...(opts.note ? ["", opts.note] : []),
       "",
       "The summary figures stay available on the CAT Transformation Hub.",
@@ -207,9 +207,9 @@ export async function notifyApprovers(requestId: string): Promise<{ sent: number
     // must never reach the requester. The requester's address is shown as text only.
     const res = await sendEmail({
       to,
-      subject: `Approve access? ${req.organisation} wants the ${scope} investment table`,
+      subject: `Approve access? ${req.organisation} wants the investment dashboard (${scope})`,
       text: [
-        `${req.name} (${req.email}) from ${req.organisation}${req.role ? `, ${req.role}` : ""} asked to view the full investment table for ${scope}.`,
+        `${req.name} (${req.email}) from ${req.organisation}${req.role ? `, ${req.role}` : ""} asked to view the full investment dashboard (they asked about ${scope}; an approved link opens all landscapes).`,
         "",
         "How they'll use it:",
         req.purpose,

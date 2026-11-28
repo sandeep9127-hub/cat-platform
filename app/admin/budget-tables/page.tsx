@@ -1,57 +1,85 @@
 import Link from "next/link";
-import { sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { getBudgetSummaries } from "@/lib/budget/table";
-import { LANDSCAPES } from "@/lib/data/landscapes";
+import { listShareLinks } from "@/lib/share/links";
+import { revokeLinkAction } from "./actions";
+import { ShareLinkCreator } from "./ShareLinkCreator";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Budget tables · Admin" };
+export const metadata = { title: "Investment dashboard · Admin" };
 
-const crore = (n: number) => `₹${(n / 1e7).toLocaleString("en-IN", { maximumFractionDigits: 2 })} cr`;
+const date = (s: string | null) =>
+  s ? new Date(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "–";
 
+/**
+ * The full investment figures now live in the "All landscapes, Phase 1"
+ * dashboard. Editors open it from here and issue private, view-only share
+ * links to it. (The older per-landscape table pages are left in place, unlinked.)
+ */
 export default async function BudgetTables() {
-  const [summaries, pending, links] = await Promise.all([
-    getBudgetSummaries(),
-    db.execute(sql`SELECT landscape_slug, count(*)::int AS n FROM "cat".intervention_changes WHERE status = 'pending' GROUP BY 1`),
-    db.execute(sql`SELECT coalesce(landscape_slug, 'all') AS slug, count(*)::int AS n FROM "cat".share_links
-                   WHERE revoked_at IS NULL AND expires_at > now() GROUP BY 1`),
-  ]);
-  const pendingBy = new Map((pending as unknown as { rows: { landscape_slug: string; n: number }[] }).rows.map((r) => [r.landscape_slug, r.n]));
-  const linksBy = new Map((links as unknown as { rows: { slug: string; n: number }[] }).rows.map((r) => [r.slug, r.n]));
-  const total = summaries.reduce((t, s) => t + s.grand_total, 0);
-
+  const links = await listShareLinks();
+  const now = Date.now();
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-serif text-[28px] text-deep-teal">Budget tables</h1>
-        <p className="text-[14px] text-muted max-w-[720px] mt-1">
-          The full approved investment table for each landscape: every column of the live sheet. The public Budget page shows the
-          summary; the full table opens only for editors here, or through a private share link you create.
+    <div className="space-y-7">
+      <header className="space-y-2">
+        <h1 className="font-serif text-[28px] text-deep-teal">Investment dashboard</h1>
+        <p className="text-[14px] text-muted max-w-[760px]">
+          All ten landscapes&apos; Phase 1 investment plans, live from the All-Landscape Phase 1 sheet: overview, costs, lenses, landscape
+          profiles, comparisons, every cost line and the Studio. It opens for signed-in editors, and for anyone you send a private share link.
         </p>
+        <Link href="/dashboards/landscapes-phase-1"
+          className="inline-flex rounded-[6px] bg-teal text-paper px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.1em] hover:bg-deep-teal">
+          Open the dashboard
+        </Link>
       </header>
-      <ul className="rounded-[10px] border border-line divide-y divide-line">
-        {summaries.map((s) => (
-          <li key={s.landscape_slug} className="flex flex-wrap items-center gap-4 px-4 py-3">
-            <Link href={`/admin/budget-tables/${s.landscape_slug}`} className="font-serif text-[17px] text-deep-teal hover:text-teal min-w-[220px]">
-              {LANDSCAPES[s.landscape_slug]?.name ?? s.landscape_slug}
-            </Link>
-            <span className="text-[13.5px] tabular-nums">{crore(s.grand_total)}</span>
-            <span className="text-[12.5px] text-muted">{s.rows} rows</span>
-            <span className="text-[12.5px] text-muted">approved {new Date(s.last_approved).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-            {pendingBy.get(s.landscape_slug) ? (
-              <Link href="/admin/budget-changes" className="rounded-[5px] border border-amber/40 bg-amber/20 px-1.5 py-0.5 font-mono text-[11px] text-deep-teal">
-                {pendingBy.get(s.landscape_slug)} pending
-              </Link>
-            ) : null}
-            <span className="ml-auto font-mono text-[11px] text-muted">{linksBy.get(s.landscape_slug) ?? 0} live links</span>
-          </li>
-        ))}
-        <li className="flex flex-wrap items-center gap-4 px-4 py-3 bg-cream/50">
-          <Link href="/admin/budget-tables/all" className="font-serif text-[17px] text-deep-teal hover:text-teal min-w-[220px]">All landscapes</Link>
-          <span className="text-[13.5px] tabular-nums">{crore(total)}</span>
-          <span className="ml-auto font-mono text-[11px] text-muted">{linksBy.get("all") ?? 0} live links</span>
-        </li>
-      </ul>
+
+      <section className="rounded-[10px] border border-line bg-cream/40 px-5 py-4 space-y-4">
+        <h2 className="font-serif text-[19px] text-deep-teal">Private share links</h2>
+        <p className="text-[13.5px] text-muted max-w-[720px]">
+          A link opens the whole dashboard (all landscapes, all tabs) until it expires or you revoke it. Links are view-only, with no download,
+          and every view is logged. Approved access requests send the same kind of link automatically.
+        </p>
+        <ShareLinkCreator landscape="all" />
+        {links.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px] min-w-[720px]">
+              <thead>
+                <tr className="text-left text-muted">
+                  <th className="py-1.5 pr-3 font-normal">For</th>
+                  <th className="py-1.5 pr-3 font-normal">Requested for</th>
+                  <th className="py-1.5 pr-3 font-normal">Created</th>
+                  <th className="py-1.5 pr-3 font-normal">Expires</th>
+                  <th className="py-1.5 pr-3 font-normal">Views</th>
+                  <th className="py-1.5 pr-3 font-normal">Last viewed</th>
+                  <th className="py-1.5 font-normal" />
+                </tr>
+              </thead>
+              <tbody>
+                {links.map((l) => {
+                  const live = !l.revoked_at && new Date(l.expires_at).getTime() > now;
+                  return (
+                    <tr key={l.id} className={`border-t border-line ${live ? "" : "text-muted"}`}>
+                      <td className="py-1.5 pr-3">{l.label}</td>
+                      <td className="py-1.5 pr-3">{l.scope === "all_landscapes_full_table" ? "All landscapes" : l.landscape_slug}</td>
+                      <td className="py-1.5 pr-3">{date(l.created_at)}{l.created_by_email ? <span className="text-muted"> · {l.created_by_email}</span> : null}</td>
+                      <td className="py-1.5 pr-3">{l.revoked_at ? `Revoked ${date(l.revoked_at)}` : date(l.expires_at)}</td>
+                      <td className="py-1.5 pr-3 tabular-nums">{l.views}</td>
+                      <td className="py-1.5 pr-3">{date(l.last_viewed_at)}</td>
+                      <td className="py-1.5 text-right">
+                        {live && (
+                          <form action={revokeLinkAction}>
+                            <input type="hidden" name="id" value={l.id} />
+                            <input type="hidden" name="landscape" value="all" />
+                            <button className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted hover:text-red-alert">Revoke</button>
+                          </form>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export function RequestAccessForm({ landscapes, initial }: { landscapes: { slug:
       <div role="status" className="rounded-[10px] border border-line bg-cream px-6 py-5 space-y-2">
         <h2 className="font-serif text-[22px] text-deep-teal">Thank you. Your request is with the CAT team.</h2>
         <p className="text-[15px] text-ink-soft">
-          If it&apos;s approved, you&apos;ll get an email with a personal, view-only link to the full table.
+          If it&apos;s approved, you&apos;ll get an email with a personal, view-only link to the full investment dashboard.
         </p>
       </div>
     );

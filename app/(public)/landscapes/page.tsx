@@ -102,6 +102,12 @@ export default async function LandscapesPage() {
               Seven-year horizon
             </span>
           </div>
+          <Link
+            href="/dashboards/landscapes-phase-1"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-teal text-paper px-4 py-2 text-[13.5px] font-medium hover:bg-deep-teal"
+          >
+            The investment dashboard: all landscapes, Phase 1 →
+          </Link>
         </aside>
       </Reveal>
 

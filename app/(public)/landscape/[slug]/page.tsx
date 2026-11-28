@@ -9,6 +9,8 @@ import { LandscapeAskBar, SPEC_STARTERS } from "@/components/landscape/Landscape
 import { landscapeHasLip, budgetSummary, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeLedger } from "@/components/landscape/LandscapeLedger";
 import { LandscapeMoney } from "@/components/landscape/LandscapeMoney";
+import { LandscapeMoneyPhase1 } from "@/components/dashboards/landscapes-phase1/LandscapeSummary";
+import { getLandscapeSummary } from "@/lib/dashboards/landscapes-phase1/sheet";
 import { CurrencyProvider, CurrencyControl } from "@/components/landscape/currency";
 import { FileText, Scale, ShoppingCart, Wallet, ArrowUpRight } from "lucide-react";
 import { LandscapeSignature } from "@/components/landscape/LandscapeSignature";
@@ -66,6 +68,8 @@ export default async function LandscapeDetailPage({ params }: Props) {
 
   // Climate valuation lives in its own tab; just gate the tab here.
   const hasClimate = await landscapeHasClimate(slug);
+  // Phase 1 figures from the All-Landscape Phase 1 sheet (same data as the investment dashboard).
+  const phase1 = await getLandscapeSummary(slug);
 
   // Programmes in the same state
   const stateEntries = state
@@ -186,7 +190,9 @@ export default async function LandscapeDetailPage({ params }: Props) {
           investmentRequiredInr={money?.investmentRequiredInr}
         />
 
-        {money && insights && money.totalCostInr > 0 && (
+        {phase1.ok && phase1.data ? (
+          <LandscapeMoneyPhase1 slug={slug} name={p.name} data={phase1.data} />
+        ) : money && insights && money.totalCostInr > 0 && (
           <LandscapeMoney
             slug={slug}
             landscapeName={p.name}

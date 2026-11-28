@@ -34,7 +34,7 @@ const GROUPS: Group[] = [
     label: "Budgets",
     items: [
       { href: "/admin/budget-changes", label: "Budget changes" },
-      { href: "/admin/budget-tables", label: "Budget tables" },
+      { href: "/admin/budget-tables", label: "Investment dashboard" },
       { href: "/admin/access-requests", label: "Access requests" },
     ],
   },

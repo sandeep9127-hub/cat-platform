@@ -57,6 +57,7 @@ export async function createLinkAction(_prev: CreateState, form: FormData): Prom
       await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.email", entityType: "share_link", entityId: r.id, meta: { result: res } });
     }
     revalidatePath(`/admin/budget-tables/${slug}`);
+    revalidatePath("/admin/budget-tables");
     return { url, expiresAt: r.expiresAt, emailed };
   } catch (e) {
     return { error: (e as Error).message };
@@ -69,4 +70,5 @@ export async function revokeLinkAction(form: FormData): Promise<void> {
   await revokeShareLink(id, user.id ?? null);
   await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.revoke", entityType: "share_link", entityId: id }).catch(() => {});
   revalidatePath(`/admin/budget-tables/${String(form.get("landscape") ?? "")}`);
+  revalidatePath("/admin/budget-tables");
 }

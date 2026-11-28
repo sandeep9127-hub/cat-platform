@@ -3,7 +3,8 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 
 /**
- * Private share links for the full investment table.
+ * Private share links to the full investment dashboard (/dashboards/landscapes-phase-1).
+ * Any live link opens the whole dashboard; scope and landscape record what was asked for.
  * The URL carries a random 256-bit token; only its sha256 is stored, so the
  * database can't be used to rebuild a link. Every link expires (max 366 days),
  * can be revoked, is view-only (no download), and logs each view (IP stored only as a salted
@@ -91,11 +92,11 @@ export async function siteUrl(path: string): Promise<string | null> {
 export function shareEmail(opts: { name: string; url: string; scopeName: string; expiresAt: string }) {
   const expires = new Date(opts.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   return {
-    subject: `Your access to the ${opts.scopeName} investment table (CAT Transformation Hub)`,
+    subject: "Your access to the CAT investment dashboard (CAT Transformation Hub)",
     text: [
       opts.name ? `Dear ${opts.name},` : "Hello,",
       "",
-      `You can now view the full investment table for ${opts.scopeName} on the CAT Transformation Hub:`,
+      "You can now view the full investment dashboard on the CAT Transformation Hub: all ten landscapes' Phase 1 plans, compared line by line.",
       "",
       opts.url,
       "",
