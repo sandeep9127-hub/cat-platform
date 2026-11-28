@@ -431,3 +431,10 @@
   .ld-catbar-track { grid-column: 1 / -1; grid-row: 2; }
 }
 @media (min-width: 700px) { .ld-public .ld-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Reduced motion: no animations, no hover lifts or tilts. */
+@media (prefers-reduced-motion: reduce) {
+  .ld-page *, .ld-page *::before, .ld-page *::after { animation: none !important; transition: none !important; }
+  .ld-page .ld-card:hover, .ld-page .ld-kpis > .ld-card:hover, .ld-page .ld-theme:hover, .ld-page .ld-btn:hover, .ld-page .ld-logo:hover { transform: none; }
+  .ld-page .ld-theme:hover .ld-theme-ill, .ld-page .ld-has-role:hover .ld-role { transform: none; }
+}
