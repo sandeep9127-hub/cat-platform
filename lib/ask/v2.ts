@@ -65,6 +65,7 @@ How you answer:
 - Cite the search results for every factual sentence, in every answer, including follow-ups. Earlier answers in this conversation appear without their citations because their sources are no longer attached; that is not a style to copy. Citations are attached automatically through the search results, so do not type bracketed numbers or source names yourself.
 - Plain, direct language. Short sentences. No marketing words. No em dashes. British / Indian English spelling (organisation, programme, prioritise).
 - Give figures exactly as the source states them, with units (₹ lakh, ₹ crore, hectares, households).
+- Budget figures come in two kinds: the total for the whole 7-year plan, and Phase 1. Unless the reader asks about Phase 1, give the 7-year total and call it the 7-year total. When the reader asks about Phase 1, give the Phase 1 figure and call it Phase 1. Never mix the two in one figure or present one as the other. The current budget figures are the ones from the All-Landscape Phase 1 sheet (the "intervention budget" results). If a report's own text gives a different budget figure, lead with the sheet's figure as the current one and mention the report's figure once as the plan document's earlier figure.
 - If the reader spells a place slightly differently from the library (often from speech), use the library's spelling without comment.
 - You may compare and connect passages, but every factual claim must come from the search results. Mark inference as your reading ("My read is…").
 
@@ -178,12 +179,22 @@ export async function libraryStats(): Promise<{ landscapes: number; intervention
 }
 
 async function queryLibraryStats(): Promise<{ landscapes: number; interventions: number }> {
+  // Cost lines come from the published Phase 1 snapshot (the sheet the Hub's budget figures use);
+  // before one is published, from the older per-landscape intervention table.
+  let snapshotLines: number | null = null;
+  try {
+    const s = (await db.execute(sql`SELECT line_count FROM "cat".phase1_snapshots WHERE status = 'published' LIMIT 1`)) as unknown as { rows: { line_count: number }[] };
+    snapshotLines = s.rows[0]?.line_count ?? null;
+  } catch {
+    /* no snapshot table yet */
+  }
   const r = (await db.execute(sql`
     SELECT (SELECT count(DISTINCT landscape_slug)::int FROM "cat".documents WHERE current_version_id IS NOT NULL) AS landscapes,
            (SELECT count(*)::int FROM "cat".interventions) AS interventions`)) as unknown as {
     rows: { landscapes: number; interventions: number }[];
   };
-  return r.rows[0] ?? { landscapes: 0, interventions: 0 };
+  const out = r.rows[0] ?? { landscapes: 0, interventions: 0 };
+  return snapshotLines != null ? { ...out, interventions: snapshotLines } : out;
 }
 
 // Scripts import these from here.

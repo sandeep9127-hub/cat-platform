@@ -11,12 +11,12 @@ type Props = {
   landscapes: { columns: string[]; rows: Record<string, unknown>[] };
   lines: { columns: string[]; rows: Record<string, unknown>[] };
   cats: { Landscape: string; Category: string; phase1: number }[];
-  /** Signed-in editors keep private notes and saved views; share-link visitors don't. */
+  /** Private notes and saved views (each editor, or each share link, keeps its own). */
   canNotes: boolean;
   shareBar?: ReactNode;
 };
 
-const DOCS = "/api/admin/dashboards/landscapes-phase-1/docs";
+const DOCS = "/dashboards/landscapes-phase-1/docs";
 
 /** Defaults, as in the original dashboard. */
 const DEFAULTS = {

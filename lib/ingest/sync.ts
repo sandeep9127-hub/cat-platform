@@ -150,7 +150,12 @@ export async function runDriveSync(opts: {
     }
 
     // ── Sheets ──
-    for (const s of plan.sheets) {
+    // The All-Landscape Phase 1 sheet is now the source of budget figures (published
+    // by an admin from the Investment dashboard page). Staging per-landscape changes
+    // from "Live Google Sheets" is off unless SYNC_INTERVENTIONS=on.
+    const stageSheets = (process.env.SYNC_INTERVENTIONS ?? "").trim().toLowerCase() === "on";
+    if (!stageSheets && plan.sheets.length) log(`live intervention sheets: ${plan.sheets.length} seen, not staged (SYNC_INTERVENTIONS is off)`);
+    for (const s of stageSheets ? plan.sheets : []) {
       const name = LANDSCAPES[s.slug]?.name ?? s.slug;
       try {
         const sheet = parseInterventionSheet(await readSheetValues(s.file.id, "Data"));

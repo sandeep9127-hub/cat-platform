@@ -37,6 +37,8 @@ export function LandscapeInsightsView({
   data: LandscapeInsights;
 }) {
   const { totals, byCategory, byPackage } = data;
+  // From the Phase 1 snapshot the groups are the plan's thematic investments.
+  const themed = byPackage.some((p) => /^Thematic Investment/i.test(p.package));
 
   const treeItems: TreeItem[] = byCategory.map((c) => ({
     label: c.category,
@@ -76,7 +78,7 @@ export function LandscapeInsightsView({
     { v: digits(profile.villages), dec: 0, lab: "Villages", suf: "" },
     { v: digits(profile.area), dec: 0, lab: "Landscape (ha)", suf: "" },
     { v: byCategory.length, dec: 0, lab: "Categories", suf: "" },
-    { v: byPackage.length, dec: 0, lab: "Packages", suf: "" },
+    { v: byPackage.length, dec: 0, lab: themed ? "Thematic investments" : "Packages", suf: "" },
   ];
 
   return (
@@ -115,7 +117,7 @@ export function LandscapeInsightsView({
         eyebrow="Financing"
         title="How it gets"
         italic="paid for"
-        intro="Government schemes and community contribution cover part of the plan; the rest must be mobilised, across a deliberate blend of instruments."
+        intro={instruments.length ? "Government schemes and community contribution cover part of the plan; the rest must be mobilised, across a deliberate blend of instruments." : "Government schemes and community contribution cover part of the 7-year plan; the rest must be mobilised."}
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 items-start">
           <div>
@@ -148,16 +150,29 @@ export function LandscapeInsightsView({
               ))}
             </ul>
           </div>
-          <div>
-            <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
-              The blend it&apos;s raising
-            </h3>
-            <Donut
-              segments={instruments}
-              centerTop={`₹${cr(totals.investment).toFixed(1)} Cr`}
-              centerSub="TO MOBILISE"
-            />
-          </div>
+          {instruments.length > 0 ? (
+            <div>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+                The blend it&apos;s raising
+              </h3>
+              <Donut
+                segments={instruments}
+                centerTop={`₹${cr(totals.investment).toFixed(1)} Cr`}
+                centerSub="TO MOBILISE"
+              />
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-deep-teal mb-4">
+                Still to mobilise
+              </h3>
+              <p className="font-sans font-medium text-[34px] leading-none tracking-[-0.02em] text-ink tabular-nums">₹{cr(totals.investment).toFixed(2)} Cr</p>
+              <p className="mt-3 text-[14px] text-ink-soft max-w-[40ch] leading-[1.55]">
+                Investment required over the 7-year plan, after government schemes and community contribution. The plan&apos;s Phase 1
+                financing (grants, returnable grants and debt) is on the Budget tab.
+              </p>
+            </div>
+          )}
         </div>
       </Section>
 
@@ -182,14 +197,14 @@ export function LandscapeInsightsView({
       {/* Packages */}
       <Section
         eyebrow="Structure"
-        title={`${numberWord(byPackage.length)} investment`}
-        italic="packages"
+        title={`${numberWord(byPackage.length)} ${themed ? "thematic" : "investment"}`}
+        italic={themed ? "investments" : "packages"}
         intro="The same money, grouped the way the plan is actually delivered."
       >
         <ul className="space-y-3 list-none p-0">
           {byPackage.map((p, i) => {
-            const label = p.package.replace(/^PACKAGE\s*\d+:\s*/i, "");
-            const num = p.package.match(/PACKAGE\s*(\d+)/i)?.[1] ?? String(i + 1);
+            const label = p.package.replace(/^(?:PACKAGE|Thematic Investment)\s*\d+:\s*/i, "");
+            const num = p.package.match(/(?:PACKAGE|Thematic Investment)\s*(\d+)/i)?.[1] ?? String(i + 1);
             return (
               <li key={i} className="grid grid-cols-[2rem_1fr] sm:grid-cols-[2rem_minmax(0,16rem)_1fr] items-center gap-3 sm:gap-4">
                 <span className="font-mono text-[11px] text-muted tabular-nums">P{num}</span>

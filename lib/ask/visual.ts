@@ -9,7 +9,8 @@ import { streamMode, type ModeCtx } from "@/lib/ask/modes";
 /**
  * Charts and diagrams drawn as code (docs/ask-ui-spec.md §4).
  *   Budget charts: Haiku only chooses what to plot; every number is summed
- *   in SQL from the approved intervention table (cat.interventions), and the
+ *   from the published Phase 1 snapshot (7-year totals unless the reader asks
+ *   for Phase 1; the older cat.interventions table before one is published), and the
  *   caption is written by code, so no figure ever comes from a model.
  *   Diagrams: a short cited flow from retrieved passages; steps without a
  *   valid citation are dropped.
@@ -26,7 +27,7 @@ type Plan = {
 };
 
 const PLAN_SYSTEM = `You plan one visual for the CAT Hub. Available:
-- "budget": a chart from the approved intervention budgets of the landscape plans. measure is "total" (cost), "funding" (government vs community vs investment still required) or "phases" (Phase 1 vs Phase 2). groupBy is "category" (one landscape's budget split by intervention category) or "landscape" (two or more landscapes side by side). category optionally narrows to one intervention category (e.g. "Natural Resource Management", "Livestock"), else "".
+- "budget": a chart from the intervention budgets of the landscape plans (7-year totals, or Phase 1 when the request says Phase 1). measure is "total" (cost), "funding" (government vs community vs investment still required) or "phases" (Phase 1 vs the rest of the plan). groupBy is "category" (one landscape's budget split by intervention category) or "landscape" (two or more landscapes side by side). category optionally narrows to one intervention category (e.g. "Natural Resource Management", "Livestock"), else "".
 - "diagram": a step-by-step flow drawn from the plan text (how something is funded, run or rolled out).
 - "none": anything else, or numbers the budget table doesn't hold (e.g. household counts, yields, prices).
 landscapes: slugs from this list the request names or implies: {ROSTER}. Use [] if none.`;
@@ -96,7 +97,7 @@ async function plan(ctx: ModeCtx, query: string, landscapes: string[]): Promise<
 
 type Row = { landscape_slug: string; category: string; grand: number; govt: number; community: number; investment: number; p1: number; p2: number; lines: number };
 
-async function budgetRows(slugs: string[], byCategory: boolean): Promise<Row[]> {
+async function legacyBudgetRows(slugs: string[], byCategory: boolean): Promise<Row[]> {
   const r = await db.execute(sql`
     SELECT landscape_slug, ${byCategory ? sql`category` : sql`''`} AS category,
            sum(coalesce((totals->>'grand_total')::numeric, 0))::float AS grand,
@@ -112,7 +113,7 @@ async function budgetRows(slugs: string[], byCategory: boolean): Promise<Row[]> 
   return (r as unknown as { rows: Row[] }).rows;
 }
 
-async function categoryRows(slugs: string[], category: string): Promise<Row[]> {
+async function legacyCategoryRows(slugs: string[], category: string): Promise<Row[]> {
   const like = `%${category.replace(/[%_\\]/g, "")}%`;
   const r = await db.execute(sql`
     SELECT landscape_slug, '' AS category,
@@ -130,6 +131,55 @@ async function categoryRows(slugs: string[], category: string): Promise<Row[]> {
   return (r as unknown as { rows: Row[] }).rows;
 }
 
+type Period = "total" | "phase1";
+/** Phase 1 only when the reader says so; otherwise the whole 7-year plan. */
+export const askedPhase1 = (q: string) => /\bphase[\s-]*(1|one|i)\b/i.test(q);
+
+/**
+ * Sums from the published Phase 1 snapshot (the All-Landscape Phase 1 sheet), the
+ * same figures as the dashboard and Budget tabs. "grand", "govt", "community" and
+ * "investment" are 7-year totals, or Phase 1 when asked; p1 is Phase 1 and p2 the
+ * rest of the plan. Falls back to the older intervention table if nothing is published.
+ */
+async function snapshotRows(slugs: string[], byCategory: boolean, period: Period, category?: string): Promise<Row[] | null> {
+  const { getPublishedSnapshot } = await import("@/lib/dashboards/landscapes-phase1/snapshot");
+  const { SHEET_TO_SLUG } = await import("@/lib/dashboards/landscapes-phase1/sheet");
+  const snap = await getPublishedSnapshot().catch(() => null);
+  if (!snap) return null;
+  const want = new Set(slugs);
+  const needle = category ? category.toLowerCase() : "";
+  const n = (r: Record<string, unknown>, k: string) => Number(r[k] || 0);
+  const out = new Map<string, Row>();
+  for (const r of snap.data.lines.rows) {
+    const slug = SHEET_TO_SLUG[String(r.Landscape)];
+    if (!slug || !want.has(slug)) continue;
+    if (needle && !String(r.Category ?? "").toLowerCase().includes(needle) && !String(r["Thematic Investment"] ?? "").toLowerCase().includes(needle)) continue;
+    const cat = byCategory && !needle ? String(r.Category || "") : "";
+    const k = slug + "\u0000" + cat;
+    const x = out.get(k) ?? { landscape_slug: slug, category: cat, grand: 0, govt: 0, community: 0, investment: 0, p1: 0, p2: 0, lines: 0 };
+    const p1 = period === "phase1";
+    x.grand += n(r, p1 ? "Phase 1 Cost (Rs)" : "Total Cost (Rs)");
+    x.govt += n(r, p1 ? "Phase 1 Govt (Rs)" : "Total Govt (Rs)");
+    x.community += n(r, p1 ? "Phase 1 Community (Rs)" : "Total Community (Rs)");
+    x.investment += n(r, p1 ? "Phase 1 Investment Required (Rs)" : "Total Investment Required (Rs)");
+    x.p1 += n(r, "Phase 1 Cost (Rs)");
+    x.p2 += n(r, "Total Cost (Rs)") - n(r, "Phase 1 Cost (Rs)");
+    x.lines += 1;
+    out.set(k, x);
+  }
+  return [...out.values()];
+}
+
+async function budgetRows(slugs: string[], byCategory: boolean, period: Period): Promise<{ rows: Row[]; snapshot: boolean }> {
+  const s = await snapshotRows(slugs, byCategory, period);
+  return s ? { rows: s, snapshot: true } : { rows: await legacyBudgetRows(slugs, byCategory), snapshot: false };
+}
+
+async function categoryRows(slugs: string[], category: string, period: Period): Promise<{ rows: Row[]; snapshot: boolean }> {
+  const s = await snapshotRows(slugs, false, period, category);
+  return s ? { rows: s, snapshot: true } : { rows: await legacyCategoryRows(slugs, category), snapshot: false };
+}
+
 /** Chart artifact: one value per category per series, in ₹ crore. */
 export type ChartArtifact = {
   type: "chart";
@@ -144,7 +194,11 @@ async function budgetChart(ctx: ModeCtx, p: Plan): Promise<Response | null> {
   const slugs = p.landscapes.slice(0, 6);
   if (!slugs.length) return null;
   const single = slugs.length === 1;
-  const rows = p.category ? await categoryRows(slugs, p.category) : await budgetRows(slugs, single);
+  // 7-year totals by default; Phase 1 only when the reader asks for it (the phases chart shows both).
+  const period: Period = p.measure !== "phases" && askedPhase1(ctx.question) ? "phase1" : "total";
+  const got = p.category ? await categoryRows(slugs, p.category, period) : await budgetRows(slugs, single, period);
+  const rows = got.rows;
+  const which = got.snapshot ? (period === "phase1" ? "Phase 1" : "7-year total") : "approved";
   if (!rows.length || rows.every((r) => r.grand <= 0)) return null;
 
   const topic = p.category ? ` · ${p.category}` : "";
@@ -177,16 +231,16 @@ async function budgetChart(ctx: ModeCtx, p: Plan): Promise<Response | null> {
       { name: "Community", values: groups.map((g) => crore(g.r.community)) },
       { name: "Investment required", values: groups.map((g) => crore(g.r.investment)) },
     ];
-    title = `${single ? short(slugs[0]) : "Funding by landscape"}${single ? ": who pays" : ""}${topic}`;
+    title = `${single ? short(slugs[0]) : "Funding by landscape"}${single ? ": who pays" : ""}${topic} (${which})`;
   } else if (p.measure === "phases") {
     series = [
       { name: "Phase 1", values: groups.map((g) => crore(g.r.p1)) },
-      { name: "Phase 2", values: groups.map((g) => crore(g.r.p2)) },
+      { name: got.snapshot ? "Rest of the 7-year plan" : "Phase 2", values: groups.map((g) => crore(g.r.p2)) },
     ];
     title = `${single ? `${short(slugs[0])}: Phase 1 and Phase 2` : "Phase 1 and Phase 2 by landscape"}${topic}`;
   } else {
-    series = [{ name: "Total cost", values: groups.map((g) => crore(g.r.grand)) }];
-    title = `${single ? `${short(slugs[0])}: budget by category` : "Total budget by landscape"}${topic}`;
+    series = [{ name: period === "phase1" ? "Phase 1 cost" : "7-year total cost", values: groups.map((g) => crore(g.r.grand)) }];
+    title = `${single ? `${short(slugs[0])}: budget by category` : "Budget by landscape"}${topic} (${which})`;
   }
 
   // One data-source citation per landscape: the approved intervention sheet.
@@ -195,9 +249,11 @@ async function budgetChart(ctx: ModeCtx, p: Plan): Promise<Response | null> {
     .map((s, i) => ({
       index: i + 1,
       type: "landscape",
-      label: `${landscapeName(s)} intervention budget · approved data, ${rows.filter((r) => r.landscape_slug === s).reduce((a, r) => a + r.lines, 0)} lines`,
+      label: `${landscapeName(s)} intervention budget · ${got.snapshot ? "All-Landscape Phase 1 sheet" : "approved data"}, ${rows.filter((r) => r.landscape_slug === s).reduce((a, r) => a + r.lines, 0)} lines`,
       url: `/landscape/${s}`,
-      preview: "Totals summed from the approved intervention sheet (the plan's 5.2 budget data) that the Hub holds for this landscape.",
+      preview: got.snapshot
+        ? `Totals summed from the landscape's cost lines in the All-Landscape Phase 1 sheet (${period === "phase1" ? "Phase 1" : "7-year totals"}), the same figures as the investment dashboard and Budget tab.`
+        : "Totals summed from the approved intervention sheet (the plan's 5.2 budget data) that the Hub holds for this landscape.",
       score: 1,
       document: `${landscapeName(s)} intervention budget`,
       section: null,
@@ -212,8 +268,8 @@ async function budgetChart(ctx: ModeCtx, p: Plan): Promise<Response | null> {
   const total = crore(rows.reduce((a, r) => a + r.grand, 0));
   const caption =
     single && !p.category
-      ? `${short(slugs[0])}'s approved budget totals ${fmt(total)} across ${rows.length} categories; the largest is ${top.label} at ${fmt(top.v)}.${marks}`
-      : `${top.label} has the largest budget here at ${fmt(top.v)}${p.category ? ` for ${p.category}` : ""}.${marks}`;
+      ? `${short(slugs[0])}'s ${got.snapshot ? (period === "phase1" ? "Phase 1" : "7-year") : "approved"} budget totals ${fmt(total)} across ${rows.length} categories; the largest is ${top.label} at ${fmt(top.v)}.${marks}`
+      : `${top.label} has the largest ${got.snapshot ? (period === "phase1" ? "Phase 1 " : "7-year ") : ""}budget here at ${fmt(top.v)}${p.category ? ` for ${p.category}` : ""}.${marks}`;
 
   const artifact: ChartArtifact = { type: "chart", title, unit: "₹ crore", categories, series, caption };
   return streamMode({

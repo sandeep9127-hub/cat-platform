@@ -65,7 +65,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   const { landscapes, lines, cats } = res.data;
   return (
     <div className={mono.variable}>
-      <LandscapesPhase1Dashboard landscapes={landscapes} lines={lines} cats={cats} canNotes={access.kind === "editor"} shareBar={shareBar} />
+      <LandscapesPhase1Dashboard landscapes={landscapes} lines={lines} cats={cats} canNotes shareBar={shareBar} />
     </div>
   );
 }

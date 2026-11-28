@@ -9,10 +9,14 @@ import { config } from "dotenv";
  * The run is stored in cat.eval_runs / eval_results and shown on /admin/quality.
  * Costs only Voyage queries (free tier).
  *
- *   npx tsx scripts/run-eval.ts [--label="..."]
+ *   npx tsx scripts/run-eval.ts [--label="..."] [--dev]
+ * --dev runs against the CAT dev database branch (DATABASE_URL_DEV) instead of the live one.
  */
 config({ path: ".env.local", quiet: true });
-if (process.env.DATABASE_URL_CAT) process.env.DATABASE_URL = process.env.DATABASE_URL_CAT;
+if (process.argv.includes("--dev")) {
+  if (!process.env.DATABASE_URL_DEV) throw new Error("DATABASE_URL_DEV is not set");
+  process.env.DATABASE_URL = process.env.DATABASE_URL_DEV;
+} else if (process.env.DATABASE_URL_CAT) process.env.DATABASE_URL = process.env.DATABASE_URL_CAT;
 
 type Q = {
   id: string; question: string; should_refuse: boolean;

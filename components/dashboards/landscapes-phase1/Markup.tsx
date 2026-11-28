@@ -223,7 +223,7 @@ export function Markup({ canNotes, shareBar }: { canNotes: boolean; shareBar?: R
           <div className="ld-card" id="pf-notes">
             <img className="ld-notes-art" src="/dashboards/lp1/notes.webp" alt="" aria-hidden="true" />
             <h3 className="ld-h3">My notes on this landscape</h3>
-            <p className="ld-sub">Only you can see these notes. They are saved to your Hub account, one per landscape.</p>
+            <p className="ld-sub">Only you can see these notes. They are kept with your account or your access link, one per landscape.</p>
             <textarea id="note-text" className="ld-textarea" rows={8} aria-label="My notes on this landscape" placeholder="Write a note…"></textarea>
             <div className="ld-row">
               <button type="button" className="ld-btn ld-btn-primary" id="note-save">Save note</button>
@@ -554,7 +554,7 @@ export function Markup({ canNotes, shareBar }: { canNotes: boolean; shareBar?: R
             {canNotes && (
             <div className="ld-card" id="studio-saved">
               <h3 className="ld-h3">Saved views</h3>
-              <p className="ld-sub">Save the Studio settings under a name and load them later. Only you see your saved views.</p>
+              <p className="ld-sub">Save the Studio settings under a name and load them later. They are kept with your account or your access link, and only you see them.</p>
               <div className="ld-row">
                 <input type="text" className="ld-input" id="view-name" placeholder="Name this view" aria-label="Name this view" maxLength={80} />
                 <button type="button" className="ld-btn ld-btn-primary" id="view-save">Save view</button>

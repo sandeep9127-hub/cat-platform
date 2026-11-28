@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { LANDSCAPES } from "@/lib/data/landscapes";
 import { createShareLink, revokeShareLink, shareEmail, shareUrl } from "@/lib/share/links";
@@ -71,4 +72,51 @@ export async function revokeLinkAction(form: FormData): Promise<void> {
   await writeAudit({ actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: "share_link.revoke", entityType: "share_link", entityId: id }).catch(() => {});
   revalidatePath(`/admin/budget-tables/${String(form.get("landscape") ?? "")}`);
   revalidatePath("/admin/budget-tables");
+}
+
+/* ---------- Phase 1 sheet snapshots (admins only) ---------- */
+
+export type SyncState = { error?: string };
+
+async function admin() {
+  const session = await auth();
+  const user = session?.user as { id?: string; email?: string | null; role?: string } | undefined;
+  if (user?.role !== "admin") throw new Error("Only admins can update the investment figures.");
+  return { userId: user.id ?? null, email: user.email ?? null };
+}
+
+/** Read the sheet now, check its layout and keep it as a draft for review. Nothing changes on the site yet. */
+export async function updateFromSheetAction(_prev: SyncState, _form: FormData): Promise<SyncState> {
+  let id: string;
+  try {
+    const actor = await admin();
+    const { fetchSheetLive } = await import("@/lib/dashboards/landscapes-phase1/sheet");
+    const { saveDraft } = await import("@/lib/dashboards/landscapes-phase1/snapshot");
+    id = await saveDraft(await fetchSheetLive(), actor);
+    await writeAudit({ actorUserId: actor.userId, actorEmail: actor.email, action: "phase1.fetch", entityType: "phase1_snapshot", entityId: id }).catch(() => {});
+  } catch (e) {
+    return { error: `The sheet wasn't loaded: ${(e as Error).message}` };
+  }
+  redirect(`/admin/budget-tables?draft=${id}`);
+}
+
+async function publishOrRestore(form: FormData, action: "publish" | "restore"): Promise<SyncState> {
+  const id = String(form.get("id") ?? "");
+  try {
+    const actor = await admin();
+    const { publishSnapshot } = await import("@/lib/dashboards/landscapes-phase1/snapshot");
+    await publishSnapshot(id, actor, action);
+  } catch (e) {
+    return { error: `Not ${action === "publish" ? "published" : "restored"}: ${(e as Error).message}` };
+  }
+  revalidatePath("/admin/budget-tables");
+  redirect(`/admin/budget-tables?${action === "publish" ? "published" : "restored"}=${id}`);
+}
+
+export async function publishSnapshotAction(_prev: SyncState, form: FormData): Promise<SyncState> {
+  return publishOrRestore(form, "publish");
+}
+
+export async function restoreSnapshotAction(_prev: SyncState, form: FormData): Promise<SyncState> {
+  return publishOrRestore(form, "restore");
 }

@@ -1,11 +1,10 @@
-import { unstable_cache } from "next/cache";
 import { readSheetValues } from "@/lib/ingest/drive";
 
 /**
- * "All landscapes, Phase 1" dashboard: live, read-only, from one Google Sheet.
- * Read on the server with the Hub's service account (never in the browser),
- * cached for 10 minutes. If the sheet's layout changes, parsing fails loudly:
- * the error is logged and the page says what is wrong.
+ * "All landscapes, Phase 1": parsing of the All-Landscape Phase 1 Google Sheet.
+ * The sheet is read only on demand, server-side with the Hub's service account
+ * (admin "Update from sheet" or scripts/sync-phase1.ts); if its layout changes,
+ * parsing refuses with a clear error. Pages read the published snapshot.
  */
 export const SHEET_ID = "1dzLC3cW9tmYb8mbXbBuPV3O75RCjC5ZCcj6IlrvWFaA";
 const DASHBOARD_RANGE = "Dashboard!A1:P150";
@@ -118,22 +117,27 @@ export function categoryMatrix(lines: LineRow[]): CatCell[] {
   return [...m.values()];
 }
 
-async function load(): Promise<SheetData> {
+/** Read and parse the sheet now (admin "Update from sheet" and scripts only; pages read the published snapshot). */
+export async function fetchSheetLive(): Promise<SheetData> {
   const [dash, data] = await Promise.all([readSheetValues(SHEET_ID, DASHBOARD_RANGE), readSheetValues(SHEET_ID, DATA_RANGE)]);
   const landscapes = parseDashboard(dash);
   const lines = parseData(data);
   return { landscapes, lines, cats: categoryMatrix(lines.rows), fetchedAt: new Date().toISOString() };
 }
 
-const cached = unstable_cache(load, ["landscapes-phase1-sheet-v1"], { revalidate: 600, tags: ["landscapes-phase1"] });
-
+/**
+ * The published snapshot, as the dashboard and the public pages see it. Cached
+ * until a publish or restore calls revalidateTag(PHASE1_TAG).
+ */
 export async function getPhase1Data(): Promise<{ ok: true; data: SheetData } | { ok: false; error: string }> {
   try {
-    return { ok: true, data: await cached() };
+    const { getPublishedSnapshot } = await import("./snapshot");
+    const snap = await getPublishedSnapshot();
+    if (!snap) return { ok: false, error: "No Phase 1 data has been published yet. An admin can load it with “Update from sheet”." };
+    return { ok: true, data: snap.data };
   } catch (e) {
-    const msg = (e as Error).message || String(e);
-    console.error("[dashboard landscapes-phase-1] sheet load failed:", msg);
-    return { ok: false, error: e instanceof SheetLayoutError ? msg : "The sheet couldn't be read right now." };
+    console.error("[dashboard landscapes-phase-1] snapshot load failed:", (e as Error).message);
+    return { ok: false, error: "The investment figures couldn't load right now." };
   }
 }
 

@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { dashboardAccess } from "@/lib/dashboards/landscapes-phase1/access";
 import { deleteDoc, listDocs, putDoc, validKey, type DocKind } from "@/lib/dashboards/userDocs";
 
 /**
  * Private notes and saved Studio views for the "All landscapes, Phase 1"
- * dashboard. Signed-in editors and admins only (middleware gates /api/admin;
- * checked again here). Each person reads and writes only their own documents.
+ * dashboard. Signed-in editors keep theirs under their account; approved
+ * share-link holders keep theirs under their link. Each owner sees only their own.
+ * (Lives under /dashboards so the share-link cookie, scoped to that path, reaches it.)
  */
 export const dynamic = "force-dynamic";
 const DASH = "landscapes-phase-1";
 const KINDS = new Set<DocKind>(["note", "view"]);
 
-async function me(): Promise<string | null> {
-  const s = await auth();
-  const u = s?.user as { id?: string; role?: string } | undefined;
-  return u?.id && (u.role === "admin" || u.role === "editor") ? u.id : null;
+async function owner(): Promise<string | null> {
+  const a = await dashboardAccess();
+  if (!a) return null;
+  if (a.kind === "editor") return a.userId ? `user:${a.userId}` : null;
+  return `link:${a.link.id}`;
 }
 
 /** Same-origin check for writes (route handlers have no built-in CSRF check). */
@@ -29,15 +31,17 @@ function sameOrigin(req: Request): boolean {
   }
 }
 
+const noStore = { "Cache-Control": "no-store" };
+
 export async function GET() {
-  const id = await me();
-  if (!id) return NextResponse.json({ error: "Sign in to see your notes and views." }, { status: 401 });
-  return NextResponse.json({ docs: await listDocs(id, DASH) }, { headers: { "Cache-Control": "no-store" } });
+  const o = await owner();
+  if (!o) return NextResponse.json({ error: "No access." }, { status: 401, headers: noStore });
+  return NextResponse.json({ docs: await listDocs(o, DASH) }, { headers: noStore });
 }
 
 export async function PUT(req: Request) {
-  const id = await me();
-  if (!id) return NextResponse.json({ error: "Sign in to save." }, { status: 401 });
+  const o = await owner();
+  if (!o) return NextResponse.json({ error: "No access." }, { status: 401 });
   if (!sameOrigin(req)) return NextResponse.json({ error: "Bad origin" }, { status: 403 });
   let body: { kind?: unknown; key?: unknown; data?: unknown };
   try {
@@ -50,18 +54,18 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
   if (JSON.stringify(body.data).length > 30000) return NextResponse.json({ error: "Too long" }, { status: 413 });
-  await putDoc(id, DASH, kind, body.key, body.data as Record<string, unknown>);
+  await putDoc(o, DASH, kind, body.key, body.data as Record<string, unknown>);
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(req: Request) {
-  const id = await me();
-  if (!id) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const o = await owner();
+  if (!o) return NextResponse.json({ error: "No access." }, { status: 401 });
   if (!sameOrigin(req)) return NextResponse.json({ error: "Bad origin" }, { status: 403 });
   const u = new URL(req.url);
   const kind = u.searchParams.get("kind") as DocKind;
   const key = u.searchParams.get("key");
   if (!KINDS.has(kind) || !validKey(key)) return NextResponse.json({ error: "Bad request" }, { status: 400 });
-  await deleteDoc(id, DASH, kind, key);
+  await deleteDoc(o, DASH, kind, key);
   return NextResponse.json({ ok: true });
 }

@@ -45,6 +45,14 @@ function render(landscapeName: string, r: Row): { context: string; text: string 
 }
 
 export async function indexInterventions(landscapeSlug: string, landscapeName: string): Promise<number> {
+  // Once a Phase 1 snapshot is published, Ask's budget passages come from it
+  // (lib/dashboards/landscapes-phase1/snapshot.ts); don't put the old ones back.
+  try {
+    const live = (await db.execute(sql`SELECT 1 FROM "cat".phase1_snapshots WHERE status = 'published' LIMIT 1`)) as unknown as { rows: unknown[] };
+    if (live.rows.length) return 0;
+  } catch {
+    /* no snapshot table yet: keep the old behaviour */
+  }
   const rs = (await db.execute(sql`
     SELECT row_key, category, intervention, sub_intervention, unit, thematic_investment, capital_cost, capital_desc,
            recurring_per_year, recurring_years, unit_cost_total, phase1, phase2, totals, tags

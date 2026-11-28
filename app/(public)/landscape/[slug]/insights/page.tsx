@@ -3,6 +3,7 @@ import { LANDSCAPES } from "@/lib/data/landscapes";
 import { LandscapeTabs } from "@/components/landscape/LandscapeTabs";
 import { landscapeHasLip, landscapeInsights, landscapeHasClimate } from "@/lib/db/landscape-kb";
 import { LandscapeInsightsView } from "@/components/landscape/LandscapeInsightsView";
+import { insightsFromSnapshot } from "@/lib/dashboards/landscapes-phase1/insights";
 
 // ISR: cache the rendered page at the edge (revalidate every 5 min). These
 // pages read DB data only (no per-request searchParams/cookies/headers), so
@@ -49,7 +50,7 @@ export default async function InsightsPage({ params }: { params: Promise<{ slug:
       <LandscapeTabs slug={slug} active="insights" hasLip={hasLip} hasClimate={hasClimate} />
 
       {hasLip ? (
-        <LandscapeInsightsView slug={slug} profile={p} data={await landscapeInsights(slug)} />
+        <LandscapeInsightsView slug={slug} profile={p} data={(await insightsFromSnapshot(slug)) ?? (await landscapeInsights(slug))} />
       ) : (
         <section className="max-w-page mx-auto px-5 sm:px-7 lg:px-10 py-16">
           <p className="text-ink-soft leading-[1.55] tracking-[-0.01em] text-[18px] max-w-[46ch]">
