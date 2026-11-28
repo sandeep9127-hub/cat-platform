@@ -85,7 +85,8 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            // Talk mode needs the microphone on the Hub's own pages; never for embedded frames.
+            value: "camera=(), microphone=(self), geolocation=()",
           },
         ],
       },
