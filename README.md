@@ -1,6 +1,82 @@
-# CAT Platform
+<div align="center">
 
-A curated, editorial dashboard of credible food-systems work in India, produced by a human-AI editorial loop. Built per [PRODUCT.md](./PRODUCT.md).
+# Transformation Hub
+
+**What's actually working in India's food systems.**
+
+A public dashboard of food systems programmes across India, from government missions to farmer federations.<br>
+Every entry is drafted from public sources, checked by an editor, and cited. What didn't work sits next to what did.
+
+[**Visit the Hub**](https://hub.agroecologyindia.org) · [Case study](https://sandeep9127-hub.github.io/transformation-hub/) · [Product brief](./PRODUCT.md)
+
+<br>
+
+<img src="docs/readme/home.webp" alt="The Transformation Hub home page, with a map of India showing programme clusters" width="900">
+
+<br><br>
+
+| 59 | 21 | 11 | 10 |
+|:---:|:---:|:---:|:---:|
+| programmes in the Solutions Atlas | states covered | CAT landscapes with investment plans | themes |
+
+<sub>As shown on the live Hub, October 2026.</sub>
+
+</div>
+
+<br>
+
+## What's inside
+
+<table>
+<tr>
+<td width="33%" valign="top">
+<img src="docs/readme/atlas.webp" alt="Solutions Atlas page">
+
+**Solutions Atlas**<br>
+Programmes from across India on one map. Filter by intervention, principle or state; every filter is a shareable link.
+</td>
+<td width="33%" valign="top">
+<img src="docs/readme/patratu.webp" alt="Patratu landscape page">
+
+**Landscape dashboards**<br>
+CAT's eleven field landscapes, each with a seven-year investment plan: profile, budget, reach, climate figures and a downloadable brief.
+</td>
+<td width="33%" valign="top">
+<img src="docs/readme/ask.webp" alt="Ask the Hub page">
+
+**Ask the Hub**<br>
+Questions in plain language, answered only from the Hub's own entries and plans, not the open web.
+</td>
+</tr>
+</table>
+
+## How an entry gets published
+
+| 1. Discover | 2. Draft | 3. Review | 4. Publish | 5. Keep fresh |
+|---|---|---|---|---|
+| A weekly search of trusted domains turns up candidate programmes. | An AI model drafts the entry from its sources, with citations. | An editor checks it against the sources, then approves or returns it. | It goes on the map, into search and into its themes. | A daily check flags entries whose sources have changed. |
+
+AI does the production work. Nothing goes live until a person approves it.
+
+<details>
+<summary><b>Example: where the money goes in one landscape plan</b></summary>
+<br>
+<img src="docs/readme/budget.webp" alt="Patratu budget: a 52 crore rupee plan split by who pays and by delivery package" width="700">
+</details>
+
+<br>
+
+## Run by
+
+The [Consortium for Agroecological Transformations](https://agroecologyindia.org) (CAT). Product brief, design and build by [Sandeep Nayak](https://github.com/sandeep9127-hub).
+
+<br>
+
+---
+
+# Developer notes
+
+The CAT Platform is the codebase behind the Hub, built per [PRODUCT.md](./PRODUCT.md).
 
 Live on a Supabase Postgres in an isolated `cat` schema. Run on Vercel.
 
