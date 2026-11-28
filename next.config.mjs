@@ -85,10 +85,15 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            // Talk mode needs the microphone on the Hub's own pages; never for embedded frames.
-            value: "camera=(), microphone=(self), geolocation=()",
+            value: "camera=(), microphone=(), geolocation=()",
           },
         ],
+      },
+      {
+        // Talk mode (Ask the Hub) is the only page that needs the microphone: the Hub's own
+        // origin only, never embedded frames. Overrides the rule above for this path.
+        source: "/agent",
+        headers: [{ key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" }],
       },
     ];
   },
