@@ -74,6 +74,7 @@ function TurnItem({ t, back }: { t: VoiceTurnRow; back: string }) {
           <span className="font-mono text-[11px] text-muted">{secs(t.latency_ms)}</span>
           {t.marked_wrong === true && <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-red-alert">Marked wrong</span>}
           {t.marked_wrong === false && <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-teal">Marked right</span>}
+          {t.teach && <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-teal">Teaching example</span>}
         </div>
         <p className={`text-[15px] leading-[1.45] ${t.transcript ? "text-ink" : "text-muted italic"}`}>
           {t.transcript ? `“${t.transcript}”` : "(words not kept: side talk or a second speaker)"}
@@ -114,6 +115,14 @@ function TurnItem({ t, back }: { t: VoiceTurnRow; back: string }) {
               Note (optional)
               <input name="note" maxLength={300} className="mt-1 w-full rounded-[6px] border border-line bg-paper px-2 py-1.5 text-[13px] text-ink" />
             </label>
+            {t.transcript ? (
+              <label className="flex items-start gap-2 text-[12px] text-ink-soft">
+                <input type="checkbox" name="teach" defaultChecked={t.teach} className="mt-0.5" />
+                <span>Teach the agent: these words become an example, so it judges similar turns this way. Leave unticked if the words are private.</span>
+              </label>
+            ) : (
+              <p className="text-[11.5px] text-muted">Can't teach with this turn: its words weren't kept.</p>
+            )}
             <div className="flex gap-2">
               <button className="h-8 rounded-full bg-ink text-paper px-3.5 text-[13px]">Mark wrong</button>
               {t.marked_wrong && (

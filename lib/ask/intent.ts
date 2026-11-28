@@ -1,5 +1,6 @@
 import { BudgetExceededError, claudeMessage, safeJsonParse, type StreamTurn } from "@/lib/ai/claude";
 import { LANDSCAPES } from "@/lib/data/landscapes";
+import { judgeExamples } from "@/lib/ask/judge-examples";
 
 /**
  * One cheap Haiku call per question: a standalone search query (follow-ups
@@ -119,8 +120,10 @@ export async function classifyQuestion(
       agent && agent !== true
         ? `\nSignals: speaker=${agent.speaker === "main" ? "the main speaker" : "a second speaker"}; recognition confidence=${agent.confidence.toFixed(2)}; ${agent.afterQuestion ? "the assistant had just asked a question" : "the assistant had not just asked a question"}.`
         : "";
+    // Voice agent: editor-approved worked examples from /admin/voice (cached; "" when none).
+    const examples = agent ? await judgeExamples() : "";
     const r = await claudeMessage("ask_rewrite", {
-      system: prompt() + (opts?.voice ? VOICE_NOTE : "") + (agent ? AGENT_NOTE : ""),
+      system: prompt() + (opts?.voice ? VOICE_NOTE : "") + (agent ? AGENT_NOTE + examples : ""),
       messages: [{ role: "user", content: `${transcript ? `${transcript}\n\n` : ""}Latest question: ${question}${signals}` }],
       jsonSchema: agent ? AGENT_SCHEMA : SCHEMA,
       signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),

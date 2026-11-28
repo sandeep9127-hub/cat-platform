@@ -19,11 +19,12 @@ export async function markTurnAction(form: FormData): Promise<void> {
   const raw = form.get("should")?.toString() ?? "";
   const shouldHave = (SHOULD_HAVE as readonly string[]).includes(raw) ? (raw as ShouldHave) : null;
   const note = form.get("note")?.toString().slice(0, 300) ?? null;
-  const ok = await markVoiceTurn({ id, wrong, shouldHave, note });
+  const teach = wrong === true && form.get("teach") === "on";
+  const ok = await markVoiceTurn({ id, wrong, shouldHave, note, teach });
   if (ok) {
     await writeAudit({
       actorUserId: user.id ?? null, actorEmail: user.email ?? null, action: `voice_turn.${verdict}`,
-      entityType: "voice_turn", entityId: id, meta: shouldHave ? { shouldHave } : undefined,
+      entityType: "voice_turn", entityId: id, meta: shouldHave ? { shouldHave, teach } : undefined,
     });
   }
   revalidatePath("/admin/voice");

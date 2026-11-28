@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { forgetJudgeExamples, TEACH_CALL } from "@/lib/ask/judge-examples";
 
 /**
  * Admin view of the voice agent decision log (cat.voice_turns). Editors mark
@@ -65,6 +66,8 @@ export type VoiceTurnRow = {
   cost_usd: string | null;
   marked_wrong: boolean | null;
   marked_note: string | null;
+  /** An editor ticked "Teach the agent": this turn is a worked example for the turn judge. */
+  teach: boolean;
 };
 
 export type TurnFilter = "all" | "unreviewed" | "wrong" | "side_talk" | "answered";
@@ -85,7 +88,7 @@ export async function listVoiceTurns(o: { filter: TurnFilter; days: number; page
   const list = rows<VoiceTurnRow>(
     await db.execute(sql`
       SELECT id, created_at, conversation_id, transcript, speaker, confidence, after_question, lang, decision,
-             reason, tools, latency_ms, cost_usd, marked_wrong, marked_note
+             reason, tools, latency_ms, cost_usd, marked_wrong, marked_note, teach
       FROM "cat".voice_turns WHERE ${where}
       ORDER BY created_at DESC LIMIT ${PAGE + 1} OFFSET ${page * PAGE}`),
   );
@@ -141,16 +144,33 @@ export async function voiceTurnStats(days: number): Promise<VoiceStats> {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Mark a turn right (false), wrong (true, with what it should have done), or clear the mark (null). */
-export async function markVoiceTurn(o: { id: string; wrong: boolean | null; shouldHave?: ShouldHave | null; note?: string | null }): Promise<boolean> {
+/**
+ * Mark a turn right (false), wrong (true, with what it should have done), or clear the mark (null).
+ * `teach` makes a wrong turn a worked example for the turn judge (lib/ask/judge-examples.ts); it
+ * only takes when the turn kept its words and the correct call is a known one.
+ */
+export async function markVoiceTurn(o: {
+  id: string;
+  wrong: boolean | null;
+  shouldHave?: ShouldHave | null;
+  note?: string | null;
+  teach?: boolean;
+}): Promise<boolean> {
   if (!UUID_RE.test(o.id)) return false;
-  const note =
-    o.wrong === true
-      ? [o.shouldHave ? SHOULD_HAVE_LABEL[o.shouldHave] : null, o.note?.trim() || null].filter(Boolean).join(": ").slice(0, 500) || null
-      : null;
+  const wrong = o.wrong === true;
+  const note = wrong
+    ? [o.shouldHave ? SHOULD_HAVE_LABEL[o.shouldHave] : null, o.note?.trim() || null].filter(Boolean).join(": ").slice(0, 500) || null
+    : null;
+  const shouldHave = wrong ? (o.shouldHave ?? null) : null;
+  const teach = wrong && !!o.teach && !!shouldHave && TEACH_CALL[shouldHave] != null;
   const r = await db.execute(sql`
-    UPDATE "cat".voice_turns SET marked_wrong = ${o.wrong}, marked_note = ${note} WHERE id = ${o.id}::uuid`);
-  return ((r as unknown as { rowCount?: number }).rowCount ?? 0) > 0;
+    UPDATE "cat".voice_turns
+    SET marked_wrong = ${o.wrong}, marked_note = ${note}, should_have = ${shouldHave},
+        teach = ${teach} AND transcript IS NOT NULL
+    WHERE id = ${o.id}::uuid`);
+  const ok = ((r as unknown as { rowCount?: number }).rowCount ?? 0) > 0;
+  if (ok) forgetJudgeExamples();
+  return ok;
 }
 
 /** Marked-wrong turns that still have their words, as eval cases (scripts/voice-agent-eval.ts shape). */
