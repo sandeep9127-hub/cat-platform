@@ -26,6 +26,7 @@ import { LANGUAGES, detectLanguage, isLangCode, replyInstruction, type LangCode 
 import { voiceAgentTools, VOICE_AGENT_NOTE, type ScreenAction } from "@/lib/ask/voice-agent";
 import { nextVoiceState, readVoiceState, voiceStateLine } from "@/lib/ask/conv-state";
 import { likelyBystander, logVoiceTurn, type VoiceDecision } from "@/lib/ask/voice-log";
+
 import {
   historyText,
   LIP_KINDS,
@@ -45,6 +46,9 @@ import {
   loadMessages,
   type StoredCitation,
 } from "@/lib/ask/store";
+
+/** A bare yes, in English, Hinglish or Hindi. */
+const YES = /^(yes|yeah|yep|yup|yes please|haan|han|haan ji|ji|ji haan|हाँ|हां|हाँ जी|जी)[.!?।]*$/i;
 
 /**
  * Ask v2 (behind ASK_V2=on): Claude answers over hybridSearch with native
@@ -369,6 +373,9 @@ export async function askV2(req: NextRequest): Promise<Response> {
   early?.then(() => mark("search"), () => {});
   const judged = agentOn ? await classifyQuestion(question, history, req.signal, { voice: true, agent: signals ?? true }) : null;
   mark("judge");
+  // The judge failed (no verdict): fail closed for a likely bystander (second speaker, low
+  // confidence), so it is treated as unsure side talk; the main speaker still gets an answer.
+  if (agentOn && judged && !judged.addressed && maybeSideTalk) Object.assign(judged, { addressed: "side_talk", command: "none", sure: false });
   const lastAssistant = [...history].reverse().find((t) => t.role === "assistant");
   const lastAssistantText = lastAssistant && typeof lastAssistant.content === "string" ? lastAssistant.content.replace(/ \(answer interrupted by the reader\)$/, "") : "";
   const wasThatForMe = LANGUAGES[lang].turns.wasThatForMe;
@@ -398,7 +405,14 @@ export async function askV2(req: NextRequest): Promise<Response> {
   }
   if (!conv) conv = await createConversation(tokenHash, scope);
   const conversationId = conv.id;
-  await addUserMessage(conversationId, question, scope);
+  // A turn the judge thinks may be side talk (it asks "was that for me?") keeps no words in the
+  // conversation either, matching the decision log; a "yes" then asks the reader to go ahead.
+  const unsureSideTalk = judged?.addressed === "side_talk";
+  await addUserMessage(conversationId, unsureSideTalk ? "(words not kept: may not have been meant for the Hub)" : question, scope);
+  if (agentOn && lastAssistantText === wasThatForMe && YES.test(question.trim())) {
+    await vlog("small_talk", { reason: "yes after was-that-for-me" });
+    return chatResponse({ conversationId, scope, setCookie, started, text: LANGUAGES[lang].turns.askAgain, endVoice: false });
+  }
 
   // Conversational turns ("thanks", "we can stop", "theek hai") get one short
   // line: no search, no Claude call, no "Not in the library" card. A voice

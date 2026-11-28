@@ -47,6 +47,14 @@ const CASES: Case[] = [
   { name: "plain question", tags: ["answer"], turns: [{ text: "What is the livestock budget in Patratu?" }], expect: { cited: true, lang: "en", excludes: NARRATION, includesAny: [/crore|lakh|cr\b|₹|Rs/i] } },
   { name: "water plan", tags: ["answer"], turns: [{ text: "What does Rajnagar plan for water harvesting?" }], expect: { cited: true, includesAny: [/pond|water/i], excludes: NARRATION } },
   { name: "side talk from a second speaker", tags: ["side"], turns: [{ text: "Did you send the invoice to Ramesh yesterday?", speaker: "other" }], expect: { ignored: true } },
+  // An unsure turn gets "was that for me?" and keeps no words; a bare "yes" then asks the reader to go ahead.
+  {
+    name: "unsure side talk, then yes",
+    tags: ["side"],
+    turns: [{ text: "Is the Mau field visit still on for Tuesday?" }, { text: "yes", afterQuestion: true }],
+    // If the judge is sure the first turn was side talk, it stays quiet and the "yes" gets a plain prompt.
+    expect: { notAnswered: true, includesAny: [/go ahead|listening|what would you like/i] },
+  },
   { name: "side talk: chai", tags: ["side"], turns: [{ text: "Arre chai lao, ek minute", lang: "hi" }], expect: { notAnswered: true } },
   { name: "side talk: phone call", tags: ["side"], turns: [{ text: "Haan bhai, main meeting mein hoon, baad mein call karta hoon", lang: "hi" }], expect: { notAnswered: true } },
   { name: "side talk: office chatter", tags: ["side"], turns: [{ text: "Can someone close the window, it's getting cold in here" }], expect: { notAnswered: true } },

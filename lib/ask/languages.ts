@@ -43,6 +43,8 @@ export type Language = {
     ack: { withTopic: string; plain: string };
     /** Asked once when the turn judge can't tell whether a turn was meant for the agent. */
     wasThatForMe: string;
+    /** After "was that for me?" the reader says yes: the unsure turn wasn't kept, so ask them to go ahead. */
+    askAgain: string;
     /** The voice agent's answer to "who are you?". */
     whoAmI: string;
     sourcesInChat: string;
@@ -85,6 +87,7 @@ export const LANGUAGES: Record<LangCode, Language> = {
       shortAnswers: ["yes", "no", "yeah", "nope", "hello", "hi", "hey", "thanks", "bye", "repeat", "again"],
       ack: { withTopic: "{topic}, one moment.", plain: "One moment, let me check." },
       wasThatForMe: "Sorry, was that for me?",
+      askAgain: "Sure, go ahead, I'm listening.",
       whoAmI: "I'm Agents of Change, the voice of the CAT Transformation Hub. Ask me about any landscape plan, its budget, or programmes that could help.",
       sourcesInChat: "The sources are in the chat, under the answer.",
       nothingToRepeat: "I haven't said anything yet. What would you like to know?",
@@ -116,6 +119,7 @@ export const LANGUAGES: Record<LangCode, Language> = {
       shortAnswers: ["haan", "nahi", "nahin", "ji", "namaste", "dhanyavaad", "shukriya", "हाँ", "हां", "नहीं", "जी", "नमस्ते", "धन्यवाद", "शुक्रिया"],
       ack: { withTopic: "{topic} देख रहा हूँ, एक पल।", plain: "एक पल, देख रहा हूँ।" },
       wasThatForMe: "माफ़ कीजिए, क्या आप मुझसे पूछ रहे थे?",
+      askAgain: "जी, बताइए, मैं सुन रहा हूँ।",
       whoAmI: "मैं Agents of Change हूँ, CAT ट्रांसफ़ॉर्मेशन हब की आवाज़। किसी भी लैंडस्केप योजना, उसके बजट या मददगार कार्यक्रमों के बारे में पूछिए।",
       sourcesInChat: "स्रोत चैट में, जवाब के नीचे हैं।",
       nothingToRepeat: "मैंने अभी कुछ नहीं कहा है। आप क्या जानना चाहेंगे?",
